@@ -37,49 +37,52 @@ For each item, you need to buy at most 6 of them.
 You are not allowed to buy more items than you want, even if that would lower the overall price.
  */
 
-// similar to coin change, but on a higher dimension. note we can use each item more than onece and combine them, so can't do a linear scan
+
 public class ShoppingOffers {
+    // similar to coin change, but on a higher dimension. note we can use each item more than onece and combine them, so can't do a linear scan
     Map<List<Integer>, Integer>[] dp;
 
-    public int shoppingOffers(List<Integer> p, List<List<Integer>> s, List<Integer> a) {
-        dp = new HashMap[s.size()];
+    public int shoppingOffers(List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
+        dp = new HashMap[special.size()];
         for (int i = 0; i < dp.length; i++) {
             dp[i] = new HashMap<>();
         }
-        return dos(0, p, s, a);
+        return dos(0, price, special, needs);
     }
 
-    private int dos(int i, List<Integer> p, List<List<Integer>> s, List<Integer> a) {
-        int n = s.size();
+    private int dos(int i, List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
+        int n = special.size();
         if (i == n) {
             int r = 0;
-            for (int j = 0; j < a.size(); j++) {
-                if (a.get(j) > 0) {
-                    r += p.get(j) * a.get(j);
-                }
+            for (int j = 0; j < needs.size(); j++) {
+                int count = needs.get(j);
+                r += price.get(j) * count;
             }
             return r;
         }
-        Integer ch = dp[i].get(a);
+        Integer ch = dp[i].get(needs);
         if (ch != null) {
             return ch;
         }
-        int without = dos(i + 1, p, s, a);
-        List<Integer> si = s.get(i);
-        List<Integer> na = new ArrayList<>(a);
-        int cost = si.get(a.size());        ;
-        for (int j = 0; j < a.size(); j++) {
-            if (na.get(j) >= si.get(j)) {
-                na.set(j, na.get(j) - si.get(j));
+        int nopick = dos(i + 1, price, special, needs);
+        List<Integer> newneeds = new ArrayList<>(needs);
+        boolean cant = false;
+        List<Integer> sp = special.get(i);
+        int spp = sp.get(sp.size() - 1);
+        for (int j = 0; j < sp.size() - 1; j++) {
+            if (sp.get(j) > needs.get(j)) {
+                cant = true;
             } else {
-                dp[i].put(a, without);
-                return without;
+                newneeds.set(j, needs.get(j) - sp.get(j));
             }
         }
-        // dont move i as we want to let this special offer to match again
-        int with = cost + dos(i, p, s, na);
-        int rt = Math.min(with, without);
-        dp[i].put(a, rt);
+        int pick = Integer.MAX_VALUE;
+        if (!cant) {
+            // we go i not i+1 because we can use this item many times
+            pick = spp + dos(i, price, special, newneeds);
+        }
+        int rt = Math.min(pick, nopick);
+        dp[i].put(needs, rt);
         return rt;
     }
 }

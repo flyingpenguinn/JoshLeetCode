@@ -1,9 +1,6 @@
 import base.TreeNode;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 /*
 LC#637
@@ -22,33 +19,29 @@ Note:
 The range of node's value is in the range of 32-bit signed integer.
  */
 public class AvgOfLevelsInBinaryTree {
+    Map<Integer,Double> m = new HashMap<>();
+    Map<Integer,Integer> count = new HashMap<>();
+    int max = -1;
     public List<Double> averageOfLevels(TreeNode root) {
+        dfs(root, 0);
         List<Double> r = new ArrayList<>();
-        if (root == null) {
-            return r;
-        }
-        Deque<TreeNode> q = new ArrayDeque<>();
-        q.offer(root);
-        int lc = 1;
-        int cc = 0;
-        double lv = 0.0;
-        while (!q.isEmpty()) {
-            TreeNode top = q.poll();
-            lv += top.val;
-            if (top.left != null) {
-                q.offer(top.left);
-            }
-            if (top.right != null) {
-                q.offer(top.right);
-            }
-            cc++;
-            if (lc == cc) {
-                r.add(lv / lc);
-                lc = q.size();
-                cc = 0;
-                lv = 0.0;
-            }
+        for(int i=0; i<=max;i++){
+            int c = count.get(i);
+            double v = m.get(i);
+            double avg = v/c;
+            r.add(avg);
         }
         return r;
+    }
+
+    void dfs(TreeNode n, int d){
+        if(n==null){
+            return;
+        }
+        max = Math.max(max, d);
+        m.put(d, m.getOrDefault(d, 0.0)+n.val);
+        count.put(d, count.getOrDefault(d, 0)+1);
+        dfs(n.left, d+1);
+        dfs(n.right, d+1);
     }
 }

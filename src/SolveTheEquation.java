@@ -1,52 +1,77 @@
+/*
+LC#640
+Solve a given equation and return the value of x in the form of string "x=#value". The equation contains only '+', '-' operation, the variable x and its coefficient.
+
+If there is no solution for the equation, return "No solution".
+
+If there are infinite solutions for the equation, return "Infinite solutions".
+
+If there is exactly one solution for the equation, we ensure that the value of x is an integer.
+
+Example 1:
+Input: "x+5-3+x=6+x-2"
+Output: "x=2"
+Example 2:
+Input: "x=x"
+Output: "Infinite solutions"
+Example 3:
+Input: "2x=x"
+Output: "x=0"
+Example 4:
+Input: "2x+3x-6x=x+2"
+Output: "x=-1"
+Example 5:
+Input: "x=x+2"
+Output: "No solution"
+ */
 public class SolveTheEquation {
-    public String solveEquation(String e) {
-        String[] sides= e.split("=");
-        int[] rl= doside(sides[0]);
-        int[] rr= doside(sides[1]);
-        int xc= rl[0]-rr[0];
-        int nc= rr[1]-rl[1];
-        if(xc==0 && nc==0){
+    // or we can replace all - as +-, then split on +
+    public String solveEquation(String s) {
+        String[] ss = s.split("=");
+        int[] pl = parse(ss[0]);
+        int[] pr = parse(ss[1]);
+        int coff = pl[0] - pr[0];
+        int cons = pr[1] - pl[1];
+        if (coff == 0 && cons == 0) {
             return "Infinite solutions";
-        }else if(xc==0){
+        } else if (coff == 0 && cons != 0) {
             return "No solution";
-        }else{
-            return "x="+String.valueOf(nc/xc);
+        } else {
+            int rt = cons / coff;
+            return "x=" + rt;
         }
+
     }
 
-    int[] doside(String s){
-        StringBuilder sb= new StringBuilder();
-        int value=0;
-        int nx=0;
-        int delta=1;
-        for(int i=0;i<=s.length();i++){
-            char c= i==s.length()?'*':s.charAt(i);
-            if(c=='+' || c=='-' || c=='*'){
-                String block= sb.toString();
+    int[] parse(String s) {
+        int coff = 0;
+        int cons = 0;
 
-                if(block.endsWith("x")){
-                    // plain x no number in front
-                    String nxs= block.substring(0,block.length()-1);
-                    int cof= nxs.isEmpty()?1: Integer.valueOf(nxs);
-                    nx += delta*cof;
-                }else{
-                    // for -x-1
-                    if(!block.isEmpty()){
-                        value += delta* Integer.valueOf(block);
+        int n = s.length();
+        int last = 0;
+        for (int i = 0; i <= n; i++) {
+            if (i == n || s.charAt(i) == '+' || s.charAt(i) == '-') {
+                String cur = s.substring(last, i);
+                if (cur.endsWith("x")) {
+                    String coffs = cur.substring(0, cur.length() - 1);
+                    if (coffs.equals("+") || coffs.isEmpty()) {
+                        // +x or x
+                        coff += 1;
+                    } else if (coffs.equals("-")) {
+                        // -x
+                        coff += -1;
+                    } else {
+                        coff += Integer.valueOf(coffs);
+                    }
+                } else {
+                    if (!cur.isEmpty()) {
+                        // -x=-1, when we deal with -1...
+                        cons += Integer.valueOf(cur);
                     }
                 }
-                delta= (c=='+'?1:-1);
-
-            }else{
-                if(i>0 && (s.charAt(i-1)=='+' || s.charAt(i-1)=='-')){
-                    sb= new StringBuilder();
-                }
-                sb.append(c);
+                last = i;
             }
         }
-        int[] r= new int[2];
-        r[0]=nx;
-        r[1]=value;
-        return r;
+        return new int[]{coff, cons};
     }
 }

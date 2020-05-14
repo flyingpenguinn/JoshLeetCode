@@ -29,75 +29,68 @@ The length of S will be in the range [1, 1000].
 Each character S[i] will be in the set {'a', 'b', 'c', 'd'}.
  */
 public class CountDistinctPalindromeSubsequence {
-    // Let dp(i, j) be the answer for the string T = S[i:j+1] including the empty sequence. The answer is the number of unique characters in T,
+    // Let dp(i, j) be the answer for the string T = S[i][j] including the empty sequence. The answer is the number of unique characters in T,
     // plus palindromes of the form "a_a", "b_b", "c_c", and "d_d", where "_" represents zero or more characters.
+    // note the gists are
+    // 1. separate single digits and a_a
+    // 2. always count in empty string until we - it in the end
     // note we count empty str so -1 in the end
+    // can use left/right array to accelerate the j/k look up
     // O(4*n^2)
-    int Mod = 1000000007;
-    int[][] dp;
-    int[][] left; // nearest char j on the left of i
-    int[][] right;// on the right of i
+
+    long[][] dp;
 
     public int countPalindromicSubsequences(String s) {
         int n = s.length();
-        left = new int[n][4];
-        right = new int[n][4];
+
+        dp = new long[n][n];
         for (int i = 0; i < n; i++) {
-            int cind = s.charAt(i) - 'a';
-            for (int j = 0; j < 4; j++) {
-                int lbf = i == 0 ? -1 : left[i - 1][j];
-                if (j == cind) {
-                    left[i][j] = i;
-                } else {
-                    left[i][j] = lbf;
-                }
-            }
+            Arrays.fill(dp[i], -1);
         }
-        for (int i = n - 1; i >= 0; i--) {
-            int cind = s.charAt(i) - 'a';
-            for (int j = 0; j < 4; j++) {
-                int rbf = i == n - 1 ? n : right[i + 1][j];
-                if (j == cind) {
-                    right[i][j] = i;
-                } else {
-                    right[i][j] = rbf;
-                }
-            }
-        }
-        dp = new int[n][n];
-        return doc(s.toCharArray(), 0, n - 1) - 1;
+        long rt = doc(0, n - 1, s);
+        rt = (rt - 1) % Mod; // - empty string in the end
+        return (int) rt;
     }
 
-    int doc(char[] s, int l, int u) {
+
+    private long doc(int l, int u, String s) {
         if (l > u) {
-            return 1;//counting empty
+            return 1;
         }
-        if (l == u) {
-            return 2;
-        }
-        if (dp[l][u] > 0) {
+        if (dp[l][u] != -1) {
             return dp[l][u];
         }
-
-        long r = 1L;//counting empty
-        for (int i = 0; i < 4; i++) {
-            if (right[l][i] <= u) {
-                r++;
-            }
-            int j = right[l][i];
-            int k = left[u][i];
-            int add = 0;
-            if (j < k) {
-                add = doc(s, j + 1, k - 1);
-                r += add;
-                r %= Mod;
+        Set<Character> set = new HashSet<>();
+        for (int i = l; i <= u; i++) {
+            set.add(s.charAt(i));
+            if (set.size() == 4) {
+                break;
             }
         }
-        dp[l][u] = (int) r;
-        return dp[l][u];
+        long rt = 1 + set.size();
+        for (int i = 0; i < 4; i++) {
+            int j = l;
+            while (j <= u && s.charAt(j) - 'a' != i) {
+                j++;
+            }
+            int k = u;
+            while (k >= j && s.charAt(k) - 'a' != i) {
+                k--;
+            }
+            if (j < k) {
+                // <, we dont process single digits
+                long inner = doc(j + 1, k - 1, s);
+                rt += inner;
+                // inner bccb, bbb, b b + the outside single b
+            }
+        }
+        dp[l][u] = rt % Mod;
+        return rt;
     }
 
+    long Mod = 1000000007;
+
     public static void main(String[] args) {
-        System.out.println(new CountDistinctPalindromeSubsequence().countPalindromicSubsequences("bddaabdbbccdcdcbbdbddccbaaccabbcacbadbdadbccddccdbdbdbdabdbddcccadddaaddbcbcbabdcaccaacabdbdaccbaacc"));
+        System.out.println(new CountDistinctPalindromeSubsequence().countPalindromicSubsequences("bccb"));
     }
 }

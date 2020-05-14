@@ -26,47 +26,52 @@ The length of the input string will fit in range [1, 105].
 The input string will only contain the character '*' and digits '0' - '9'.
  */
 public class DecodeWaysII {
+
+
+    long Mod = 1000000007;
     long[] dp;
-    long Mod = 1000000007L;
 
     public int numDecodings(String s) {
         dp = new long[s.length()];
         Arrays.fill(dp, -1);
-        return (int) don(0, s.toCharArray());
+        return (int) don(0, s);
     }
 
-    long don(int i, char[] s) {
-        int n = s.length;
+    private long don(int i, String s) {
+        int n = s.length();
         if (i == n) {
-            return 1;
+            return 1l;
         }
-        // 0 can't be the start, can only be attached to 1
-        if (s[i] == '0') {
+        char c = s.charAt(i);
+        if (c == '0') {
             return 0;
         }
         if (dp[i] != -1) {
             return dp[i];
         }
-        int curstart = s[i] != '*' ? s[i] - '0' : 1;
-        int curend = s[i] != '*' ? s[i] - '0' : 9;
-        long way1 = (curend - curstart + 1) * don(i + 1, s);
-        int valids = 0;
+        long rt = 0;
+        int cstart = c == '*' ? 1 : c - '0';
+        int cend = c == '*' ? 9 : c - '0';
+        for (int j = cstart; j <= cend; j++) {
+            rt += don(i + 1, s);
+            rt %= Mod;
+        }
         if (i + 1 < n) {
-            int nextstart = s[i + 1] != '*' ? s[i + 1] - '0' : 1;
-            int nextend = s[i + 1] != '*' ? s[i + 1] - '0' : 9;
-            for (int j = curstart; j <= Math.min(3,curend); j++) {
-                for (int k = nextstart; k <= nextend; k++) {
-                    int num = j * 10 + k;
-                    if (num >= 1 && num <= 26) {
-                        valids++;
+            char c1 = s.charAt(i + 1);
+            int c1start = c1 == '*' ? 1 : c1 - '0';
+            int c1end = c1 == '*' ? 9 : c1 - '0';
+            for (int j = cstart; j <= cend; j++) {
+                for (int k = c1start; k <= c1end; k++) {
+                    int v = j * 10 + k;
+                    if (v >= 1 && v <= 26) {
+                        rt += don(i + 2, s);
+                        rt %= Mod;
                     }
                 }
             }
         }
-        long way2 = i == n - 1 ? 0 : valids * don(i + 2, s);
-        long rt = (way1 + way2) % Mod;
-        dp[i] = (int) rt;
-        return dp[i];
+        dp[i] = rt;
+        return rt;
     }
 
     public static void main(String[] args) {

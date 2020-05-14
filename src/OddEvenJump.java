@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -63,51 +64,60 @@ Note:
 
 public class OddEvenJump {
     // Key is to use treemap to find celing and floor, from back to front
+
     int[][] dp;
-    int[] odds;
-    int[] evens;
+    int[] smaller;
+    int[] bigger;
 
     public int oddEvenJumps(int[] a) {
         int n = a.length;
-        TreeMap<Integer, Integer> map = new TreeMap<>();
         dp = new int[n][2];
-        odds = new int[n];
-        evens = new int[n];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(dp[i], -1);
+        }
+        smaller = new int[n];
+        Arrays.fill(smaller, -1);
+        bigger = new int[n];
+        Arrays.fill(bigger, -1);
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
         for (int i = n - 1; i >= 0; i--) {
-            Integer higher = map.ceilingKey(a[i]);
-            odds[i] = higher == null ? -1 : map.get(higher);
-            Integer lower = map.floorKey(a[i]);
-            evens[i] = lower == null ? -1 : map.get(lower);
-
-            map.put(a[i], i); // override later ones
+            Integer nb = tm.ceilingKey(a[i]);
+            if (nb != null) {
+                bigger[i] = tm.get(nb);
+            }
+            Integer sm = tm.floorKey(a[i]);
+            if (sm != null) {
+                smaller[i] = tm.get(sm);
+            }
+            tm.put(a[i], i);
         }
         int r = 0;
         for (int i = 0; i < n; i++) {
-            if (isGood(i, n - 1, 1)) {
-
+            if (good(i, 1, a) == 1) {
                 r++;
             }
         }
         return r;
     }
 
-    boolean isGood(int i, int t, int oe) {
-        if (i == -1) {
-            return false;
+    int good(int i, int oe, int[] a) {
+        int n = a.length;
+        if (i == n - 1) {
+            return 1;
         }
-        if (i == t) {
-            return true;
+        if (dp[i][oe] != -1) {
+            return dp[i][oe];
         }
-        if (dp[i][oe] != 0) {
-            return dp[i][oe] == 1;
-        }
-        boolean rt = false;
-        if (oe == 1) {
-            rt = isGood(odds[i], t, 0);
+        int j = 0;
+        if (oe == 0) {
+            // even
+            j = smaller[i];
+
         } else {
-            rt = isGood(evens[i], t, 1);
+            j = bigger[i];
         }
-        dp[i][oe] = rt ? 1 : 2;
+        int rt = j == -1 ? 2 : good(j, oe ^ 1, a);
+        dp[i][oe] = rt;
         return rt;
     }
 
