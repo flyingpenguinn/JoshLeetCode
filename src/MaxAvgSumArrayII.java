@@ -19,44 +19,48 @@ The answer with the calculation error less than 10-5 will be accepted.
 public class MaxAvgSumArrayII {
     // from avg to subarray sum: (a[i]+...a[j])/(j-i+1) >= m => (ai-m) + ...+(a[j]-m)>=0
     // hence converting to whether there is an suabarray sum >=0. doable in O(n) time
-    // note if certain double is good, anything <= it will be ok too, as we check if there is a subarray length>-k that can do it
+    // note if certain double is good, anything <= it will be ok too, as we check if there is a subarray length>=k that can do it.
+    // so we binary search on the mid value
     public double findMaxAverage(int[] a, int k) {
-        int max = Integer.MIN_VALUE;
-        int min = Integer.MAX_VALUE;
         int n = a.length;
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
         for (int i = 0; i < n; i++) {
-            max = Math.max(a[i], max);
-            min = Math.min(a[i], min);
+            min = Math.min(min, a[i]);
+            max = Math.max(max, a[i]);
         }
         double l = min;
         double u = max;
-        double tol = 0.0000001;
-        while (u - l > tol) {
-            double mid = (l + u) / 2.0;
-            if (good(a, mid, k)) {
-                l = mid;
+        while ((u - l) >= 0.000001) {
+            double m = (l + u) / 2.0;
+            if (isgood(a, m, k)) {
+                l = m;
             } else {
-                u = mid;
+                u = m;
             }
         }
-        return u;
+        return l;
     }
 
-    // whether there is a subarray length>=k and whose avg >=avg
-    private boolean good(int[] a, double avg, int k) {
-        double min = 0.0;
-        int minindex = -1;
+    // there is a subarray whose length >=k that has avg >= m
+    private boolean isgood(int[] a, double m, int k) {
         int n = a.length;
-        double[] sum = new double[n];
+        double[] sums = new double[n];
+        double min = Integer.MAX_VALUE;
+        double sum = 0.0;
         for (int i = 0; i < n; i++) {
-            // only put i-k into consideration. only need the min
-            if (i - k >= 0 && sum[i - k] < min) {
-                min = sum[i - k];
-                minindex = i - k;
-            }
-            sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i] - avg;
-            if (sum[i] - min >= 0 && i - minindex >= k) {
+            sum += a[i] - m;
+            // start from 0
+            if (sum >= 0 && i + 1 >= k) {
                 return true;
+            }
+            // just need min and just put those <= i-k+1 into it
+            if (sum - min >= 0) {
+                return true;
+            }
+            sums[i] = sum;
+            if (i - k + 1 >= 0) {
+                min = Math.min(min, sums[i - k + 1]);
             }
         }
         return false;

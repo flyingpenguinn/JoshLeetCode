@@ -18,15 +18,15 @@ public class MaxAvgSubarray {
     // sliding window...
     public double findMaxAverage(int[] a, int k) {
         int n = a.length;
-        double sum = 0.0;
-        for (int i = 0; i < k - 1; i++) {
+        int sum = 0;
+        double max = Integer.MIN_VALUE;
+        for(int i=0; i<n;i++){
             sum += a[i];
-        }
-        double max = -1000000000;
-        for (int i = k - 1; i < n; i++) {
-            sum += a[i];
-            max = Math.max(max, sum / k);
-            sum -= a[i - k + 1];
+            if(i-k+1>=0){
+                double avg = sum*1.0/k;
+                max = Math.max(max, avg);
+                sum -= a[i-k+1];
+            }
         }
         return max;
     }

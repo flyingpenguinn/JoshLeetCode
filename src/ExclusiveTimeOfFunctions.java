@@ -46,21 +46,21 @@ public class ExclusiveTimeOfFunctions {
     // we record the penalty on the top of the stack so that it can be passed along
     public int[] exclusiveTime(int n, List<String> logs) {
         int[] r = new int[n];
-        Deque<int[]> st = new ArrayDeque<>();
-        int all = 0;
-        for (String s : logs) {
-            String[] ss = s.split(":");
-            int time = Integer.valueOf(ss[2]);
-            if (ss[1].equals("start")) {
-                int job = Integer.valueOf(ss[0]);
-                st.push(new int[]{job, time, 0});
+        Deque<int[]> stack = new ArrayDeque<>();
+        for (String log : logs) {
+            String[] ls = log.split(":");
+            int id = Integer.valueOf(ls[0]);
+            int time = Integer.valueOf(ls[2]);
+            if (ls[1].equals("start")) {
+                stack.push(new int[]{id, time, 0});
             } else {
-                int[] top = st.pop();
-                int cost = time - top[1] + 1;
-                r[top[0]] += cost - top[2];
-                if (!st.isEmpty()) {
-                    st.peek()[2] += cost;
+                // end
+                int[] top = stack.pop();
+                int spent = time + 1 - top[1] - top[2];
+                if (!stack.isEmpty()) {
+                    stack.peek()[2] += time + 1 - top[1];
                 }
+                r[top[0]] += spent;
             }
         }
         return r;

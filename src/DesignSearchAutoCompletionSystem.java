@@ -59,75 +59,85 @@ Please remember to RESET your class variables declared in class AutocompleteSyst
 public class DesignSearchAutoCompletionSystem {
 
 }
-
 class AutocompleteSystem {
-    class Tn {
+    class Trie {
         char c;
-        Tn[] ch = new Tn[255];
-        // top 3 strings under this node
-        List<String> top3 = new ArrayList<>();
+        List<String> hot = new ArrayList<>();
+        Trie[] ch = new Trie[255];
 
-        public Tn(char c) {
+        public Trie(char c) {
             this.c = c;
         }
+
+        void insert(String s, int i) {
+            if (i == s.length()) {
+                return;
+            }
+            char c = s.charAt(i);
+            Trie node = this.ch[c];
+            if (node == null) {
+                node = ch[c] = new Trie(c);
+            }
+            if (!node.hot.contains(s)) {
+                node.hot.add(s);
+            }
+            sorthot(node.hot);
+            node.insert(s, i + 1);
+        }
+
+        private void sorthot(List<String> hot) {
+            Collections.sort(hot, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    int f1 = freq.getOrDefault(o1, 0);
+                    int f2 = freq.getOrDefault(o2, 0);
+                    if (f1 != f2) {
+                        // hotter first
+                        return Integer.compare(f2, f1);
+                    } else {
+                        return o1.compareTo(o2);
+                    }
+                }
+            });
+            if (hot.size() > 3) {
+                hot.remove(hot.size() - 1);
+            }
+        }
     }
 
-    Tn root = new Tn('-');
-    Tn state = root;
-    Map<String, Integer> m = new HashMap<>();
+    Map<String, Integer> freq = new HashMap<>();
+
+    Trie root = new Trie('-');
+    Trie p = root;
     StringBuilder sb = new StringBuilder();
 
-    private void add(String s) {
-        Tn p = root;
-        for (int i = 0; i < s.length(); i++) {
-            int cind = (int) s.charAt(i);
-            if (p.ch[cind] == null) {
-                p.ch[cind] = new Tn(s.charAt(i));
-            }
-            p = p.ch[cind];
-            processhot(s, p);
+    public AutocompleteSystem(String[] sentences, int[] times) {
+        for (int i = 0; i < sentences.length; i++) {
+            freq.put(sentences[i], times[i]);
         }
-    }
-
-
-    private void processhot(String s, Tn p) {
-        //    System.out.println("processing " + p.c);
-        if (!p.top3.contains(s)) {
-            p.top3.add(s);
-        }
-        // sort big to low according to freq
-        Collections.sort(p.top3, (x, y) -> m.get(y) != m.get(x) ? Integer.compare(m.get(y), m.get(x)) : x.compareTo(y));
-        if (p.top3.size() > 3) {
-            p.top3.remove(p.top3.size() - 1);
-        }
-    }
-
-
-    public AutocompleteSystem(String[] ss, int[] ts) {
-        root = new Tn('-');
-        state = root;
-        m = new HashMap<>();
-        sb = new StringBuilder();
-        for (int i = 0; i < ss.length; i++) {
-            m.put(ss[i], m.getOrDefault(ss[i], 0) + ts[i]);
-        }
-        for (int i = 0; i < ss.length; i++) {
-            add(ss[i]);
+        for (int i = 0; i < sentences.length; i++) {
+            root.insert(sentences[i], 0);
         }
     }
 
     public List<String> input(char c) {
         if (c == '#') {
-            String input = sb.toString();
-            m.put(input, m.getOrDefault(input, 0) + 1);
-            add(input);
+            String str = sb.toString();
             sb = new StringBuilder();
-            state = root;
+            int nv = freq.getOrDefault(str, 0) + 1;
+            freq.put(str, nv);
+            root.insert(str, 0);
+            p = root;
             return new ArrayList<>();
         } else {
             sb.append(c);
-            state = state == null ? null : state.ch[c];
-            return state == null ? new ArrayList<>() : state.top3;
+            if (p == null) {
+                return new ArrayList<>();
+            } else {
+                Trie next = p.ch[c];
+                p = next;
+                return next == null ? new ArrayList<>() : next.hot;
+            }
         }
     }
 }

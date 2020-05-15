@@ -32,42 +32,46 @@ Note:
 The number of nodes in the given tree will be in the range [1, 1000].
 Every node has value 0.
  */
-// vertex cover in binary tree
+
 public class BinaryTreeCameras {
-    int Max = 1000000;
+    // vertex cover in binary tree, with a twist on status maintaining. here only thinking about gp is not enough
     Map<TreeNode, Map<Integer, Integer>> dp = new HashMap<>();
 
     public int minCameraCover(TreeNode root) {
-        // start with 1: think of root's p as covered
-        return dfs(root, 1);
+        return dom(root, 2);
     }
 
-    // 0: parent has camera
-    // 1: p doesnt have camera but covered
-    // 2: p not covered need this to cover
-    int dfs(TreeNode n, int status) {
-        if (n == null) {
-            return status == 2 ? Max : 0;
-            // 2 means p needs help so max to show impossibility
+    int Max = 10000000;
+    // 1: parent has camera, we can but dont need to put a camera
+    // 2. parent has no camera, but covered by gp or some children
+    // 3. parent has no camera and we must cover it
+
+    private int dom(TreeNode root, int status) {
+        if (root == null) {
+            return status == 3 ? Max : 0;
         }
-        Map<Integer, Integer> cm = dp.getOrDefault(n, new HashMap<>());
+        Map<Integer, Integer> cm = dp.getOrDefault(root, new HashMap<>());
         Integer ch = cm.get(status);
         if (ch != null) {
             return ch;
         }
-        int c = dfs(n.left, 0) + dfs(n.right, 0) + 1;
-        int nc = Max;
-        if (status == 0) {
-            nc = dfs(n.left, 1) + dfs(n.right, 1);
-        } else if (status == 1) {
-            // one of the kids must cover. note not both of them
-            int nc1 = dfs(n.left, 2) + dfs(n.right, 1);
-            int nc2 = dfs(n.left, 1) + dfs(n.right, 2);
-            nc = Math.min(nc1, nc2);
-        }// if status == 2 we must have camera here
-        int rt = Math.min(c, nc);
+        int rt = 0;
+        int put = 1 + dom(root.left, 1) + dom(root.right, 1);
+        if (status == 3) {
+            rt = put;
+        }
+        if (status == 1) {
+            int noput = dom(root.left, 2) + dom(root.right, 2);
+            rt = Math.min(put, noput);
+        }
+        if (status == 2) {
+            int leftcover = dom(root.left, 3) + dom(root.right, 2);
+            int rightcover = dom(root.left, 2) + dom(root.right, 3);
+            int noput = Math.min(leftcover, rightcover);
+            rt = Math.min(put, noput);
+        }
         cm.put(status, rt);
-        dp.put(n, cm);
+        dp.put(root, cm);
         return rt;
     }
 }
