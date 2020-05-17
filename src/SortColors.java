@@ -36,7 +36,7 @@ class SortColorTwoPassPartition {
     // partition so that first part <= target, second part > target
     private int partition(int[] a, int target, int l, int u) {
         // i is the last position that is <=
-        int i = l - 1;
+        int i = l - 1; // l-1
         int j = l;
         while (j <= u) {
             if (a[j] <= target) {
