@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /*
 LC#736
@@ -57,93 +54,85 @@ The length of expression is at most 2000. (It is also non-empty, as that would n
 The answer and all intermediate calculations of that answer are guaranteed to fit in a 32-bit integer.
  */
 public class ParseLispExpression {
-    // q1: how to judge if sth is var name?
-    // q2: how to merge let and add/multi logic?
+
+    // use space and final char to split strings. note space must be on level 0
+    // copy map to reflect scope
+    final String ADD = "(add ";
+    final String LET = "(let ";
+    final String MULTI = "(mult ";
+
     public int evaluate(String s) {
         return doe(s, 0, s.length() - 1, new HashMap<>());
     }
 
-    private int doe(String s, int i, int j, Map<String, Integer> vm) {
-        int blank = s.indexOf(" ", i + 1);
-        String op = s.substring(i + 1, blank);
-        int k = blank + 1;
-        StringBuilder sb = new StringBuilder();
-        String pending = "";
-        Integer first = null;
-        Integer last = null;
-        boolean islet = "let".equals(op);
-        while (k <= j) {
-            if (s.charAt(k) == '(') {
-                int[] value = subeval(s, k, j, vm);
-                first = first == null ? value[0] : first;
-                last = value[0];
-                updatepending(vm, pending, value[0]);
-                pending = "";
-                k = value[1] + 1;
-            } else if (s.charAt(k) == ' ' || k == j) { // ) can end the whole thing
-                if (sb.length() != 0) { // in case it's subeval before )
-                    String cur = sb.toString();
-                    if (islet && k < j && pending.isEmpty()) {
-                        // key criteria for judging a var name
-                        pending = cur;
+    private int doe(String s, int l, int u, Map<String, Integer> input) {
+
+        Map<String, Integer> cm = new HashMap<>(input);
+        if (s.startsWith(LET, l)) {
+            int i = l + LET.length();
+            int level = 0;
+            int start = i;
+            String lastvar = null;
+            while (i < u) {
+                // u must be a ')' so bypassing it
+                if (s.charAt(i) == ' ' && level == 0) {
+                    String cur = s.substring(start, i);
+                    if (lastvar == null) {
+                        lastvar = cur;
                     } else {
-                        // either the last, or an assignment
-                        Integer eval = eval(vm, cur);
-                        updatepending(vm, pending, eval);
-                        pending = "";
-                        first = first == null ? eval : first;
-                        last = eval;
+                        int value = doe(s, start, i - 1, cm);
+                        cm.put(lastvar, value);
+                        lastvar = null;
                     }
+                    start = i + 1;
+                } else if (s.charAt(i) == '(') {
+                    level++;
+                } else if (s.charAt(i) == ')') {
+                    level--;
                 }
-                sb = new StringBuilder();
-                k++;
+                i++;
+            }
+            return doe(s, start, i - 1, cm);
+        } else if (s.startsWith(ADD, l)) {
+            int i = l + ADD.length();
+            List<Integer> r = getnumbers(s, i, u, cm);
+            return r.get(0) + r.get(1);
+        } else if (s.startsWith(MULTI, l)) {
+            int i = l + MULTI.length();
+            List<Integer> r = getnumbers(s, i, u, cm);
+            return r.get(0) * r.get(1);
+        } else {
+            String cur = s.substring(l, u + 1);
+            // if it's a number then lookup will fail and it becomes a number
+            if (cm.containsKey(cur)) {
+                return cm.get(cur);
             } else {
-                sb.append(s.charAt(k));
-                k++;
+                return Integer.valueOf(cur);
             }
         }
-        if (islet) {
-            return last;
-        } else if ("add".equals(op)) {
-            return first + last;
-        } else {
-            return first * last;
-        }
     }
 
-    private void updatepending(Map<String, Integer> vm, String pending, Integer eval) {
-        if (!pending.isEmpty()) {
-            vm.put(pending, eval);
-        }
-    }
-
-    private Integer eval(Map<String, Integer> vm, String cur) {
-        Integer lastv = null;
-        if (Character.isLowerCase(cur.charAt(0))) {
-            lastv = vm.get(cur);
-        } else {
-            lastv = Integer.valueOf(cur);
-        }
-        return lastv;
-    }
-
-    private int[] subeval(String s, int k, int j, Map<String, Integer> vm) {
-        int value = 0;
-        int level = 1;
-        int m = k + 1;
-        for (; m <= j; m++) {
-            if (s.charAt(m) == '(') {
+    private List<Integer> getnumbers(String s, int l, int u, Map<String, Integer> m) {
+        int i = l;
+        int start = i;
+        List<Integer> r = new ArrayList<>();
+        int level = 0;
+        while (i < u) {
+            // u must be a ')'
+            if (s.charAt(i) == ' ' && level == 0) {
+                r.add(doe(s, start, i - 1, m));
+                start = i + 1;
+            } else if (s.charAt(i) == '(') {
                 level++;
-            } else if (s.charAt(m) == ')') {
-                if (level == 1) {
-                    value = doe(s, k, m, new HashMap<>(vm));
-                    break;
-                }
+            } else if (s.charAt(i) == ')') {
                 level--;
             }
+            i++;
         }
-        return new int[]{value, m};
+        r.add(doe(s, start, i - 1, m));
+        return r;
     }
+
 
     public static void main(String[] args) {
         System.out.println(new ParseLispExpression().evaluate("(let x -2 y x y)"));

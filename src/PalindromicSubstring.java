@@ -27,25 +27,28 @@ public class PalindromicSubstring {
     int r = 0;
 
     public int countSubstrings(String s) {
-        int r = 0;
         int n = s.length();
         for (int i = 0; i < n; i++) {
             calc(s, n, i, i);
-            calc(s, n, i, i + 1);
+            if (i + 1 < n) {
+                calc(s, n, i, i + 1);
+            }
         }
         return r;
     }
 
     private void calc(String s, int n, int j, int k) {
         while (j >= 0 && k < n) {
-            if (s.charAt(j) == s.charAt(k)) {
+            if (s.charAt(j--) == s.charAt(k++)) {
                 r++;
-                j--;
-                k++;
             } else {
                 break;
             }
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new PalindromicSubstring().countSubstrings("aaa"));
     }
 }
 
@@ -53,21 +56,23 @@ class PalindromicSubstringDp {
     // compare with subsequence...
     public int countSubstrings(String s) {
         int n = s.length();
-        int[][] dp = new int[n][n];
+        boolean[][] dp = new boolean[n][n];
         int r = 0;
         for (int len = 1; len <= n; len++) {
             for (int i = 0; i + len - 1 < n; i++) {
                 int j = i + len - 1;
                 if (len == 1) {
-                    dp[i][j] = 1;
-                } else if (len == 2) {
-                    dp[i][j] = s.charAt(i) == s.charAt(j) ? 1 : 0;
-                } else if (s.charAt(i) == s.charAt(j)) {
-                    dp[i][j] = dp[i + 1][j - 1];
+                    dp[i][j] = true;
+                    r++;
+                } else if (len == 2 && s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = true;
+                    r++;
                 } else {
-                    dp[i][j] = 0;
+                    if (s.charAt(i) == s.charAt(j) && dp[i + 1][j - 1]) {
+                        dp[i][j] = true;
+                        r++;
+                    }
                 }
-                r += dp[i][j];
             }
         }
         return r;

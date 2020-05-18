@@ -12,24 +12,23 @@ The given array size will in the range [2, 10000].
 The given array's numbers won't have any order.
  */
 
-// set a[i] to negative if exist
 public class SetMismatch {
+
+    // can reuse a as hashtable: set a[i] to negative if exist
     public int[] findErrorNums(int[] a) {
         int n = a.length;
+        boolean[] v = new boolean[n + 1];
         int[] r = new int[2];
         for (int i = 0; i < n; i++) {
-            int abs = Math.abs(a[i]);
-            int index = abs - 1;
-            if (a[index] < 0) {
-                r[0] = abs;
-            } else {
-                a[index] = -a[index];
+            if (v[a[i]]) {
+                r[0] = a[i];
             }
-
+            v[a[i]] = true;
         }
-        for (int i = 0; i < n; i++) {
-            if (a[i] > 0) {
-                r[1] = i + 1;
+        for (int i = 1; i <= n; i++) {
+            if (!v[i]) {
+                r[1] = i;
+                break;
             }
         }
         return r;
