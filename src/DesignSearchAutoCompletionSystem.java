@@ -59,6 +59,7 @@ Please remember to RESET your class variables declared in class AutocompleteSyst
 public class DesignSearchAutoCompletionSystem {
 
 }
+
 class AutocompleteSystem {
     class Trie {
         char c;
@@ -70,6 +71,11 @@ class AutocompleteSystem {
         }
 
         void insert(String s, int i) {
+            // in tri do processing before i== check and do in current node. after i== decide where to go next
+            if (!hot.contains(s)) {
+                hot.add(s);
+            }
+            sorthot(hot);
             if (i == s.length()) {
                 return;
             }
@@ -78,10 +84,7 @@ class AutocompleteSystem {
             if (node == null) {
                 node = ch[c] = new Trie(c);
             }
-            if (!node.hot.contains(s)) {
-                node.hot.add(s);
-            }
-            sorthot(node.hot);
+
             node.insert(s, i + 1);
         }
 

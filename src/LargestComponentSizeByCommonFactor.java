@@ -3,228 +3,133 @@ import base.Lists;
 
 import java.util.*;
 
+/*
+LC#952
+Given a non-empty array of unique positive integers A, consider the following graph:
+
+There are A.length nodes, labelled A[0] to A[A.length - 1];
+There is an edge between A[i] and A[j] if and only if A[i] and A[j] share a common factor greater than 1.
+Return the size of the largest connected component in the graph.
+
+
+
+Example 1:
+
+Input: [4,6,15,35]
+Output: 4
+
+Example 2:
+
+Input: [20,50,9,63]
+Output: 2
+
+Example 3:
+
+Input: [2,3,6,7,4,12,21,39]
+Output: 8
+
+Note:
+
+1 <= A.length <= 20000
+1 <= A[i] <= 100000
+ */
 public class LargestComponentSizeByCommonFactor {
-
-    // factor numbers to primes then union find on representatives of the primes
-    class DisjointSet<T> {
-        // from string to its representative
-        Map<T, T> parent = new HashMap<>();
-        // each representative's size
-        Map<T, Integer> size = new HashMap<>();
-        int maxSetSize = 0;
-        int numOfSets = 0;
-
-        public T makeSet(T s) {
-            parent.put(s, s);
-            size.put(s, 1);
-            numOfSets++;
-            maxSetSize = Math.max(maxSetSize, 1);
-            return s;
-        }
-
-        // path compression
-        public T find(T s) {
-            T p = parent.get(s);
-            if (p == null) {
-                return makeSet(s);
-            } else if (p.equals(s)) {
-                return p;
-            } else {
-                T pt = find(p);
-                parent.put(s, pt);
-                return pt;
-            }
-        }
-
-
-        // union by size
-        public T union(T x, T y) {
-            T px = find(x);
-            T py = find(y);
-            if (px.equals(py)) {
-                // no merge! all equal
-                return px;
-            }
-            int sizex = size.get(px);
-            int sizey = size.get(py);
-            T toReturn = null;
-            numOfSets--;
-            if (sizex < sizey) {
-                parent.put(px, py);
-                toReturn = py;
-            } else if (sizex > sizey) {
-                parent.put(py, px);
-                toReturn = px;
-            } else {
-                parent.put(px, py);
-                toReturn = py;
-            }
-            size.put(toReturn, sizex + sizey);
-            maxSetSize = Math.max(maxSetSize, sizex + sizey);
-            return toReturn;
-
-        }
-
-        public int numOfSets() {
-            return numOfSets;
-        }
-    }
-
-    Map<Integer, Integer> rep = new HashMap<>();
-
+    Map<Integer, Integer> pm = new HashMap<>();// prime factor to its representative
+    Map<Integer, Integer> parent = new HashMap<>();
+    Map<Integer, Integer> size = new HashMap<>();
+    boolean[] isp;
 
     public int largestComponentSize(int[] a) {
+        int n = a.length;
         int max = 0;
-        DisjointSet<Integer> ds = new DisjointSet<>();
-        for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < n; i++) {
             max = Math.max(max, a[i]);
-            ds.makeSet(a[i]);
         }
-        boolean[] prime = new boolean[max + 1];
-        Arrays.fill(prime, true);
-        for (int i = 2; i <= max; i++) {
-            if (i % 2 == 0) {
-                prime[i] = i == 2;
-                continue;
-            }
-            if (!prime[i]) {
-                continue;
-            }
-            for (int j = 2 * i; j <= max; j += i) {
-                prime[j] = false;
-            }
-        }
-
-        for (int i = 0; i < a.length; i++) {
-            int n = a[i];
-            boolean found = false;
-            if (prime[n]) {
-                if (!rep.containsKey(n)) {
-                    rep.put(n, n);
-                } else {
-                    // add myself to myself's rep list
-                    handleJ(n, n, ds);
-                }
+        getprimes(max);
+        for (int i = 0; i < n; i++) {
+            parent.put(a[i], a[i]);
+            size.put(a[i], 1);
+            if (pm.keySet().contains(a[i])) {
+                processprime(a[i], a[i]);
             } else {
-                for (int j = 2; j * j <= n; j++) {
-                    if (n % j == 0) {
-                        if (prime[j]) {
-                            handleJ(n, j, ds);
-                        }
-                        if (prime[n / j] && j != n / j) {
-                            handleJ(n, n / j, ds);
-                        }
+                for (int j = 2; j * j <= a[i]; j++) {
+                    // instead of continuous / of prime numbers this is sqrt(w) and faster....
+                    // alternatively we can keep / primes and then move to the next, i.e. factor the number
+                    if (isp[j] && a[i] % j == 0) {
+                        processprime(a[i], j);
+                    }
+                    // note this trick so that we only need sqrt(max) steps here
+                    int other = a[i] / j;
+                    if (isp[other] && other != j && a[i] % other == 0) {
+                        processprime(a[i], other);
                     }
                 }
             }
         }
-        return ds.maxSetSize;
+        int r = 0;
+        for (int k : parent.keySet()) {
+            int cur = size.get(k);
+            r = Math.max(r, cur);
+        }
+        return r;
     }
 
-    private void handleJ(int n, int j, DisjointSet ds) {
-
-        Integer currep = rep.get(j);
-        if (currep == null) {
-            rep.put(j, n);
+    protected void processprime(int v, int prime) {
+        int pre = pm.get(prime);
+        if (pre == -1) {
+            pm.put(prime, v);
         } else {
-            Integer repp = (Integer) ds.find(currep);
-            Integer np = (Integer) ds.find(n);
-            ds.union(repp, np);
+            union(v, pre);
         }
     }
 
+    private void getprimes(int n) {
+        isp = new boolean[n + 1];
+        Arrays.fill(isp, true);
+        isp[0] = isp[1] = false;
+        for (int i = 4; i <= n; i += 2) {
+            isp[i] = false;
+        }
+        for (int i = 3; i * i <= n; i++) {
+            if (isp[i]) {
+                for (int j = i * i; j <= n; j += i) {
+                    isp[j] = false;
+                }
+            }
+        }
+        for (int i = 2; i <= n; i++) {
+            if (isp[i]) {
+                pm.put(i, -1);
+            }
+        }
+    }
+
+    void union(int a, int b) {
+        int pa = find(a);
+        int pb = find(b);
+        if (pa != pb) {
+            if (size.get(pa) < size.get(pb)) {
+                parent.put(pa, pb);
+                size.put(pb, size.get(pb) + size.get(pa));
+            } else {
+                parent.put(pb, pa);
+                size.put(pa, size.get(pa) + size.get(pb));
+            }
+        }
+    }
+
+    private int find(int a) {
+        Integer pa = parent.get(a);
+        if (pa == a) {
+            return a;
+        } else {
+            int rt = find(pa);
+            parent.put(a, rt);
+            return rt;
+        }
+    }
 
     public static void main(String[] args) {
         System.out.println(new LargestComponentSizeByCommonFactor().largestComponentSize(ArrayUtils.read1d("[83,99,39,11,19,30,31]")));
-    }
-}
-
-class LargestCommonComponentDfs {
-    Set<Integer> visited = new HashSet<>();
-    Map<Integer, Set<Integer>> graph = new HashMap<>();
-    Map<Integer, Integer> rep = new HashMap<>();
-
-    public int largestComponentSize(int[] a) {
-        int max = 0;
-        for (int i = 0; i < a.length; i++) {
-            max = Math.max(max, a[i]);
-        }
-        boolean[] prime = new boolean[max + 1];
-        Arrays.fill(prime, true);
-        for (int i = 2; i <= max; i++) {
-            if (i % 2 == 0) {
-                prime[i] = i == 2;
-                continue;
-            }
-            if (!prime[i]) {
-                continue;
-            }
-            for (int j = 2 * i; j <= max; j += i) {
-                prime[j] = false;
-            }
-        }
-
-        for (int i = 0; i < a.length; i++) {
-            int n = a[i];
-            boolean found = false;
-            for (int j = 2; j * j <= n; j++) {
-                if (n % j == 0) {
-                    found = true;
-                    if (prime[j]) {
-                        handleJ(n, j);
-                    }
-                    if (prime[n / j] && j != n / j) {
-                        handleJ(n, n / j);
-                    }
-                }
-            }
-            if (!found) {
-                if (!rep.containsKey(n)) {
-                    rep.put(n, n);
-                } else {
-                    // add myself to myself's rep list
-                    handleJ(n, n);
-                }
-            }
-            if (!graph.containsKey(n)) {
-                graph.put(n, new HashSet<>());
-            }
-        }
-        int maxr = 0;
-        for (Integer key : graph.keySet()) {
-            if (!visited.contains(key)) {
-                int size = dfs(key);
-                maxr = Math.max(size, maxr);
-            }
-        }
-        return maxr;
-    }
-
-    private boolean handleJ(int n, int j) {
-
-        Integer currep = rep.get(j);
-        if (currep == null) {
-            rep.put(j, n);
-            return false;
-        } else {
-            Set<Integer> currepc = graph.getOrDefault(currep, new HashSet<>());
-            currepc.add(n);
-            graph.put(currep, currepc);
-            Set<Integer> nc = graph.getOrDefault(n, new HashSet<>());
-            nc.add(currep);
-            graph.put(n, nc);
-            return true;
-        }
-    }
-
-    private int dfs(Integer key) {
-        visited.add(key);
-        int c = 1;
-        for (Integer con : graph.getOrDefault(key, new HashSet<>())) {
-            if (!visited.contains(con)) {
-                c += dfs(con);
-            }
-        }
-        return c;
     }
 }

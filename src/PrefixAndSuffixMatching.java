@@ -26,6 +26,7 @@ prefix, suffix have lengths in range [0, 10].
 words[i] and prefix, suffix queries consist of lowercase letters only.
  */
 public class PrefixAndSuffixMatching {
+    // make it suffix+"#"+prefix. we can quickly insert this into trie
     public static void main(String[] args) {
         String[] ws = {"abc", "ab"};
         WordFilter wf = new WordFilter(ws);
@@ -34,65 +35,72 @@ public class PrefixAndSuffixMatching {
 }
 
 class WordFilter {
-    //search suffix+"#"+prefix. construct suffixes + "#"+whold word. O(n*l^2)
-    // better than enumerating both prefix and suffix and do a O(n*l^3) search.
-    class Tn {
-        int mw = -1;
-        Tn[] ch = new Tn[27];
 
-        void insert(String w, int i, int ww) {
-            mw = Math.max(mw, ww); // must be here. it won't cause trouble when it's abc vs ab: if ab is suffix we would find ab# nicely. if ab is prefix we should find abc instead
-            if (i == w.length()) {
-                return;
-            }
-            int cind = tocode(w.charAt(i));
-            if (ch[cind] == null) {
-                ch[cind] = new Tn();
-            }
-            ch[cind].insert(w, i + 1, ww);
+    class Trie {
+        char c;
+        Trie[] ch = new Trie[27];
+        int maxw = 0;
+
+        public Trie(char c) {
+            this.c = c;
         }
 
-        int search(String w, int i) {
-            if (i == w.length()) {
-                return mw;
+        void insert(String s, int i, int w) {
+            int n = s.length();
+            maxw = Math.max(maxw, w);
+            if (i == n) {
+                return;
             }
-            int cind = tocode(w.charAt(i));
+            char c = s.charAt(i);
+            int cind = cind(c);
+            Trie next = ch[cind];
+            if (next == null) {
+                next = ch[cind] = new Trie(c);
+            }
+            next.insert(s, i + 1, w);
+        }
+
+        int find(String s, int i) {
+            int n = s.length();
+            if (i == n) {
+                return maxw;
+            }
+
+            char c = s.charAt(i);
+            int cind = cind(c);
             if (ch[cind] == null) {
                 return -1;
             }
-            return ch[cind].search(w, i + 1);
+            return ch[cind].find(s, i + 1);
+        }
+
+        int cind(char c) {
+            return c == '#' ? 26 : c - 'a';
         }
     }
 
-    int tocode(char c) {
-        return c == '#' ? 26 : c - 'a';
-    }
+    Trie root = new Trie('-');
 
-    private Tn root = new Tn();
-
-    public WordFilter(String[] ws) {
-        // abc=> []#cba  a#cba ab#cba abc#cba
-        for (int k = 0; k < ws.length; k++) {
-            String w = ws[k];
-            int wn = w.length();
-            for (int i = 0; i <= wn; i++) {
-                String cp = w.substring(0, i);
-                for (int j = 0; j <= wn; j++) {
-                    // abc => c#abc, bc#abc, abc#abc
-                    String csuf = w.substring(j, wn);
-                    String cur = cp + "#" + csuf;
-                    root.insert(cur, 0, k);
-                }
+    public WordFilter(String[] words) {
+        for (int i = 0; i < words.length; i++) {
+            String w = words[i] + "#" + words[i];
+            int n = w.length();
+            for (int j = 0; j <= n; j++) {
+                // till n to allow empty suffix
+                // we can start with j elegantly, no need to substring
+                root.insert(w, j, i);
             }
         }
     }
 
-    public int f(String pre, String suf) {
-        return root.search(pre + "#" + suf, 0);
+    public int f(String prefix, String suffix) {
+        String tofind = suffix + "#" + prefix;
+        return root.find(tofind, 0);
     }
 }
 
 class PrefixAndSuffixBruteForce {
+    // same idea, but use hashmap...
     HashMap<String, Integer> map = new HashMap<>();
 
     public PrefixAndSuffixBruteForce(String[] words) {
