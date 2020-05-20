@@ -29,26 +29,26 @@ Therefore, you need to return above trees' root in the form of a list.
  */
 public class FindDuplicatedSubtrees {
     // serialize a tree then use hashmap to look up
+    // serialize a tree then use hashmap to look up
     Map<String, Integer> m = new HashMap<>();
     List<TreeNode> r = new ArrayList<>();
 
-    public List<TreeNode> findDuplicateSubtrees(TreeNode n) {
-        dfs(n);
-        return new ArrayList<>(r);
-
+    public List<TreeNode> findDuplicateSubtrees(TreeNode root) {
+        dfs(root);
+        return r;
     }
 
     String dfs(TreeNode n) {
         if (n == null) {
-            return "";
+            return "#";
         }
-        String lr = dfs(n.left);
-        String rr = dfs(n.right);
-        String cur = n.val + "," + lr + "," + rr;
-        if (m.getOrDefault(cur, 0) == 1) {
+        String ls = dfs(n.left);
+        String rs = dfs(n.right);
+        String cur = n.val + "," + ls + "," + rs;
+        if (m.getOrDefault(cur,0)==1) {
             r.add(n);
         }
-        m.put(cur, m.getOrDefault(cur, 0) + 1);
+        m.put(cur, m.getOrDefault(cur,0)+1);
         return cur;
     }
 }

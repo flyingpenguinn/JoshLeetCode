@@ -26,33 +26,23 @@ The n will be in the range [1, 1000].
  */
 public class TwoKeysKeyboard {
     // must be through a v,only factor can do that
-    int[] dp;
-
     public int minSteps(int n) {
-        dp = new int[n + 1];
         return dom(n);
     }
 
     int dom(int n) {
-        if (n <= 1) {
+        if (n == 1) {
             return 0;
         }
-        if (dp[n] != 0) {
-            return dp[n];
-        }
-        int min = n;
-        for (int i = 2; i * i <= n; i++) {
+        int min = Integer.MAX_VALUE;
+        for (int i = 1; i < n; i++) {
+            // paste the result of i operations
             if (n % i == 0) {
-                int cur = dom(i) + 1 + n / i - 1;
-                min = Math.min(cur, min);
-                if (i != n / i) {
-                    cur = dom(n / i) + 1 + i - 1;
-                    min = Math.min(cur, min);
-                }
-
+                int cur = 1 + (n / i - 1) + dom(i);
+                // 1 for copy all, n/i-1 for cooyping times
+                min = Math.min(min, cur);
             }
         }
-        dp[n] = min;
         return min;
     }
 }

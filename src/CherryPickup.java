@@ -1,6 +1,9 @@
 import base.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /*
 LC#741
@@ -51,119 +54,60 @@ public class CherryPickup {
     // we can make them arrive at the same point at the same time and then only one of them pick the cherry
     // because they start from the same point, they must spend same steps (distance) in reaching a point as they can only go up or left
     // as long as they both move in the same speed, they will reach at the same time because the distance is the same
-    public int cherryPickup(int[][] g) {
-        int m = g.length;
-        int n = g[0].length;
-        dp = new int[m][n][m][n];
-        for (int i = 0; i < m; i++) {
+
+    // purpose of them moving in the same speed is to detect duplicated pick early so that we dont need to note the picked flowers down
+    int[][][] dp;
+
+    public int cherryPickup(int[][] a) {
+        int n = a.length;
+        dp = new int[n][n][n];
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                for (int k = 0; k < m; k++) {
-                    Arrays.fill(dp[i][j][k], -1);
-                }
+                Arrays.fill(dp[i][j], -1);
             }
         }
-        int rc = doc(g, m - 1, n - 1, m - 1, n - 1);
-        return rc < 0 ? 0 : rc;
+        return doc(n - 1, n - 1, n - 1, a);
     }
 
-    int Min = -100000000;
-    int[][][][] dp;
-
-    int doc(int[][] g, int i, int j, int p, int q) {
-
-        if (i < 0 || j < 0 || p < 0 || q < 0) {
-            return Min;
+    // one person at i,j, the other at p,q. note q is derived because i+j == p+q. they move at the same speed
+    private int doc(int i, int j, int p, int[][] a) {
+        int q = i + j - p;
+        if (i < 0 || j < 0 || p < 0 || q < 0 || a[i][j] == -1 || a[p][q] == -1) {
+            return Integer.MIN_VALUE;
         }
         if (i == 0 && j == 0 && p == 0 && q == 0) {
-            // must do this otherwise 0,0 would return Min
-            return g[i][j];
+            return a[i][j];
         }
-        if (g[i][j] < 0 || g[p][q] < 0) {
-            return Min;
+        if (dp[i][j][p] != -1) {
+            return dp[i][j][p];
         }
-        if (dp[i][j][p][q] != -1) {
-            return dp[i][j][p][q];
+        int cur = 0;
+        if (i == p && j == q) {
+            if (a[i][j] == 1) {
+                cur++;
+            }
+        } else {
+            if (a[i][j] == 1) {
+                cur++;
+            }
+            if (a[p][q] == 1) {
+                cur++;
+            }
         }
-        int cur = g[i][j];
-        if (i != p || j != q) {
-            cur += g[p][q];
-        }
-
-        int max = Min;
-        int w1 = doc(g, i, j - 1, p, q - 1) + cur;
-        max = Math.max(max, w1);
-
-        int w2 = doc(g, i, j - 1, p - 1, q) + cur;
-        max = Math.max(max, w2);
-        int w3 = doc(g, i - 1, j, p, q - 1) + cur;
-        max = Math.max(max, w3);
-        int w4 = doc(g, i - 1, j, p - 1, q) + cur;
-        max = Math.max(max, w4);
-
-        dp[i][j][p][q] = max;
+        List<Integer> r = new ArrayList<>();
+        // can only go up/left
+        r.add(cur + doc(i - 1, j, p - 1, a));
+        r.add(cur + doc(i - 1, j, p, a));
+        r.add(cur + doc(i, j - 1, p - 1, a));
+        r.add(cur + doc(i, j - 1, p, a));
+        Collections.sort(r);
+        int max = r.get(r.size() - 1);
+        dp[i][j][p] = max;
         return max;
     }
 
     public static void main(String[] args) {
         System.out.println(new CherryPickup().cherryPickup(ArrayUtils.read("[[0,1,-1],[1,0,-1],[1,1,1]]")));
         //  System.out.println(new CherryPickupBetterDp().cherryPickup(ArrayUtils.read("[[0,1,-1],[1,0,-1],[1,1,1]]")));
-    }
-}
-
-class CherryPickupBetterDp {
-    // i+j == p+q, so we dont really need to have q in the dp
-    int[][][] dp;
-
-    public int cherryPickup(int[][] g) {
-        int m = g.length;
-        int n = g[0].length;
-        int total = m + n;
-        dp = new int[total][m][n];
-        for (int k = 0; k < total; k++) {
-            for (int i = 0; i < m; i++) {
-                Arrays.fill(dp[k][i], -1);
-            }
-        }
-        int rc = doc(g, m + n - 2, m - 1, m - 1);
-        return rc < 0 ? 0 : rc;
-    }
-
-    int Min = -100000000;
-
-
-    int doc(int[][] g, int k, int i, int p) {
-        int j = k - i;
-        int q = k - p;
-        if (i < 0 || j < 0 || p < 0 || q < 0) {
-            return Min;
-        }
-        if (i == 0 && j == 0 && p == 0 && q == 0) {
-            return g[i][j];
-        }
-        if (g[i][j] < 0 || g[p][q] < 0) {
-            return Min;
-        }
-        if (dp[k][i][p] != -1) {
-            return dp[k][i][p];
-        }
-        int cur = g[i][j];
-        if (i != p || j != q) {
-            cur += g[p][q];
-        }
-        int max = Min;
-        // j-1, q-1
-        int w1 = doc(g, k - 1, i, p) + cur;
-        max = Math.max(max, w1);
-        // j-1, p-1
-        int w2 = doc(g, k - 1, i, p - 1) + cur;
-        max = Math.max(max, w2);
-        // i-1, q-1
-        int w3 = doc(g, k - 1, i - 1, p) + cur;
-        max = Math.max(max, w3);
-        // i-1, p-1
-        int w4 = doc(g, k - 1, i - 1, p - 1) + cur;
-        max = Math.max(max, w4);
-        dp[k][i][p] = max;
-        return max;
     }
 }

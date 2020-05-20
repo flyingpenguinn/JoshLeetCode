@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,27 +34,29 @@ Answers will be in the range of 32-bit signed integer.
  */
 public class FourKeysKeyboard {
     // must be vvv in the end. enumerate how many of them
+
     int[] dp;
 
     public int maxA(int n) {
         dp = new int[n + 1];
+        Arrays.fill(dp, -1);
         return dom(n);
     }
 
-    int dom(int n) {
-        if (n <= 0) {
+    private int dom(int n) {
+        if (n == 0) {
             return 0;
         }
-        if (dp[n] != 0) {
+        if (dp[n] != -1) {
             return dp[n];
         }
-        int max = n;
-        // count from 1
-        for (int i = n - 3; i >= 1; i--) {
-            int cur = dom(i) * (n - i - 1);
-            max = Math.max(max, cur);
+        int rt = 1 + dom(n - 1);
+        for (int paste = 1; n - paste - 2 > 0; paste++) {
+            int sub = n - paste - 2;
+            int cur = dom(sub) * (paste + 1);
+            rt = Math.max(rt, cur);
         }
-        dp[n] = max;
-        return max;
+        dp[n] = rt;
+        return rt;
     }
 }

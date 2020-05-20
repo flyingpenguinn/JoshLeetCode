@@ -44,32 +44,28 @@ The length of the given string will in the range [1, 10,000].
  */
 public class DotaTwoSenate {
 
-    // simulation. don't really need a pq, queue is enough
-    public String predictPartyVictory(String senate) {
-        Deque<int[]> rs = new ArrayDeque<>();
+    // simulation. don't really need a pq, queue is enough. include "round" in the queue. early rounders come in first
+    public String predictPartyVictory(String s) {
 
-        Deque<int[]> ds = new ArrayDeque<>();
-
-
-        int n = senate.length();
-        for (int i = 0; i < n; i++) {
-            int[] item = new int[]{i, 1};
-            if (senate.charAt(i) == 'R') {
-                rs.offer(item);
+        Deque<int[]> rq = new ArrayDeque<>();
+        Deque<int[]> dq = new ArrayDeque<>();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == 'R') {
+                rq.add(new int[]{i, 1});
             } else {
-                ds.offer(item);
+                dq.add(new int[]{i, 1});
             }
         }
-        while (!rs.isEmpty() && !ds.isEmpty()) {
-            int[] ri = rs.poll();
-            int[] di = ds.poll();
-            boolean rwin = (ri[1] < di[1]) || (ri[1] == di[1] && ri[0] < di[0]);
-            if (rwin) {
-                rs.offer(new int[]{ri[0], ri[1] + 1});
+        // one polled out a time so On
+        while (!rq.isEmpty() && !dq.isEmpty()) {
+            int[] rnext = rq.poll();
+            int[] dnext = dq.poll();
+            if (rnext[1] < dnext[1] || (rnext[1] == dnext[1] && rnext[0] < dnext[0])) {
+                rq.offer(new int[]{rnext[0], rnext[1] + 1});
             } else {
-                ds.offer(new int[]{di[0], di[1] + 1});
+                dq.offer(new int[]{dnext[0], dnext[1] + 1});
             }
         }
-        return rs.isEmpty() ? "Dire" : "Radiant";
+        return rq.isEmpty() ? "Dire" : "Radiant";
     }
 }
