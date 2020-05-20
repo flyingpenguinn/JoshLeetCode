@@ -7,53 +7,42 @@ import java.util.List;
 
 public class PrintBinaryTree {
 
-    private static final String BLANK = "";
-
     public List<List<String>> printTree(TreeNode root) {
-        int height = getHeight(root);
-        List<List<String>> r = doPrint(root, height);
-        Collections.reverse(r);
-        return r;
-    }
-
-    private List<List<String>> doPrint(TreeNode root, int height) {
-        List<List<String>> r = new ArrayList<>();
-        if (height == 1) {
-            List<String> single = new ArrayList<>();
-            single.add(toString(root));
-            r.add(single);
-            return r;
-        } else {
-            List<List<String>> left = doPrint(root == null ? null : root.left, height - 1);
-            List<List<String>> right = doPrint(root == null ? null : root.right, height - 1);
-            List<String> cur = new ArrayList<>();
-            for (int i = 0; i < left.size(); i++) {
-                List<String> lefti = left.get(i);
-                lefti.add(BLANK);
-                List<String> righti = right.get(i);
-                lefti.addAll(righti);
-                r.add(lefti);
-            }
-            // just need righti's size....
-            int halfSize = right.get(right.size() - 1).size();
-            for (int i = 0; i < halfSize; i++) {
-                cur.add(BLANK);
-            }
-            cur.add(toString(root));
-            for (int i = 0; i < halfSize; i++) {
-                cur.add(BLANK);
-            }
-            r.add(cur);
+        int h = dfs(root);
+        int width = 1;
+        for (int i = 2; i <= h; i++) {
+            // key: we know the width given height
+            width = 2 * width + 1;
         }
+        List<List<String>> r = new ArrayList<>();
+        for (int i = 0; i < h; i++) {
+            List<String> ri = new ArrayList<>();
+            for (int j = 0; j < width; j++) {
+                ri.add("");
+            }
+            r.add(ri);
+        }
+        dfs2(root, r, 0, 0, width - 1);
         return r;
     }
 
-    private String toString(TreeNode root) {
-        return root == null ? BLANK : String.valueOf(root.val);
+    // we need an offset to tell us where to put this root.
+    // note for right child it's offset + current root position
+    private void dfs2(TreeNode root, List<List<String>> r, int h, int l, int u) {
+        if (root == null) {
+            return;
+        }
+        int mid = (l + u) / 2;
+        r.get(h).set(mid, String.valueOf(root.val));
+        dfs2(root.left, r, h + 1, l, mid - 1);
+        dfs2(root.right, r, h + 1, mid + 1, u);
     }
 
-    private int getHeight(TreeNode root) {
-        return root == null ? 0 : Math.max(getHeight(root.left), getHeight(root.right)) + 1;
+    private int dfs(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return Math.max(dfs(root.left), dfs(root.right)) + 1;
     }
 
     public static void main(String[] args) {

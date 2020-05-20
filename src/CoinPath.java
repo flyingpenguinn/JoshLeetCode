@@ -94,3 +94,67 @@ public class CoinPath {
         System.out.println(new CoinPath().cheapestJump(ArrayUtils.read1d("[21,7,96,68,73,99,19,89,0,62,86,8,6,62,49,77,47,12,86,5,46,29,3,41,68,50,83,41,77,29,10,91,75,23,59,36,8,26,26,88,-1,41,45,32,3,51,83,75,12,48,99,38,21,98,83,46,42,48,64,92,70,6,96,30,65,7,90,95,5,97,25,7,99,2,26,42,38,95,26,11,86,24,16,87,77,58,30,31]"), 1));
     }
 }
+
+class CoinPathCleanerDp {
+    // no fancy queue
+    int[] dp;
+    int[] choices;
+
+    public List<Integer> cheapestJump(int[] a, int b) {
+        int n = a.length;
+        dp = new int[n];
+
+        Arrays.fill(dp, -2);
+
+        choices = new int[n];
+        Arrays.fill(choices, -2);
+        int r = doc(a, 0, b);
+        if (r >= Max) {
+            return new ArrayList<>();
+        }
+        List<Integer> res = new ArrayList<>();
+        solve(0, n, res);
+        return res;
+    }
+
+    private void solve(int i, int n, List<Integer> res) {
+        res.add(i + 1);
+        if (i == n - 1) {
+            return;
+        } else {
+            int j = choices[i];
+            solve(j, n, res);
+        }
+    }
+
+    int Max = 100000000;
+
+    private int doc(int[] a, int i, int b) {
+        int n = a.length;
+        if (i == n - 1) {
+            if (a[i] == -1) {
+                dp[i] = Max;
+            } else {
+                dp[i] = a[i];
+            }
+            return dp[i];
+        }
+        if (dp[i] != -2) {
+            return dp[i];
+        }
+        int min = Max;
+        int minj = -1;
+        for (int j = i + 1; j <= i + b && j < n; j++) {
+            if (a[j] != -1) {
+                int cur = doc(a, j, b);
+                if (a[i] + cur < min) {
+                    min = a[i] + cur;
+                    minj = j;
+                }
+            }
+        }
+        dp[i] = min;
+        choices[i] = minj;
+        return min;
+    }
+}
