@@ -13,14 +13,12 @@ Hint: n will not exceed 9 x 10^8.
  */
 public class RemoveNines {
     // binary search baesd on how many numbers with 9 are <=n
-    // we can also do one liner  return Integer.parseInt(Integer.toString(n, 9));  as these resutls are 9 based numbers
     public int newInteger(int n) {
         long l = 1;
         long u = Integer.MAX_VALUE;
         while (l <= u) {
             long mid = l + (u - l) / 2;
-            long count = count(mid);
-            if (count >= n) {
+            if (count(mid) >= n) {
                 u = mid - 1;
             } else {
                 l = mid + 1;
@@ -29,48 +27,58 @@ public class RemoveNines {
         return (int) l;
     }
 
-    // 1.. n how many left if we exclude 9
-    long nines(long n) {
+    private long count(long n) {
+        return n - getnines(n);
+    }
+
+    // how many numbers with 9 <=n
+    private long getnines(long n) {
         if (n < 9) {
             return 0;
         }
-        long base = 1L;
+        // how many non 9 numbers <=n
+        long base = 1;
         while (base <= n) {
-            base *= 10L;
+            base *= 10;
         }
         base /= 10;
-        long nines = 0;
-        while (n > 0) {
-            long d = n / base;
-
-            if (d == 9) {
-                long overnine = n - base * 9 + 1;
-                long below = nines(9 * base - 1);
-                nines += below + overnine;
-                break;
-            } else {
-                long basecount = dobase(base);
-                nines += d * basecount;
-            }
-            n = n - base * d;
-            base /= 10;
+        // conver to 3456 vs base = 1000
+        int r = 0;
+        // 3456 => 3*1000=> 3*1000's count
+        r += (n / base) * countbase(base);
+        if (n / base == 9) {
+            r += (n - n / base * base + 1);
+        } else {
+            r += getnines(n - n / base * base);
         }
-        return nines;
+        return r;
     }
 
-    long count(long n) {
-        return n - nines(n);
-    }
-
-    long dobase(long base) {
-        if (base == 1) {
+    // 100 has 19 nines, == 9*count(10)+10
+    private long countbase(long n) {
+        if (n == 1) {
             return 0;
         }
-        long d10 = base / 10;
-        return dobase(d10) * 9 + d10;
+        return 9 * countbase(n / 10) + n / 10;
     }
 
+
     public static void main(String[] args) {
-        System.out.println(new RemoveNines().newInteger(900000000));
+        System.out.println(new RemoveNinesQuick().newInteger(2000000));
+        System.out.println(new RemoveNines().newInteger(2000000));
+    }
+}
+
+
+class RemoveNinesQuick {
+    // just convert n to base 9...
+    public int newInteger(int n) {
+        StringBuilder sb = new StringBuilder();
+        while (n > 0) {
+            int mod = n % 9;
+            sb.append(mod);
+            n /= 9;
+        }
+        return Integer.valueOf(sb.reverse().toString());
     }
 }

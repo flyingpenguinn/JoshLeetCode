@@ -1,4 +1,5 @@
 import java.util.*;
+
 /*
 LC#943
 Given an array A of strings, find any smallest string that contains each string in A as a substring.
@@ -25,92 +26,73 @@ Note:
 public class FindShortestSuperstring {
     // tsp without fixed start
     // cache match results between i and j dont need to calc over and over
-    Map<BitSet,String>[] dp;
-    int[][] mlen;
+    // when concat subtract the overlapping part and the remaining would be the "edge length"
+    String[][] dp;
+
     public String shortestSuperstring(String[] a) {
-        int n= a.length;
-        mlen= new int[n][n];
-        dp=new HashMap[n];
-        for(int i=0;i<n;i++){
-            dp[i]= new HashMap<>();
-            for(int j=0;j<n;j++){
-                if(i!=j){
-                    mlen[i][j]=merge(a,i,j);
+        int n = a.length;
+        int[][] overlap = new int[n][n];
+        dp = new String[n][1 << n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+                overlap[i][j] = calcoverlap(a[i], a[j]);
+                overlap[j][i] = calcoverlap(a[j], a[i]);
+            }
+        }
+        String min = null;
+        for (int i = 0; i < n; i++) {
+            String cur = dos(i, (1 << i), overlap, a);
+            if (min == null || cur.length() < min.length()) {
+                min = cur;
+            }
+        }
+        return min;
+    }
+
+    private int calcoverlap(String s, String t) {
+        int overlap = 0;
+        int sn = s.length();
+        for (int i = sn - 1; i >= 0; i--) {
+            String stub = s.substring(i, sn);
+            if (t.startsWith(stub)) {
+                overlap = sn - i;
+            }
+        }
+        return overlap;
+    }
+
+    // last string was i, st is the status: 1 means used already, 0 means we can use
+    private String dos(int i, int st, int[][] overlap, String[] a) {
+        int n = a.length;
+        int all = (1 << n) - 1;
+        if (st == all) {
+            return a[i];
+        }
+        if (dp[i][st] != null) {
+            return dp[i][st];
+        }
+        String min = null;
+        for (int j = 0; j < n; j++) {
+            if (j == i) {
+                continue;
+            }
+            if (((st >> j) & 1) == 0) {
+                // can still use j
+                int nst = (st | (1 << j));
+                String later = dos(j, nst, overlap, a);
+                String cur = a[i].substring(0, a[i].length() - overlap[i][j]) + later;
+                if (min == null || cur.length() < min.length()) {
+                    min = cur;
                 }
             }
         }
-
-        BitSet st= new BitSet(n);
-        String min=null;
-
-        for(int i=0;i<n;i++){
-            String cur= tsp(a,i,st);
-            if(min==null || min.length()>cur.length()){
-                min=cur;
-            }
-        }
+        dp[i][st] = min;
         return min;
     }
 
-    String tsp(String[] a, int i,BitSet st){
-
-        int n= a.length;
-        if(st.cardinality()==n-1){
-            return a[i];
-        }
-
-        String ch= dp[i].get(st);
-        if(ch!=null){
-            return ch;
-        }
-        BitSet ns= (BitSet)st.clone();
-        ns.set(i);
-        String min=null;
-        for(int j=0;j<a.length;j++){
-            if(ns.get(j)){
-                continue;
-            }
-
-            String rt= tsp(a,j,ns);
-            int cut2 = mlen[i][j];
-
-            String cur= a[i]+rt.substring(cut2+1);
-            if(min==null || min.length()>cur.length()){
-                min=cur;
-            }
-        }
-        dp[i].put(st,min);
-        return min;
-    }
-
-    int merge(String[] a, int i, int j){
-        String s1=a[i];
-        String s2=a[j];
-        int k=0;
-        int maxk=-1;
-        while(k<s2.length()){
-            if(k>= s1.length()){
-                break;
-            }
-            if(ends(s1,s2,k)){
-                maxk=k;
-            }
-            k++;
-        }
-
-        return maxk;
-    }
-
-    boolean ends(String s1,String s2,int j){
-        int i=s1.length()-j-1;
-        int k=0;
-        while(i<s1.length() && k<=j){
-            if(s1.charAt(i++) != s2.charAt(k++)){
-                return false;
-            }
-        }
-        return true;
-    }
 
     public static void main(String[] args) {
         //  String[] strs = {"catg", "ctaagt", "gcta", "ttca", "atgcatc"};

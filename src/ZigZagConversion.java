@@ -29,45 +29,32 @@ https://leetcode.com/problems/zigzag-conversion/
  */
 
 public class ZigZagConversion {
-    StringBuilder[] strs;
-    boolean down = true;
-
-    public String convert(String s, int n) {
-        if (n <= 1) {
+    // note the special processing of rows==1
+    public String convert(String s, int rows) {
+        if (rows == 1) {
             return s;
         }
-        // only deal with >= 2 rows
-        strs = new StringBuilder[n];
-        doc(s, 0, 0);
-        StringBuilder sb = new StringBuilder();
-        for (StringBuilder sbtr : strs) {
-            if (sbtr != null) {
-                sb.append(sbtr);
+        StringBuilder[] sbs = new StringBuilder[rows];
+        for (int i = 0; i < rows; i++) {
+            sbs[i] = new StringBuilder();
+        }
+        int i = 0;
+        int r = 0;
+        int n = s.length();
+        while (i < n) {
+            while (i < n && r < rows) {
+                sbs[r++].append(s.charAt(i++));
             }
+            r -= 2; // move back to rows-2. note we can't step on the last row
+            while (i < n && r >= 0) {
+                sbs[r--].append(s.charAt(i++));
+            }
+            r += 2; // move back to 1. note we can't step on the first row
         }
-        return sb.toString();
-    }
-
-    // dont really need column just rows
-    void doc(String s, int i, int r) {
-        if (i == s.length()) {
-            return;
+        StringBuilder res = new StringBuilder();
+        for (int j = 0; j < rows; j++) {
+            res.append(sbs[j]);
         }
-        // without init stringbuilders are null
-        if (strs[r] == null) {
-            strs[r] = new StringBuilder();
-        }
-        strs[r].append(s.charAt(i));
-        if (r == strs.length - 1 && down) {
-            down = false;
-            doc(s, i + 1, r - 1);
-        } else if (r == 0 && !down) {
-            down = true;
-            doc(s, i + 1, r + 1);
-        } else if (down) {
-            doc(s, i + 1, r + 1);
-        } else {
-            doc(s, i + 1, r - 1);
-        }
+        return res.toString();
     }
 }
