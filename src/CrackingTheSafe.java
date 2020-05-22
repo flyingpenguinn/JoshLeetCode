@@ -1,94 +1,72 @@
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+/*
+LC#753
+There is a box protected by a password. The password is a sequence of n digits where each digit can be one of the first k digits 0, 1, ..., k-1.
+
+While entering a password, the last n digits entered will automatically be matched against the correct password.
+
+For example, assuming the correct password is "345", if you type "012345", the box will open because the correct password matches the suffix of the entered password.
+
+Return any password of minimum length that is guaranteed to open the box at some point of entering it.
+
+
+
+Example 1:
+
+Input: n = 1, k = 2
+Output: "01"
+Note: "10" will be accepted too.
+Example 2:
+
+Input: n = 2, k = 2
+Output: "00110"
+Note: "01100", "10011", "11001" will be accepted too.
+
+
+Note:
+
+n will be in the range [1, 4].
+k will be in the range [1, 10].
+k^n will be at most 4096.
+ */
 public class CrackingTheSafe {
-    boolean found = false;
-    String solution = null;
-    int Limit = 0;
-
-    private void doCombination(String last, int n, int k, HashSet<String> generated, StringBuilder sb) {
-        if (found) {
-            return;
-        }
-        if (generated.size() == Limit) {
-            found = true;
-            solution = sb.toString();
-            return;
-        }
-
-        String nextKey = last.substring(1);
-        for (int next = 0; next < k; next++) {
-            String ns = nextKey + next;
-            if (!generated.contains(ns)) {
-                generated.add(ns);
-                sb.append(next);
-                doCombination(ns, n, k, generated, sb);
-                generated.remove(ns);
-                sb.deleteCharAt(sb.length() - 1);
-            }
-        }
-    }
-
+    // brute force dfs. it has nothing to do with euler path... as far as this code goes
+    String found = null;
 
     public String crackSafe(int n, int k) {
-        found = false;
-        solution = null;
-        Limit = (int) Math.pow(k, n);
-        if (n == 1) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < k; ++i) {
-                sb.append(i);
-            }
-            return sb.toString();
+        StringBuilder start = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            start.append("0");
         }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < n; ++i) {
-            sb.append("0");
+        int all = (int) Math.pow(k, n);
+
+        HashSet<String> used = new HashSet<>();
+        String sstart = start.toString();
+        used.add(sstart);
+        dfs(sstart, all, n, k, start, used);
+        return found;
+    }
+
+
+    private void dfs(String s, int all, int n, int k, StringBuilder cur, Set<String> used) {
+        if (used.size() == all) {
+            found = cur.toString();
+            return;
         }
-        String start = sb.toString();
-        HashSet<String> generated = new HashSet<>();
-        generated.add(start);
-        sb = new StringBuilder();
-        sb.append(start);
-        doCombination(start, n, k, generated, sb);
-        return solution;
-    }
-
-    public static void main(String[] args) {
-        CrackTheSafeEulerPath cts = new CrackTheSafeEulerPath();
-
-        System.out.println(cts.crackSafe(3, 2));
-    }
-}
-
-class CrackTheSafeEulerPath {
-    Set<String> seen;
-    StringBuilder ans;
-
-    public String crackSafe(int n, int k) {
-        if (n == 1 && k == 1) return "0";
-        seen = new HashSet();
-        ans = new StringBuilder();
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < n-1; ++i)
-            sb.append("0");
-        String start = sb.toString();
-
-        dfs(start, k);
-        ans.append(start);
-        return new String(ans);
-    }
-
-    public void dfs(String node, int k) {
-        for (int x = 0; x < k; ++x) {
-            String nei = node + x;
-            if (!seen.contains(nei)) {
-                seen.add(nei);
-                dfs(nei.substring(1), k);
-                ans.append(x);
+        if (found != null) {
+            return;
+        }
+        String stub = s.substring(1, n);
+        for (int j = 0; j < k; j++) {
+            String next = stub + j;
+            if (!used.contains(next)) {
+                used.add(next);
+                StringBuilder newcur = cur.append(j);
+                dfs(next, all, n, k, newcur, used);
+                newcur.deleteCharAt(newcur.length() - 1);
+                used.remove(next);
             }
         }
     }
-
 }

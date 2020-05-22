@@ -43,25 +43,41 @@ The range of tree node value is in the range of [-100000, 100000].
 1 <= n <= 10000
  */
 public class EqualTreePartition {
-    // special care when sum of whole tree == 0
-    TreeNode root = null;
-    Set<Integer> set = new HashSet<>();
+    // can't be the whole tree! so exclude root
+    // can't use %2==1 we have negative values...
+    boolean found = false;
+    int sum = 0;
 
     public boolean checkEqualTree(TreeNode root) {
-        this.root = root;
-        int sum = dfs(root);
-        // -3%2== -1 not 1
+        sum = dfs1(root);
+
         if (sum % 2 != 0) {
             return false;
         }
-        return set.contains(sum / 2);
+        dfs2(root, root);
+        return found;
     }
 
-    int dfs(TreeNode n) {
-        int sum = n == null ? 0 : (dfs(n.left) + dfs(n.right) + n.val);
-        if (n != root && n != null) {
-            set.add(sum);
+    int dfs1(TreeNode n) {
+        return n == null ? 0 : dfs1(n.left) + dfs1(n.right) + n.val;
+    }
+
+    int dfs2(TreeNode n, TreeNode root) {
+        if (n == null) {
+            return 0;
         }
-        return sum;
+        if (found) {
+            return -1;
+        }
+        int left = dfs2(n.left, root);
+        int right = dfs2(n.right, root);
+        int cursum = left + right + n.val;
+        if (cursum == sum / 2) {
+            if (n != root) {
+                // can't be the whole tree!
+                found = true;
+            }
+        }
+        return cursum;
     }
 }

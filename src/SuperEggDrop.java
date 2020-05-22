@@ -86,3 +86,23 @@ public class SuperEggDrop {
         return min;
     }
 }
+
+class SuperEggDropAnotherDp {
+    public int superEggDrop(int k, int n) {
+        long[][] dp = new long[k + 1][n + 1];
+        // dp[0][x] = 0
+        // dp[x][0] = 0
+        for (int i = 1; i <= k; i++) {
+            for (int j = 1; j <= n; j++) {
+                dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1] + 1;
+            }
+        }
+        for (int j = 0; j <= n; j++) {
+            long cur = dp[k][j];
+            if (cur >= n) {
+                return j;
+            }
+        }
+        return -1;
+    }
+}

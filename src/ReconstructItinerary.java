@@ -38,6 +38,7 @@ public class ReconstructItinerary {
         return r;
     }
 
+    // note in euler path finding a node can be visited multiple times, so we dont use seen set. instead, we poll edges so each edge is only used once
     private void dfs(String s, Map<String, Deque<String>> map) {
         Deque<String> dk = map.getOrDefault(s, new ArrayDeque<>());
         while (!dk.isEmpty()) {
@@ -48,10 +49,12 @@ public class ReconstructItinerary {
     }
 
     public static void main(String[] args) {
+        List<List<String>> l2 = List.of(List.of("JFK", "SFO"), List.of("JFK", "ATL"), List.of("SFO", "ATL"), List.of("ATL", "JFK"), List.of("ATL", "SFO"));
+        System.out.println(new ReconstructItinerary().findItinerary(new ArrayList<>(l2)));
+
         List<List<String>> l1 = List.of(List.of("MUC", "LHR"), List.of("JFK", "MUC"), List.of("SFO", "SJC"), List.of("LHR", "SFO"));
         System.out.println(new ReconstructItinerary().findItinerary(new ArrayList<>(l1)));
 
-        List<List<String>> l2 = List.of(List.of("JFK", "SFO"), List.of("JFK", "ATL"), List.of("SFO", "ATL"), List.of("ATL", "JFK"), List.of("ATL", "SFO"));
-        System.out.println(new ReconstructItinerary().findItinerary(new ArrayList<>(l2)));
+
     }
 }

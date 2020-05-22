@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,34 +28,37 @@ public class StrangePrinter {
     public int strangePrinter(String s) {
         int n = s.length();
         dp = new int[n][n];
-        return dos(s.toCharArray(), 0, s.length() - 1);
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(dp[i], -1);
+        }
+        char[] sc = s.toCharArray();
+        return doc(sc, 0, sc.length - 1);
     }
 
-    int dos(char[] s, int l, int u) {
+    int doc(char[] sc, int l, int u) {
         if (l > u) {
             return 0;
         }
-        if (dp[l][u] != 0) {
+        if (dp[l][u] != -1) {
             return dp[l][u];
         }
-        int i = u;
-        while (i >= l && s[i] == s[u]) {
-            i--;
+        int p = u - 1;
+        while (p >= l && sc[p] == sc[u]) {
+            p--;
         }
-        // i-1 is the first place that is != u
-        int p = i;
-        // i+1.... u all the same, use one print
-        int min = dos(s, l, p) + 1;
-        for (; i >= l; i--) {
-            if (s[i] == s[u] && s[i + 1] != s[u]) {
-                // i+1...p are all != u
-                // p+1...u can merge with i as one print only
-                int cur = dos(s, l, i) + dos(s, i + 1, p);
+        // p is the first != u. we can print l..p and p+1...u
+        int min = doc(sc, l, p) + 1;
+        int q = p;
+        while (q >= l) {
+            // q== end, so end and l...q can be printed in one shot
+            if (sc[q] == sc[u] && sc[q + 1] != sc[u]) {
+                int cur = doc(sc, l, q) + doc(sc, q + 1, p);
                 min = Math.min(min, cur);
             }
+            q--;
         }
         dp[l][u] = min;
-        return dp[l][u];
+        return min;
     }
 
     public static void main(String[] args) {

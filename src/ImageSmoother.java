@@ -1,41 +1,49 @@
+/*
+LC#661
+Given a 2D integer matrix M representing the gray scale of an image, you need to design a smoother to make the gray scale of each cell becomes the average gray scale (rounding down) of all the 8 surrounding cells and itself. If a cell has less than 8 surrounding cells, then use as many as you can.
+
+Example 1:
+Input:
+[[1,1,1],
+ [1,0,1],
+ [1,1,1]]
+Output:
+[[0, 0, 0],
+ [0, 0, 0],
+ [0, 0, 0]]
+Explanation:
+For the point (0,0), (0,2), (2,0), (2,2): floor(3/4) = floor(0.75) = 0
+For the point (0,1), (1,0), (1,2), (2,1): floor(5/6) = floor(0.83333333) = 0
+For the point (1,1): floor(8/9) = floor(0.88888889) = 0
+Note:
+The value in the given matrix is in the range of [0, 255].
+The length and width of the given matrix are in the range of [1, 150].
+ */
 public class ImageSmoother {
-    // basic idea is to reuse the original array and blend the sum with original values
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+    // if we are really geeky we can reuse the old array note the range of value is 256...
+    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, 1}, {1, 1}, {-1, -1}, {1, -1}};
 
-    boolean inRange(int r, int c, int[][] m) {
-        return r >= 0 && r < m.length && c >= 0 && c < m[0].length;
-    }
-
-    public int[][] imageSmoother(int[][] m) {
-        if (m.length == 0) {
-            return new int[0][0];
-        }
-        int rows = m.length;
-        int cols = m[0].length;
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                int c = 1;
-                int num = m[i][j];
+    public int[][] imageSmoother(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int[][] r = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                int cells = 0;
+                int sum = 0;
                 for (int[] d : dirs) {
-                    int nr = i + d[0];
-                    int nc = j + d[1];
-                    if (inRange(nr, nc, m)) {
-                        c++;
-                        num += m[nr][nc] % 256;
+                    int ni = d[0] + i;
+                    int nj = d[1] + j;
+                    if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+                        cells++;
+                        sum += a[ni][nj];
                     }
                 }
-                int t = num / c;
-                m[i][j] = t * 256 + m[i][j];
+                sum += a[i][j];
+                cells++;
+                r[i][j] = sum / cells;
             }
         }
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                m[i][j] = (m[i][j] - m[i][j] % 256) / 256;
-            }
-        }
-        return m;
-
+        return r;
     }
 }
