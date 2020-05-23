@@ -4,97 +4,42 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//TODO rewrite to be more concise...
+
 public class IntervalListIntersection {
-
-    public Interval[] intervalIntersection(Interval[] a, Interval[] b) {
-        if (a.length == 0 || b.length == 0) {
-            return new Interval[0];
-        }
-        int pa = 0;
-        int pb = 0;
-        List<Interval> result = new ArrayList<>();
-        while (pa < a.length && pb < b.length) {
-            Interval inta = a[pa];
-            Interval intb = b[pb];
-            if (inta.start <= intb.start) {
-                if (inta.end < intb.start) {
-                    // totally disconnected
-                    pa++;
-
-                } else if (intb.end <= inta.end) {
-                    // b totally eaten...
-                    result.add(intb);
-                    pb++;
-
-                } else {
-                    Interval intersect = new Interval(intb.start, inta.end);
-                    result.add(intersect);
-                    pa++;
-                    intb.start = inta.end + 1;
-                    if (intb.start > intb.end) {
-                        pb++;
-                    }
-                }
+    // if disjoint, move the smaller
+    // if intersect, get the intersection, and move the one that is ending earlier. adjust the remaining one
+    public int[][] intervalIntersection(int[][] a, int[][] b) {
+        int i = 0;
+        int j = 0;
+        int an = a.length;
+        int bn = b.length;
+        List<int[]> list = new ArrayList<>();
+        while (i < an && j < bn) {
+            if (b[j][0] > a[i][1]) {
+                i++;
+            } else if (a[i][0] > b[j][1]) {
+                j++;
             } else {
-                // this is a replay of the above...
-                if (intb.end < inta.start) {
-                    // totally disconnected
-                    pb++;
-                } else if (inta.end <= intb.end) {
-                    // a totally eaten...
-                    result.add(inta);
-                    pa++;
+                int[] inter = new int[]{Math.max(a[i][0], b[j][0]), Math.min(a[i][1], b[j][1])};
+                list.add(inter);
+                if (a[i][1] < b[j][1]) {
+                    b[j][0] = a[i][1] + 1;
+                    i++;
+                } else if (a[i][1] > b[j][1]) {
+                    a[i][0] = b[j][1] + 1;
+                    j++;
                 } else {
-                    Interval intersect = new Interval(inta.start, intb.end);
-                    result.add(intersect);
-                    pb++;
-                    inta.start = intb.end + 1;
-                    if (inta.start > inta.end) {
-                        pa++;
-                    }
+                    i++;
+                    j++;
                 }
             }
         }
-        return result.toArray(new Interval[0]);
-    }
-
-    public static void main(String[] args) {
-        IntervalListIntersctionSimpler lil = new IntervalListIntersctionSimpler();
-        Interval[] a = {new Interval(0, 2), new Interval(5, 10), new Interval(13, 23), new Interval(24, 25)};
-        Interval[] b = {new Interval(3, 5), new Interval(8, 12), new Interval(15, 24), new Interval(25, 26)};
-        System.out.println(Arrays.toString(lil.intervalIntersection(a, b)));
-    }
-}
-
-class IntervalListIntersctionSimpler{
-    public Interval[] intervalIntersection(Interval[] A, Interval[] B) {
-        if (A == null || A.length == 0 || B == null || B.length == 0) {
-            return new Interval[] {};
+        int[][] r = new int[list.size()][2];
+        for (int k = 0; k < list.size(); k++) {
+            r[k][0] = list.get(k)[0];
+            r[k][1] = list.get(k)[1];
         }
-
-        int m = A.length, n = B.length;
-        int i = 0, j = 0;
-        List<Interval> res = new ArrayList<>();
-        while (i < m && j < n) {
-            Interval a = A[i];
-            Interval b = B[j];
-
-            // find the overlap... if there is any...
-            int startMax = Math.max(a.start, b.start);
-            int endMin = Math.min(a.end, b.end);
-
-            if (endMin >= startMax) {
-                res.add(new Interval(startMax, endMin));
-            }
-
-            //update the pointer with smaller end value...
-            if (a.end == endMin) { i++; }
-            if (b.end == endMin) { j++; }
-        }
-
-        //thanks EOAndersson for the concice expression of converting a list to an array
-        //thanks Sithis for the explaination of using toArray (new T[0]) intead fo toArray newT[size])
-        return res.toArray(new Interval[0]);
+        return r;
     }
+
 }

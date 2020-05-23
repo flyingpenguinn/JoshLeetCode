@@ -28,12 +28,14 @@ The m and n will be in the range [1, 30000].
 The k will be in the range [1, m * n]
  */
 public class KthSmallestInMultiplicationMap {
+    // binary search look for numbers
     public int findKthNumber(int m, int n, int k) {
         int l = 1;
         int u = m * n;
         while (l <= u) {
             int mid = l + (u - l) / 2;
             if (count(mid, m, n) >= k) {
+                // must be >= because the number in the table is the smallest that satisfies this condition
                 u = mid - 1;
             } else {
                 l = mid + 1;
@@ -42,17 +44,18 @@ public class KthSmallestInMultiplicationMap {
         return l;
     }
 
-    int count(int mid, int m, int n) {
-        int j = n;
-        int i = 1;
+    // how many in the matrix <=v
+    private int count(int v, int m, int n) {
+        int i = n;
+        int j = 1;
         int r = 0;
-        while (j >= 1) {
-            while (i <= m && i * j <= mid) {
-                i++;
+        while (i >= 1) {
+            while (j <= m && i * j <= v) {
+                j++;
             }
-            // at this column, 1...i-1 are all <=mid
-            r += i - 1;
-            j = j - 1;
+            // 1...j is <=
+            r += j - 1;
+            i--;
         }
         return r;
     }

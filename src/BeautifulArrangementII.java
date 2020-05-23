@@ -1,4 +1,5 @@
 import java.util.TreeSet;
+
 /*
 LC#667
 
@@ -19,30 +20,40 @@ Note:
 The n and k are in the range 1 <= k < n <= 104.
  */
 public class BeautifulArrangementII {
-    // jump around between 1...k+1,then +1 from min= k+2
+    // jump around between 1...k+1,then just poll from the middle part, and the part that was originally beyond high
     public int[] constructArray(int n, int k) {
-        int[] r= new int[n];
-        int sign=1;
-        r[0]=1;
-        boolean[] used= new boolean[n+1];
-        used[1]=true;
-        int i=1;
-        int oldk=k;
-        while(i<n){
-            if(k>0){
-                r[i]= r[i-1] + k*sign;
-                k--;
-                sign *= -1;
-                used[r[i]]=true;
-                i++;
-            }else{
+        int[] r = new int[n];
+        r[0] = 1;
+        boolean plus = true;
+        int high = 1 + k;
+        int low = 2;
+        int i = 1;
+        int ok = k;
+        while (i < n) {
+            if (k == 0) {
                 break;
+            } else {
+                if (plus) {
+                    r[i] = high--;
+                    plus = false;
+                } else {
+                    r[i] = low++;
+                    plus = true;
+                }
+                k--;
             }
+            i++;
         }
-        int j=oldk+2;
-        while(i<n){
-            r[i++] = j++;
+        while (low <= high) {
+            r[i++] = low++;
+        }
+        for (int j = ok + 2; j <= n; j++) {
+            r[i++] = j;
         }
         return r;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new BeautifulArrangementII().constructArray(5, 4));
     }
 }

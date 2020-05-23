@@ -6,42 +6,32 @@ import java.util.Comparator;
 public class SetIntersectionAtLeastTwo {
 
     // if it's one point solution is pick the last point
-    // if it's this problem of two points we pick end and end-1.first when new end > old start <old end we add new end to the picture
-    // note we should process intervals with bigger starting points first!
+    // pick e1=end-1 and e2=end
+    // if >end, add two more
+    // if <=end-1, nothing
+    // otherwise tricky part: we make the old e2 to e1, and current end becomes e2. this can make e1==e2, so in this case e1=e2-1
     public int intersectionSizeTwo(int[][] a) {
-        Arrays.sort(a, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                if (o1[1] != o2[1]) {
-                    return Integer.compare(o1[1], o2[1]);
-                } else {
-                    return Integer.compare(o2[0], o1[0]);
-                    // reverse for starting point! because we can use a smaller set to cover bigger ones that contains it
-                }
-            }
-        });
-        int s1 = a[0][1] - 1;
-        int s2 = a[0][1];
-        int n = a.length;
-
+        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
+        int e1 = a[0][1] - 1;
+        int e2 = a[0][1];
         int r = 2;
-        for (int i = 1; i < n; i++) {
-            int start = a[i][0];
-            int end = a[i][1];
-            if (start <= s1) {
-                // covered by earlier one
-                continue;
-            } else if (start > s2) {
-                // need a new set anyway
-                s1 = end - 1;
-                s2 = end;
+        for (int i = 1; i < a.length; i++) {
+            if (a[i][0] > e2) {
+                e1 = a[i][1] - 1;
+                e2 = a[i][1];
                 r += 2;
+            } else if (a[i][0] <= e1) {
+                // do nothing, included
             } else {
-                // start>s1, start<=s2
-                // like 5,9 vs 8,10. we normally set to 9,10
-                s1 = s2;
-                s2 = end;
-                r += 1;
+                //a[i][0] > e1 && a[i][0] <= e2
+                e1 = e2;
+                e2 = a[i][1];
+                r++;
+                if (e1 == e2) {
+                    // same e2 appearing with a later starting time...
+                    // for example, [[1, 5],[5,9],[6,9]]
+                    e1 = e2 - 1;
+                }
             }
         }
         return r;

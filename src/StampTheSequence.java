@@ -38,99 +38,69 @@ public class StampTheSequence {
     // work backward. set every matching substring to ???. ? matches to anything
     // we dont really need to stamp the sme position twice
     // time complexity n-m * n-m * m
-    List<Integer> r = null;
+    // abc must be revealed before ab?. but later ones' sequences can't be determined. the ones with more ? may be matched later in the stamping
+    List<Integer> r = new ArrayList<>();
     boolean[] added;
 
-
     public int[] movesToStamp(String s, String t) {
-        int n = t.length();
-        added = new boolean[n];
-        char[] sc = s.toCharArray();
-        char[] tc = t.toCharArray();
-        dos(sc, tc, 0, 0, new ArrayList<>());
-        if (r == null) {
-            return new int[0];
+        added = new boolean[t.length()];
+        dfs(s, t.toCharArray(), new ArrayList<>(), 0);
+        Collections.reverse(r);
+        return toarray(r);
+    }
+
+
+    private void dfs(String s, char[] t, List<Integer> cur, int matched) {
+        if (matched == t.length) {
+            r = cur;
+            return;
         }
+        int i = 0;
+        boolean found = false;
+        while (i + s.length() - 1 < t.length) {
+            if (startswith(t, i, s)) {
+                found = true;
+                added[i] = true;
+                for (int j = 0; j < s.length(); j++) {
+                    if (t[i + j] != '?') {
+                        matched++;
+                        t[i + j] = '?';
+                    }
+                }
+                cur.add(i);
+                i = i + s.length() - 1;
+            } else {
+                i++;
+            }
+        }
+        // no change at all, not found
+        if (!found) {
+            return;
+        }
+        dfs(s, t, cur, matched);
+    }
+
+    private boolean startswith(char[] tc, int j, String s) {
+        // whether tc starts with s at j. question mark can match unless it's all ?- which means we added before
+        if (added[j]) {
+            return false;
+        }
+        int k = 0;
+        while (k < s.length()) {
+            if (tc[j + k] != '?' && tc[j + k] != s.charAt(k)) {
+                return false;
+            }
+            k++;
+        }
+        return true;
+    }
+
+    private int[] toarray(List<Integer> r) {
         int[] rr = new int[r.size()];
         for (int i = 0; i < rr.length; i++) {
             rr[i] = r.get(i);
         }
-    //    System.out.println("dos = " + doscount + " while = " + whilecount + " sicount = " + sicount);
         return rr;
-    }
-
-    int doscount = 0;
-    int whilecount = 0;
-    int sicount = 0;
-
-    void dos(char[] sc, char[] tc, int steps, int xs, List<Integer> cur) {
-        doscount++;
-
-        //System.out.println(Arrays.toString(tc));
-        if (xs == tc.length) {
-            r = new ArrayList<>(cur);
-            Collections.reverse(r);
-            return;
-        }
-        int tn = tc.length;
-        int sn = sc.length;
-        if (steps == tn - sn + 1) {
-            return;
-        }
-        int j = 0;
-        int xsd = 0;
-        while (j + sn - 1 < tn) {
-            whilecount++;
-            if (match(sc, tc, j)) {
-                int ch = stamp(tc, j, j + sn - 1);
-                if (ch != 0) {
-                    xsd += ch;
-                    cur.add(j);
-                    added[j] = true;
-                }
-            }
-            j++;
-        }
-        if (xsd == 0) {
-            return;
-        }
-        dos(sc, tc, steps + 1, xs + xsd, cur);
-    }
-
-
-    boolean match(char[] s, char[] t, int j) {
-        if (added[j]) {
-            return false;
-        }
-        int sn = s.length;
-        int i = 0;
-        boolean hasc = false;
-        while (i < sn) {
-            sicount++;
-            if (s[i] == t[j] || t[j] == '?') {
-                if (t[j] != '?') {
-                    hasc = true;
-                }
-                i++;
-                j++;
-                continue;
-            }
-
-            return false;
-        }
-
-        return hasc;
-    }
-
-    int stamp(char[] t, int i, int j) {
-        int r = 0;
-        for (int k = i; k <= j; k++) {
-            if (t[k] != '?') {
-                r++;
-                t[k] = '?';
-            }
-        }
-        return r;
     }
 
     public static void main(String[] args) {

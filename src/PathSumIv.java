@@ -4,55 +4,80 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Queue;
 
+/*
+LC#666
+If the depth of a tree is smaller than 5, then this tree can be represented by a list of three-digits integers.
+
+For each integer in this list:
+
+The hundreds digit represents the depth D of this node, 1 <= D <= 4.
+The tens digit represents the position P of this node in the level it belongs to, 1 <= P <= 8. The position is the same as that in a full binary tree.
+The units digit represents the value V of this node, 0 <= V <= 9.
+Given a list of ascending three-digits integers representing a binary tree with the depth smaller than 5, you need to return the sum of all paths from the root towards the leaves.
+
+It's guaranteed that the given list represents a valid connected binary tree.
+
+Example 1:
+
+Input: [113, 215, 221]
+Output: 12
+Explanation:
+The tree that the list represents is:
+    3
+   / \
+  5   1
+
+The path sum is (3 + 5) + (3 + 1) = 12.
+
+
+Example 2:
+
+Input: [113, 221]
+Output: 4
+Explanation:
+The tree that the list represents is:
+    3
+     \
+      1
+
+The path sum is (3 + 1) = 4.
+ */
 public class PathSumIv {
+    // can use a map to cache the results
+    int r = 0;
 
-    // similar to level order traversal...
-    // right node + parent sum to get the value
-    class QItem {
-        int val;
-        int sum;
+    public int pathSum(int[] a) {
+        dop(1, 1, a, 0);
+        return r;
+    }
 
-        public QItem(int val, int sum) {
-            this.val = val;
-            this.sum = sum;
+    void dop(int d, int p, int[] a, int sum) {
+        int rn = find(a, d, p);
+        if (rn == -1) {
+            return;
+        }
+        int left = find(a, d + 1, p * 2 - 1);
+        int right = find(a, d + 1, p * 2);
+        if (left == -1 && right == -1) {
+            r += sum + rn;
+            return;
+        }
+        if (left != -1) {
+            dop(d + 1, p * 2 - 1, a, sum + rn);
+        }
+        if (right != -1) {
+            dop(d + 1, p * 2, a, sum + rn);
         }
     }
 
-    public int pathSum(int[] nums) {
-        int n = nums.length;
-        if (n == 0) {
-            return 0;
-        }
-        Deque<QItem> cur = new ArrayDeque<>();
-        Deque<QItem> next = new ArrayDeque<>();
-        cur.push(new QItem(nums[0], nums[0] % 10));
-        int level = 1;
-        int sum = nums[0] % 10;
-        for (int i = 1; i < n; i++) {
-            if (nums[i] / 100 > level + 1) {
-                // jumping level
-                cur = next;
-                next = new ArrayDeque<>();
-                level++;
-            }
-            QItem top = cur.peekFirst();
-            int td = (nums[i] % 100) / 10;
-            int toptd = (top.val % 100) / 10;
-            // 2->3,4   3->5,6
-            if ((td + 1) / 2 > toptd) {
-                cur.pollFirst();
-                top = cur.peekFirst();
-            }
-            QItem item = new QItem(nums[i], top.sum + nums[i] % 10);
-            next.offer(item);
-            sum += nums[i] % 10;
-            boolean prevpos = nums[i - 1] % 100 / 10 == td - 1;
-            boolean samelevel = nums[i - 1] / 100 == nums[i] / 100;
-            if (td % 2 == 0 && prevpos && samelevel) {
-                sum += top.sum;
+    int find(int[] a, int d, int p) {
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            if (a[i] >= d * 100 + p * 10 && a[i] <= d * 100 + p * 10 + 9) {
+                return a[i] % 10;
             }
         }
-        return sum;
+        return -1;
     }
 
     public static void main(String[] args) {
