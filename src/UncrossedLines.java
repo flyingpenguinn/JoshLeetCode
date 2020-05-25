@@ -39,32 +39,20 @@ Note:
  */
 public class UncrossedLines {
     // lcs in disguise
-    int[][] dp;
-
+    // dpij means the best we can get UP TO ij. so we need to pass i-1j and ij-1 onto ij
     public int maxUncrossedLines(int[] a, int[] b) {
-        dp = new int[a.length][b.length];
-        for (int i = 0; i < dp.length; i++) {
-            Arrays.fill(dp[i], -1);
+        int an = a.length;
+        int bn = b.length;
+        int[][] dp = new int[an + 1][bn + 1];
+        // when i==0 or j==0 nothing to pair with, hence 0
+        for (int i = 1; i <= an; i++) {
+            for (int j = 1; j <= bn; j++) {
+                int way1 = a[i - 1] == b[j - 1] ? dp[i - 1][j - 1] + 1 : 0;
+                int way2 = dp[i][j - 1];
+                int way3 = dp[i - 1][j];
+                dp[i][j] = Math.max(way1, Math.max(way2, way3));
+            }
         }
-        return dom(0, 0, a, b);
-    }
-
-    int dom(int i, int j, int[] a, int[] b) {
-        if (i >= a.length || j >= b.length) {
-            return 0;
-        }
-        if (dp[i][j] != -1) {
-            return dp[i][j];
-        }
-        int w1 = dom(i + 1, j, a, b);
-        int w2 = dom(i, j + 1, a, b);
-        int w3 = 0;
-        if (a[i] == b[j]) {
-            // no need to loop.ccover all i j eventually anyway via w1 and w2
-            w3 = 1 + dom(i + 1, j + 1, a, b);
-        }
-        int rt = Math.max(w1, Math.max(w2, w3));
-        dp[i][j] = rt;
-        return rt;
+        return dp[an][bn];
     }
 }

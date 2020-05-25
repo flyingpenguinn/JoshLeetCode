@@ -90,3 +90,36 @@ public class NumberOfWaysToWearHats {
         return dp[i][st];
     }
 }
+
+class NumberOfWaysToWearHatsBottomUp {
+    public int numberWays(List<List<Integer>> persontohat) {
+        int n = persontohat.size();
+        int Mod = 1000000007;
+        List<Integer>[] hattoperson = new ArrayList[41];
+        for (int i = 1; i <= 40; i++) {
+            hattoperson[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < persontohat.size(); i++) {
+            for (int h : persontohat.get(i)) {
+                hattoperson[h].add(i);
+            }
+        }
+        // how many ways to cover people represented by these states
+        int[] dp = new int[1 << n];
+        dp[0] = 1;
+        for (int i = 1; i <= 40; i++) {
+            for (int j = (1 << n) - 1; j >= 0; --j) {
+                // must do backward so that current hat values won't overlap
+                for (int p : hattoperson[i]) {
+                    if (((j >> p) & 1) == 0) {
+                        int nj = j | (1 << p);
+                        dp[nj] += dp[j];
+                        dp[nj] %= Mod;
+                    }
+                }
+            }
+        }
+        return dp[(1 << n) - 1];
+    }
+
+}

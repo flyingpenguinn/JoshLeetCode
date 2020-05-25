@@ -47,7 +47,7 @@ Constraints:
 0 <= k <= n
  */
 public class BuildArrayWhereYouCanMaxKTimes {
-    // at i, previous max i premax, we have remk chances of maxing the previous one
+    // at i, previous max premax, we have remk chances of maxing the previous one
     long[][][] dp;
 
     public int numOfArrays(int n, int m, int k) {
@@ -85,5 +85,38 @@ public class BuildArrayWhereYouCanMaxKTimes {
         }
         dp[i][premax][remk] = here;
         return here;
+    }
+}
+
+class BuildArrayWhereYouCanMaxKTimesBottomUp {
+    public int numOfArrays(int n, int m, int times) {
+        // build from 0...i, with max value j, max value replaced k times
+        long Mod = 1000000007;
+        long[][][] dp = new long[n][m + 1][times + 1];
+        // at the first value, select whatever will cause selection time to be 1
+        for (int j = 1; j <= m; j++) {
+            dp[0][j][1] = 1;
+        }
+        long r = 0;
+        for (int i = 1; i < n; i++) {
+            for (int j = 1; j <= m; j++) {
+                for (int k = 1; k <= times; k++) {
+                    dp[i][j][k] = j * dp[i - 1][j][k];
+                    dp[i][j][k] %= Mod;
+                    // i-1 also has j as the max. here at ith position, we can take 1...j
+                    for (int t = j - 1; t >= 1; t--) {
+                        // loop can be eliminated using prefix sum
+                        dp[i][j][k] += dp[i - 1][t][k - 1];
+                        dp[i][j][k] %= Mod;
+                    }
+                    // i-1 not having j, but having t as max.
+                    if (i == n - 1 && k == times) {
+                        r += dp[i][j][k];
+                        r %= Mod;
+                    }
+                }
+            }
+        }
+        return (int) r;
     }
 }

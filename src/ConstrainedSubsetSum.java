@@ -32,28 +32,46 @@ Constraints:
 -10^4 <= nums[i] <= 10^4
  */
 public class ConstrainedSubsetSum {
-    // first use dp[i] to indicate the "score" we will get if we pick i as the first one
+    // first use dp[i] to indicate the "score" we will get if we MUST PICK i as the first one
     // then use deque to optimize, like we did in sliding window max
     public int constrainedSubsetSum(int[] a, int k) {
         int n = a.length;
-        int[] dp = new int[n];
+        int[] dp = new int[n + 1]; // note dp here means we CHOOSE i
         dp[n - 1] = a[n - 1];
+        int max = Integer.MIN_VALUE;
         Deque<Integer> dq = new ArrayDeque<>();
-        dq.add(n - 1);
+        dq.offerLast(n - 1);
         for (int i = n - 2; i >= 0; i--) {
-            // i+1...i+k in ts
-            if (dq.peekLast() > i + k) {
+            while (dq.peekLast() - i > k) {
                 dq.pollLast();
             }
-            int maxafter = dq.peekLast();
-            dp[i] = Math.max(0, dp[maxafter]) + a[i];
+            int cur = a[i] + dp[dq.peekLast()];
+            dp[i] = Math.max(cur, a[i]); // note we can choose not to select anything later
             while (!dq.isEmpty() && dp[dq.peekFirst()] <= dp[i]) {
                 dq.pollFirst();
             }
             dq.offerFirst(i);
+            max = Math.max(max, dp[i]);
         }
+        return max;
+    }
+}
+
+class ConstrainedSubsetSumDirectDp {
+    // TLE, but the dp idea is correct
+    int MIN = -10000000;
+
+    public int constrainedSubsetSum(int[] a, int k) {
+        int n = a.length;
+        int[] dp = new int[n + 1];
+        dp[n - 1] = a[n - 1];
         int max = Integer.MIN_VALUE;
-        for (int i = 0; i < n; i++) {
+        for (int i = n - 2; i >= 0; i--) {
+            int cur = a[i];
+            for (int j = i + 1; j < n && j - i <= k; j++) {
+                cur = Math.max(cur, a[i] + dp[j]);
+            }
+            dp[i] = cur;
             max = Math.max(max, dp[i]);
         }
         return max;

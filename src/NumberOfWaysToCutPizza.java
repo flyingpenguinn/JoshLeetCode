@@ -36,21 +36,45 @@ cols == pizza[i].length
 pizza consists of characters 'A' and '.' only.
  */
 public class NumberOfWaysToCutPizza {
-    long[][][] dp;
+    // from i,j as top left to m-1, n-1, how many ways to cut
+    long Mod = 1000000007;
 
-    public int ways(String[] a, int k) {
+    public int ways(String[] a, int p) {
         int m = a.length;
         int n = a[0].length();
-
-        dp = new long[m][n][k + 1];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                Arrays.fill(dp[i][j], -1);
-            }
-        }
         int[][] sum = new int[m][n];
         initsum(a, sum);
-        return (int) doc(0, 0, k, a, sum);
+
+        // from 0,0 to i,j, cut k pieces, how many ways
+        long[][][] dp = new long[m][n][p + 1];
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                for (int k = 1; k <= p; k++) {
+                    if (k == 1) {
+                        int apple = sum(i, j, m - 1, n - 1, sum);
+                        // one piece, just one way if we have apple here
+                        dp[i][j][k] = apple > 0 ? 1 : 0;
+                    } else {
+                        for (int s = i + 1; s < m; s++) {
+                            int apple1 = sum(i, j, s - 1, n - 1, sum);
+                            int apple2 = sum(s, j, m - 1, n - 1, sum);
+                            if (apple1 > 0 && apple2 > 0) {
+                                dp[i][j][k] += dp[s][j][k - 1];
+                            }
+                        }
+                        for (int s = j + 1; s < n; s++) {
+                            int apple1 = sum(i, j, m - 1, s - 1, sum);
+                            int apple2 = sum(i, s, m - 1, n - 1, sum);
+                            if (apple1 > 0 && apple2 > 0) {
+                                dp[i][j][k] += dp[i][s][k - 1];
+                            }
+                        }
+                        dp[i][j][k] %= Mod;
+                    }
+                }
+            }
+        }
+        return (int) dp[0][0][p];
     }
 
     protected void initsum(String[] a, int[][] sum) {
@@ -67,40 +91,4 @@ public class NumberOfWaysToCutPizza {
     private int sum(int i, int j, int k, int l, int[][] sum) {
         return sum[k][l] - (i == 0 ? 0 : sum[i - 1][l]) - (j == 0 ? 0 : sum[k][j - 1]) + ((i == 0 || j == 0) ? 0 : sum[i - 1][j - 1]);
     }
-
-    long Mod = 1000000007;
-
-    // upper left at i, j, and k cuts left
-    private long doc(int i, int j, int k, String[] a, int[][] am) {
-        if (k == 1) {
-            return 1L;
-        }
-        if (dp[i][j][k] != -1) {
-            return dp[i][j][k];
-        }
-        int m = a.length;
-        int n = a[0].length();
-
-        int all = sum(i, j, m - 1, n - 1, am);
-        long r = 0;
-        for (int row = i; row < m - 1; row++) {
-            int app = sum(i, j, row, n - 1, am);
-            if (app > 0 && all - app > 0) {
-                r += doc(row + 1, j, k - 1, a, am);
-                r %= Mod;
-            }
-        }
-
-        for (int col = j; col < n - 1; col++) {
-            int app = sum(i, j, m - 1, col, am);
-            if (app > 0 && all - app > 0) {
-                r += doc(i, col + 1, k - 1, a, am);
-                r %= Mod;
-            }
-        }
-        dp[i][j][k] = r;
-        return r;
-    }
-
-
 }
