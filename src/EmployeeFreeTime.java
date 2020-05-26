@@ -69,31 +69,75 @@ public class EmployeeFreeTime {
     }
 }
 
-// dont need to keep all intervals in the pq. just need the top one from each person
-// similar to merging k sorted lists!
-class EmployeeFreeTimeHeap {
-    public List<Interval> employeeFreeTime(List<List<Interval>> a) {
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(a.get(x[0]).get(x[1]).start, a.get(y[0]).get(y[1]).start));
-        // we store person/ith meeting in pq
-        int n = a.size();
-        for (int i = 0; i < n; i++) {
-            pq.offer(new int[]{i, 0});
+class EmployeeFreeTimeAlternative {
+    // find individual holes then use idea similar to merge sort to merge them
+    public List<Interval> employeeFreeTime(List<List<Interval>> schedule) {
+        List<List<Interval>> list = new ArrayList<>();
+        for (int i = 0; i < schedule.size(); i++) {
+            list.add(free(schedule.get(i)));
         }
-        List<Interval> r = new ArrayList<>();
-        int maxend = -1;
+        List<Interval> r = domerge(0, list.size() - 1, list);
+        List<Interval> rr = new ArrayList<>();
+        for (int i = 0; i < r.size(); i++) {
+            if (r.get(i).start == MIN || r.get(i).end == MAX || r.get(i).start == r.get(i).end) {
+                continue;
+            }
+            rr.add(r.get(i));
+        }
+        return rr;
+    }
 
-        while (!pq.isEmpty()) {
-            int[] top = pq.poll();
-            List<Interval> curlist = a.get(top[0]);
-            Interval cur = curlist.get(top[1]);
-            if (cur.start > maxend && maxend >= 0) {
-                r.add(new Interval(maxend, cur.start));
-            }
-            maxend = Math.max(maxend, cur.end);
-            if (top[1] + 1 < curlist.size()) {
-                pq.offer(new int[]{top[0], top[1] + 1});
+    private List<Interval> domerge(int l, int u, List<List<Interval>> list) {
+        if (l > u) {
+            return new ArrayList<>();
+        }
+        if (l == u) {
+            return list.get(l);
+        }
+        int mid = l + (u - l) / 2;
+        List<Interval> p1 = domerge(l, mid, list);
+        List<Interval> p2 = domerge(mid + 1, u, list);
+        return merge(p1, p2);
+    }
+
+    private List<Interval> merge(List<Interval> p1, List<Interval> p2) {
+        List<Interval> r = new ArrayList<>();
+        int i = 0;
+        int j = 0;
+        while (i < p1.size() && j < p2.size()) {
+            Interval v1 = p1.get(i);
+            Interval v2 = p2.get(j);
+            if (v2.start > v1.end) {
+                i++;
+            } else if (v1.start > v2.end) {
+                j++;
+            } else {
+                Interval toadd = new Interval(Math.max(v1.start, v2.start), Math.min(v1.end, v2.end));
+                r.add(toadd);
+                if (v1.end < v2.end) {
+                    i++;
+                } else {
+                    j++;
+                }
             }
         }
+        return r;
+    }
+
+    int MIN = -1000000000;
+    int MAX = 1000000000;
+
+    private List<Interval> free(List<Interval> intervals) {
+        List<Interval> r = new ArrayList<>();
+        r.add(new Interval(MIN, intervals.get(0).start));
+        Interval last = intervals.get(0);
+        for (int i = 1; i < intervals.size(); i++) {
+            if (intervals.get(i).start > last.end) {
+                r.add(new Interval(last.end, intervals.get(i).start));
+            }
+            last = intervals.get(i);
+        }
+        r.add(new Interval(intervals.get(intervals.size() - 1).end, MAX));
         return r;
     }
 }
