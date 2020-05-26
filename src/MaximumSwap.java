@@ -1,88 +1,54 @@
+import java.util.Arrays;
 import java.util.PriorityQueue;
 
+/*
+LC#670
+Given a non-negative integer, you could swap two digits at most once to get the maximum valued number. Return the maximum valued number you could get.
+
+Example 1:
+Input: 2736
+Output: 7236
+Explanation: Swap the number 2 and the number 7.
+Example 2:
+Input: 9973
+Output: 9973
+Explanation: No swap.
+Note:
+The given number is in the range [0, 108]
+ */
 public class MaximumSwap {
 
-
+    // find the last number that is > this digit, then swap
     public int maximumSwap(int num) {
-        String str = String.valueOf(num);
-        int n = str.length();
-        if (n <= 1) {
+        String sn = String.valueOf(num);
+        int n = sn.length();
+        int max = sn.charAt(n - 1);
+        int maxi = n - 1;
+        int lc = -1;
+        int rc = -1;
+        for (int i = n - 2; i >= 0; i--) {
+            if (sn.charAt(i) > max) {
+                maxi = i;
+                max = sn.charAt(i);
+            } else if (sn.charAt(i) < max) {
+                // record the last one that is of this nature
+                lc = i;
+                rc = maxi;
+            }
+            // if ==, then =-1
+        }
+        if (lc != -1) {
+            StringBuilder sb = new StringBuilder(sn);
+            sb.setCharAt(lc, sn.charAt(rc));
+            sb.setCharAt(rc, sn.charAt(lc));
+            return Integer.valueOf(sb.toString());
+        } else {
             return num;
         }
-        for (int i = 0; i < n - 1; i++) {
-            int numi = str.charAt(i) - '0';
-            int numnexti = str.charAt(i + 1) - '0';
-            if (numi < numnexti) {
-                // find the first digit that is < numnexti, then get the biggest out of numnexti
-                int max = numnexti;
-                int maxj = i + 1;
-                for (int j = i + 2; j < n; j++) {
-                    int numj = str.charAt(j) - '0';
-                    // must be =. we want to go as right as possible
-                    if (numj >= max) {
-                        max = numj;
-                        maxj = j;
-                    }
-                }
-
-                // can't just swap with i! like 109.
-                // swap with the first that is smaller than max the big number
-                for (int j = 0; j <= i; j++) {
-                    int numj = str.charAt(j) - '0';
-                    if (numj < max) {
-                        return Integer.valueOf(swap(str, j, maxj));
-                    }
-                }
-            }
-
-        }
-        return num;
-    }
-
-    private String swap(String str, int i, int j) {
-        char[] sb = str.toCharArray();
-        char tmp = sb[i];
-        sb[i] = sb[j];
-        sb[j] = tmp;
-        return new String(sb);
     }
 
     public static void main(String[] args) {
         System.out.println(new MaximumSwap().maximumSwap(2743));
         System.out.println(new MaximumSwap().maximumSwap(10909091));
-    }
-}
-
-class MaximumSwapPqBased {
-
-    public int maximumSwap(int num) {
-        String str = String.valueOf(num);
-        int n = str.length();
-        PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
-        int[] last = new int[10];
-
-        for (int i = 0; i < n; i++) {
-            pq.offer(str.charAt(i) - '0');
-            last[str.charAt(i) - '0'] = i;
-        }
-        for (int i = 0; i < n; i++) {
-            int v = str.charAt(i) - '0';
-            int qi = pq.poll();
-            if (v != qi) {
-                // use the lowest digit
-                str = swap(i, last[qi], str);
-                break;
-            }
-        }
-
-        return Integer.valueOf(str);
-    }
-
-    private String swap(int i, int j, String str) {
-        char[] sb = str.toCharArray();
-        char tmp = sb[i];
-        sb[i] = sb[j];
-        sb[j] = tmp;
-        return new String(sb);
     }
 }

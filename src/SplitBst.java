@@ -37,46 +37,32 @@ The size of the BST will not exceed 50.
 The BST is always valid and each node's value is different.
  */
 public class SplitBst {
-    TreeNode sm = null;
-    TreeNode bg = null;
 
+    // full recursion! return the pair to the upper level
     public TreeNode[] splitBST(TreeNode root, int v) {
-        dfs(root, v, null, null);
-        return new TreeNode[]{sm, bg};
+        return dos(root, v);
     }
 
-    void dfs(TreeNode n, int v, TreeNode lastsm, TreeNode lastbg) {
+    private TreeNode[] dos(TreeNode n, int v) {
+        TreeNode[] r = new TreeNode[2];
         if (n == null) {
-            return;
+            return r;
         }
+        TreeNode[] left = dos(n.left, v);
+        TreeNode[] right = dos(n.right, v);
+        TreeNode sm = null;
+        TreeNode bg = null;
         if (n.val <= v) {
-            if (lastsm == null) {
-                sm = n;
-            } else {
-                place(n, lastsm);
-            }
-            TreeNode or = n.right;
-            n.right = null;// dont forget to delink
-            dfs(or, v, n, lastbg);
-            // left all done
+            // dont even need to think about left again as it's <= by default
+            n.right = right[0];
+            // accept possible <- in the right
+            sm = n;
+            bg = right[1];
         } else {
-            if (lastbg == null) {
-                bg = n;
-            } else {
-                place(n, lastbg);
-            }
-            TreeNode ol = n.left;
-            n.left = null;// dont forget to delink
-            dfs(ol, v, lastsm, n);
-            // right all done
+            n.left = left[1];
+            bg = n;
+            sm = left[0];
         }
-    }
-
-    void place(TreeNode n, TreeNode p) {
-        if (n.val <= p.val) {
-            p.left = n;
-        } else {
-            p.right = n;
-        }
+        return new TreeNode[]{sm, bg};
     }
 }
