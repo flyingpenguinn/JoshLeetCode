@@ -17,35 +17,20 @@ Your algorithm should run in O(n2) complexity.
 Follow up: Could you improve it to O(n log n) time complexity?
  */
 public class LongestIncreasingSubsequence {
-    // the nlogn way... binary search find the first bigger, or the value itself
-    public int lengthOfLIS(int[] a) {
-        List<Integer> r = new ArrayList<>();
+    public int findLengthOfLCIS(int[] a) {
         int n = a.length;
-        for (int i = 0; i < n; i++) {
-            // first >,or found
-            int index = bs(r, a[i]);
-            if (index == r.size()) {
-                r.add(a[i]);
-            } else {
-                r.set(index, a[i]);
+        if(n==0){
+            return 0;
+        }
+        int start = 0;
+        int max = 1;
+        for(int i=1; i<n;i++){
+            if(a[i]>a[i-1]){
+                max = Math.max(max, i-start+1);
+            }else{
+                start = i;
             }
         }
-        return r.size();
-    }
-
-    int bs(List<Integer> a, int t) {
-        int l = 0;
-        int u = a.size() - 1;
-        while (l <= u) {
-            int m = l + (u - l) / 2;
-            if (a.get(m) == t) {
-                return m;
-            } else if (a.get(m) < t) {
-                l = m + 1;
-            } else {
-                u = m - 1;
-            }
-        }
-        return l;
+        return max;
     }
 }

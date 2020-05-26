@@ -2,61 +2,52 @@ import java.util.*;
 
 public class SpecialBinaryString {
 
-    // greedily look for the current best
+    // get the best swap every time and recurse on this
     public String makeLargestSpecial(String s) {
-
-        return doMake(s);
-
-    }
-
-    private String doMake(String s) {
-        //  System.out.println(s);
-
+        String max = s;
         int n = s.length();
-        String maxt = "";
-        for (int i = 0; i < n; i++) {
-            int c0 = 0;
-            int c1 = 0;
-            for (int j = i; j < n; j++) {
-                if (s.charAt(j) == '0') {
-                    c0++;
+        int i = 0;
+        boolean found = false;
+        while (i < n) {
+            int ones = 0;
+            int zeros = 0;
+            int j = i;
+            while (j < n) {
+                if (s.charAt(j) == '1') {
+                    ones++;
                 } else {
-                    c1++;
+                    zeros++;
                 }
-
-                if (c1 == c0) {
-                    // from j+1 take another special substring
-                    int count0 = 0;
-                    int count1 = 0;
-                    for (int k = j + 1; k < n; k++) {
-                        if (s.charAt(k) == '0') {
-                            count0++;
-                        } else {
-                            count1++;
-                        }
-                        if (count0 == count1) {
-                            String ns = swap(s, i, j, j + 1, k);
-                            if (ns.compareTo(s) > 0) {
-                                if (ns.compareTo(maxt) > 0) {
-                                    maxt = ns;
-                                }
-                            }
-                        } else if (count1 < count0) {
-                            break;
-                        }
-                    }
-
-                } else if (c1 < c0) {
-                    // violated
+                if (ones < zeros) {
                     break;
+                } else if (ones == zeros) {
+                    // i...j
+                    int kones = 0;
+                    int kzeros = 0;
+                    int k = j + 1;
+                    while (k < n) {
+                        if (s.charAt(k) == '1') {
+                            kones++;
+                        } else {
+                            kzeros++;
+                        }
+                        if (kones < kzeros) {
+                            break;
+                        } else if (kones == kzeros) {
+                            String swapped = swap(s, i, j, j + 1, k);
+                            if (max.compareTo(swapped) < 0) {
+                                max = swapped;
+                                found = true;
+                            }
+                        }
+                        k++;
+                    }
                 }
+                j++;
             }
+            i++;
         }
-        if (!maxt.isEmpty()) {
-            return doMake(maxt);
-        } else {
-            return s;
-        }
+        return found ? makeLargestSpecial(max) : s;
     }
 
     private String swap(String s, int i, int j, int k, int l) {
@@ -64,29 +55,44 @@ public class SpecialBinaryString {
     }
 
     public static void main(String[] args) {
-        System.out.println(new SpecialBinaryString().makeLargestSpecial("110010111100001100101100101010101011011010100010"));
+        System.out.println(new SpecialBinaryStringQuicker().makeLargestSpecial("11011000"));
     }
 }
 
-// TODO do this myself
-class SpecialBinaryStringAlternative {
-    public String makeLargestSpecial(String S) {
-
-        int balance = 0, l = 0;
-        List<String> subResults = new LinkedList<>();
-        for (int r = 0; r < S.length(); r++) {
-            if (S.charAt(r) == '0') {
-                balance--;
-            } else {
-                balance++;
-            }
-            if (balance == 0) {
-                subResults.add("1" + makeLargestSpecial(S.substring(l + 1, r)) + "0");
-                l = r + 1;
-            }
+class SpecialBinaryStringQuicker {
+    // a special string must be 1xxxx0. and xxx must be the best special string too
+    // this is similar to () problem trying to find the best () where ( is bigger
+    // as long as we can swap neighboring ones, we can sort them
+    public String makeLargestSpecial(String s) {
+        if (s.isEmpty()) {
+            return s;
         }
-        Collections.sort(subResults, Collections.reverseOrder());
+        List<String> ss = new ArrayList<>();
+        int n = s.length();
+        // if it can be split into ()()(), then we sort the outmost ones, and deal with inner biggest ones
+        int i = 0;
+        int start = i;
+        int ones = 0;
+        while (i < n) {
+            if (s.charAt(i) == '1') {
+                ones++;
+            } else {
+                ones--;
+            }
+            if (ones == 0) {
+                // could be the whole string. in this case we take the wrapper out and deal with inner ones
+                String inner = "1" + makeLargestSpecial(s.substring(start + 1, i)) + "0";
+                ss.add(inner);
+                start = i + 1;
+            }
+            i++;
+        }
 
-        return String.join("", subResults);
+        Collections.sort(ss, Collections.reverseOrder());
+        StringBuilder sb = new StringBuilder();
+        for (int k = 0; k < ss.size(); k++) {
+            sb.append(ss.get(k));
+        }
+        return sb.toString();
     }
 }

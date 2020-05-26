@@ -59,68 +59,69 @@ Constraints:
 0 <= forest[i][j] <= 10^9
  */
 public class CutoffTreesForGolf {
-    // sort tree points then do bfs
-    public int cutOffTree(List<List<Integer>> a) {
-        int m = a.size();
-        int n = a.get(0).size();
+    public int cutOffTree(List<List<Integer>> forest) {
+        int m = forest.size();
+        int n = forest.get(0).size();
+        if (forest.get(0).get(0) == 0) {
+            return -1;
+        }
         List<int[]> trees = new ArrayList<>();
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                if (v(a, i, j) > 1) {
-                    trees.add(new int[]{i, j, v(a, i, j)});
+                if (forest.get(i).get(j) > 1) {
+                    trees.add(new int[]{forest.get(i).get(j), i, j});
                 }
             }
         }
-        Collections.sort(trees, (x, y) -> Integer.compare(x[2], y[2]));
-        int[] start = new int[]{0, 0, 1};
+        // height, row, col
+        Collections.sort(trees, (x, y) -> Integer.compare(x[0], y[0]));
         int r = 0;
+        int[] cur = new int[]{2, 0, 0};
         for (int i = 0; i < trees.size(); i++) {
             int[] t = trees.get(i);
-            int shortest = path(a, start, t);
-            if (shortest == -1) {
+            int dist = mindist(forest, cur, t);
+            if (dist == -1) {
                 return -1;
+            } else {
+                r += dist;
+                cur = t;
             }
-            start = t;
-            a.get(t[0]).set(t[1], 1);
-            r += shortest;
         }
         return r;
     }
 
-
-    int v(List<List<Integer>> a, int i, int j) {
-        return a.get(i).get(j);
-    }
-
-    int code(int i, int j, int n) {
-        return i * n + j;
-    }
-
     int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    int path(List<List<Integer>> a, int[] s, int[] t) {
+    // walk from t1 to t2. all things below t1 are grass
+    private int mindist(List<List<Integer>> forest, int[] t1, int[] t2) {
+
         Deque<int[]> q = new ArrayDeque<>();
+        int m = forest.size();
+        int n = forest.get(0).size();
+        q.offer(new int[]{0, t1[1], t1[2]}); // dist, row, col
         Set<Integer> seen = new HashSet<>();
-        int m = a.size();
-        int n = a.get(0).size();
-        q.offer(new int[]{s[0], s[1], 0});
-        seen.add(code(s[0], s[1], n));
+        seen.add(code(t1[1], t1[2], n));
         while (!q.isEmpty()) {
             int[] top = q.poll();
-            if (top[0] == t[0] && top[1] == t[1]) {
-                return top[2];
+            if (top[1] == t2[1] && top[2] == t2[2]) {
+                return top[0];
             }
             for (int[] d : dirs) {
-                int ni = top[0] + d[0];
-                int nj = top[1] + d[1];
-                int ncode = code(ni, nj, n);
-                if (ni >= 0 && ni < m && nj >= 0 && nj < n && v(a, ni, nj) > 0 && !seen.contains(ncode)) {
-                    seen.add(ncode);
-                    q.offer(new int[]{ni, nj, top[2] + 1});
+                int n1 = top[1] + d[0];
+                int n2 = top[2] + d[1];
+                if (n1 >= 0 && n1 < m && n2 >= 0 && n2 < n && !seen.contains(code(n1, n2, n))
+                        && forest.get(n1).get(n2) > 0) {
+                    seen.add(code(n1, n2, n));
+                    q.offer(new int[]{top[0] + 1, n1, n2});
                 }
             }
         }
         return -1;
+
+    }
+
+    int code(int i, int j, int n) {
+        return i * n + j;
     }
 
     public static void main(String[] args) {

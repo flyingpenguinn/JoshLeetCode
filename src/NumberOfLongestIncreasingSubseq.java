@@ -1,48 +1,50 @@
 import java.util.Arrays;
 
+/*
+LC#673
+Given an unsorted array of integers, find the number of longest increasing subsequence.
+
+Example 1:
+Input: [1,3,5,4,7]
+Output: 2
+Explanation: The two longest increasing subsequence are [1, 3, 4, 7] and [1, 3, 5, 7].
+Example 2:
+Input: [2,2,2,2,2]
+Output: 5
+Explanation: The length of longest continuous increasing subsequence is 1, and there are 5 subsequences' length is 1, so output 5.
+Note: Length of the given array will be not exceed 2000 and the answer is guaranteed to be fit in 32-bit signed int.
+ */
 public class NumberOfLongestIncreasingSubseq {
-    int[][]dp;
+    // record the length and count for each index, then find max
     public int findNumberOfLIS(int[] a) {
-        int max=0;
-        int maxc=0;
-        dp= new int[a.length][2];
-        Arrays.fill(dp,null);
-        for(int i=0;i<a.length;i++){
-            int[] r= dom(a,i);
-            if(r[0]>max){
-                max=r[0];
-                maxc= r[1];
-            } else if(r[0]==max){
-                maxc += r[1];
-            }
-        }
-        return maxc;
-
-    }
-
-    // len of longest and count
-    int[] dom(int[] a, int i){
-        if(dp[i]!=null){
-            return dp[i];
-        }
-        int imax=1;
-        int imaxc=1;
-        for(int j=i+1;j<a.length;j++){
-            if(a[j]>a[i]){
-                int[] cur= dom(a,j);
-
-                int curl= cur[0]+1;
-                if(curl>imax){
-                    imax=curl;
-                    imaxc=cur[1];
-                }else if(curl==imax){
-                    imaxc+=cur[1];
+        int n = a.length;
+        int[] dp = new int[n];
+        int[] dpcount = new int[n];
+        int max = 0;
+        int maxcount = 0;
+        for (int i = 0; i < n; i++) {
+            int curmax = 1;
+            int cmaxcount = 1;
+            for (int j = i - 1; j >= 0; j--) {
+                if (a[j] < a[i]) {
+                    int len = dp[j] + 1;
+                    if (len > curmax) {
+                        curmax = len;
+                        cmaxcount = dpcount[j];
+                    } else if (len == curmax) {
+                        cmaxcount += dpcount[j];
+                    }
                 }
             }
+            dp[i] = curmax;
+            dpcount[i] = cmaxcount;
+            if (curmax > max) {
+                max = curmax;
+                maxcount = cmaxcount;
+            } else if (curmax == max) {
+                maxcount += cmaxcount;
+            }
         }
-
-        //  System.out.println(i+" "+imax+" "+imaxc);
-        dp[i]= new int[]{imax,imaxc};
-        return dp[i];
+        return maxcount;
     }
 }
