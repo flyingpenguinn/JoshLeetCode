@@ -42,7 +42,7 @@ public class TwentyFourGames {
                         next.add(list.get(k));
                     }
                 }
-                List<Double> combi = add(list.get(i), list.get(j));
+                List<Double> combi = calcs(list.get(i), list.get(j));
                 for (double com : combi) {
                     next.add(com);
                     if (doj(next)) {
@@ -56,7 +56,7 @@ public class TwentyFourGames {
     }
 
     // all sorts of positioning!  a/b or b/a all good
-    private List<Double> add(double v1, double v2) {
+    private List<Double> calcs(double v1, double v2) {
         List<Double> r = new ArrayList<>();
         r.add(v1 + v2);
         r.add(v1 - v2);
