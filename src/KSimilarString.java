@@ -1,107 +1,70 @@
 import java.util.*;
 
+/*
+LC#854
+Strings A and B are K-similar (for some non-negative integer K) if we can swap the positions of two letters in A exactly K times so that the resulting string equals B.
+
+Given two anagrams A and B, return the smallest K for which A and B are K-similar.
+
+Example 1:
+
+Input: A = "ab", B = "ba"
+Output: 1
+Example 2:
+
+Input: A = "abc", B = "bca"
+Output: 2
+Example 3:
+
+Input: A = "abac", B = "baca"
+Output: 2
+Example 4:
+
+Input: A = "aabc", B = "abca"
+Output: 2
+Note:
+
+1 <= A.length == B.length <= 20
+A and B contain only lowercase letters from the set {'a', 'b', 'c', 'd', 'e', 'f'}
+ */
 public class KSimilarString {
 
-    // every time put one char in place
-    Set<String> visited = new HashSet<>();
-
-    class QueueItem {
-        String str;
-        int steps;
-        int index;
-
-        public QueueItem(String str, int steps, int index) {
-            this.str = str;
-            this.steps = steps;
-            this.index = index;
-        }
-    }
+    // every time we try to put one char in place. we could have multiple choices.
+    // similar to couples holding hands, but there we only have one choice
+    Map<String, Integer> dp = new HashMap<>();
 
     public int kSimilarity(String a, String b) {
-        Deque<QueueItem> q = new ArrayDeque<>();
-        q.offer(new QueueItem(a, 0, 0));
-        visited.add(a);
-        while (!q.isEmpty()) {
-            QueueItem top = q.pop();
-            String topstr = top.str;
-            if (topstr.equals(b)) {
-                return top.steps;
-            }
-            int index = top.index;
-            while (topstr.charAt(index) == b.charAt(index)) {
-                index++;
-            }
-            for (int j = index + 1; j < a.length(); j++) {
-                if (topstr.charAt(j) == b.charAt(index)) {
-                    String ns = swap(index, j, topstr);
-                    if (!visited.contains(ns)) {
-                        visited.add(ns);
-                        q.offer(new QueueItem(ns, top.steps + 1, index + 1));
-                    }
-                }
-            }
+        return dok(a, b);
+    }
+
+    private int dok(String a, String b) {
+        if (dp.containsKey(a)) {
+            return dp.get(a);
         }
-        return -1;
-    }
-
-    private String swap(int i, int j, String a) {
-        StringBuilder sb = new StringBuilder(a);
-        sb.setCharAt(i, a.charAt(j));
-        sb.setCharAt(j, a.charAt(i));
-        return sb.toString();
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new KSimilarString().kSimilarity("aaaabbbbccccddddeeee", "edcbaacbcebcdbeedaad"));
-        //    System.out.println(new KSimilarString().kSimilarity("abc", "bca"));
-    }
-}
-
-class KsimilarStringDp {
-
-    Map<String, Map<Integer, Integer>> dp = new HashMap<>();
-
-    public int kSimilarity(String a, String b) {
-        return doKsimilar(a, b, 0);
-    }
-
-    private int doKsimilar(String a, String b, int start) {
-        if (start == b.length()) {
+        int n = a.length();
+        int i = 0;
+        while (i < n && a.charAt(i) == b.charAt(i)) {
+            i++;
+        }
+        if (i == n) {
             return 0;
         }
-        Map<Integer, Integer> cm = dp.getOrDefault(a, new HashMap<>());
-        Integer cached = cm.get(start);
-        if (cached != null) {
-            return cached;
-        }
+        char ca = a.charAt(i);
+        char cb = b.charAt(i);
         int min = Integer.MAX_VALUE;
-        if (a.charAt(start) == b.charAt(start)) {
-            min = doKsimilar(a, b, start + 1);
-        } else {
-            char bc = b.charAt(start);
-            for (int i = start + 1; i < a.length(); i++) {
-                if (a.charAt(i) == bc) {
-                    String na = swap(start, i, a);
-                    int steps = doKsimilar(na, b, start + 1);
-                    if (steps != Integer.MAX_VALUE) {
-                        min = Math.min(min, steps + 1);
-                    }
-                }
+        for (int j = i + 1; j < n; j++) {
+            if (a.charAt(j) == cb) {
+                StringBuilder sb = new StringBuilder(a);
+                sb.setCharAt(j, ca);
+                sb.setCharAt(i, cb);
+                int cur = dok(sb.toString(), b);
+                min = Math.min(min, cur);
             }
         }
-        cm.put(start, min);
-        dp.put(a, cm);
-        return min;
+        int rt = min + 1;
+        dp.put(a, rt);
+        return rt;
     }
-
-
-    private String swap(int i, int j, String a) {
-        StringBuilder sb = new StringBuilder(a);
-        sb.setCharAt(i, a.charAt(j));
-        sb.setCharAt(j, a.charAt(i));
-        return sb.toString();
-    }
-
 }
 
 

@@ -20,43 +20,39 @@ public class TwentyFourGames {
     // fetch two numbers every time. put their result back to list. this is equivalent to adding () to every two numbers and get thei result
     // note in getting result we do a-b and b-a as well so that we can cover all possible sequences
     public boolean judgePoint24(int[] a) {
-        List<Double> list = new ArrayList<>();
+        List<Double> ns = new ArrayList<>();
         for (int i = 0; i < a.length; i++) {
-            list.add(a[i] + 0.0);
+            ns.add(Double.valueOf(a[i]));
         }
-        return doj(list);
+        return dojudge(ns);
     }
 
-    // fetch two every time. may feth the result of another two. i.e. add () around two numbers each time. can be a redundant ()
-    private boolean doj(List<Double> list) {
-        int n = list.size();
+    // merge two different numbers every time and put the result into list, then recursion forward
+    boolean dojudge(List<Double> a) {
+        int n = a.size();
         if (n == 1) {
-            boolean rt = Math.abs(list.get(0) - 24.0) < 0.000001;
-            return rt;
+            return Math.abs(a.get(0) - 24.0) < 0.00001;
         }
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                List<Double> next = new ArrayList<>();
-                for (int k = 0; k < n; k++) {
-                    if (k != i && k != j) {
-                        next.add(list.get(k));
-                    }
-                }
-                List<Double> combi = calcs(list.get(i), list.get(j));
-                for (double com : combi) {
-                    next.add(com);
-                    if (doj(next)) {
+                double v1 = a.get(i);
+                double v2 = a.get(j);
+                for (double gen : gen(v1, v2)) {
+                    List<Double> nlist = new ArrayList<>(a);
+                    nlist.remove(v1);
+                    nlist.remove(v2);
+                    nlist.add(gen);
+                    if (dojudge(nlist)) {
                         return true;
                     }
-                    next.remove(next.size() - 1);
                 }
             }
         }
         return false;
     }
 
-    // all sorts of positioning!  a/b or b/a all good
-    private List<Double> calcs(double v1, double v2) {
+    // must try out all sequences because this is like adding () around two numbers
+    List<Double> gen(double v1, double v2) {
         List<Double> r = new ArrayList<>();
         r.add(v1 + v2);
         r.add(v1 - v2);

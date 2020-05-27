@@ -32,35 +32,30 @@ Note:
 0 <= K < N <= L <= 100
  */
 public class NumberOfMusicPlaylist {
-    // for each position i, p distinct songs have been picked.
-    // we can either pick a new one out of n-p songs, without restriction, or pick an old one from p-k songs. here it's p-k
-    // because we must wait for k songs to pick an old one. THE LAST K SONGS MUST BE DISTINCT
-    // @SILU for dp counting problem, think about the restraining factors. here distinct songs is one of the restrict factor
-
+    // two choices at each step: play an old song or play a new song
     long[][] dp;
-
-    long Mod = 1000000007;
+    long MOD = 1000000007;
 
     public int numMusicPlaylists(int n, int l, int k) {
         dp = new long[l][n + 1];
-        for (int i = 0; i < dp.length; i++) {
+        for (int i = 0; i < l; i++) {
             Arrays.fill(dp[i], -1);
         }
-        return (int) don(0, 0, n, l, k);
+        return (int) dom(0, 0, l, n, k);
     }
 
-    // at ith slot, j unique songs played
-    private long don(int i, int j, int n, int l, int k) {
+    // at song i, listened j different songs in 0...i-1
+    long dom(int i, int j, int l, int n, int k) {
         if (i == l) {
-            return j >= n ? 1 : 0;
+            return j == n ? 1 : 0;
         }
         if (dp[i][j] != -1) {
             return dp[i][j];
         }
-        long newsong = n - j <= 0 ? 0 : (n - j) * don(i + 1, j + 1, n, l, k);
-        long oldsong = j - k <= 0 ? 0 : (j - k) * don(i + 1, j, n, l, k);
-        long rt = newsong + oldsong;
-        dp[i][j] = (rt % Mod);
+        long way1 = (n > j) ? (n - j) * dom(i + 1, j + 1, l, n, k) : 0;
+        long way2 = (j > k) ? (j - k) * dom(i + 1, j, l, n, k) : 0;
+        long rt = way1 + way2;
+        dp[i][j] = rt % MOD;
         return dp[i][j];
     }
 

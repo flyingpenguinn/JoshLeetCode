@@ -34,68 +34,47 @@ public class ValidParenthesisString {
 
 
 class ValidParenthesisMemoization {
-    int[][] dp = null;
-
-    public boolean checkValidString(String s) {
-        dp = new int[s.length()][s.length()];
-        return doCheck(0, 0, s);
-
-    }
-
-    private boolean doCheck(int i, int openLeft, String s) {
-        if (i == s.length()) {
-            return openLeft == 0;
-        }
-        if (openLeft < 0) {
-            return false;
-        }
-        if (dp[i][openLeft] != 0) {
-            return dp[i][openLeft] == 1;
-        }
-        char c = s.charAt(i);
-        if (c == '(') {
-            boolean rt = doCheck(i + 1, openLeft + 1, s);
-            dp[i][openLeft] = rt ? 1 : 2;
-            return rt;
-        }
-        if (c == ')') {
-            boolean rt = doCheck(i + 1, openLeft - 1, s);
-            dp[i][openLeft] = rt ? 1 : 2;
-            return rt;
-        } else {
-            // * can be anything
-            boolean rt = doCheck(i + 1, openLeft + 1, s) || doCheck(i + 1, openLeft - 1, s) || doCheck(i + 1, openLeft, s);
-            dp[i][openLeft] = rt ? 1 : 2;
-            return rt;
-        }
-    }
-}
-
-// slower than memoization because there are more useless "open left" checked...
-class ValidParenthesisIterativeDp {
+    // we dont really need open right because right+1 == left-1 we just care about their diff
+    int[][] dp;
 
     public boolean checkValidString(String s) {
         int n = s.length();
-        int[][] dp = new int[n + 1][n + 1];
-        for (int j = 1; j <= n; j++) {
-            dp[n][j] = 2;
-        }
-        dp[n][0] = 1;
-        for (int i = n - 1; i >= 0; i--) {
-            for (int j = 0; j < n; j++) {
-                char c = s.charAt(i);
-                if (c == '(') {
-                    dp[i][j] = dp[i + 1][j + 1];
-                } else if (c == ')') {
-                    dp[i][j] = j - 1 >= 0 ? dp[i + 1][j - 1] : 2;
-                } else {
-                    dp[i][j] = j - 1 >= 0 ? dp[i + 1][j - 1] : 2;
-                    dp[i][j] = Math.min(dp[i + 1][j], Math.min(dp[i][j], dp[i + 1][j + 1]));
-                }
-            }
-        }
-        return dp[0][0] == 1;
+        dp = new int[n][n];
+        for (int i = 0; i < n; i++) {
 
+            Arrays.fill(dp[i], -1);
+
+        }
+        int rt = dov(s, 0, 0);
+        return rt == 1;
+    }
+
+    // dont really need right because our logic is centered on left/right balance
+    int dov(String s, int i, int ol) {
+        if (ol < 0) {
+            return 2;
+        }
+        int n = s.length();
+        if (i == n) {
+            return ol == 0 ? 1 : 2;
+        }
+        if (dp[i][ol] != -1) {
+            return dp[i][ol];
+        }
+        char c = s.charAt(i);
+        int rt = 0;
+        if (c == '(') {
+            rt = dov(s, i + 1, ol + 1);
+        } else if (c == ')') {
+            rt = dov(s, i + 1, ol - 1);
+        } else {
+            int rt1 = dov(s, i + 1, ol + 1);
+            int rt2 = dov(s, i + 1, ol - 1);
+            int rt3 = dov(s, i + 1, ol);
+            rt = Math.min(rt1, Math.min(rt2, rt3));
+        }
+        dp[i][ol] = rt;
+        return rt;
     }
 }
 
