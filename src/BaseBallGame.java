@@ -1,5 +1,7 @@
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 /*
 LC#682
@@ -41,35 +43,30 @@ The size of the input list will be between 1 and 1000.
 Every integer represented in the list will be between -30000 and 30000.
  */
 public class BaseBallGame {
+    // can't really take out the head when list too big because we can negate the operations
     public int calPoints(String[] ops) {
-        Deque<Integer> st = new ArrayDeque<>();
-        for (String op : ops) {
-            if ("D".equals(op)) {
-                if (!st.isEmpty()) {
-                    int top = st.peek();
-                    st.push(top * 2);
-                }
-            } else if ("C".equals(op)) {
-                if (!st.isEmpty()) {
-                    st.pop();
-                }
-            } else if ("+".equals(op)) {
-                if (st.size() >= 2) {
-                    int v1 = st.pop();
-                    int v2 = st.pop();
-                    st.push(v2);
-                    st.push(v1);
-                    st.push(v1 + v2);
-                }
-            } else {
-                int v = Integer.valueOf(op);
-                st.push(v);
-            }
-        }
+        List<Integer> list = new ArrayList<>();
         int r = 0;
-        // need to add rounds up
-        while (!st.isEmpty()) {
-            r += st.pop();
+        for (String o : ops) {
+            int cur = 0;
+            if ("C".equals(o)) {
+                cur = -(list.get(list.size() - 1));
+                list.remove(list.size() - 1);
+            } else if ("D".equals(o)) {
+                int last = list.get(list.size() - 1);
+                cur = last * 2;
+                list.add(cur);
+            } else if ("+".equals(o)) {
+                int last = list.get(list.size() - 1);
+                int last2 = list.get(list.size() - 2);
+                cur = last + last2;
+                list.add(cur);
+            } else {
+                cur = Integer.valueOf(o);
+                list.add(cur);
+            }
+            //   System.out.println(cur);
+            r += cur;
         }
         return r;
     }

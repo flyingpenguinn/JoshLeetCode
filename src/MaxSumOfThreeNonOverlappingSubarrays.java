@@ -32,37 +32,49 @@ public class MaxSumOfThreeNonOverlappingSubarrays {
         for (int i = 0; i < n; i++) {
             sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
         }
-        int[] sub = new int[n];
-        for (int i = 0; i + k - 1 < n; i++) {
-            sub[i] = sum[i + k - 1] - (i == 0 ? 0 : sum[i - 1]);
-        }
-        int[] right = new int[n - k + 1];
-        right[n - k] = n - k;
-        for (int i = n - k - 1; i >= 2 * k; i--) {
-            if (sub[i] >= sub[right[i + 1]]) {
-                // == to allow earlier indexes to override this one
-                right[i] = i;
+        // max left subarray of size k, their end point
+        int[] maxleft = new int[n];
+        int[] maxleftindex = new int[n];
+        maxleft[k - 1] = sum[k - 1];
+        maxleftindex[k - 1] = k - 1;
+        for (int i = k; i < n; i++) {
+            int segsum = sum[i] - sum[i - k];
+            if (segsum > maxleft[i - 1]) {
+                maxleft[i] = segsum;
+                maxleftindex[i] = i;
             } else {
-                right[i] = right[i + 1];
+                // leco small one
+                maxleft[i] = maxleft[i - 1];
+                maxleftindex[i] = maxleftindex[i - 1];
             }
         }
-
-        int[] left = new int[n];
-        for (int i = 1; i < n - 2 * k; i++) {
-            if (sub[i] > sub[left[i - 1]]) {
-                left[i] = i;
+        // max subarray with i as starting point
+        int[] maxright = new int[n];
+        int[] maxrightindex = new int[n];
+        maxright[n - k] = sum[n - 1] - sum[n - k - 1];
+        maxrightindex[n - k] = n - k;
+        for (int i = n - k - 1; i >= 1; i--) {
+            int segsum = sum[i + k - 1] - sum[i - 1];
+            if (segsum >= maxright[i + 1]) {
+                maxright[i] = segsum;
+                maxrightindex[i] = i;
             } else {
-                left[i] = left[i - 1];
+                maxright[i] = maxright[i + 1];
+                maxrightindex[i] = maxrightindex[i + 1];
             }
         }
-        // middle man
         int max = 0;
-        int[] r = null;
-        for (int i = k; i + k < right.length; i++) {
-            int cur = sub[left[i - k]] + sub[i] + sub[right[i + k]];
-            if (cur > max) {
-                max = cur;
-                r = new int[]{left[i - k], i, right[i + k]};
+        int[] r = new int[3];
+        for (int i = 2 * k - 1; i + k < n; i++) {
+            int curseg = sum[i] - sum[i - k];
+            int leftsum = maxleft[i - k];
+            int rightsum = maxright[i + 1];
+            int cursum = curseg + leftsum + rightsum;
+            if (cursum > max) {
+                max = cursum;
+                r[0] = maxleftindex[i - k] - k + 1;
+                r[1] = i - k + 1;
+                r[2] = maxrightindex[i + 1];
             }
         }
         return r;

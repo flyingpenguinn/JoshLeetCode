@@ -34,7 +34,7 @@ Update (2017-09-26):
 We have overhauled the problem description + test cases and specified clearly the graph is an undirected graph. For the directed graph follow up please see Redundant Connection II). We apologize for any inconvenience caused.
  */
 public class RedundantConnection {
-
+    // the first time that we find a circle in union find that's the problematic edge
     public int[] findRedundantConnection(int[][] es) {
         int n = es.length;
         int[] p = new int[n + 1];

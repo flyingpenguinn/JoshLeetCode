@@ -29,57 +29,19 @@ public class MaxChunksToMakeSortedII {
     // if maxleft[i] <= minright[i+1] we got a new chunk
     public int maxChunksToSorted(int[] a) {
         int n = a.length;
-        if (n == 0) {
-            return 0;
-        }
-        int[] minRight = new int[n + 1];
-        minRight[n] = Integer.MAX_VALUE;
-        for (int i = n - 1; i >= 0; i--) {
-            minRight[i] = Math.min(minRight[i + 1], a[i]);
-        }
-        int maxleft = Integer.MIN_VALUE;
-        int r = 0;
-        for (int i = 0; i < n; i++) {
-            maxleft = Math.max(maxleft, a[i]);
-            if (maxleft <= minRight[i + 1]) {
-                r++;
-            }
-        }
-        return r;
-    }
-}
-
-class MaxChunksToMakeSortedIISlidingWindow {
-
-    // I and II combined
-    // sliding window if curmax<min we found what we want otherwise extend it
-    public int maxChunksToSorted(int[] a) {
-        int n = a.length;
+        // min number after self
         int[] min = new int[n];
-        for (int i = n - 1; i >= 0; i--) {
-            min[i] = (i == n - 1) ? a[i] : Math.min(min[i + 1], a[i]);
+        min[n - 1] = Integer.MAX_VALUE;
+        for (int i = n - 2; i >= 0; i--) {
+            min[i] = Math.min(a[i + 1], min[i + 1]);
         }
-        int high = -1;
-        int low = 0;
-        int r = 1;
-        int cl = -1;
-        while (low < n && high < n) {
-            if (low == high + 1) {
-                high++;
-                cl = a[high];
-            } else {
-                int lf = high == n - 1 ? -1 : min[high + 1];
-                if (lf < cl) {
-                    // intersecting...
-                    high++;
-                    if (high < n) {
-                        cl = Math.max(cl, a[high]);
-                    }
-                } else {
-                    r++;
-                    low = high + 1;
-                    cl = -1;
-                }
+        int r = 0;
+        int max = Integer.MIN_VALUE;
+        // must be >= max numbers we've seen so far
+        for (int i = 0; i < n; i++) {
+            max = Math.max(max, a[i]);
+            if (max <= min[i]) {
+                r++;
             }
         }
         return r;

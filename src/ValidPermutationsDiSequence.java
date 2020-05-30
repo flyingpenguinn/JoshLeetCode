@@ -32,53 +32,51 @@ S consists only of characters from the set {'D', 'I'}.
  */
 public class ValidPermutationsDiSequence {
     // O(n3). note to use j to indicate the ranking of the previous selected in the remaining numbers. note if its ranking was j, we can still pick
-    // jth at this step
-    int Mod = 1000000007;
-    int[][] dp;
+    // jth at this step when we are facing "I"
+    int MOD = 1000000007;
+    long[][] dp;
 
     public int numPermsDISequence(String s) {
         int n = s.length();
-        dp = new int[n + 1][n + 2];
+        dp = new long[n][n + 1];
         for (int i = 0; i < n; i++) {
             Arrays.fill(dp[i], -1);
         }
-        int r = 0;
-        // num is from 1 to n+1
-        for (int j = 1; j <= n + 1; j++) {
-            r += dfs(0, j, s);
-            r %= Mod;
+        // number is from 0...n
+        long r = 0;
+        for (int i = 0; i <= n; i++) {
+            // we iterate from the 2nd number
+            r += dom(0, i, s);
+            r %= MOD;
         }
-        return r;
+        return (int) r;
     }
 
-    int dfs(int i, int j, String s) {
-        //   System.out.println(i+" "+j);
+    // we are at position i, last number is the jth smallest in the remaining numbers
+    private long dom(int i, int j, String s) {
         int n = s.length();
-
-        // looking at si. previous one is jth among remaining
         if (i == n) {
             return 1;
         }
         if (dp[i][j] != -1) {
             return dp[i][j];
         }
-        long r = 0L;
+        int rt = 0;
         if (s.charAt(i) == 'D') {
-            for (int k = 1; k < j; k++) {
-                r += dfs(i + 1, k, s);
-                r %= Mod;
+            for (int k = 0; k < j; k++) {
+                rt += dom(i + 1, k, s);
+                rt %= MOD;
             }
         } else {
-            // I
-            int high = n - i; // we have n-i to go
-            for (int k = j; k <= high; k++) {
-                // not j+1. 12345=> took 2, 1345.if we pick 3, it,s still the 2nd,not 3rd
-                r += dfs(i + 1, k, s);
-                r %= Mod;
+            // prev number would have ranked j. so new j here is bigger that that number
+            // when it's i-1 we only have 1 choice as 0...
+            for (int k = j; k < n - i; k++) {
+                rt += dom(i + 1, k, s);
+                rt %= MOD;
             }
         }
-        dp[i][j] = (int) r;
-        return dp[i][j];
+        dp[i][j] = rt;
+        return rt;
     }
 
     public static void main(String[] args) {

@@ -38,59 +38,25 @@ Note: The given binary tree has not more than 10000 nodes. The height of the tre
  */
 public class LongestUniValuePath {
     // similar to #124 max path sum
-    // count nodes so -1 in the end
-    public int longestUnivaluePath(TreeNode root) {
-        if (root == null) {
-            return 0;
-        }
-        return dol(root)[0] - 1;
-    }
-
-    int[] dol(TreeNode n) {
-        if (n == null) {
-            return new int[]{0, 0};
-        }
-        int[] lr = dol(n.left);
-        int[] rr = dol(n.right);
-        int mll = 1;
-        int cm = 1;
-        if (n.left != null && n.left.val == n.val) {
-            mll += lr[1];
-            cm += lr[1];
-        }
-        int mrl = 1;
-        if (n.right != null && n.right.val == n.val) {
-            mrl += rr[1];
-            cm += rr[1];
-        }
-        int m0 = Math.max(lr[0], Math.max(cm, rr[0]));
-        int m1 = Math.max(mrl, mll);
-        //  System.out.println(n.val+" "+m0+" "+m1);
-        return new int[]{m0, m1};
-    }
-}
-
-class LongestUniPathWithPv {
-    // another way: return max pv path starting at node n
-    int max = 0;
+    // count edges we just need left+right not left+right+1
+    int r = 0;
 
     public int longestUnivaluePath(TreeNode root) {
-        dfs(root, null);
-        return max;
+        dol(root, null);
+        return r;
     }
 
-    // max path len of given pv
-    int dfs(TreeNode n, Integer pv) {
+    int dol(TreeNode n, Integer pv) {
         if (n == null) {
             return 0;
         }
-
-        int lh = dfs(n.left, n.val);
-        int rh = dfs(n.right, n.val);
-        int cl = lh + rh;
-        max = Math.max(max, cl);
+        int lv = dol(n.left, n.val);
+        int rv = dol(n.right, n.val);
+        int curres = lv + rv; // max we can get here with path crossing this node. edges, so left+right
+        r = Math.max(r, curres);
+        int max = Math.max(lv, rv);
         if (pv != null && n.val == pv) {
-            return Math.max(lh, rh) + 1;
+            return max + 1; // max we can return to the upper level
         } else {
             return 0;
         }

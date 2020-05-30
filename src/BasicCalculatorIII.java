@@ -22,100 +22,100 @@ Some examples:
 Note: Do not use the eval built-in library function.
  */
 public class BasicCalculatorIII {
-    Deque<Long> nums = new ArrayDeque<>();
-    Deque<Character> ops = new ArrayDeque<>();
-
     public int calculate(String s) {
-        if (s.startsWith("-")) {
-            return calculate("0" + s);
-        }
-        char[] cs = s.toCharArray();
-        int n = cs.length;
+        Deque<Long> nst = new ArrayDeque<>();
+        Deque<Character> ost = new ArrayDeque<>();
+        int n = s.length();
+        StringBuilder sb = new StringBuilder();
         int i = 0;
-
         while (i < n) {
-            char c = cs[i];
-            if (c == ' ') {
-                i++;
-            } else if (Character.isDigit(c)) {
-                int j = i;
-                long cur = 0;
-                while (j < n && Character.isDigit(cs[j])) {
-                    cur = cur * 10 + (cs[j++] - '0');
-                }
-                nums.push(cur);
-                i = j;
+            char c = s.charAt(i);
+            int nexti = i + 1;
+            if (c == '(' && s.charAt(i + 1) == '-') {
+                // negative number
+                int end = s.indexOf(")", i + 1);
+                long neg = Long.valueOf(s.substring(i + 1, end));
+                nst.push(neg);
+                nexti = end + 1;
             } else if (c == '(') {
-                if (i + 1 < n && cs[i + 1] == '-') {
-                    // (-7)
-                    int j = i + 2;
-                    long cur = 0;
-                    while (Character.isDigit(cs[j]) && cs[j] != ')') {
-                        cur = cur * 10 + (cs[j++] - '0');
-                    }
-                    nums.push(-cur);
-                    i = j + 1; // after )
-                } else {
-                    ops.push(c);
-                    i++;
-                }
+                ost.push(c);
             } else if (c == ')') {
-                while (!ops.isEmpty() && ops.peek() != '(') {
-                    calconce();
-                }
-                ops.pop(); // pop the (
-                i++;
+                sb = pushnumber(nst, sb);
+                collapsetillchar('(', nst, ost);
+            } else if (i > 0 && (c == '+' || c == '-' || c == '*' || c == '/')) {
+                // note the handling of -2-5 or +3+6
+                sb = pushnumber(nst, sb);
+                collapsetilllower(nst, ost, c);
             } else {
-                // + - * /
-                while (shouldcalc(c)) {
-                    // keep collapsing till we meet a stop for example 2-3/4+30 when we see the + we calc 3/4 but we can still keep calcing 2-0
-                    // this is to ensure we always calc from left to right
-                    calconce();
-                }
-                ops.push(c);
-                i++;
+                sb.append(c);
             }
+            i = nexti;
         }
-        while (!ops.isEmpty()) {
-            calconce();
-        }
-        return nums.isEmpty() ? 0 : nums.pop().intValue();
+        pushnumber(nst, sb);
+        collapsall(nst, ost);
+        return (int) nst.pop().longValue();
     }
 
-    private boolean shouldcalc(char c) {
-        // 1+2+3-> 1+2 first
-        // 1-2-3-> 1-2 first
-        // 1*2+3-> 1*2 first
-        // 1-2*3=> dont know, need to wait for 2*3 to play out
-        if (ops.isEmpty()) {
-            return false;
+    protected StringBuilder pushnumber(Deque<Long> nst, StringBuilder sb) {
+        String trim = sb.toString().trim();
+        if (!trim.isEmpty()) {
+            nst.push(Long.valueOf(trim));
         }
-        char top = ops.peek();
-        if (top == '(') { // otherwise it would be a true and we cant calc (
-            return false;
-        }
-        // if current one can still develop then no rush to calc. otherwise calc it
-        // this way we dont run into 2-3-4 != 2-(3-4) problem
-        if ((top == '+' || top == '-') && (c == '*' || c == '/')) {
-            return false;
-        }
-        return true;
+        return new StringBuilder();
     }
 
-    private void calconce() {
-        long n2 = nums.pop(); //note to flip
-        long n1 = nums.pop();
-        char op = ops.pop();
-        long rt = 0;
-        if (op == '+') {
-            rt = n1 + n2;
-        } else if (op == '-') {
-            rt = n1 - n2;
-        } else if (op == '*') {
-            rt = n1 * n2;
+    private void collapsall(Deque<Long> nst, Deque<Character> ost) {
+        while (!ost.isEmpty()) {
+            popandcalc(nst, ost);
+        }
+    }
+
+    private void collapsetillchar(char c, Deque<Long> nst, Deque<Character> ost) {
+        // must be of same priority, or higher priorities are at the top of stack so done first anyway
+        while (ost.peek() != c) {
+            popandcalc(nst, ost);
+        }
+        ost.pop();
+    }
+
+    private void collapsetilllower(Deque<Long> nst, Deque<Character> ost, char op) {
+        // this is key of this problem
+        // if we see +, keep doing * /  or +- itself, till we see (
+        // if we see */, keep doing */, we should stop there
+        // but at any rate, stop at (
+        while (!ost.isEmpty() && priority(ost.peek()) >= priority(op)) {
+            popandcalc(nst, ost);
+        }
+        ost.push(op);
+    }
+
+    private void popandcalc(Deque<Long> nst, Deque<Character> ost) {
+        char topop = ost.pop();
+        long v1 = nst.pop();
+        long v2 = nst.pop();
+        nst.push(operation(v2, v1, topop));
+    }
+
+    private int priority(char c) {
+        if (c == '*' || c == '/') {
+            return 2;
+        } else if (c == '+' || c == '-') {
+            return 1;
         } else {
-            rt = n1 / n2;
+            /// ( is the lowest, we stop at it all the time
+            return 0;
         }
-        nums.push(rt);
+    }
+
+    private long operation(long v1, long v2, char op) {
+        if (op == '+') {
+            return v1 + v2;
+        } else if (op == '-') {
+            return v1 - v2;
+        } else if (op == '*') {
+            return v1 * v2;
+        } else {
+            return v1 / v2;
+        }
     }
 }

@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /*
 LC#688
 On an NxN chessboard, a knight starts at the r-th row and c-th column and attempts to make exactly K moves. The rows and columns are 0 indexed, so the top-left square is (0, 0), and the bottom-right square is (N-1, N-1).
@@ -33,33 +35,39 @@ The knight always initially starts on the board.
  */
 public class KnightsPossibilityInChessBoard {
     double[][][] dp;
-
     public double knightProbability(int n, int k, int r, int c) {
         dp = new double[n][n][k + 1];
-        return dok(n, k, r, c);
+        for (int i = 0; i < dp.length; i++) {
+            for (int j = 0; j < dp[0].length; j++) {
+                Arrays.fill(dp[i][j], -1.0);
+            }
+        }
+        return dok(r, c, k, n);
     }
 
-    int[][] dirs = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+    int[][] dirs = {{2, 1}, {2, -1}, {1, 2}, {1, -2}, {-2, 1}, {-2, -1}, {-1, 2}, {-1, -2}};
 
-    double dok(int n, int k, int r, int c) {
+    // it's ok if it goes back to an old point- k-1 so status is different
+    double dok(int r, int c, int k, int n) {
         if (r < 0 || r >= n || c < 0 || c >= n) {
             return 0.0;
         }
+        // if ==0, anything after this becomes 0, so we dont need to calc it any more
         if (k == 0) {
-            // in possibility usually 1 at the point done
             return 1.0;
         }
-        if (dp[r][c][k] != 0.0) {
+        if (dp[r][c][k] >= 0) {
             return dp[r][c][k];
         }
-        double p = 0;
+        double rt = 0.0;
         for (int[] d : dirs) {
             int nr = r + d[0];
             int nc = c + d[1];
-            p += dok(n, k - 1, nr, nc) / 8.0;
+            double later = dok(nr, nc, k - 1, n);
+            rt += later * 1.0 / 8.0;
         }
-        dp[r][c][k] = p;
-        return p;
+        dp[r][c][k] = rt;
+        return rt;
     }
 
 

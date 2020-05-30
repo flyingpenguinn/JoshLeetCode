@@ -21,59 +21,49 @@ Output: "22:22"
 Explanation: The next closest time choosing from digits 2, 3, 5, 9, is 22:22. It may be assumed that the returned time is next day's time since it is smaller than the input time numerically.
  */
 public class NextClosestTime {
+
+    // traps: validate your time
+    // return current when no closer time
+    int[] seconds = {3600 * 10, 3600, 0, 60 * 10, 60};
+
+    int oneday = 24 * 3600;
+
     public String nextClosestTime(String time) {
-        Set<Integer> set = new HashSet<>();
-        int hint = 0;
-        int mint = 0;
+        int mindiff = 10000000;
+        String mintime = null;
+        int target = 0;
+        Set<Integer> nums = new HashSet<>();
         for (int i = 0; i < time.length(); i++) {
-            if (i == 2) {
-                continue;
+            if (i != 2) {
+                int v = time.charAt(i) - '0';
+                nums.add(v);
+                target += v * seconds[i];
             }
-            int cind = time.charAt(i) - '0';
-            if (i <= 1) {
-                hint = hint * 10 + cind;
-            } else if (i >= 3) {
-                mint = mint * 10 + cind;
-            }
-            set.add(cind);
         }
-        int timeint = hint * 60 + mint;
-        int day = 24 * 60;
-        int mind = day * 10;
-        int minint = -1;
-        for (int h1 : set) {
-            if (h1 > 2) {
-                continue;
-            }
-            for (int h2 : set) {
-                int hour = h1 * 10 + h2;
-                if (hour >= 24) {
+        for (int h1 : nums) {
+            for (int h2 : nums) {
+                if (h1 * 10 + h2 >= 24) {
                     continue;
                 }
-                for (int m1 : set) {
-                    if (m1 > 5) {
-                        continue;
-                    }
-                    for (int m2 : set) {
-                        int min = m1 * 10 + m2;
-                        if (min >= 60) {
+                for (int m1 : nums) {
+                    for (int m2 : nums) {
+                        if (m1 * 10 + m2 >= 60) {
                             continue;
                         }
-                        int cur = hour * 60 + min;
-                        //  System.out.println(cs);
-                        int diff = cur > timeint ? cur - timeint : cur - timeint + day;
-                        if (diff < mind) {
-                            mind = diff;
-                            minint = cur;
+                        int cur = h1 * seconds[0] + h2 * seconds[1] + m1 * seconds[3] + m2 * seconds[4];
+                        if (cur != -1) {
+                            // note this logic
+                            int curdiff = cur < target ? cur + oneday - target : cur - target;
+                            if (curdiff > 0 && curdiff < mindiff) {
+                                mindiff = curdiff;
+                                mintime = "" + h1 + h2 + ":" + m1 + m2;
+                            }
                         }
                     }
                 }
             }
         }
-        int rmin = minint % 60;
-        int rhour = (minint - rmin) / 60;
-        String srhour = rhour < 10 ? "0" + rhour : String.valueOf(rhour);
-        String srmin = rmin < 10 ? "0" + rmin : String.valueOf(rmin);
-        return srhour + ":" + srmin;
+        // only use current time when no choice
+        return mintime == null ? time : mintime;
     }
 }
