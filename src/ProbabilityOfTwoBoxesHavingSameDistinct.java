@@ -71,6 +71,7 @@ public class ProbabilityOfTwoBoxesHavingSameDistinct {
     }
 
 
+    // calcing probabolity, using double is enough
     private double perm(int[] a) {
         int sizea = 0;
         for (int i = 0; i < a.length; i++) {

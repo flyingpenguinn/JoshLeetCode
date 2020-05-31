@@ -99,7 +99,7 @@ class Memoization {
     }
 
     // w1 from 0 to 0+l1-1
-    // w2 from - to 0+l2-1
+    // w2 from 0 to 0+l2-1
     private int doMinDist(String w1, String w2, int l1, int l2) {
         if (dp[l1][l2] != -1) {
             return dp[l1][l2];
