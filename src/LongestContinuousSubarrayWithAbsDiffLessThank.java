@@ -35,26 +35,27 @@ Output: 3
  */
 public class LongestContinuousSubarrayWithAbsDiffLessThank {
     // find min/max whose diff is within limit. if it reaches a point where it's >, start shrinking until it's fit again
+    // we can do this because once it's no longer good, all afterward is no good. this is similar in nature as at most k different chars
     public int longestSubarray(int[] a, int limit) {
         int n = a.length;
         TreeMap<Integer, Integer> tm = new TreeMap<>();
-        int head = 0;
         int r = 0;
-        for (int i = 0; i < n; i++) {
-            update(tm, a[i], 1);
-            int min = tm.firstKey();
-            int max = tm.lastKey();
-            if (Math.abs(max - min) <= limit) {
-                r = Math.max(r, i - head + 1);
-            } else {
-                while (true) {
-                    update(tm, a[head++], -1);
-                    min = tm.firstKey();
-                    max = tm.lastKey();
-                    if (Math.abs(max - min) <= limit) {
-                        break;
-                    }
+        int low = 0;
+        int high = 0;
+        update(tm, a[0], 1);
+        while (true) {
+            Integer min = tm.firstKey();
+            Integer max = tm.lastKey();
+            if (min != null && max != null && max - min <= limit) {
+                r = Math.max(high - low + 1, r);
+                high++;
+                if (high == n) {
+                    break;
                 }
+                update(tm, a[high], 1);
+            } else {
+                update(tm, a[low], -1);
+                low++;
             }
         }
         return r;
@@ -68,5 +69,4 @@ public class LongestContinuousSubarrayWithAbsDiffLessThank {
             tm.put(t, nv);
         }
     }
-
 }
