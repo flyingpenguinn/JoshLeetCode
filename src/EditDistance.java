@@ -89,38 +89,31 @@ class Memoization {
     int[][] dp = new int[0][0];
 
     public int minDistance(String w1, String w2) {
-        dp = new int[w1.length() + 1][w2.length() + 1];
+        dp = new int[w1.length()][w2.length()];
         for (int i = 0; i < dp.length; i++) {
             for (int j = 0; j < dp[0].length; j++) {
                 dp[i][j] = -1;
             }
         }
-        return doMinDist(w1, w2, w1.length(), w2.length());
+        return doMinDist(w1, w2, 0, 0);
     }
 
-    // w1 from 0 to 0+l1-1
-    // w2 from 0 to 0+l2-1
-    private int doMinDist(String w1, String w2, int l1, int l2) {
-        if (dp[l1][l2] != -1) {
-            return dp[l1][l2];
+    // at i of w1, j of w2, edit distance
+    private int doMinDist(String w1, String w2, int i, int j) {
+        if (i == w1.length()) {
+            return w2.length() - j; // delete all
         }
-        if (l1 == 0 && l2 == 0) {
-            return 0;
-        } else if (l1 == 0) {
-            return l2;
-        } else if (l2 == 0) {
-            return l1;
-        } else {
-            int d1 = doMinDist(w1, w2, l1 - 1, l2) + 1;
-            int d2 = doMinDist(w1, w2, l1, l2 - 1) + 1;
-            int d3 = doMinDist(w1, w2, l1 - 1, l2 - 1);
-            if (w1.charAt(l1 - 1) != w2.charAt(l2 - 1)) {
-                d3++;
-            }
-            int rt = Math.min(d1, Math.min(d2, d3));
-            dp[l1][l2] = rt;
-            return rt;
-
+        if (j == w2.length()) {
+            return w1.length() - i;
         }
+        if (dp[i][j] != -1) {
+            return dp[i][j];
+        }
+        int way1 = doMinDist(w1, w2, i + 1, j) + 1;
+        int way2 = doMinDist(w1, w2, i, j + 1) + 1;
+        int way3 = doMinDist(w1, w2, i + 1, j + 1) + (w1.charAt(i) == w2.charAt(j) ? 0 : 1);
+        int rt = Math.min(way1, Math.min(way2, way3));
+        dp[i][j] = rt;
+        return rt;
     }
 }
