@@ -37,62 +37,83 @@ board[i][j] will be a permutation of [0, 1, 2, 3, 4, 5].
  */
 public class SlidingPuzzle {
     // bfs on states
-    int[][] dirs = {{1, 3}, {-1, 1, 3}, {-1, 3}, {-3, 1}, {-3, -1, 1}, {-3, -1}};
-    String done = "123450";
-    Map<String, String> pre = new HashMap<>();
+    class QItem {
+        int[][] a;
+        int step;
 
-    public int slidingPuzzle(int[][] b) {
-        Deque<String> q = new ArrayDeque<>();
-        Set<String> seen = new HashSet<>();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
-                sb.append(b[i][j]);
-            }
+        public QItem(int[][] a, int step) {
+            this.a = a;
+            this.step = step;
         }
-        String init = sb.toString();
-        q.offer(init + "#0");
-        while (!q.isEmpty()) {
-            String[] sp = q.poll().split("#");
-            String cur = sp[0];
-            int step = Integer.valueOf(sp[1]);
+    }
 
-            if (cur.equals(done)) {
-                //   dfsprint(done,init);
-                return step;
+    public int slidingPuzzle(int[][] a) {
+        Deque<QItem> q = new ArrayDeque<>();
+        q.offer(new QItem(a, 0));
+        Set<Integer> seen = new HashSet<>();
+        seen.add(code(a));
+        while (!q.isEmpty()) {
+            QItem top = q.poll();
+            if (Arrays.deepEquals(top.a, end)) {
+                return top.step;
             }
-            int zi = cur.indexOf('0');
-            for (int d : dirs[zi]) {
-                int j = zi + d;
-                if (j >= 0 && j < 6) {
-                    String next = swap(cur, zi, j);
-                    if (!seen.contains(next)) {
-                        seen.add(next);
-                        //   pre.put(next,cur);
-                        q.offer(next + "#" + (step + 1));
-                    }
+            List<int[][]> nexts = getnext(top.a);
+            for (int[][] ne : nexts) {
+                int code = code(ne);
+                if (!seen.contains(code)) {
+                    seen.add(code);
+                    q.offer(new QItem(ne, top.step + 1));
                 }
             }
         }
         return -1;
     }
 
-    String swap(String s, int i, int j) {
-        char[] sc = s.toCharArray();
-        char tmp = sc[i];
-        sc[i] = sc[j];
-        sc[j] = tmp;
-        return new String(sc);
-    }
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    // if we need to print the solution
-    void dfsprint(String end, String start) {
-        System.out.println(end);
-        if (end.equals(start)) {
-            return;
+    private List<int[][]> getnext(int[][] a) {
+        int m = a.length;
+        List<int[][]> r = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            int n = a[0].length;
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == 0) {
+                    for (int[] d : dirs) {
+                        int ni = i + d[0];
+                        int nj = j + d[1];
+                        if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+                            int[][] copya = new int[m][n];
+                            for (int k = 0; k < m; k++) {
+                                copya[k] = Arrays.copyOf(a[k], a[k].length);
+                            }
+                            swap(copya, i, j, ni, nj);
+                            r.add(copya);
+                        }
+                    }
+                    break;
+                }
+            }
         }
-
-        end = pre.get(end);
-        dfsprint(end, start);
+        return r;
     }
+
+    private void swap(int[][] a, int i, int j, int ni, int nj) {
+        int tmp = a[i][j];
+        a[i][j] = a[ni][nj];
+        a[ni][nj] = tmp;
+    }
+
+    private int code(int[][] a) {
+        // 123450=? 123450
+        // 012345=> 12345
+        int r = 0;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                r = r * 10 + a[i][j];
+            }
+        }
+        return r;
+    }
+
+    int[][] end = {{1, 2, 3}, {4, 5, 0}};
 }
