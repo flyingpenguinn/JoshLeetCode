@@ -71,3 +71,55 @@ public class PartitionToKEqualSubsets {
         System.out.println(new PartitionToKEqualSubsets().canPartitionKSubsets(array, 4));
     }
 }
+
+class PartitionKEqualSubsetSumsAnotherDp {
+    // just need to dp on states. even k is hidden in the state. sum of nums in st / target = current k
+    public boolean canPartitionKSubsets(int[] a, int k) {
+        int n = a.length;
+        int sum = 0;
+        for (int i = 0; i < n; i++) {
+            sum += a[i];
+        }
+        if (sum % k != 0) {
+            return false;
+        }
+        dp = new int[1 << n];
+        int rt = doc(0, 0, a, k, sum / k);
+        return rt == 1;
+    }
+
+    int[] dp;
+
+    private int doc(int st, int cursum, int[] a, int k, int target) {
+        int n = a.length;
+        if (cursum == target) {
+            return doc(st, 0, a, k - 1, target);
+        }
+        if (k == 1) {
+            return 1;
+        }
+        if (st == ((1 << n) - 1)) {
+            return 2;
+        }
+
+        if (cursum > target) {
+            return 2;
+        }
+        if (dp[st] != 0) {
+            return dp[st];
+        }
+        int rt = 2;
+        for (int i = 0; i < n; i++) {
+            if (((st >> i) & 1) == 0) {
+                int nst = st | (1 << i);
+                int pick = doc(nst, cursum + a[i], a, k, target);
+                if (pick == 1) {
+                    rt = 1;
+                    break;
+                }
+            }
+        }
+        dp[st] = rt;
+        return rt;
+    }
+}

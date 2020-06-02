@@ -25,22 +25,25 @@ s.length will be between 1 and 50,000.
 s will only consist of "0" or "1" characters.
  */
 public class CountBinaryStrings {
+    // iterate each i as end point. it could only serve one substring
     public int countBinarySubstrings(String s) {
-        char pre = '*';
-        int[] pres = new int[s.length()];
-        int r = 0;
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == pre) {
-                pres[i] = pres[i - 1] + 1;
+        int n = s.length();
+        int[] last = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i == 0 || s.charAt(i - 1) != s.charAt(i)) {
+                last[i] = i;
             } else {
-                pres[i] = 1;
+                last[i] = last[i - 1];
             }
-            int j = i - pres[i];
-            if (j >= 0 && s.charAt(j) != c && pres[j] >= pres[i]) {
+        }
+        int r = 0;
+        for (int i = 0; i < n; i++) {
+            int lastcur = last[i];
+            int lastdiff = lastcur - 1;
+            if (lastdiff >= 0 && lastdiff - last[lastdiff] >= i - lastcur) {
+                // >= because there could be more 0 or 1s before last[lastdiff] and we dont care
                 r++;
             }
-            pre = c;
         }
         return r;
     }

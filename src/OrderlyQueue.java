@@ -32,24 +32,25 @@ Note:
 S consists of lowercase letters only.
  */
 public class OrderlyQueue {
+    // when k>1, it means we can swap two element's positions
     public String orderlyQueue(String s, int k) {
-        // when k>1 we can always sort it
-        // we can first two chars as buffer to swap any two numbers
+        char[] sc = s.toCharArray();
         if (k > 1) {
-            char[] sc = s.toCharArray();
             Arrays.sort(sc);
             return new String(sc);
-        }
-        int n = s.length();
-        String min = s;
-
-        for (int i = 1; i < n; i++) {
-            String cur = s.substring(i) + s.substring(0, i);
-            if (cur.compareTo(min) < 0) {
-                min = cur;
+        } else {
+            int n = s.length();
+            StringBuilder sb = new StringBuilder();
+            String min = s;
+            for (int i = 0; i < n; i++) {
+                sb.append(s.charAt(i));
+                String ns = s.substring(i + 1) + sb.toString();
+                if (ns.compareTo(min) < 0) {
+                    min = ns;
+                }
             }
+            return min;
         }
-        return min;
     }
 
     public static void main(String[] args) {

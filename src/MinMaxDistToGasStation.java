@@ -1,53 +1,51 @@
-import java.util.*;
+/*
+LC#774
+On a horizontal number line, we have gas stations at positions stations[0], stations[1], ..., stations[N-1], where N = stations.length.
 
+Now, we add K more gas stations so that D, the maximum distance between adjacent gas stations, is minimized.
+
+Return the smallest possible value of D.
+
+Example:
+
+Input: stations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], K = 9
+Output: 0.500000
+Note:
+
+stations.length will be an integer in range [10, 2000].
+stations[i] will be an integer in range [0, 10^8].
+K will be an integer in range [1, 10^6].
+Answers within 10^-6 of the true value will be accepted as correct.
+ */
 public class MinMaxDistToGasStation {
-
-    // can't keep breaking biggest gap in half because it may just need 3 chunks
-    public double minmaxGasDist(int[] stations, int k) {
-        double max = 0;
-        List<Double> sorted = new ArrayList<>();
-        for (int i = 0; i < stations.length; i++) {
-            if (i - 1 >= 0) {
-                int gap = stations[i] - stations[i - 1];
-                max = Math.max(max, gap);
-                sorted.add((double) gap);
-            }
+    // min of max sth usually is solveable by binary search
+    public double minmaxGasDist(int[] a, int k) {
+        int n = a.length;
+        double maxgap = 0;
+        for (int i = 1; i < n; i++) {
+            int diff = a[i] - a[i - 1];
+            maxgap = Math.max(diff, maxgap);
         }
-        Collections.sort(sorted, Collections.reverseOrder());
-
-        double lb = 0.0;
-        double ub = max;
-        while (ub - lb >= 0.000001) {
-            double mid = lb + (ub - lb) / 2.0;
-            // System.out.println(mid);
-            if (doable(stations, k, mid, sorted)) {
-                ub = mid;
-            } else {
-                lb = mid;
-            }
-        }
-        return lb;
-    }
-
-    // all gaps <= dist- a simpler check might be possible: k-=  stations[i+1]-stations[i]/dist for all gaps
-    private boolean doable(int[] stations, int k, double dist, List<Double> sorted) {
-        int i = 0;
-        while (i < sorted.size()) {
-            if (sorted.get(i) <= dist) {
-                return true;
-            } else if (k == 0) {
-                return false;
-            } else {
-                double top = sorted.get(i);
-                int chunks = (int) Math.ceil(top / dist);
-                if (k - (chunks - 1) < 0) {
-                    return false;
+        double l = 0;
+        double u = maxgap;
+        while (u - l > 0.0000001) {
+            double m = l + (u - l) / 2.0;
+            int r = 0;
+            for (int i = 1; i < n; i++) {
+                int diff = a[i] - a[i - 1];
+                if (diff <= m) {
+                    continue;
+                } else {
+                    r += (int) (Math.ceil(diff / m) - 1);
                 }
-                k -= (chunks - 1);
-                i++;
+            }
+            if (r > k) {
+                l = m;
+            } else {
+                u = m;
             }
         }
-        return true;
+        return l;
     }
 
     public static void main(String[] args) {

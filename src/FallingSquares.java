@@ -46,24 +46,30 @@ Note:
 public class FallingSquares {
     // treat it as range intersection problem....find the highest intersection and record it
     //@TODO can use segmenttree or treeset to optimize
-    public List<Integer> fallingSquares(int[][] a) {
-        List<Integer> r = new ArrayList<>();
-        List<int[]> list = new ArrayList<>();
-        int n = a.length;
+    public List<Integer> fallingSquares(int[][] positions) {
+        // start, end, height
+
+        List<int[]> a = new ArrayList<>();
+        int n = positions.length;
         int max = 0;
+        List<Integer> r = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            int s = a[i][0];
-            int h = a[i][1];
-            int e = s + h;
-            int cur = h;
-            for (int j = 0; j < list.size(); j++) {
-                int[] prev = list.get(j);
-                if (!(prev[0] >= e || s >= prev[1])) {
-                    cur = Math.max(cur, h + prev[2]);
+
+            int[] rawpi = positions[i];
+            int curmax = rawpi[1];
+            int[] pi = new int[]{rawpi[0], rawpi[0] + rawpi[1], curmax};
+            for (int j = 0; j < a.size(); j++) {
+                if (a.get(j)[1] <= pi[0]) {
+                    continue;
+                } else if (a.get(j)[0] >= pi[1]) {
+                    continue; // can't break: the list is not sorted, we can meet sth later
+                } else {
+                    curmax = Math.max(curmax, a.get(j)[2] + pi[2]);
                 }
             }
-            list.add(new int[]{s, e, cur});
-            max = Math.max(max, cur);
+            pi[2] = curmax;
+            a.add(pi);
+            max = Math.max(max, curmax);
             r.add(max);
         }
         return r;
