@@ -1,3 +1,8 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
+
 /*
 LC#1381
 Design a stack which supports the following operations.
@@ -43,42 +48,41 @@ At most 1000 calls will be made to each method of increment, push and pop each s
  */
 public class DesignStackWithIncrement {
     static class CustomStack {
-        int[] stack;
-        int[] inc;
-        int end = 0;
+        // cache the additions. when we go pass n, transfer the value to n-1 and delete n
+        Map<Integer, Integer> m = new HashMap<>();
+        Deque<Integer> st = new ArrayDeque<>();
+        int size = 0;
 
         public CustomStack(int maxSize) {
-            stack = new int[maxSize];
-            inc = new int[maxSize];
+            this.size = maxSize;
         }
 
-        // clear up the inc when we grow the stack
         public void push(int x) {
-            if (end < stack.length) {
-                stack[end] = x;
-                inc[end] = 0;
-                end++;
+            if (st.size() == size) {
+                return;
             }
+            st.push(x);
         }
 
         public int pop() {
-            if (end == 0) {
+            if (st.isEmpty()) {
                 return -1;
             }
-            end--;
-            // let bigger inc transmit to smaller inc
-            int rt = stack[end] + inc[end];
-            if (end - 1 >= 0) {
-                inc[end - 1] += inc[end];
+            int cursize = st.size();
+            int add = 0;
+            if (m.containsKey(cursize)) {
+                add += m.get(cursize);
+                if (cursize - 1 > 0) {
+                    m.put(cursize - 1, m.getOrDefault(cursize - 1, 0) + m.get(cursize));
+                }
+                m.remove(cursize);
             }
-            return rt;
+            return st.pop() + add;
         }
 
         public void increment(int k, int val) {
-            int min = Math.min(k, end);
-            if (min > 0) {
-                inc[min - 1] += val;
-            }
+            int rk = Math.min(k, st.size());
+            m.put(rk, m.getOrDefault(rk, 0) + val);
         }
     }
 
