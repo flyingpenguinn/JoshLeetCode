@@ -24,31 +24,25 @@ Note:
 public class SubarrayProductLessthanK {
 
     public int numSubarrayProductLessThanK(int[] a, int k) {
-        // two pointer, similar to "subarray sum at most k" which was subproblem of "subarray sum == k"
-        // similar to the two pointer part of Find K-th Smallest Pair Distance
         int low = 0;
         int high = -1;
-        int n = a.length;
+        int prod = 1;
         int r = 0;
-        int cr = 0;
-        while (low < n) {
-            if (low > high) {
+        while (true) {
+            if (low > high || prod < k) {
+                // when low...high is good, low..high ,low+..high....high-1..hgih, high...high are all good
+                r += high - low + 1;
                 high++;
-                cr = a[low];
-            } else if (high < n && cr < k) {
-                high++;
-                if (high < n) {
-                    cr *= a[high];
+                if (high == a.length) {
+                    break;
                 }
+                prod *= a[high];
             } else {
-                r += high - low;
-                cr /= a[low];
-                //low..high-1
+                prod /= a[low];
                 low++;
             }
         }
         return r;
-
     }
 
 }

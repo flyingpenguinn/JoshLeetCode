@@ -1,7 +1,4 @@
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class RangeModuleRunner {
     public static void main(String[] args) {
@@ -31,64 +28,72 @@ public class RangeModuleRunner {
 }
 
 class RangeModule {
-    // keep right as open bracket: this can faciliate the code for merging. we check right<= cur.left and cur.right>=left anyway
-    TreeMap<Integer, Integer> tm = new TreeMap<>();
+    // just use a sorted list of intervals. they are disjoint too
+    TreeSet<int[]> rset = new TreeSet<>((x, y) -> Integer.compare(x[0], y[0]));
 
     public RangeModule() {
+
     }
 
     public void addRange(int left, int right) {
-        int ns = left;
-        int ne = right;
-        Integer os = getfirst(left);
-        while (os != null && os <= right) {
-            if (tm.get(os) >= left) {
-                ns = Math.min(os, ns);
-                ne = Math.max(tm.get(os), ne);
-                tm.remove(os);
+        Iterator<int[]> it = rset.iterator();
+        int ml = left;
+        int mr = right;
+        while (it.hasNext()) {
+            int[] item = it.next();
+            if (item[1] < ml) {
+                continue;
+            } else if (item[0] > mr) {
+                break;
+            } else {
+                // this is to union
+                ml = Math.min(ml, item[0]);
+                mr = Math.max(mr, item[1]);
+                it.remove();
             }
-            os = tm.higherKey(os);
         }
-        addto(ns, ne);
-        // System.out.println("add " + left+" "+right+" "+tm);
-    }
-
-    protected void addto(int ns, int ne) {
-        if (ns <= ne) {
-            tm.put(ns, ne);
-        }
+        rset.add(new int[]{ml, mr});
     }
 
     public boolean queryRange(int left, int right) {
-        Integer os = tm.floorKey(left);
-        if (os != null) {
-            return tm.get(os) >= right;
-        } else {
-            return false;
-        }
-    }
+        Iterator<int[]> it = rset.iterator();
 
-    // don't need to worry about merging in remove
-    public void removeRange(int left, int right) {
-        Integer os = getfirst(left);
-        while (os != null && os <= right) {
-            if (tm.get(os) >= left) {
-                int end = tm.get(os);
-                tm.remove(os);
-                // beautiful removal!
-                addto(os, left);
-                addto(right, end);
+        while (it.hasNext()) {
+            int[] item = it.next();
+            if (item[1] < left) {
+                continue;
+            } else if (item[0] > right) {
+                break;
+            } else {
+                return item[0] <= left && item[1] >= right;
             }
-            os = tm.higherKey(os);
         }
-        // System.out.println("remove " + left+" "+right+" "+tm);
+        return false;
     }
 
-    protected Integer getfirst(int left) {
-        Integer os = tm.floorKey(left);
-        if (os == null) {
-            os = tm.ceilingKey(left);
+    public void removeRange(int left, int right) {
+        Iterator<int[]> it = rset.iterator();
+        List<int[]> toadd = new ArrayList<>();
+        while (it.hasNext()) {
+            int[] item = it.next();
+            if (item[1] < left) {
+                continue;
+            } else if (item[0] > right) {
+                break;
+            } else {
+                it.remove();
+                if (item[0] < left) {
+                    toadd.add(new int[]{item[0], left});
+                }
+                if (item[1] > right) {
+                    // not else, can be surrounding left/right
+                    toadd.add(new int[]{right, item[1]});
+                }
+            }
         }
-        return os;
+        // to avoid concurrent modifiation exception
+        for (int[] added : toadd) {
+            rset.add(added);
+        }
     }
 }

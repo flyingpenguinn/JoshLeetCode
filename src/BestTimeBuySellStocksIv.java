@@ -39,10 +39,9 @@ public class BestTimeBuySellStocksIv {
         int[][] dp = new int[n + 1][2];
         // i must be in inner loop for accu purpose
         for (int k = 1; k <= kl; k++) {
-            int maxa = 0;
+            int maxa = 0; // maxa stores the accumulated p[j]+dp[j+1][k-1]
             for (int i = n - 1; i >= 0; i--) {
-                int cur = maxa - p[i];
-                dp[i][k % 2] = Math.max(cur, dp[i + 1][k % 2]);
+                dp[i][k % 2] = Math.max(maxa - p[i], dp[i + 1][k % 2]);
                 int cura = p[i] + dp[i + 1][(k - 1) % 2];
                 maxa = Math.max(cura, maxa);
             }
