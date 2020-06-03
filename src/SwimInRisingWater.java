@@ -41,59 +41,46 @@ Note:
 grid[i][j] is a permutation of [0, ..., N*N - 1].
  */
 public class SwimInRisingWater {
-    // path with smallest max v...turn + in dijkastra to max
-    int Max = 1000000;
-    private int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    // dijikastra so that we calc the min time needed to reach a cell from 0,0. this is like turning the + in dijkastra into max
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    int Max = 10000000;
 
-    private boolean inRange(int[][] b, int ni, int nj) {
-        return ni >= 0 && ni < b.length && nj >= 0 && nj < b[0].length;
-    }
-
-
-    public int swimInWater(int[][] g) {
-        int m = g.length;
-        int n = g[0].length;
-
-        // min max path...
-        PriorityQueue<int[]> pq = new PriorityQueue<>(new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return Integer.compare(o1[2], o2[2]);
-            }
-        });
-
-        boolean[][] done = new boolean[m][n];
-        pq.offer(new int[]{0, 0, g[0][0]});
+    public int swimInWater(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        // time needed to reach this cell at [0][1]
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
+        pq.offer(new int[]{0, 0, a[0][0]});
         int[][] dist = new int[m][n];
-
         for (int i = 0; i < m; i++) {
             Arrays.fill(dist[i], Max);
         }
-        dist[0][0] = g[0][0];
+        boolean[][] done = new boolean[m][n];
+        dist[0][0] = a[0][0];
         while (!pq.isEmpty()) {
             int[] top = pq.poll();
             int i = top[0];
             int j = top[1];
             if (i == m - 1 && j == n - 1) {
-                break;
+                return dist[m - 1][n - 1];
             }
             if (done[i][j]) {
                 continue;
             }
             done[i][j] = true;
-            for (int[] d : directions) {
-                int ni = top[0] + d[0];
-                int nj = top[1] + d[1];
-                if (inRange(g, ni, nj)) {
-                    int t = Math.max(dist[i][j], g[ni][nj]);
-                    if (dist[ni][nj] > t) {
-                        dist[ni][nj] = t;
-                        pq.offer(new int[]{ni, nj, t});
+            for (int[] d : dirs) {
+                int ni = i + d[0];
+                int nj = j + d[1];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+                    int nd = Math.max(top[2], a[ni][nj]);
+                    if (dist[ni][nj] > nd) {
+                        dist[ni][nj] = nd;
+                        pq.offer(new int[]{ni, nj, nd});
                     }
                 }
             }
         }
-        return dist[m-1][n-1];
+        return -1;
     }
 }
 

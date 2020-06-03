@@ -54,43 +54,25 @@ events[i].length == 2
  */
 public class MaxNumberOfEventsToAttend {
     // iterate on d, always select the event that ends the earliest
-    public int maxEvents(int[][] e) {
-        Arrays.sort(e, (a, b) -> a[0] - b[0]);
-        PriorityQueue<Integer> pq = new PriorityQueue<>();
-        int i = 0;
+    public int maxEvents(int[][] a) {
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        int j = 0;
         int r = 0;
-        // pq contains those intersect with d
-        for (int d = 1; d <= 100000; d++) {
-            while (!pq.isEmpty() && d > pq.peek()) {
-                // old events that ends before d fall out
-                pq.poll();
+        // this pq contains events that intersect with d
+        PriorityQueue<int[]> dq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
+        for (int i = 1; i <= 100000; i++) {
+            // events too early are skipped
+            while (!dq.isEmpty() && dq.peek()[1] < i) {
+                dq.poll();
             }
-            while (i < e.length && e[i][0] <= d && e[i][1] >= d) {
-                // what's in pq are those having intersection with d
-                pq.offer(e[i][1]);
-                i++;
+            // events that are good are enlisted
+            while (j < a.length && a[j][0] <= i && a[j][1] >= i) {
+                dq.offer(a[j++]);
             }
-            // take the one that ends the earliest
-            if (!pq.isEmpty()) {
-                r++;
-                pq.poll();
-            }
-        }
-        return r;
-    }
-}
-
-class MaxNumToAttendBruteForce {
-    public int maxEvents(int[][] e) {
-        Arrays.sort(e, (a, b) -> Integer.compare(b[1], a[1]));
-        Set<Integer> taken = new HashSet<>();
-        int r = 0;
-        for (int i = 0; i < e.length; i++) {
-            for (int j = e[i][0]; j <= e[i][1]; j++) {
-                if (!taken.contains(i)) {
-                    r++;
-                    taken.add(i);
-                }
+            if (!dq.isEmpty()) {
+                r++;  // if we have events to visit
+                dq.poll();
+                // we attended, now this one can go away. note we attend the event that CLOSES the first. this id different from visit sequence
             }
         }
         return r;
