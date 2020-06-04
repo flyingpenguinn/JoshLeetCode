@@ -34,34 +34,34 @@ Explanation: The same as example 1, except uni("ABA") = 1.
 public class UniqueLetterString {
 
     // think about contribution of a[i] as a function of a[i-1]. usually substring score problem can be converted to this
-    int Mod = 1000000007;
 
     public int uniqueLetterString(String s) {
-        char[] cs = s.toCharArray();
-        int n = cs.length;
-        long r = 0L;
-        long prev = 0L;
-        int[][] last = new int[26][2];
+        long Mod = 1000000007;
+        int n = s.length();
+        int[][] map = new int[26][2];
         for (int i = 0; i < 26; i++) {
-            Arrays.fill(last[i], -1);
+            Arrays.fill(map[i], -1);
         }
+        long[] dp = new long[n];
+        long r = 0;
         for (int i = 0; i < n; i++) {
-            char c = cs[i];
-            int cind = c - 'A';
-            int j = last[cind][0];
-            int k = last[cind][1];
-            // ...k...j...i
-            // (j+1...i)->i need +1
-            // (k+1...j)->i-1 need -1
-            // ( 0...k)->i-1 no change
-            int p1 = (i - j);
-            int p2 = (j - k);
-            long cur = prev + p1 - p2;
+            int[] dq = map[s.charAt(i) - 'A'];
+            int j = dq[1];
+            int k = dq[0];
+            // this is key: note dp[i] means score for substring ENDING at i.
+            // so if we add in i, then
+            // k...j....i : i,j,k has equal chars
+            // for substrings starting in j+1....i-1, ending at i-1, we add 1 because we now have a new unique char
+            // for substrings starting in k+1....j, ending at i-1, we -1 because we  now took away a unique char
+            // substrings ending in 0...k didnt change we have duplications anyway
+            // we then add 1 to count in i itself
+            long cur = (i == 0 ? 0 : dp[i - 1]) + (i - j) - (j - k);
+            cur %= Mod;
+            dp[i] = cur;
             r += cur;
             r %= Mod;
-            last[cind][1] = last[cind][0];
-            last[cind][0] = i;
-            prev = cur;
+            dq[1] = i;
+            dq[0] = j;
         }
         return (int) r;
     }

@@ -44,40 +44,27 @@ public class ConstructTargetArrayMultipleSums {
     // the last operation must be on the max number. so use a pq to trace it
     public boolean isPossible(int[] a) {
         PriorityQueue<Long> pq = new PriorityQueue<>(Collections.reverseOrder());
+        int n = a.length;
         long sum = 0L;
         for (int i = 0; i < a.length; i++) {
             sum += a[i];
-            if (a[i] != 1) {
-                pq.offer(Long.valueOf(a[i]));
-            }
+            pq.offer(Long.valueOf(a[i]));
         }
-        while (!pq.isEmpty()) {
+        while (sum != n) {
             long max = pq.poll();
             long other = sum - max;
-            if (max <= other || other == 0) {
-                // other == 0 will give us the same max can't reduce
+            if (max <= 0 || max <= other || other == 0) {
                 return false;
             }
-            if (other == 1) {
-                // 1 vs xx, must be true
-                return true;
-            }
-            long nmax = max % other;
-            // use % to accelerate! for example 1000 vs 3, we know it yields 1 in the end by %
-            if (nmax == 0) {
-                // 2 vs 2, can't get to 1
-                return false;
-            }
-            if (nmax != 1) {
-                pq.offer(nmax);
-            }
+            long nmax = other == 1 ? 1 : max % other;
+            pq.offer(nmax);
             sum -= (max - nmax);
         }
-        return sum == a.length;
+        return pq.poll() == 1; // must be all 1s if max ==1 and sum == n. this can rule out 2,0
     }
 
     public static void main(String[] args) {
-
+        System.out.println(new ConstructTargetArrayMultipleSums().isPossible(ArrayUtils.read1d("[2,900000002]")));
         System.out.println(new ConstructTargetArrayMultipleSums().isPossible(ArrayUtils.read1d("[8,5]")));
         System.out.println(new ConstructTargetArrayMultipleSums().isPossible(ArrayUtils.read1d("[1]")));
         System.out.println(new ConstructTargetArrayMultipleSums().isPossible(ArrayUtils.read1d("[2]")));

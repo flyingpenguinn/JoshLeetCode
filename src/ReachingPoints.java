@@ -28,28 +28,27 @@ public class ReachingPoints {
     // think reverse from tx ty to sx sy. based on which one is bigger there is only one choice, like in a tree there is only one parent per node
     // make sure we deal with cx==sx and cy==sy well
     public boolean reachingPoints(int sx, int sy, int tx, int ty) {
-        return dor(sx, sy, tx, ty);
+        return canreach(sx, sy, tx, ty);
     }
 
-    boolean dor(int sx, int sy, int cx, int cy) {
-        //  System.out.println(cx+","+cy);
-        if (cx == sx && cy == sy) {
-            return true;
-        }
-        if (cx < sx || cy < sy) {
+    boolean canreach(int sx, int sy, int tx, int ty) {
+        //    System.out.println(sx+" "+sy+" "+tx+" "+ty);
+        if (tx < sx || ty < sy) {
             return false;
-        }
-        if (cx == sx) {
-            return cy % cx == sy % sx;
-        }
-        if (cy == sy) {
-            return cx % cy == sx % sy;
-        }
-        if (cx > cy) {
-            return dor(sx, sy, cx % cy, cy);
-        } else if (cy > cx) {
-            return dor(sx, sy, cx, cy % cx);
+        } else if (tx == sx && ty == sy) {
+            return true;
+        } else if (tx == sx) {
+            // must do these checks!  otherwise we can't handle things like 18,5 vs 23,5
+            return (ty - sy) % tx == 0;
+        } else if (ty == sy) {
+            return (tx - sx) % ty == 0;
+        } else if (ty > tx) {
+            // otherwise it's safe to % because we need to get smaller than the smaller one to let it decrease
+            return canreach(sx, sy, tx, ty % tx);
+        } else if (tx > ty) {
+            return canreach(sx, sy, tx % ty, ty);
         } else {
+            // == but not == any of tx or ty, must be false
             return false;
         }
     }
