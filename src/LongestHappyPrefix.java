@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -43,20 +45,25 @@ public class LongestHappyPrefix {
 
     public String longestPrefix(String s) {
         int n = s.length();
-        int max = 0;
-
         long hash1 = 0l;
         long hash2 = 0l;
         long base = 1l;
+        List<Integer> matches = new ArrayList<>();
         for (int j = 0; j < n - 1; j++) {
             hash1 = (hash1 * hashbase + (s.charAt(j) - 'a')) % mod;
             hash2 = (hash2 + base * (s.charAt(n - 1 - j) - 'a')) % mod;
             base = (base * hashbase) % mod;
             if (hash1 == hash2) {
-                max = Math.max(max, j + 1);
+                matches.add(j);
             }
         }
-        return s.substring(0, max);
+        for (int i = matches.size() - 1; i >= 0; i--) {
+            int j = matches.get(i);
+            if (s.substring(0, j + 1).equals(s.substring(n - 1 - j, n))) {
+                return s.substring(0, j + 1);
+            }
+        }
+        return "";
     }
 
     public static void main(String[] args) {

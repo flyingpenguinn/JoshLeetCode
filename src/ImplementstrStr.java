@@ -44,7 +44,10 @@ public class ImplementstrStr {
                 if (hash == phash && match(s, i, p)) {
                     return start;
                 }
-                hash = (hash - toint(s.charAt(start)) * powbase + mod) % mod;
+                hash = (hash - toint(s.charAt(start)) * powbase) % mod;
+                if (hash < 0) {
+                    hash += mod;
+                }
             }
         }
         return -1;

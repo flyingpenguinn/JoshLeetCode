@@ -172,7 +172,11 @@ class LrsRollingHash {
                 }
                 pres.add(i);
                 seen.put(hash, pres);
-                hash = (hash - (s.charAt(head) - 'a') * base + Mod) % Mod; // for next step.note hash- x* base+mod to avoid negative values after minus
+                hash = (hash - (s.charAt(head) - 'a') * base) % Mod;
+                // for next step.note BELOW to avoid negative values after minus
+                if (hash < 0) {
+                    hash += Mod;
+                }
 
             } else {
                 base *= 26L;

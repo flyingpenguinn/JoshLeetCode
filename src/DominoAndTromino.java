@@ -47,8 +47,11 @@ public class DominoAndTromino {
         dp[0] = 1;
         long sum = 2;
         for (int i = 1; i <= n; i++) {
-            long cur = sum - (i < 1 ? 0 : dp[i - 1]) - (i < 2 ? 0 : dp[i - 2]);
-            dp[i] = (cur + Mod) % Mod;
+            long cur = (sum - (i < 1 ? 0 : dp[i - 1]) - (i < 2 ? 0 : dp[i - 2])) % Mod;
+            if (cur < 0) {
+                cur += Mod;
+            }
+            dp[i] = cur;
             sum += 2 * dp[i];
             sum %= Mod;
         }

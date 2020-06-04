@@ -56,24 +56,25 @@ All characters have an ASCII value in [35, 126].
 1 <= len(chars) <= 1000.
  */
 public class StringCompression {
+    // note we dont compress when app == 1
     public int compress(char[] a) {
         int n = a.length;
+        int i = 0;
         int ri = 0;
-        int count = 0;
-        for (int i = 0; i <= n; i++) {
-            if ((i == n && i - 1 >= 0) || (i > 0 && a[i] != a[i - 1])) {
-                a[ri++] = a[i - 1];
-                if (count > 1) {
-                    // only do it when count>1 otherwise no matter than not compressing it
-                    String sc = String.valueOf(count);
-                    for (int j = 0; j < sc.length(); j++) {
-                        a[ri++] = sc.charAt(j);
-                    }
-                    count = 1;
-                }
-            } else {
-                count++;
+        while (i < n) {
+            int j = i;
+            while (j < n && a[j] == a[i]) {
+                j++;
             }
+            int app = j - i;
+            a[ri++] = a[i];
+            if (app > 1) {
+                String appstr = String.valueOf(app);
+                for (int k = 0; k < appstr.length(); k++) {
+                    a[ri++] = appstr.charAt(k);
+                }
+            }
+            i = j;
         }
         return ri;
     }

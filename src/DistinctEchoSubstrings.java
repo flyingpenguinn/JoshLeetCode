@@ -31,18 +31,18 @@ public class DistinctEchoSubstrings {
         int n = s.length();
         char[] cs = s.toCharArray();
         Set<Long> set = new HashSet<>();
-        long headexp = 1L;
+        long base = 1L;
         for (int l = 1; 2 * l - 1 < n; l++) {
-            headexp *= 26;
-            headexp %= mod;
+            base *= 26;
+            base %= mod;
             long hash1 = getinitialhash(cs, 0, l - 1);
             long hash2 = getinitialhash(cs, l, 2 * l - 1);
-            if (hash1 == hash2) {
+            if (hash1 == hash2 && doesEqual(cs, 0, l, l)) {
                 set.add(hash1);
             }
             for (int i = 1; i + 2 * l - 1 < n; i++) {
-                hash1 = getHash(cs, hash1, headexp, i - 1, i + l - 1);
-                hash2 = getHash(cs, hash2, headexp, i - 1 + l, i + 2 * l - 1);
+                hash1 = getHash(cs, hash1, base, i - 1, i + l - 1);
+                hash2 = getHash(cs, hash2, base, i - 1 + l, i + 2 * l - 1);
                 if (hash1 == hash2 && doesEqual(cs, i, i + l, l)) {
                     set.add(hash1);
                 }
@@ -63,7 +63,9 @@ public class DistinctEchoSubstrings {
     private long getHash(char[] cs, long hash, long headexp, int index1, int index2) {
         hash = hash * 26 + (tocode(cs[index2]));
         hash = (hash - headexp * tocode(cs[index1])) % mod;
-        hash = (hash + mod) % mod;
+        if (hash < 0) {
+            hash += mod;
+        }
         return hash;
     }
 

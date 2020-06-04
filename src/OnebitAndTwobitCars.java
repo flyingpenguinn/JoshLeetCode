@@ -24,23 +24,19 @@ bits[i] is always 0 or 1.
 
 public class OnebitAndTwobitCars {
     // no choice, all preordained
-    public boolean isOneBitCharacter(int[] b) {
-        return doi(b,0);
-    }
-
-    boolean doi(int[] b,int i){
-        int n=b.length;
-        if(i==n-1){
-            return true;
+    public boolean isOneBitCharacter(int[] a) {
+        int n = a.length;
+        int i = 0;
+        int last = 0;
+        while(i<n){
+            if(a[i]==0){
+                i++;
+                last =1;
+            }else if (a[i]==1){
+                i+=2;
+                last =2;
+            }
         }
-        if(i==n){
-            return false;
-        }
-        if(b[i]==0){
-            return doi(b,i+1);
-        }else{
-            return doi(b,i+2);
-        }
-
+        return last==1;
     }
 }
