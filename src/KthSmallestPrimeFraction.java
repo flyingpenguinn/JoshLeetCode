@@ -1,3 +1,6 @@
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
 public class KthSmallestPrimeFraction {
     class Fraction implements Comparable<Fraction> {
         int a;
@@ -60,5 +63,31 @@ public class KthSmallestPrimeFraction {
             }
         }
         return count + 1;
+    }
+}
+
+class KthSmallestPrimeFractionHeap {
+
+    public int[] kthSmallestPrimeFraction(int[] a, int k) {
+        int n = a.length;
+        Arrays.sort(a);
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(a[x[0]] * a[y[1]], a[y[0]] * a[x[1]]));
+        pq.offer(new int[]{0, n - 1});
+        int[] last = null;
+        while (k > 0) {
+            last = pq.poll();
+            k--;
+            int nj = last[1] - 1;
+            if (nj >= 0 && a[nj] > a[last[0]]) {
+                pq.offer(new int[]{last[0], nj});
+            }
+            if (last[1] == n - 1) {
+                int ni = last[0] + 1;
+                if (ni < n && a[ni] < a[last[1]]) {
+                    pq.offer(new int[]{ni, last[1]});
+                }
+            }
+        }
+        return new int[]{a[last[0]], a[last[1]]};
     }
 }

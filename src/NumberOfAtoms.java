@@ -39,86 +39,80 @@ The length of formula will be in the range [1, 1000].
 formula will only consist of letters, digits, and round parentheses, and is a valid formula as defined in the problem.
  */
 public class NumberOfAtoms {
-    public String countOfAtoms(String formula) {
-        char[] a = formula.toCharArray();
-        Map<String, Integer> r = doc(0, a.length - 1, a);
-        TreeMap<String, Integer> tm = new TreeMap<>(r);
+    public String countOfAtoms(String s) {
+        Map<String, Integer> m = doc(s, 0, s.length() - 1);
+        return tostring(m);
+    }
+
+    Map<String, Integer> doc(String s, int l, int u) {
+        int i = l;
+        String element = null;
+        Map<String, Integer> r = new HashMap<>();
+        while (i <= u) {
+            if (Character.isUpperCase(s.charAt(i))) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(s.charAt(i));
+                int j = i + 1;
+                while (j <= u && Character.isLowerCase(s.charAt(j))) {
+                    sb.append(s.charAt(j));
+                    j++;
+                }
+                element = sb.toString();
+                r.put(element, r.getOrDefault(element, 0) + 1);
+                i = j;
+            } else if (Character.isDigit(s.charAt(i))) {
+                int j = i;
+                int count = 0;
+                while (j <= u && Character.isDigit(s.charAt(j))) {
+                    count = count * 10 + (s.charAt(j) - '0');
+                    j++;
+                }
+                r.put(element, r.getOrDefault(element, 0) + (count - 1));
+                element = null;
+                i = j;
+            } else if (s.charAt(i) == '(') {
+                int level = 0;
+                int j = i;
+                while (j <= u) {
+                    if (s.charAt(j) == '(') {
+                        level++;
+                    } else if (s.charAt(j) == ')') {
+                        level--;
+                        if (level == 0) {
+                            Map<String, Integer> inner = doc(s, i + 1, j - 1);
+                            j++; // move to the next position for digits
+                            int count = 0;
+                            while (j <= u && Character.isDigit(s.charAt(j))) {
+                                count = count * 10 + (s.charAt(j) - '0');
+                                j++;
+                            }
+                            for (String ik : inner.keySet()) {
+                                int added = inner.get(ik) * count;
+                                r.put(ik, r.getOrDefault(ik, 0) + added);
+                            }
+                            i = j;
+                            break;
+                        }
+                    }
+                    j++;
+                }
+            }
+        }
+        return r;
+    }
+
+    String tostring(Map<String, Integer> m) {
+        List<String> list = new ArrayList<>(m.keySet());
+        Collections.sort(list);
         StringBuilder sb = new StringBuilder();
-        for (String k : tm.keySet()) {
-            sb.append(k);
-            Integer ct = tm.get(k);
-            if (ct > 1) {
-                sb.append(ct);
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(list.get(i));
+            int count = m.get(list.get(i));
+            if (count > 1) {
+                sb.append(count);
             }
         }
         return sb.toString();
-    }
-
-    private Map<String, Integer> doc(int l, int u, char[] a) {
-        StringBuilder atom = new StringBuilder();
-        Map<String, Integer> latest = null;
-
-        int i = l;
-        Map<String, Integer> m = new HashMap<>();
-        while (i <= u) {
-            // when the char itself can't decide, use while to roll forward
-            if (Character.isUpperCase(a[i])) {
-                atom.append(a[i++]);
-                while (i <= u && Character.isLowerCase(a[i])) {
-                    atom.append(a[i]);
-                    i++;
-                }
-                String atos = atom.toString();
-                latest = new HashMap<>();
-                // put in first, adjust later
-                latest.put(atos, 1);
-                merge(latest, m);
-                atom = new StringBuilder();
-            } else if (Character.isDigit(a[i])) {
-                int count = 0;
-                while (i <= u && Character.isDigit(a[i])) {
-                    count = count * 10 + (a[i] - '0');
-                    i++;
-                }
-                for (String k : latest.keySet()) {
-                    int lc = latest.get(k);
-                    int ov = m.getOrDefault(k, 0);
-                    //key here: we originally put lc elements. now we should put in count*lc. so we add the missing (count-1)*lc elements
-                    m.put(k, ov + lc * (count - 1));
-                }
-                latest = null;
-            } else if (a[i] == '(') {
-                int nextright = getnextright(a, i, u);
-                latest = doc(i + 1, nextright - 1, a);
-                // put in first, adjust later
-                merge(latest, m);
-                i = nextright + 1;
-            }
-        }
-        return m;
-    }
-
-    private void merge(Map<String, Integer> latest, Map<String, Integer> m) {
-        for (String k : latest.keySet()) {
-            m.put(k, m.getOrDefault(k, 0) + latest.get(k));
-        }
-    }
-
-    private int getnextright(char[] a, int l, int u) {
-        int level = 0;
-        int i = l;
-        while (i <= u) {
-            if (a[i] == '(') {
-                level++;
-            } else if (a[i] == ')') {
-                level--;
-                if (level == 0) {
-                    return i;
-                }
-            }
-            i++;
-        }
-        return -1;
     }
 
     public static void main(String[] args) {

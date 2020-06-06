@@ -72,56 +72,46 @@ public class MinimumWindowSubsequence {
 }
 
 class MinimumWindowSubsequenceMemoization {
+    int Max = 10000000;
     int[][] dp;
 
     public String minWindow(String s, String t) {
         int sn = s.length();
-        int tn = t.length();
-        dp = new int[sn][tn];
+        dp = new int[sn][t.length()];
         for (int i = 0; i < sn; i++) {
             Arrays.fill(dp[i], -1);
         }
-
-        dom(0, 0, s.toCharArray(), t.toCharArray());
-        int min = Max;
+        int minlen = Max;
         int mini = -1;
+
         for (int i = 0; i < sn; i++) {
-            if (dp[i][0] < min) {
-                min = dp[i][0];
-                mini = i;
+            if (s.charAt(i) == t.charAt(0)) {
+                int len = dom(s, i, t, 0);
+                if (len < minlen) {
+                    minlen = len;
+                    mini = i;
+                }
             }
         }
-        if (min >= Max) {
-            return "";
-        }
-        return s.substring(mini, mini + min);
+        return mini == -1 ? "" : s.substring(mini, mini + minlen);
     }
 
-    int Max = 1000000;
-
-    int dom(int i, int j, char[] s, char[] t) {
-        int sn = s.length;
-        int tn = t.length;
-        if (j == tn) {
-
+    private int dom(String s, int i, String t, int j) {
+        if (j == t.length()) {
             return 0;
         }
-        if (i == sn) {
-
+        if (i == s.length()) {
             return Max;
         }
         if (dp[i][j] != -1) {
             return dp[i][j];
         }
-        int rt = 0;
-        int later = dom(i + 1, j, s, t); // do this to kick it to work for later is hence we dont need another for loop outside
-        if (s[i] == t[j]) {
-            rt = 1 + dom(i + 1, j + 1, s, t);
+        if (s.charAt(i) == t.charAt(j)) {
+            dp[i][j] = 1 + dom(s, i + 1, t, j + 1);
         } else {
-            rt = 1 + later;
+            dp[i][j] = 1 + dom(s, i + 1, t, j);
         }
-        dp[i][j] = rt;
-        return rt;
+        return dp[i][j];
     }
 }
 
