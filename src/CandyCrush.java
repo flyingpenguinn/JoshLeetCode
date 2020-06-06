@@ -32,68 +32,66 @@ The length of board[i] will be in the range [3, 50].
 Each board[i][j] will initially start as an integer in the range [1, 2000].
  */
 public class CandyCrush {
-    // set cleared to neg to avoid another grid per operation
+    // use a gone array to avoid a set of points..
     // use two pointers to handle drop down
-    public int[][] candyCrush(int[][] b) {
-        int m = b.length;
-        int n = b[0].length;
+    // use a gone array to avoid a set of points..
+    // use two pointers to handle drop down
+    int mergecount = 3;
 
+    public int[][] candyCrush(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
         while (true) {
-            boolean found = clear(b);
-            if (!found) {
+            boolean[][] gone = new boolean[m][n];
+            boolean hasgone = false;
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (a[i][j] == 0) {
+                        continue;
+                    }
+                    // still check even if i, j is gone because their neighbor may not be gone yet
+                    int nj = j;
+                    while (nj < n && a[i][nj] == a[i][j] && nj-j<mergecount) {
+                        nj++;
+                    }
+                    if (nj - j  == mergecount) {
+                        hasgone = true;
+                        nj = j;
+                        while (nj-j<mergecount && a[i][nj] == a[i][j]) {
+                            gone[i][nj] = true;
+                            nj++;
+                        }
+                    }
+                    int ni = i;
+                    while (ni < m && a[ni][j] == a[i][j] && ni-i <mergecount) {
+                        ni++;
+                    }
+                    if (ni - i  == mergecount) {
+                        hasgone = true;
+                        ni = i;
+                        while (ni -i < mergecount  && a[ni][j] == a[i][j]) {
+                            gone[ni][j] = true;
+                            ni++;
+                        }
+                    }
+                }
+            }
+            if (!hasgone) {
                 break;
             }
+            for (int j = 0; j < n; j++) {
+                int ri = m - 1;
+                for (int i = m - 1; i >= 0; i--) {
+                    if (!gone[i][j]) {
+                        a[ri--][j] = a[i][j];
+                    }
+                }
+                while (ri >= 0) {
+                    a[ri--][j] = 0;
+                }
+            }
         }
-        return b;
+        return a;
     }
 
-    boolean clear(int[][] b) {
-        int m = b.length;
-        int n = b[0].length;
-        boolean found = false;
-        for (int i = 0; i < m; i++) {
-            int j = 0;
-            while (j < n) {
-                int k = j + 1;
-                while (k < n && Math.abs(b[i][k]) == Math.abs(b[i][j]) && b[i][j] != 0) {
-                    k++;
-                }
-                if (k - j >= 3) {
-                    found = true;
-                    for (int l = j; l < k; l++) {
-                        b[i][l] = -Math.abs(b[i][l]);
-                    }
-                }
-                j = k;
-            }
-        }
-        for (int j = 0; j < n; j++) {
-            int i = 0;
-            while (i < m) {
-                int k = i + 1;
-                while (k < m && Math.abs(b[k][j]) == Math.abs(b[i][j]) && b[i][j] != 0) {
-                    k++;
-                }
-                if (k - i >= 3) {
-                    found = true;
-                    for (int l = i; l < k; l++) {
-                        b[l][j] = -Math.abs(b[l][j]);
-                    }
-                }
-                i = k;
-            }
-        }
-        for (int j = 0; j < n; j++) {
-            int ni = m - 1;
-            for (int i = m - 1; i >= 0; i--) {
-                if (b[i][j] > 0) {
-                    b[ni--][j] = b[i][j];
-                }
-            }
-            while (ni >= 0) {
-                b[ni--][j] = 0;
-            }
-        }
-        return found;
-    }
 }

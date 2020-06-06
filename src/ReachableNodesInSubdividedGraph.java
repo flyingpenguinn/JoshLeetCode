@@ -46,51 +46,56 @@ The original graph has no parallel edges.
 A reachable node is a node that can be travelled to using at most M moves starting from node 0.
  */
 public class ReachableNodesInSubdividedGraph {
-    // dijkastra with a twist of calculating travelled dist
-    int Max = 1000000000;
+    // dijkastra with a twist of calculating travelled dist: we will still need to visit nodes we touched before because we need to pick up
+    // middle ones
+    int Max = 1000000000 + 100;
 
     public int reachableNodes(int[][] edges, int m, int n) {
         int[][] g = new int[n][n];
-
         for (int i = 0; i < n; i++) {
             Arrays.fill(g[i], -1);
         }
-        boolean[] done = new boolean[n];
         for (int[] e : edges) {
             g[e[0]][e[1]] = e[2];
             g[e[1]][e[0]] = e[2];
         }
-        PriorityQueue<int[]> q = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
         int[] dist = new int[n];
         Arrays.fill(dist, Max);
-        q.offer(new int[]{0, 0});
         dist[0] = 0;
+        boolean[] done = new boolean[n];
+        // node and dist to 0
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
         int r = 0;
-        while (!q.isEmpty()) {
-            int[] top = q.poll();
-            int cur = top[0];
-            if (done[cur]) {
+        pq.offer(new int[]{0, 0});
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            int i = top[0];
+            if (done[i]) {
                 continue;
             }
-            r++;
-            done[cur] = true;
-            for (int i = 0; i < n; i++) {
-                if (g[cur][i] < 0) {
-                    // <0 means not reachable. note dist can ==0
-                    continue;
-                }
-                if (g[cur][i] + dist[cur] + 1 > m) {
-                    r += m - dist[cur];
-                    // so that we dont revisit these visited dots when we go i-> cur later
-                    g[i][cur] -= m - dist[cur];
-                } else {
-                    r += g[cur][i];
-                    // so that we dont revisit these visited dots when we go i-> cur later
-                    g[i][cur] = -1;
-                    int nd = dist[cur] + g[cur][i] + 1;
-                    if (dist[i] > nd) {
-                        dist[i] = nd;
-                        q.offer(new int[]{i, nd});
+            done[i] = true;
+            r++;// visit the node if not visited yet
+            int cd = top[1];
+            for (int j = 0; j < n; j++) {
+                if (j != i && g[i][j] != -1) {
+                    int nd = cd + g[i][j] + 1;// +1 to count in the end node
+                    if (nd <= m) {
+                        // note even if j is visited before we need to do this walk to pick up remaining middle nodes!
+                        r += g[i][j];
+                        g[i][j] = 0;
+                        g[j][i] = 0;
+                        // can go to the next node
+                        if (dist[j] > nd) {
+                            dist[j] = nd;
+                            pq.offer(new int[]{j, nd});
+                        }
+                    } else {
+                        // can't go to the next node, subtract the nodes we can walk on
+                        // note even if j is visited, we need to do this walk to pick up middle nodes!
+                        int walked = m - cd;
+                        r += walked;
+                        g[i][j] -= walked;
+                        g[j][i] -= walked;
                     }
                 }
             }

@@ -1,51 +1,54 @@
 import java.util.ArrayList;
 import java.util.List;
-/**
-LC#722
 
-https://leetcode.com/problems/remove-comments/
+/**
+ * LC#722
+ * <p>
+ * https://leetcode.com/problems/remove-comments/
  */
 public class RemoveComments {
-    // /*, */, // , othres, commented or not, list all the possibilities
-    public List<String> removeComments(String[] source) {
+    // only thing we need to remember is whether we are in block comment
+    // if it's // stop current line and move on to next
+    // for // think of a finishing sign before lineend so we got an lineend
+    // if we are not in blcok comment add current line because it finished otherwise keep adding till we meet an lineend
+    public List<String> removeComments(String[] a) {
         List<String> r = new ArrayList<>();
-        boolean commented = false;
         StringBuilder sb = new StringBuilder();
-        for (String s : source) {
-            int i = 0;
-            while (i < s.length()) {
-                if (s.startsWith("/*", i)) {
-                    if (commented) {
-                        i++;
+        boolean bcomment = false;
+        for (int i = 0; i < a.length; i++) {
+            String line = a[i];
+            for (int j = 0; j < line.length(); j++) {
+                if (!bcomment) {
+                    if (line.startsWith("//", j)) {
+                        break; // ending this line but note we are not in block comment
+                    } else if (line.startsWith("/*", j)) {
+                        bcomment = true;
+                        j++; //   /*xxx => move over to x. avoid /*/
                     } else {
-                        commented = true;
-                        i += 2; // skip the *
-                    }
-                } else if (s.startsWith("*/", i)) {
-                    if (commented) {
-                        commented = false;
-                        i += 2;
-                    } else {
-                        // need to handle unmatched */ as normal chars
-                        sb.append(s.charAt(i++));
+                        sb.append(line.charAt(j));
                     }
                 } else {
-                    if (commented) {
-                        i++;
-                    } else if (s.startsWith("//", i)) {
-                        break;
-                    } else {
-                        sb.append(s.charAt(i++));
+                    if (line.startsWith("*/", j)) {
+                        bcomment = false;
+                        j++;
                     }
+                    // else dont add anything
                 }
             }
-            if (!commented && sb.length() > 0) {
-                // use this to merge lines together
-                r.add(sb.toString());
+            if (!bcomment) {
+                addtoresult(r, sb);
                 sb = new StringBuilder();
             }
+            // else do nothing wait for new stuff to match with
         }
         return r;
+    }
+
+    protected void addtoresult(List<String> r, StringBuilder sb) {
+        String str = sb.toString();
+        if (!str.isEmpty()) {
+            r.add(str);
+        }
     }
 
     public static void main(String[] args) {

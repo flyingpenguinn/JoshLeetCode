@@ -1,274 +1,125 @@
 import base.ArrayUtils;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+/*
+LC#782
+An N x N board contains only 0s and 1s. In each move, you can swap any 2 rows with each other, or any 2 columns with each other.
 
+What is the minimum number of moves to transform the board into a "chessboard" - a board where no 0s and no 1s are 4-directionally adjacent? If the task is impossible, return -1.
+
+Examples:
+Input: board = [[0,1,1,0],[0,1,1,0],[1,0,0,1],[1,0,0,1]]
+Output: 2
+Explanation:
+One potential sequence of moves is shown below, from left to right:
+
+0110     1010     1010
+0110 --> 1010 --> 0101
+1001     0101     1010
+1001     0101     0101
+
+The first move swaps the first and second column.
+The second move swaps the second and third row.
+
+
+Input: board = [[0, 1], [1, 0]]
+Output: 0
+Explanation:
+Also note that the board with 0 in the top left corner,
+01
+10
+
+is also a valid chessboard.
+
+Input: board = [[1, 0], [1, 0]]
+Output: -1
+Explanation:
+No matter what sequence of moves you make, you cannot end with a valid chessboard.
+Note:
+
+board will have the same number of rows and columns, a number in the range [2, 30].
+board[i][j] will be only 0s or 1s.
+ */
 public class TransformToChessBoard {
-    int MaxValue = 10000;
-
-    // row and column are independently checked
-    // after validation, only need to check first column of each row and first row of each col. instead of searching we argue that
-    // it requires 1 move to put sth in position
-    int rows = 0;
-    int cols = 0;
-
-
-    public int movesToChessboard(int[][] b) {
-        boolean fail = checkRows(b);
-        if (fail) {
-            return -1;
-        }
-        fail = checkCols(b);
-        if (fail) {
-            return -1;
-        }
-        int rr = Math.min(swaps(b, rows, 0, true), swaps(b, rows, 1, true));
-        int cr = Math.min(swaps(b, cols, 0, false), swaps(b, cols, 1, false));
-        int rt = rr + cr;
-        //  System.out.println(count);
-        // /2 as we double counted
-        return rt >= MaxValue ? -1 : rt / 2;
-    }
-
-    // need one swap to correct value
-    private int swaps(int[][] b, int ones, int should, boolean isRow) {
-        // System.out.println("trying..."+should);
-        int len = isRow ? b.length : b[0].length;
-        int zeros = len - ones;
-        // no hope...only check twice when one==zero
-        if (zeros < ones && should == 0) {
-            return MaxValue;
-        }
-        if (zeros > ones && should == 1) {
-            return MaxValue;
-        }
-
-        int r = 0;
-        if (isRow) {
-            for (int i = 0; i < b.length; i++) {
-                if (b[i][0] != should) {
-                    //System.out.println("wrong row "+i+" "+b[i][0]+" vs "+should);
-                    r++;
+    /*
+    For any row/column, the number of 1 and 0 must differ by at most 1.
+    For any two rows r1 and r2, either board[r1][c] == board[r2][c] for all c or board[r1][c] != board[r2][c] for all c. Same for columns.
+     */
+    public int movesToChessboard(int[][] a) {
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            // rule 2: any two rows are either same or totally different
+            // we only need to compare with row 0 in this case
+            int rowflag = a[i][0] ^ a[0][0];// either 0 vs 0 or 1vs1
+            for (int j = 1; j < n; j++) {
+                int curflag = a[i][j] ^ a[0][j];
+                if (curflag != rowflag) {
+                    return -1;
                 }
-                should = should == 1 ? 0 : 1;
             }
+        }
+
+        int rowcount = 0;
+        int colcount = 0;
+        // because each row are either same or totally different, we only need to verify first col and row's 1 count
+        // below is to verify rule 1
+        for (int i = 0; i < n; i++) {
+            if (a[i][0] == 1) {
+                rowcount++;
+            }
+            if (a[0][i] == 1) {
+                colcount++;
+            }
+        }
+        int orowcount = n - rowcount;
+        int ocolcount = n - colcount;
+        if (Math.abs(orowcount - rowcount) > 1 || Math.abs(ocolcount - colcount) > 1) {
+            return -1;
+        }
+        // we must have a solution. now suppose we want to make sure rows are 010101. so any 1 appearing in bad place will be counted
+        // in the end the moves are either rmove, or n-rmove. in the opposite case we need to change n-rmove numbers
+        // to make it swap based, /2 is the number of swaps, when the change count is even. otherwise we can't swap
+        int rmove = 0;
+        for (int i = 0; i < n; i++) {
+            // assume it must be 010101
+            if (a[i][0] != i % 2) {
+                rmove++;
+            }
+        }
+        if (n % 2 == 1) {
+            // the moves must be even otherwise we can't /2 and get the swaps
+            rmove = rmove % 2 == 0 ? rmove : n - rmove;
         } else {
-            for (int i = 0; i < b[0].length; i++) {
-                if (b[0][i] != should) {
-                    //System.out.println("wrong col "+i+" "+b[0][i]+" vs "+should);
+            rmove = Math.min(rmove, n - rmove);
+        }
 
-                    r++;
-                }
-                should = should == 1 ? 0 : 1;
+        int cmove = 0;
+        for (int i = 0; i < n; i++) {
+            // assume it must be 010101
+            if (a[0][i] != i % 2) {
+                cmove++;
             }
         }
-        return r;
+        if (n % 2 == 1) {
+            // the moves must be even otherwise we can't /2 and get the swaps
+            cmove = cmove % 2 == 0 ? cmove : n - cmove;
+        } else {
+            cmove = Math.min(cmove, n - cmove);
+        }
+        // we /2: if moves are even, then how to swap: swap any misplaced 0 or 1 that are counted as "misplaced".
+        // because of rule 1, there must be same number of 0 and 1 to be swapped
+        return (rmove + cmove) / 2;
     }
-
-
-    private boolean checkRows(int[][] b) {
-        int[] r1 = null;
-        int[] r2 = null;
-        int count1 = 0;
-        int count2 = 0;
-        for (int i = 0; i < b.length; i++) {
-            int[] row = b[i];
-            if (r1 == null || Arrays.equals(row, r1)) {
-                r1 = row;
-                count1++;
-            } else if (r2 == null || Arrays.equals(row, r2)) {
-                r2 = row;
-                count2++;
-            } else {
-                return true;
-            }
-            if (row[0] == 1) {
-                rows++;
-            }
-        }
-        if (Math.abs(count1 - count2) > 1) {
-            return true;
-        }
-        return false;
-    }
-
-
-    private boolean checkCols(int[][] b) {
-        int[] c1 = null;
-        int[] c2 = null;
-        int count1 = 0;
-        int count2 = 0;
-        for (int j = 0; j < b[0].length; j++) {
-            int[] col = new int[b.length];
-            for (int i = 0; i < b.length; i++) {
-                col[i] = b[i][j];
-            }
-            if (c1 == null || Arrays.equals(c1, col)) {
-                c1 = col;
-                count1++;
-            } else if (c2 == null || Arrays.equals(c2, col)) {
-                c2 = col;
-                count2++;
-            } else {
-                return true;
-            }
-            if (col[0] == 1) {
-                cols++;
-            }
-        }
-        if (Math.abs(count1 - count2) > 1) {
-            return true;
-        }
-        return false;
-    }
-
 
     public static void main(String[] args) {
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1],[0,1,1,0,1,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,1,0,1,0],[1,0,0,1,0,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,0,1,0,1,0,0,1,0,1]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,1,1,0],[0,1,1,0],[1,0,0,1],[1,0,0,1]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,1,1],[1,0,0],[1,0,0]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,0,1,0,1,1],[1,1,0,1,0,0],[1,1,0,1,0,0],[0,0,1,0,1,1],[1,1,0,1,0,0],[0,0,1,0,1,1]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1,0,0],[0,1,1],[1,0,0]]")));
 
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,0,1,1],[1,1,0,0],[0,1,0,1],[1,0,1,0]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1,1,0],[0,0,1],[0,0,1]]")));
+
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0, 1], [1, 0]]")));
+        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1, 0], [1, 0]]")));
     }
-}
-
-class TransformDpBitSet {
-    int MaxValue = 10000;
-
-    // rows and cols starting with 1
-    int rows = 0;
-    int cols = 0;
-    Map<Integer, Integer>[] dp;
-
-
-    public int movesToChessboard(int[][] b) {
-        boolean fail = checkRows(b);
-        if (fail) {
-            return -1;
-        }
-        fail = checkCols(b);
-        if (fail) {
-            return -1;
-        }
-        dp = new HashMap[b.length];
-        Arrays.fill(dp, new HashMap<>());
-        int rr = swaps(b.length, 0, rows);
-        dp = new HashMap[b[0].length];
-        Arrays.fill(dp, new HashMap<>());
-        int cr = swaps(b[0].length, 0, cols);
-        int rt = rr + cr;
-        //  System.out.println(count);
-        return rt >= MaxValue ? -1 : rt;
-    }
-
-    int count = 0;
-
-    private int swapAndGetMin(int set, int i, int len, int di) {
-        int min = MaxValue;
-        for (int j = i + 1; j < len; j++) {
-            int ns = set;
-            int dj = (set >> j) & 1;
-            if (dj != di) {
-                if (di == 0) {
-                    ns += 1 << i;
-                    ns -= 1 << j;
-                } else {
-                    ns += 1 << j;
-                    ns -= 1 << i;
-                }
-                int cur = 1 + swaps(len, i + 1, ns);
-                min = Math.min(min, cur);
-            }
-        }
-        return min;
-    }
-
-    private int swaps(int len, int i, int set) {
-        if (i == len) {
-            return 0;
-        }
-
-        Map<Integer, Integer> cm = dp[i];
-        Integer cached = cm.get(set);
-        if (cached != null) {
-            return cached;
-        }
-        count++;
-        int min = MaxValue;
-        int di = (set >> i) & 1;
-        if (i == 0) {
-            // keep the first, or shift with any of the below
-            min = swaps(len, i + 1, set);
-            if (min != 0) {
-                min = Math.min(min, swapAndGetMin(set, i, len, di));
-            }
-        } else {
-            int dim1 = (set >> (i - 1)) & 1;
-            if (dim1 == di) {
-                min = swapAndGetMin(set, i, len, di);
-            } else {
-                min = swaps(len, i + 1, set);
-            }
-        }
-        cm.put(set, min);
-        dp[i] = cm;
-        return min;
-    }
-
-
-    private boolean checkRows(int[][] b) {
-        int[] r1 = null;
-        int[] r2 = null;
-        int count1 = 0;
-        int count2 = 0;
-        for (int i = 0; i < b.length; i++) {
-            int[] row = b[i];
-            if (r1 == null || Arrays.equals(row, r1)) {
-                r1 = row;
-                count1++;
-            } else if (r2 == null || Arrays.equals(row, r2)) {
-                r2 = row;
-                count2++;
-            } else {
-                return true;
-            }
-            if (row[0] == 1) {
-                rows += 1 << i;
-            }
-        }
-        if (Math.abs(count1 - count2) > 1) {
-            return true;
-        }
-        return false;
-    }
-
-
-    private boolean checkCols(int[][] b) {
-        int[] c1 = null;
-        int[] c2 = null;
-        int count1 = 0;
-        int count2 = 0;
-        for (int j = 0; j < b[0].length; j++) {
-            int[] col = new int[b.length];
-            for (int i = 0; i < b.length; i++) {
-                col[i] = b[i][j];
-            }
-            if (c1 == null || Arrays.equals(c1, col)) {
-                c1 = col;
-                count1++;
-            } else if (c2 == null || Arrays.equals(c2, col)) {
-                c2 = col;
-                count2++;
-            } else {
-                return true;
-            }
-            if (col[0] == 1) {
-                cols += 1 << j;
-            }
-        }
-        if (Math.abs(count1 - count2) > 1) {
-            return true;
-        }
-        return false;
-    }
-
 }

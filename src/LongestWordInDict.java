@@ -1,23 +1,54 @@
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
+/*
+LC#720
+Given a list of strings words representing an English Dictionary, find the longest word in words that can be built one character at a time by other words in words. If there is more than one possible answer, return the longest word with the smallest lexicographical order.
+
+If there is no answer, return the empty string.
+Example 1:
+Input:
+words = ["w","wo","wor","worl", "world"]
+Output: "world"
+Explanation:
+The word "world" can be built one character at a time by "w", "wo", "wor", and "worl".
+Example 2:
+Input:
+words = ["a", "banana", "app", "appl", "ap", "apply", "apple"]
+Output: "apple"
+Explanation:
+Both "apply" and "apple" can be built from other words in the dictionary. However, "apple" is lexicographically smaller than "apply".
+Note:
+
+All the strings in the input will only contain lowercase letters.
+The length of words will be in the range [1, 1000].
+The length of words[i] will be in the range [1, 30].
+ */
 public class LongestWordInDict {
     public String longestWord(String[] words) {
-        Arrays.sort(words);
-        HashSet<String> hs = new HashSet<>();
-        hs.add("");
-        String res = "";
-        for (String w : words) {
-            if (hs.contains(w.substring(0, w.length() - 1))) {
-                if( (w.length()>res.length()) || (res.length()==w.length() && res.compareTo(w)>0)){
-                    res = w;
+        Set<String> set = new HashSet<>();
+        int n = words.length;
+        for (int i = 0; i < n; i++) {
+            set.add(words[i]);
+        }
+        Arrays.sort(words, (x, y) -> x.length() != y.length() ? Integer.compare(y.length(), x.length()) : x.compareTo(y));
+        for (int i = 0; i < n; i++) {
+            String cur = words[i];
+            boolean bad = false;
+            for (int j = 0; j < words[i].length() - 1; j++) {
+                String stub = cur.substring(0, j + 1);
+                if (!set.contains(stub)) {
+                    bad = true;
+                    break;
                 }
             }
-            hs.add(w);
+            if (!bad) {
+                return cur;
+            }
         }
-        return res;
+        return "";
     }
-
 
 }
 
