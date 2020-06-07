@@ -20,60 +20,55 @@ Input: 1234567891
 Output: "One Billion Two Hundred Thirty Four Million Five Hundred Sixty Seven Thousand Eight Hundred Ninety One"
  */
 public class IntegerToEnglish {
-    String[] lion = {"Thousand", "Million", "Billion"};
-    String[] under20 = {"*", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
-    String[] tens = {"*", "*", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+    int[] bases = {1000_000_000, 1000_000, 1000};
+    String[] lion = {"Billion", "Million", "Thousand"};
+    String[] under20 = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
+    String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
-
-    String space = " ";
-    int max = 1000000000;
 
     public String numberToWords(int n) {
         if (n == 0) {
             return "Zero";
         }
-        int base = max;
         StringBuilder sb = new StringBuilder();
-        int i = lion.length - 1;
-        while (n > 0) {
-            int cur = n / base;
-            if (cur != 0) {
-                String curs = within1000(cur);
-                sb.append(curs);
-                if (base > 1) {
-                    sb.append(lion[i] + space);
-                }
-                n -= base * cur;
+        for (int i = 0; i < lion.length; i++) {
+            if (n >= bases[i]) {
+                int level = n / bases[i];
+                String inner = convert(level);
+                add(sb, inner, lion[i]);
+                n -= bases[i] * level;
             }
-            i--;
-            base /= 1000;
         }
-        sb.deleteCharAt(sb.length() - 1);
+        add(sb, convert(n), "");
         return sb.toString();
     }
 
-    private String within1000(int n) {
-
+    // n>1 <=999
+    String convert(int n) {
         StringBuilder sb = new StringBuilder();
-        while (n > 0) {
-            if (n < 20) {
-                // 1 to 19
-                sb.append(under20[n] + space);
-                break;
-            } else if (n < 100) {
-                // >=20 <100
-                int cur = n / 10;
-                sb.append(tens[cur] + space);
-                n -= cur * 10;
-            } else {
-                // >=100
-                int cur = n / 100;
-                sb.append(under20[cur] + space);
-                sb.append("Hundred ");
-                n -= cur * 100;
-            }
+        add(sb, under20[n / 100], "Hundred");
+        int stub = n % 100;
+        if (stub < 20) {
+            add(sb, under20[stub], "");
+        } else {
+            add(sb, tens[stub / 10], "");
+            add(sb, under20[stub % 10], "");
         }
         return sb.toString();
+    }
+
+    void add(StringBuilder sb, String str, String counter) {
+        if (str.isEmpty()) {
+            return;
+        }
+        if (sb.length() > 0) {
+            sb.append(" ");
+        }
+        sb.append(str);
+        if(!counter.isEmpty()){
+            sb.append(" ");
+            sb.append(counter);
+        }
     }
 
     public static void main(String[] args) {

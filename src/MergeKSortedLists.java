@@ -21,81 +21,74 @@ Output: 1->1->2->3->4->4->5->6
  */
 public class MergeKSortedLists {
 
-    // O nlogk
+    // O nlogk. note we dont really need to remember which index: just need to store pointer
     public ListNode mergeKLists(ListNode[] lists) {
-        // value and which list it came from, sort by value itself. if certain value is the smallest take the next from the list
-        PriorityQueue<int[]> heap = new PriorityQueue<>(new Comparator<int[]>() {
-
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return Integer.compare(o1[0], o2[0]);
-            }
-        });
-        int k = lists.length;
-        ListNode dummy = new ListNode(-1);
-        ListNode pr = dummy;
-        for (int i = 0; i < k; i++) {
+        int n = lists.length;
+        if (n == 0) {
+            return null;
+        }
+        PriorityQueue<ListNode> pq = new PriorityQueue<>((x, y) -> Integer.compare(x.val, y.val));
+        for (int i = 0; i < n; i++) {
             if (lists[i] != null) {
-                heap.offer(new int[]{lists[i].val, i});
-                lists[i] = lists[i].next;
+                pq.offer(lists[i]);
             }
         }
-        while (!heap.isEmpty()) {
-            int[] top = heap.poll();
-            pr.next = new ListNode(top[0]);
-            pr = pr.next;
-            int from = top[1];
-            if (lists[from] != null) {
-                heap.offer(new int[]{lists[from].val, from});
-                lists[from] = lists[from].next;
+        ListNode head = new ListNode(-1);
+        ListNode rp = head;
+        while (!pq.isEmpty()) {
+            ListNode top = pq.poll();
+            rp.next = top;
+            rp = rp.next;
+            if (top.next != null) {
+                pq.offer(top.next);
             }
         }
-        return dummy.next;
+        return head.next;
     }
 }
 
 class MergeKSortedListsDivideConquer {
+    // Onlogn
     public ListNode mergeKLists(ListNode[] lists) {
-        int interval = 1;
-        // 0 and 1 into 0, 1 and 2 into 1...etc
-        // then 0 and 2 into 0, 4 and 6 into 4, etc
-        int k = lists.length;
-        while (interval < k) {
-            // logk steps each step merge all numbers so nlogk in all
-            for (int i = 0; i + interval < k; i += 2 * interval) {
-                System.out.println(i + " " + (i + interval));
-                merge(lists, i, i + interval);
-            }
-            interval *= 2;
-        }
-        return lists[0];
+        return domerge(lists, 0, lists.length - 1);
     }
 
-    private void merge(ListNode[] lists, int i, int j) {
-        ListNode r = new ListNode(-1);
-        ListNode pr = r;
-        ListNode p = lists[i];
-        ListNode q = lists[j];
-        while (p != null && q != null) {
-            if (p.val < q.val) {
-                pr.next = p;
-                p = p.next;
+    ListNode domerge(ListNode[] lists, int l, int u) {
+        if (l > u) {
+            return null;
+        }
+        if (l == u) {
+            return lists[l];
+        }
+        int mid = l + (u - l) / 2;
+        ListNode l1 = domerge(lists, l, mid);
+        ListNode l2 = domerge(lists, mid + 1, u);
+        return mergelist(l1, l2);
+    }
+
+    ListNode mergelist(ListNode l1, ListNode l2) {
+        ListNode head = new ListNode(-1);
+        ListNode rp = head;
+        while (l1 != null && l2 != null) {
+            if (l1.val <= l2.val) {
+                rp.next = l1;
+                l1 = l1.next;
             } else {
-                pr.next = q;
-                q = q.next;
+                rp.next = l2;
+                l2 = l2.next;
             }
-            pr = pr.next;
+            rp = rp.next;
         }
-        while (p != null) {
-            pr.next = p;
-            p = p.next;
-            pr = pr.next;
+        while (l1 != null) {
+            rp.next = l1;
+            l1 = l1.next;
+            rp = rp.next;
         }
-        while (q != null) {
-            pr.next = q;
-            q = q.next;
-            pr = pr.next;
+        while (l2 != null) {
+            rp.next = l2;
+            l2 = l2.next;
+            rp = rp.next;
         }
-        lists[i] = r.next;
+        return head.next;
     }
 }

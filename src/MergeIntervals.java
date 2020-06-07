@@ -20,36 +20,31 @@ Explanation: Intervals [1,4] and [4,5] are considered overlapping.
 NOTE: input types have been changed on April 15, 2019. Please reset to default code definition to get new method signature.
  */
 public class MergeIntervals {
-    public int[][] merge(int[][] inter) {
-        int n = inter.length;
-        List<int[]> r = new ArrayList<>();
+    public int[][] merge(int[][] a) {
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        int n = a.length;
         if (n == 0) {
-            return toarray(r);
+            return new int[0][0];
         }
-        Arrays.sort(inter, (a, b) -> Integer.compare(a[0], b[0]));
-        int cs = inter[0][0];
-        int ce = inter[0][1];
-
+        List<int[]> r = new ArrayList<>();
+        int start = a[0][0];
+        int end = a[0][1];
         for (int i = 1; i < n; i++) {
-            if (inter[i][0] > ce) {
-                r.add(new int[]{cs, ce});
-                // start a new streak
-                cs = inter[i][0];
-                ce = inter[i][1];
+            if (a[i][0] > end) {
+                r.add(new int[]{start, end});
+                // dont forget to open new ones!
+                start = a[i][0];
+                end = a[i][1];
             } else {
-                ce = Math.max(ce, inter[i][1]);
+                end = Math.max(end, a[i][1]);
             }
         }
-        // dont forget the last
-        r.add(new int[]{cs, ce});
-        return toarray(r);
-    }
-
-    int[][] toarray(List<int[]> input) {
-        int[][] r = new int[input.size()][2];
-        for (int i = 0; i < input.size(); i++) {
-            r[i] = input.get(i);
+        // dont forget the last one
+        r.add(new int[]{start, end});
+        int[][] rr = new int[r.size()][2];
+        for (int i = 0; i < r.size(); i++) {
+            rr[i] = r.get(i);
         }
-        return r;
+        return rr;
     }
 }

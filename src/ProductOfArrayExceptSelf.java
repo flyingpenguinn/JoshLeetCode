@@ -12,19 +12,20 @@ Follow up:
 Could you solve it with constant space complexity? (The output array does not count as extra space for the purpose of space complexity analysis.)
  */
 public class ProductOfArrayExceptSelf {
-    // we dont need the left array as we can accumulate while moving
-    // we dont need right as we can reuse the result array
+    // use the result, not original array, for left/right purpose
     public int[] productExceptSelf(int[] a) {
         int n = a.length;
+        // use r to cache left
         int[] r = new int[n];
-        r[n - 1] = 1;
-        for (int i = n - 2; i >= 0; i--) {
-            r[i] = r[i + 1] * a[i + 1];
+        r[0] = 1;
+        for (int i = 1; i < n; i++) {
+            r[i] = r[i - 1] * a[i - 1];
         }
-        int left = 1;
-        for (int i = 0; i < n; i++) {
-            r[i] *= left;
-            left *= a[i];
+        int prod = 1;
+        // later lefts are useless. we scan backward to avoid using right
+        for (int i = n - 2; i >= 0; i--) {
+            prod *= a[i + 1];
+            r[i] *= prod;
         }
         return r;
     }
