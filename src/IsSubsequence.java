@@ -39,27 +39,47 @@ public class IsSubsequence {
 }
 
 class IsSubSequenceBinarySearch {
-    // O(lens*logt), better than O(t) when t is very very large
+    // O(lens*logt), better than O(t) when t is very very large,
+    // or we have a lot of s strings to match with, because we only initialize t once
     public boolean isSubsequence(String s, String t) {
         List<Integer>[] tm = new ArrayList[26];
         for (int i = 0; i < 26; i++) {
             tm[i] = new ArrayList<>();
         }
         for (int i = 0; i < t.length(); i++) {
-            tm[t.charAt(i) - 'a'].add(i);
+            char c = t.charAt(i);
+            int cind = c - 'a';
+            tm[cind].add(i);
         }
-        int start = 0;
+        int j = 0;
         for (int i = 0; i < s.length(); i++) {
-            int cind = s.charAt(i) - 'a';
+            char c = s.charAt(i);
+            int cind = c - 'a';
             List<Integer> list = tm[cind];
-            int pos = Collections.binarySearch(list, start);
-            pos = pos >= 0 ? pos : -(pos + 1);
-            if (pos == list.size()) {
-                // if empty pos == 0 anyway
+            int next = binaryFirstNonSmaller(list, j);
+            if (next == -1) {
                 return false;
             }
-            start = list.get(pos) + 1;
+            j = next + 1;
         }
         return true;
+    }
+
+    int binaryFirstNonSmaller(List<Integer> list, int t) {
+        int l = 0;
+        int u = list.size() - 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            if (list.get(mid) >= t) {
+                u = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        if (l >= 0 && l < list.size()) {
+            return list.get(l);  // we should return the exact number, not index
+        } else {
+            return -1;
+        }
     }
 }

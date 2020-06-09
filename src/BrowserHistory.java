@@ -45,6 +45,7 @@ At most 5000 calls will be made to visit, back, and forward.
  */
 class BrowserHistory {
 
+    // dont need a while loop to go back and forth!
     List<String> urls = new ArrayList<>();
     int next = 0;
     int cursize = 0;
@@ -57,30 +58,16 @@ class BrowserHistory {
 
     public void visit(String url) {
         urls.add(next++, url);
-        cursize = next;
+        cursize = next; // visit means this is the last
     }
 
     public String back(int steps) {
-        while (steps > 0) {
-            if (next == 1) {
-                break;
-            } else {
-                next--;
-            }
-            steps--;
-        }
+        next = Math.max(1, next - steps); // next is the next slot so min is 1
         return urls.get(next - 1);
     }
 
     public String forward(int steps) {
-        while (steps > 0) {
-            if (next == cursize) {
-                break;
-            } else {
-                next++;
-            }
-            steps--;
-        }
+        next = Math.min(next + steps, cursize); // can't go beyond cursize
         return urls.get(next - 1);
     }
 }

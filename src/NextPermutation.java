@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /*
 LC#31
 Implement next permutation, which rearranges numbers into the lexicographically next greater permutation of numbers.
@@ -15,37 +17,32 @@ Here are some examples. Inputs are in the left-hand column and its corresponding
 public class NextPermutation {
     public void nextPermutation(int[] a) {
         int n = a.length;
-        int i = n - 1;
-        // find the first > i-1
-        for (; i >= 1; i--) {
-            if (a[i] > a[i - 1]) {
-                break;
-            }
+        int i = n-1;
+        while(i>=1 && a[i]<=a[i-1]){
+            i--;
         }
-        if (i <= 0) {  // < to handle empty ones
-            reverse(a, 0, n - 1);
+        if(i==0){
+            Arrays.sort(a);
             return;
         }
-        // find the first >a[i-1] from n-1 right to left scan
-        for (int j = n - 1; j >= i; j--) {
-            // must >, swap the right most item bigger than a[i-1]
-            if (a[j] > a[i - 1]) {
-                swap(a, j, i - 1);
-                break;
-            }
+        int t = i-1;
+        i = n-1;
+        // the smallest >
+        while(a[i]<=a[t]){
+            i--;
         }
-        // swap and reverse,effectively sort i...n-1 after the swap
-        reverse(a, i, n - 1);
+        swap(a, t, i);
+        reverse(a, t+1, n-1);
     }
 
-    void swap(int[] a, int i, int j) {
+    void swap(int[] a, int i, int j){
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
     }
 
-    void reverse(int[] a, int i, int j) {
-        while (i < j) {
+    void reverse(int[] a, int i, int j){
+        while(i<j){
             swap(a, i++, j--);
         }
     }

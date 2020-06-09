@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -35,84 +36,69 @@ Note:
 -10000 < points[i][1] < 10000
  */
 public class KClosestPoints {
-    public int[][] kClosest(int[][] ps, int k) {
-        // big heap on distance
-        PriorityQueue<int[]> pq = new PriorityQueue<>(new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return Integer.compare(o2[0], o1[0]);
-            }
-        });
-        for (int[] p : ps) {
-            pq.offer(new int[]{dist(p), p[0], p[1]});
+    public int[][] kClosest(int[][] a, int k) {
+        int n = a.length;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Long.compare(dist(y), dist(x)));
+        // must be big heap to get smallest k elements
+        for (int i = 0; i < n; i++) {
+            pq.offer(a[i]);
             if (pq.size() > k) {
                 pq.poll();
             }
         }
         int[][] r = new int[pq.size()][2];
-        int ri = 0;
-        while (!pq.isEmpty()) {
-            int[] top = pq.poll();
-            r[ri][0] = top[1];
-            r[ri][1] = top[2];
-            ri++;
+        for (int i = 0; i < r.length; i++) {
+            r[i] = pq.poll();
         }
         return r;
     }
 
-    private int dist(int[] p) {
-        return p[0] * p[0] + p[1] * p[1];
+    long dist(int[] x) {
+        return x[0] * x[0] + x[1] * x[1];
     }
 }
 
 class KClosestPointsSelection {
     // select the kth and partition it
     // when we get the kth, due to partition,we also get the first ks
-    public int[][] kClosest(int[][] ps, int k) {
-        dok(ps, 0, ps.length - 1, k);
-
-        int[][] r = new int[k][2];
-        for (int i = 0; i < k; i++) {
-            r[i] = ps[i];
-        }
+    public int[][] kClosest(int[][] a, int k) {
+        int n = a.length;
+        select(a, 0, n - 1, k);
+        int[][] r = Arrays.copyOf(a, k);
         return r;
     }
 
-    private void dok(int[][] ps, int l, int u, int k) {
-        if (l >= u) {
+    void select(int[][] a, int l, int u, int k) {
+        int pivot = partition(a, l, u);
+        int plen = pivot - l + 1;
+        if (plen == k) {
             return;
-        }
-        int pivot = partition(ps, l, u);
-        int llen = pivot - l + 1; // !!! pay attention to this!
-        if (k == llen) {
-            // pivot is the kth
-            return;
-        } else if (k < llen) {
-            dok(ps, l, pivot - 1, k);
+        } else if (plen < k) {
+            select(a, pivot + 1, u, k - plen);
         } else {
-            dok(ps, pivot + 1, u, k - llen);
+            select(a, l, pivot - 1, k);
         }
     }
 
-    private int partition(int[][] ps, int l, int u) {
+    int partition(int[][] a, int l, int u) {
         int i = l - 1;
         int j = l;
         while (j <= u) {
-            if (dist(ps[j]) <= dist(ps[u])) {
-                swap(ps, ++i, j);
+            if (dist(a[j]) <= dist(a[u])) {
+                swap(a, ++i, j);
             }
             j++;
         }
         return i;
     }
 
-    private void swap(int[][] ps, int i, int j) {
-        int[] tmp = ps[i];
-        ps[i] = ps[j];
-        ps[j] = tmp;
+    void swap(int[][] a, int i, int j) {
+        int[] tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
     }
 
-    private int dist(int[] p) {
-        return p[0] * p[0] + p[1] * p[1];
+    long dist(int[] x) {
+        return x[0] * x[0] + x[1] * x[1];
     }
 }

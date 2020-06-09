@@ -13,19 +13,14 @@ public class AddStrings {
     public String addStrings(String a, String b) {
         int i = a.length() - 1;
         int j = b.length() - 1;
-        int ca = 0;
         StringBuilder sb = new StringBuilder();
-        while (i >= 0 || j >= 0) {
-            int av = i == -1 ? 0 : a.charAt(i--) - '0';
-            int bv = j == -1 ? 0 : b.charAt(j--) - '0';
-            int raw = av + bv + ca;
-            int res = raw % 10;
-            sb.append(res);
-            ca = raw / 10;
-
-        }
-        if (ca != 0) {
-            sb.append(ca);
+        int carry = 0;
+        while (i >= 0 || j >= 0 || carry > 0) {
+            int va = i < 0 ? 0 : a.charAt(i--) - '0';
+            int vb = j < 0 ? 0 : b.charAt(j--) - '0';
+            int sum = va + vb + carry;
+            sb.append(sum % 10);
+            carry = sum / 10;
         }
         return sb.reverse().toString();
     }

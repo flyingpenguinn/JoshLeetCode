@@ -33,19 +33,18 @@ class CodecBinary {
     // leetcode style layer by layer.
     // when deseralize s[i] is either left or right of the top of node queue. because we always enqueue both children of a non null node
     public String serialize(TreeNode root) {
-        // linked list allows null
-        Deque<TreeNode> q = new LinkedList<>();
-        q.offer(root);
+        LinkedList<TreeNode> q = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
+        q.offerLast(root);
         while (!q.isEmpty()) {
-            TreeNode top = q.poll();
+            TreeNode top = q.pollFirst();
             if (sb.length() > 0) {
                 sb.append(",");
             }
             sb.append(top == null ? "#" : top.val);
             if (top != null) {
-                q.offer(top.left);
-                q.offer(top.right);
+                q.offerLast(top.left);
+                q.offerLast(top.right);
             }
         }
         return sb.toString();
@@ -53,26 +52,22 @@ class CodecBinary {
 
     // when we are at a[i] its father is in the queue
     public TreeNode deserialize(String data) {
-        String[] a = data.split(",");
-        Deque<TreeNode> q = new LinkedList<>();
-        TreeNode root = tonode(a[0]);
-        if (root == null) {
-            return null;
-        }
-        q.offer(root);
+        String[] ss = data.split(",");
+        TreeNode root = tonode(ss[0]);
+        LinkedList<TreeNode> q = new LinkedList<>();
+        q.offerLast(root);
         boolean leftset = false;
-        // because we must mention two children no matter they are null. also right is visited right after left
-        for (int i = 1; i < a.length; i++) {
-            TreeNode cur = tonode(a[i]);
+        for (int i = 1; i < ss.length; i++) {
+            TreeNode cur = tonode(ss[i]);
             if (!leftset) {
-                q.peek().left = cur;
+                q.peekFirst().left = cur;
                 leftset = true;
             } else {
-                q.poll().right = cur;
+                q.pollFirst().right = cur; // poll it if left is set and we are setting right
                 leftset = false;
             }
             if (cur != null) {
-                q.offer(cur);
+                q.offerLast(cur);
             }
         }
         return root;
@@ -81,6 +76,7 @@ class CodecBinary {
     TreeNode tonode(String s) {
         return "#".equals(s) ? null : new TreeNode(Integer.valueOf(s));
     }
+
 }
 
 class CodecPreOrder {

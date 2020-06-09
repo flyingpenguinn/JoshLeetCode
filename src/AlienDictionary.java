@@ -45,68 +45,72 @@ If the order is invalid, return an empty string.
 There may be multiple valid order of letters, return any one of them is fine.
  */
 public class AlienDictionary {
-    Set<Integer>[] g = new HashSet[26];
-    int[] st = new int[26];
-    List<Integer> r = new ArrayList<>();
-    boolean cyc = false;
+    // trap1: what are the chars in the dict? need to traverse. not all 26 chars are in the dict
+    // trap2: abc, ab will yield an invalid seq
+    List<Integer>[] g = new ArrayList[26];
+    boolean bad = false;
+    int[] status;
+    StringBuilder sb = new StringBuilder();
 
     public String alienOrder(String[] ws) {
-        Arrays.fill(st, -1);
-        int wn = ws.length;
-        for (int i = 0; i < wn; i++) {
-            int win = ws[i].length();
-            for (int j = 0; j < win; j++) {
-                char wij = ws[i].charAt(j);
-                st[wij - 'a'] = 0;
-                if (g[wij - 'a'] == null) {
-                    g[wij - 'a'] = new HashSet<>();
-                }
-            }
-            for (int j = i + 1; j < wn; j++) {
-                int s = 0;
-                int t = 0;
-                int wjn = ws[j].length();
-                while (s < win && t < wjn && ws[i].charAt(s) == ws[j].charAt(t)) {
-                    s++;
-                    t++;
-                }
-                if (s < win && t < wjn) {
-                    char wis = ws[i].charAt(s);
-                    char wjt = ws[j].charAt(t);
-                    g[wis - 'a'].add(wjt - 'a');
-                }
+        status = new int[26];
+        Arrays.fill(status, -1);
+        for(int i=0; i<ws.length;i++){
+            for(int j=0; j<ws[i].length();j++){
+                status[ws[i].charAt(j)-'a'] = 0;
             }
         }
-        for (int i = 0; i < 26; i++) {
-            if (st[i] == 0) {
+        for(int i=0; i<26;i++){
+            g[i] = new ArrayList<>();
+        }
+        for(int i=1; i<ws.length;i++){
+            link(ws[i-1], ws[i]);
+        }
+        for(int i=0; i<26;i++){
+            if(bad){
+                return "";
+            }
+            if(status[i]==0){
                 dfs(i);
             }
         }
-        if (cyc) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = r.size() - 1; i >= 0; i--) {
-            sb.append((char) ('a' + r.get(i)));
-        }
-        return sb.toString();
+        return sb.reverse().toString();
     }
 
-    void dfs(int i) {
-        if (cyc) {
-            return;
-        }
-        st[i] = 1;
-        for (int j : g[i]) {
-            if (st[j] == 1) {
-                cyc = true;
-                return;
-            } else if (st[j] == 0) {
-                dfs(j);
+    void link(String s, String t){
+        int i = 0;
+        int j = 0;
+        while(i<s.length() && j<t.length()){
+            int sind = s.charAt(i)-'a';
+            int tind = t.charAt(j)-'a';
+            if(sind!= tind){
+                g[sind].add(tind);
+                break;  // break on the first mismatch
+            }else{
+                i++;
+                j++;
             }
         }
+        if(i<s.length() && j==t.length()){
+            bad = true; // eq all the way but a longer one is smaller, bad
+        }
+    }
 
-        st[i] = 2;
-        r.add(i);
+    void dfs(int i){
+        status[i] = 1;
+        for(int next: g[i]){
+            if(status[next]==0){
+                dfs(next);
+            }else if (status[next] == 1){ // found circle
+                bad = true;
+                return;
+            }
+        }
+        sb.append((char)('a'+i));
+        status[i] = 2;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new AlienDictionary().alienOrder(new String[]{"abc", "ab"}));
     }
 }

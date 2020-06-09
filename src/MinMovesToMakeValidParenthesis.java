@@ -45,30 +45,29 @@ s[i] is one of  '(' , ')' and lowercase English letters.
 public class MinMovesToMakeValidParenthesis {
     // 1. remove right brackets that appear too early
     // 2. remove left brackets that can't find a pair
+    // 3. use a stack to keep open left indexes
     public String minRemoveToMakeValid(String s) {
-        Deque<Integer> stack = new ArrayDeque<>();
-        Set<Integer> rights = new HashSet<>();
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '(') {
-                stack.push(i);
-            } else if (s.charAt(i) == ')') {
-                if (stack.isEmpty()) {
-                    rights.add(i);
+        int n = s.length();
+        Deque<Integer> st = new ArrayDeque<>();
+        Set<Integer> del = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                st.push(i);
+            } else if (c == ')') {
+                if (!st.isEmpty()) {
+                    st.pop();
                 } else {
-                    stack.pop();
+                    del.add(i);
                 }
             }
         }
-        Set<Integer> lefts = new HashSet<>();
-        while (!stack.isEmpty()) {
-            lefts.add(stack.pop());
-        }
+        del.addAll(st);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            if (lefts.contains(i) || rights.contains(i)) {
-                continue;
+        for (int i = 0; i < n; i++) {
+            if (!del.contains(i)) {
+                sb.append(s.charAt(i));
             }
-            sb.append(s.charAt(i));
         }
         return sb.toString();
     }

@@ -107,7 +107,7 @@ class KthSmallestSortedMatrixBinarySearch {
         while (l <= u) {
             int mid = l + (u - l) / 2;
             if (kth(a, mid) >= k) {
-                u = mid - 1;
+                u = mid - 1; // squeeze out the solution
             } else {
                 l = mid + 1;
             }

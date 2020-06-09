@@ -31,46 +31,31 @@ Note:
 2 <= B <= 40000
  */
 public class NthMagicNumber {
-    int Mod = 1000000007;
-
-    // first use lcm to eat n in chunks, then deal with the numbers between lcms. lcm is an int so it becomes binary searchable
-    public int nthMagicalNumber(long n, long a, long b) {
-        if (a > b) {
-            return nthMagicalNumber(n, b, a);
-        }
-        // a<=b
-        if (b % a == 0) {
-            return (int) ((n * a) % Mod);
-        }
-        long gcd = gcd(a, b);
-        long lcm = a * b / gcd;
-        long ad = lcm / a;
-        long bd = lcm / b;
-        long ld = ad + bd - 1;
-        long chunks = n / ld; // lcm in int range, can binary search
-        long rem = (n % ld);// ld i int range
-        long p1 = lcm * chunks % Mod;
-        long p2 = get(rem, a, b, lcm);
-        return (int) ((p1 + p2) % Mod);
-
-    }
-
-    private long get(long t, long a, long b, long lcm) {
-        if (t == 0) {
-            return 0;
-        }
-        long l = a;
-        long u = lcm;
+    // solution is in long range
+    // use principle of inclusion/exclusion
+    public int nthMagicalNumber(int n, int a, int b) {
+        long l = 1;
+        long u = Long.MAX_VALUE;
         while (l <= u) {
             long mid = l + (u - l) / 2;
-            long th = mid / a + mid / b - mid / lcm;
-            if (th < t) {
-                l = mid + 1;
-            } else {
+            long nth = nth(a, b, mid);
+            if (nth >= n) {
+                // can't return when nth==n: we could be at some number > the real solution. need u=mid-1 to squeeze out the solution
+                // like kth in sorted matrix or multiplication table
                 u = mid - 1;
+            } else {
+                l = mid + 1;
             }
         }
-        return l;
+        return (int) (l % 1000000007);
+    }
+
+    long nth(long a, long b, long m) {
+        return m / a + m / b - m / lcm(a, b);
+    }
+
+    long lcm(long a, long b) {
+        return a * b / gcd(a, b);
     }
 
     long gcd(long a, long b) {
