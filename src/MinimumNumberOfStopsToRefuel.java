@@ -50,121 +50,62 @@ Note:
  */
 public class MinimumNumberOfStopsToRefuel {
     // as if we can save previous stops for later credits...
-    public int minRefuelStops(int t, int f, int[][] s) {
+    public int minRefuelStops(int t, int sf, int[][] a) {
         PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
-        int p = 0;
-        int ps = 0;
+        int tank = sf;
         int r = 0;
-        while (ps < s.length) {
-            if (p + f >= s[ps][0]) {
-                f -= (s[ps][0] - p);
-                p = s[ps][0];
-                pq.offer(s[ps][1]);
-                ps++;
-            } else {
-                if (pq.isEmpty()) {
-                    return -1;
-                } else {
-                    int add = pq.poll();
-                    f += add;
-                    r++;
-                }
+        int i = 0; // next station's index
+        int pos = 0;
+        int n = a.length;
+        while (i <= n) {
+            int cost = (i == n) ? t - pos : a[i][0] - pos;
+            tank -= cost;
+            while (!pq.isEmpty() && tank < 0) {
+                tank += pq.poll();
+                r++;
             }
+            if (tank < 0) {
+                // tank empty but we are still not able to go to dest
+                return -1;
+            }
+            // we can reach i, so add i's fuel to pq and move on
+            if (i < n) {
+                pq.offer(a[i][1]);
+                pos = a[i][0];
+            }
+            i++;
         }
-        while (p + f < t && !pq.isEmpty()) {
-            f += pq.poll();
-            r++;
-        }
-        return p + f >= t ? r : -1;
+        return r;
     }
 
     public static void main(String[] args) {
-        int target = 1000;
-        int startFuel = 83;
-        int[][] stations = ArrayUtils.read(" [[15,457],[156,194],[160,156],[230,314],[390,159],[621,20],[642,123],[679,301],[739,229],[751,174]]");
-        System.out.println(new MinimumNumberOfStops2DDp().minRefuelStops(target, startFuel, stations));
+
+
+        System.out.println(new MinNumRefuelDp().minRefuelStops(1000, 83, ArrayUtils.read(" [[25,27],[36,187],[140,186],[378,6],[492,202],[517,89],[579,234],[673,86],[808,53],[954,49]]")));
     }
 }
 
 class MinNumRefuelDp {
-    public int minRefuelStops(int t, int f, int[][] s) {
-        int sn = s.length;
-        // max dist can get with i stops
-        int[] dp = new int[sn + 1];
-        dp[0] = f;
-        for (int i = 0; i < sn; i++) {
-            // each station as the last station on top of j
-            for (int j = i; j >= 0; j--) {
-                // previously there were j refuels. must go from i to 0: we don't want to step o nthe j we just set!
-                if (dp[j] >= s[i][0]) {
-                    dp[j + 1] = Math.max(dp[j + 1], dp[j] + s[i][1]);
+    // shua biao fa....
+    public int minRefuelStops(int t, int sf, int[][] a) {
+        int n = a.length;
+        int[] dp = new int[n + 1];
+        // fuel i times, how far we can go
+        dp[0] = sf;
+        for (int i = 1; i <= n; i++) {
+            for (int j = i - 1; j >= 0; j--) {
+                // from the back because when we figure out j for this i we rely on i-1's dp[j]
+                // if we do from 0 to i-1 we are using i's data to populate from j to j=1 which is incorrect
+                // when we go from i-1 to 0, we use i-1's data to populate i
+                if (dp[j] >= a[i - 1][0]) {
+                    int nlen = dp[j] + a[i - 1][1];
+                    dp[j + 1] = Math.max(dp[j + 1], nlen);
                 }
             }
         }
-        for (int i = 0; i <= sn; i++) {
+        for (int i = 0; i <= n; i++) {
             if (dp[i] >= t) {
                 return i;
-            }
-        }
-        return -1;
-
-    }
-}
-
-// a more intuitive dp version. note we used a max array to turn a 3-d dp into a 2d one
-// @silu when we have t that is not enumerable, use fuel steps i to make it discrete
-class MinimumNumberOfStops2DDp {
-    public int minRefuelStops(int t, int f, int[][] s) {
-        if (f >= t) {
-            return 0;
-        }
-        int sn = s.length;
-        // fuel at most sn times, ending at stop j-1, how far we can get
-        int[][] dp = new int[sn + 1][sn + 1];
-        for (int i = 0; i <= sn; i++) {
-            int last = f;
-            for (int j = 1; j <= sn; j++) {
-                if (i == 0) {
-                    // fuel 0 times we have f
-                    dp[i][j] = f;
-                } else if (j == 0) {
-                    // using up to stop -1 means no refuel too...
-                    dp[i][j] = f;
-                } else {
-                    // similar to stock buysell IV, we can avoid repeated 0...j-1 max calculation by cache the last max
-                    if (last >= s[j - 1][0]) {
-                        dp[i][j] = Math.max(dp[i][j], last + s[j - 1][1]);
-                    }
-                    last = Math.max(last, dp[i - 1][j]);
-                    if (dp[i][j] >= t) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-}
-
-class MinNumberOfRefuelRawDp {
-    public int minRefuelStops(int t, int f, int[][] s) {
-        int sn = s.length;
-        int[][] dp = new int[sn + 1][sn + 1];
-        // fuel at most sn times, ending at stop j-1, how far we can get
-        for (int i = 0; i <= sn; i++) {
-            dp[i][0] = f;
-        }
-        for (int i = 1; i <= sn; i++) {
-            for (int j = 1; j <= sn; j++) {
-                for (int k = 0; k < j; k++) {
-                    int last = dp[i - 1][k];
-                    if (last >= s[j - 1][0]) {
-                        dp[i][j] = Math.max(dp[i][j], last + s[j - 1][1]);
-                    }
-                }
-                if (dp[i][j] >= t) {
-                    return i;
-                }
             }
         }
         return -1;

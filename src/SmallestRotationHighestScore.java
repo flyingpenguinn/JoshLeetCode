@@ -38,37 +38,39 @@ A will have length at most 20000.
 A[i] will be in the range [0, A.length].
  */
 public class SmallestRotationHighestScore {
-    // get i from i-1. calculate how many scores we would lose by increasing the required "level" from 0 to i.
-    // also need to increase the score of the moved element
+    // because when we move left all number's score-1 except for the head one. we can think of as score is increasing...
+    // we compensate the head by adding round number to its diff so that it can "live" longer
     public int bestRotation(int[] a) {
-        int n = a.length;
-        if (n == 0) {
-            return 0;
-        }
         Map<Integer, Integer> m = new HashMap<>();
-        int r = 0;
-
+        int n = a.length;
         for (int i = 0; i < n; i++) {
-            int t = i - a[i];
-            m.put(t, m.getOrDefault(t, 0) + 1);
-            if (t >= 0) {
-                r++;
+            int diff = i - a[i];
+            m.put(diff, m.getOrDefault(diff, 0) + 1);
+        }
+        int base = 0;
+        for (int k : m.keySet()) {
+            if (k >= 0) {
+                base += m.get(k);
             }
         }
-        int max = r;
+        // at first we just need to be >=0
+        int maxbase = base;
         int maxi = 0;
-        for (int i = 1; i < n; i++) {
-            int lost = m.getOrDefault(i - 1, 0);
-            // give new values a cushion +i so that they can last longer. +i is key here
-            int gain = n - 1 - a[i - 1] + i;
-            r = r - lost + 1;
-            if (r > max) {
-                max = r;
+        for (int i = 1; i < n; i++) { // n-1 rounds
+            // because now the water level is increasing and i-1 counts as good
+            int minus = m.getOrDefault(i - 1, 0);
+            base = base - minus + ((n - 1 + i) >= a[i - 1] ? 1 : 0); // with this we can handle a[i] at any range
+            if (base > maxbase) {
+                maxbase = base;
                 maxi = i;
             }
-            m.put(gain, m.getOrDefault(gain, 0) + 1);
+            int ndiff = n - 1 - a[i - 1] + i;  //+i to make it survive rest of the rounds.
+            m.put(ndiff, m.getOrDefault(ndiff, 0) + 1);
         }
         return maxi;
+    }
 
+    public static void main(String[] args) {
+        System.out.println(new SmallestRotationHighestScore().bestRotation(ArrayUtils.read1d("[2, 3, 1, 4, 0]")));
     }
 }
