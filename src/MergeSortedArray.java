@@ -15,23 +15,23 @@ nums2 = [2,5,6],       n = 3
 Output: [1,2,2,3,5,6]
  */
 public class MergeSortedArray {
-    // go from the back
-    int Min = Integer.MIN_VALUE;
-
-    public void merge(int[] a, int na, int[] b, int nb) {
-        int i = na - 1;
-        int j = nb - 1;
-        int k = na + nb - 1;
-        while (i >= 0 || j >= 0) {
-            int va = i < 0 ? Min : a[i];
-            int vb = j < 0 ? Min : b[j];
-            if (va > vb) {
-                a[k--] = va;
-                i--;
+    // go from the back because it has enough space to avoid being overridden
+    public void merge(int[] a, int m, int[] b, int n) {
+        int i = m - 1;
+        int j = n - 1;
+        int ri = m + n - 1;
+        while (i >= 0 && j >= 0) {
+            if (a[i] >= b[j]) {
+                a[ri--] = a[i--];
             } else {
-                a[k--] = vb;
-                j--;
+                a[ri--] = b[j--];
             }
+        }
+        while (i >= 0) {
+            a[ri--] = a[i--];
+        }
+        while (j >= 0) {
+            a[ri--] = b[j--];
         }
     }
 }

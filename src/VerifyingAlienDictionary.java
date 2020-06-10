@@ -2,62 +2,71 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+LC#953
+In an alien language, surprisingly they also use english lowercase letters, but possibly in a different order. The order of the alphabet is some permutation of lowercase letters.
+
+Given a sequence of words written in the alien language, and the order of the alphabet, return true if and only if the given words are sorted lexicographicaly in this alien language.
+
+
+
+Example 1:
+
+Input: words = ["hello","leetcode"], order = "hlabcdefgijkmnopqrstuvwxyz"
+Output: true
+Explanation: As 'h' comes before 'l' in this language, then the sequence is sorted.
+Example 2:
+
+Input: words = ["word","world","row"], order = "worldabcefghijkmnpqstuvxyz"
+Output: false
+Explanation: As 'd' comes after 'l' in this language, then words[0] > words[1], hence the sequence is unsorted.
+Example 3:
+
+Input: words = ["apple","app"], order = "abcdefghijklmnopqrstuvwxyz"
+Output: false
+Explanation: The first three characters "app" match, and the second string is shorter (in size.) According to lexicographical rules "apple" > "app", because 'l' > '∅', where '∅' is defined as the blank character which is less than any other character (More info).
+
+
+Constraints:
+
+1 <= words.length <= 100
+1 <= words[i].length <= 20
+order.length == 26
+All characters in words[i] and order are English lowercase letters.
+ */
 public class VerifyingAlienDictionary {
-
-    class AlienStringComparator implements Comparator<String> {
-        Map<Character, Integer> map;
-
-        public AlienStringComparator(Map<Character, Integer> map) {
-            this.map = map;
-        }
-
-        @Override
-        public int compare(String o1, String o2) {
-            int i = 0;
-            while (i < o1.length() && i < o2.length()) {
-                char co1 = o1.charAt(i);
-                char co2 = o2.charAt(i);
-                Integer seq1 = map.get(co1);
-                Integer seq2 = map.get(co2);
-                if (seq1 == null || seq2 == null) {
-                    throw new IllegalArgumentException("unknown character");
-                }
-                if (seq1 < seq2) {
-                    return -1;
-                } else if (seq1 > seq2) {
-                    return 1;
-                }
-                i++;
-            }
-            if (i == o1.length() && i == o2.length()) {
-                return 0;
-            } else if (i == o1.length()) {
-                // o2 longer, so o1 is smaller
-                return -1;
-            } else {
-                return 1;
-            }
-        }
-    }
-
-    public boolean isAlienSorted(String[] words, String order) {
-        Map<Character, Integer> map = new HashMap<>();
-        for (int i = 0; i < order.length(); i++) {
-            char c = order.charAt(i);
-            if (map.containsKey(c)) {
-                throw new IllegalArgumentException("duplicated order");
-            }
-            map.put(c, i);
-        }
-        AlienStringComparator cmp = new AlienStringComparator(map);
-        for (int i = 0; i + 1 < words.length; i++) {
-            String w1 = words[i];
-            String w2 = words[i + 1];
-            if (cmp.compare(w1, w2) > 0) {  // i.compare to i+1 <=0
+    public boolean isAlienSorted(String[] w, String order) {
+        for (int i = 0; i + 1 < w.length; i++) {
+            int cmp = compare(w[i], w[i + 1], order);
+            if (cmp > 0) {
                 return false;
             }
         }
         return true;
+    }
+
+    int compare(String a, String b, String order) {
+        int i = 0;
+        int j = 0;
+        while (i < a.length() && j < b.length()) {
+            int cmp = comparechar(a.charAt(i), b.charAt(j), order);
+            if (cmp != 0) {
+                return cmp;
+            }
+            i++;
+            j++;
+        }
+        if (j == b.length() && i < a.length()) {
+            return 1;
+        } else if (i == a.length() && j < b.length()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    int comparechar(char c, char d, String order) {
+        return order.indexOf(c) - order.indexOf(d);
     }
 
     public static void main(String[] args) {

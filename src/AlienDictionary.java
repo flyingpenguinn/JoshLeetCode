@@ -85,7 +85,7 @@ public class AlienDictionary {
             int tind = t.charAt(j)-'a';
             if(sind!= tind){
                 g[sind].add(tind);
-                break;  // break on the first mismatch
+                break;  // break on the first mismatch. we can only build relationship on the first mismatch
             }else{
                 i++;
                 j++;

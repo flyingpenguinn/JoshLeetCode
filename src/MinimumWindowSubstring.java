@@ -18,50 +18,53 @@ If there is no such window in S that covers all characters in T, return the empt
 If there is such window, you are guaranteed that there will always be only one unique minimum window in S.
  */
 public class MinimumWindowSubstring {
+    // can use a better checking mechanism like note down the gap of tm and sm
+    // note the diff from min window subsequence- there we need to include a subseq while where we include a multiset
     public String minWindow(String s, String t) {
-        int high = -1;
-        int low = 0;
-        int[] sm = new int[255];
-        int[] tm = new int[255];
-        int gap = 0;
-        for (int i = 0; i < t.length(); i++) {
-            int tc = t.charAt(i);
-            tm[tc]++;
-            if (tm[tc] == 1) {
-                gap++;
-            }
+        if (t == null || s == null || t.isEmpty() || s.isEmpty()) {
+            return "";
         }
-        int min = Integer.MAX_VALUE;
+        int[] tm = new int[255];
+        for (int i = 0; i < t.length(); i++) {
+            tm[t.charAt(i)]++;
+        }
+        int low = 0;
+        int high = -1;
+        int[] sm = new int[255];
+        int minlen = s.length() + 1;
         int mini = -1;
-        int minj = -1;
         while (true) {
-            if (gap > 0) {
+            if (smaller(sm, tm)) {
                 high++;
                 if (high == s.length()) {
                     break;
                 }
-                int hc = s.charAt(high);
-                int nhc = ++sm[hc];
-                if (nhc == tm[hc]) {
-                    gap--;
-                }
+                sm[s.charAt(high)]++;
             } else {
-                int len = high - low + 1;
-                if (len < min) {
-                    min = len;
+                if (high - low + 1 < minlen) {
+                    minlen = high - low + 1;
                     mini = low;
-                    minj = high;
                 }
-                int lc = s.charAt(low);
-                int nlc = --sm[lc];
-                if (nlc + 1 == tm[lc]) {
-                    gap++;
-                }
+                sm[s.charAt(low)]--;
                 low++;
             }
         }
-        return mini == -1 ? "" : s.substring(mini, minj + 1);
+        if (mini == -1) {
+            return "";
+        } else {
+            return s.substring(mini, mini + minlen);
+        }
     }
+
+    boolean smaller(int[] sm, int[] tm) {
+        for (int i = 0; i < 255; i++) {
+            if (sm[i] < tm[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public static void main(String[] args) throws IOException {
         //    System.out.println(new MinimumWindowSubstring().minWindow("ADOBECODEBANC", "ABC"));

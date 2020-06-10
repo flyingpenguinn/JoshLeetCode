@@ -20,32 +20,33 @@ You may assume k is always valid, 1 ≤ k ≤ array's length.
 public class KthLargestInArray {
     // in average O(n) if we random everything well. can swap u with a middle random one
     public int findKthLargest(int[] a, int k) {
-        return dof(a, 0, a.length - 1, a.length - k + 1);
+        int n = a.length;
+        k = n - k + 1;
+        // turn to find kth smallest
+        return dofind(a, 0, n - 1, k);
     }
 
-    int dof(int[] a, int l, int u, int k) {
+    int dofind(int[] a, int l, int u, int t) {
         if (l == u) {
-            // cant be k==1.l...u not ordered
-            return a[l];
+            return a[l]; // t must be 1
         }
         int pivot = partition(a, l, u);
-        int th = pivot - l + 1;
-        if (th == k) {
+        int plen = pivot - l + 1;
+        if (plen == t) {
             return a[pivot];
-        } else if (th > k) {
-            return dof(a, l, pivot - 1, k);
+        } else if (t < plen) {
+            return dofind(a, l, pivot - 1, t);
         } else {
-            return dof(a, pivot + 1, u, k - th);
+            // t>plen
+            return dofind(a, pivot + 1, u, t - plen);
         }
-
     }
 
     int partition(int[] a, int l, int u) {
-        int p = a[u];
         int i = l - 1;
         int j = l;
         while (j <= u) {
-            if (a[j] <= p) {
+            if (a[j] <= a[u]) {
                 swap(a, ++i, j);
             }
             j++;
@@ -54,9 +55,9 @@ public class KthLargestInArray {
     }
 
     void swap(int[] a, int i, int j) {
-        int t = a[i];
+        int tmp = a[i];
         a[i] = a[j];
-        a[j] = t;
+        a[j] = tmp;
     }
 }
 
@@ -76,6 +77,7 @@ class KthLargestBinarySearchOnValue {
             long mid = l + (u - l) / 2;
             int th = bth(a, mid, min);
             if (th <= k - 1) {
+                // must do mid-1 when == because we want to get the first
                 u = mid - 1;
             } else {
                 l = mid + 1;

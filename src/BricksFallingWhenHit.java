@@ -1,4 +1,5 @@
 import base.ArrayUtils;
+
 import java.util.*;
 /*
 LC#803
@@ -37,100 +38,101 @@ public class BricksFallingWhenHit {
     // reverse the hits to calculate how many bricks we can merge into "live" part every hit
     // note the traps
     // 1. it can hit no brick point
-    // 2. there can be no brick at all after all the hits
-    // 3. top bricks are live by themselves while underlings need the top ones to support
-    private int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+    // 2. top bricks are live by themselves while underlings need the top ones to support. so if we are merging two top linked areas dont count new live ones
+    // 3. mind the logic of calculating newly added live bricks: we need to -1 when it's >0 but keep it on 0 when there is no new live block
+    Map<Integer, Integer> pa = new HashMap<>();
+    Map<Integer, Integer> size = new HashMap<>();
+    int m = 0;
+    int n = 0;
 
-    private boolean inRange(int i, int j, int rowLimit, int colLimit) {
-        return i >= 0 && i < rowLimit && j >= 0 && j < colLimit;
-    }
-
-    int code(int i, int j, int n) {
-        return i * n + j;
-    }
-
-    public int[] hitBricks(int[][] g, int[][] hs) {
-        int m = g.length;
-        int n = g[0].length;
-        for (int[] h : hs) {
-            g[h[0]][h[1]] = g[h[0]][h[1]] == 1 ? -1 : 0;
+    public int[] hitBricks(int[][] a, int[][] h) {
+        m = a.length;
+        n = a[0].length;
+        int[][] olda = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            olda[i] = Arrays.copyOf(a[i], n);
         }
-        int[] p = new int[m * n];
-        int[] size = new int[m * n];
-        boolean[] live = new boolean[m * n];
-        for (int j = 0; j < n; j++) {
-            live[j] = g[0][j] == 1;
+        for (int[] hi : h) {
+            a[hi[0]][hi[1]] = 0;
         }
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                if (g[i][j] <= 0) {
-                    continue;
-                }
-                int code = code(i, j, n);
-                p[code] = code;
-                size[code] = 1;
-                // only left and up for the initial- not looking for breaking point yet
-                for (int k = 0; k < 2; k++) {
-                    int ni = i + dirs[k][0];
-                    int nj = j + dirs[k][1];
-                    if (inRange(ni, nj, m, n) && g[ni][nj] == 1) {
-                        union(p, size, live, code, code(ni, nj, n));
+                if (a[i][j] == 1) {
+                    init(tocode(i, j));
+                    if (i - 1 >= 0 && a[i - 1][j] == 1) {
+                        union(i, j, i - 1, j);
+                    }
+                    if (j - 1 >= 0 && a[i][j - 1] == 1) {
+                        union(i, j, i, j - 1);
                     }
                 }
             }
         }
-        int hn = hs.length;
-        int[] r = new int[hn];
-        for (int k = hn - 1; k >= 0; k--) {
-            int i = hs[k][0];
-            int j = hs[k][1];
-            if (g[i][j] == 0) {
+        int[] r = new int[h.length];
+        for (int i = h.length - 1; i >= 0; i--) {
+            int[] pos = h[i];
+            if (olda[pos[0]][pos[1]] == 0) {
                 continue;
             }
-            g[i][j] = 1;
-            int code = code(i, j, n);
-            p[code] = code;
-            size[code] = 1;
-            live[code] = i == 0;
-            int ri = live[code] ? 1 : 0;
+            int poscode = tocode(pos[0], pos[1]);
+            init(poscode);
+            a[pos[0]][pos[1]] = 1;
+            int cur = poscode < n ? 1 : 0; // how many top going nodes were added in this round
             for (int[] d : dirs) {
-                int ni = i + d[0];
-                int nj = j + d[1];
-                if (inRange(ni, nj, m, n) && g[ni][nj] == 1) {
-                    ri += union(p, size, live, code, code(ni, nj, n));
+                int ni = pos[0] + d[0];
+                int nj = pos[1] + d[1];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
+                    int unioned = union(pos[0], pos[1], ni, nj);
+                    cur += unioned;
                 }
             }
-            r[k] = Math.max(ri - 1, 0);// take out the current shot number itself
+            r[i] = cur > 0 ? cur - 1 : 0; // if found top going ones then it's because this brick is top going so need to subtract that. otherwise 0
         }
         return r;
     }
 
-    private int union(int[] p, int[] size, boolean[] live, int c1, int c2) {
-        int p1 = find(p, c1);
-        int p2 = find(p, c2);
+    protected void init(int co) {
+        pa.put(co, co);
+        size.put(co, 1);
+    }
+
+    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    // how many are linked to a set that belongs to the top level
+    private int union(int i, int j, int ni, int nj) {
+        int p1 = find(tocode(i, j));
+        int p2 = find(tocode(ni, nj));
         if (p1 == p2) {
             return 0;
-        }
-        p[p1] = p2;
-        int oldp2 = size[p2];
-        size[p2] += size[p1];
-        if (live[p2] && !live[p1]) {
-            return size[p1];
-        } else if (live[p1] && !live[p2]) {
-            live[p2] = true;
-            return oldp2;
         } else {
-            return 0;
+            // bigger one goes to the set of smaller one
+            int min = Math.min(p1, p2);
+            int max = Math.max(p1, p2);
+            pa.put(max, min);
+            int maxsize = size.get(max);
+            size.put(min, maxsize + size.get(min));
+            if (min < n && max >= n) {
+                // how many new top going are we adding. note if max also <n there is no addition of top going bricks
+                return maxsize;
+            } else {
+                return 0;
+            }
         }
     }
 
-    private int find(int[] p, int i) {
-        if (p[i] == i) {
-            return i;
+    private int find(int co) {
+        int father = pa.get(co);
+        if (father == co) {
+            return co;
+        } else {
+            int rt = find(father);
+            pa.put(co, rt);
+            return rt;
         }
-        int rt = find(p, p[i]);
-        p[i] = rt;
-        return rt;
+    }
+
+    int tocode(int i, int j) {
+        return i * n + j;
     }
 
     public static void main(String[] args) {
