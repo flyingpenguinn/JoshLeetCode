@@ -6,16 +6,18 @@ public class SortColors {
     */
     public void sortColors(int[] a) {
         int i = -1;
-        int j = a.length;
-        int m = 0;
-        while (m < j) { // <j !
-            if (a[m] == 0) {
-                swap(a, ++i, m++);
-            } else if (a[m] == 1) {
-                m++;
+        int k = a.length;
+        int j = 0;
+        while (j < k) {
+            if (a[j] == 0) {
+                swap(a, ++i, j);
+                j++;
+            } else if (a[j] == 1) {
+                j++;
             } else {
-                // cant move mid as j ciuld be anything
-                swap(a, --j, m);
+                // ==2
+                swap(a, --k, j);
+                // not moving j in case this is a 0 we need to switch it further
             }
         }
     }
@@ -29,22 +31,22 @@ public class SortColors {
 
 class SortColorTwoPassPartition {
     public void sortColors(int[] a) {
-        int nextStart = partition(a, 0, 0, a.length - 1);
-        partition(a, 1, nextStart, a.length - 1);
+        int end = partition(a, 0, 0, a.length - 1);
+        partition(a, 1, end + 1, a.length - 1);
     }
 
-    // partition so that first part <= target, second part > target
-    private int partition(int[] a, int target, int l, int u) {
+    // partition so that first part <= t, second part > target
+    private int partition(int[] a, int t, int l, int u) {
         // i is the last position that is <=
         int i = l - 1; // l-1
         int j = l;
         while (j <= u) {
-            if (a[j] <= target) {
+            if (a[j] <= t) {
                 swap(++i, j, a);
             }
             j++;
         }
-        return i + 1;
+        return i;
     }
 
     private void swap(int i, int j, int[] a) {
