@@ -26,48 +26,52 @@ Output: [""]
 public class RemoveInvalidParenthesis {
     // only two ways for parenthesis to be invalid: l==0 when we have r or too many l in the end. use this to calc the counts we should have
     // then use dfs to pick or unpick the brackets
-    Set<String> res = new HashSet<>();
+    Set<String> r = new HashSet<>();
 
     public List<String> removeInvalidParentheses(String s) {
+        int openleft = 0;
+        int badr = 0;
         int n = s.length();
-        // first get how many ls and rs to remove. given any sequence, we know the counts. this must be "minimal"
-        int l = 0;
-        int r = 0;
         for (int i = 0; i < n; i++) {
-            if (s.charAt(i) == '(') {
-                l++;
-            } else if (s.charAt(i) == ')') {
-                if (l == 0) {
-                    r++;
+            char c = s.charAt(i);
+            if (c == '(') {
+                openleft++;
+            } else if(c==')'){
+                if (openleft == 0) {
+                    badr++;
                 } else {
-                    l--;
+                    openleft--;
                 }
             }
         }
-        // we then dfs all solutions
-        dfs(s, 0, 0, l, r, "");
-        return new ArrayList<>(res);
+        int badl = openleft;
+        dfs(0, badl, badr, 0, s, "");
+        return new ArrayList<>(r);
     }
 
-    void dfs(String s, int i, int lc, int rl, int rr, String cur) {
-        if (rl < 0 || rr < 0 || lc < 0) {
+    private void dfs(int i, int reml, int remr, int openleft, String s, String cur) {
+        if (openleft < 0 || reml < 0 || remr < 0) {
             return;
         }
-        int n = s.length();
-        if (i == n) {
-            if (rl == 0 && rr == 0) {
-                res.add(cur);
+        if (i == s.length()) {
+            if (openleft == 0 && reml == 0 && remr == 0) {
+                r.add(cur);
             }
             return;
         }
-        if (s.charAt(i) == '(') {
-            dfs(s, i + 1, lc + 1, rl, rr, cur + "(");
-            dfs(s, i + 1, lc, rl - 1, rr, cur);
-        } else if (s.charAt(i) == ')') {
-            dfs(s, i + 1, lc - 1, rl, rr, cur + ")");
-            dfs(s, i + 1, lc, rl, rr - 1, cur);
-        } else {
-            dfs(s, i + 1, lc, rl, rr, cur + s.charAt(i));
+        char c = s.charAt(i);
+        if (c == '(') {
+            // keep this
+            dfs(i + 1, reml, remr, openleft + 1, s, cur + "(");
+            // remove this
+            dfs(i + 1, reml - 1, remr, openleft, s, cur);
+        } else if(c ==')'){
+            // keep this
+            dfs(i + 1, reml, remr, openleft - 1, s, cur + ")");
+            // remove this
+            dfs(i + 1, reml, remr - 1, openleft, s, cur);
+        }else{
+            dfs(i + 1, reml, remr, openleft, s, cur + c);
         }
     }
 }

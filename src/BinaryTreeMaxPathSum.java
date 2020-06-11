@@ -32,26 +32,23 @@ Output: 42
  */
 public class BinaryTreeMaxPathSum {
     // return the pathed value, but record max in each node. what's returned is different from what's maxed
+    int max = Integer.MIN_VALUE;
+
     public int maxPathSum(TreeNode root) {
-        domax(root);
+        dfs(root);
         return max;
     }
 
-    int max = Integer.MIN_VALUE;
-
-    private int domax(TreeNode root) {
-        if (root == null) {
+    // max sum of a path from n to some node below
+    int dfs(TreeNode n){
+        if(n==null){
             return 0;
         }
-        int left = domax(root.left);
-        int right = domax(root.right);
-        int ml = left + root.val;
-        int mr = right + root.val;
-        int mall = right + left + root.val;
-        int mroot = root.val;
-        int rt = Math.max(ml, Math.max(mr, mroot));
-        int cm = Math.max(mall, rt);
-        max = Math.max(max, cm);
-        return rt;
+        int left = dfs(n.left);
+        int right = dfs(n.right);
+        int curpath = Math.max(left+n.val, Math.max(right+n.val, n.val));
+        int curmax = Math.max(left+right+n.val, curpath);
+        max = Math.max(curmax, max);
+        return curpath;
     }
 }

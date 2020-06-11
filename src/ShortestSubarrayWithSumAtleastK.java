@@ -35,7 +35,7 @@ public class ShortestSubarrayWithSumAtleastK {
  as for the front, when value j meets requirement it's of no use since later i-j will be better
 
  reasoning: for i...j
- if ai1>ai2, we have no reason to keep i1. so mono increase data structure
+ if ai1>ai2, we have no reason to keep i1. so mono increase data structure. note we keep is in the queue and scan j
  fix i, for js, if both aj1 and aj2 can win, then we want j1. so scan from the front
  comparison: we compare with the front of the data structure and remove it if it's already good. so add at tail, get from front, it's a queue
 

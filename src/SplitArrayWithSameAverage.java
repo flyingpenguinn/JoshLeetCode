@@ -19,111 +19,103 @@ The length of A will be in the range [1, 30].
 A[i] will be in the range of [0, 10000].
  */
 public class SplitArrayWithSameAverage {
-    // sum/n==sumb/bn. cant prune based on n only, have to use int mod since sum*bn/n==sumb ab int
-    // alternative way: first find possible bns, then dfs on that
-    int sum = 0;
-    int maxbn = 0;
+    // worst case 15*30*150000. but usually we won't hit all the 15 possible lens
+    // pruning: we only deal with the smaller set
+    // using a ap here: we wont hit all the 150000 values
     Map<Integer, Integer>[][] dp;
 
     public boolean splitArraySameAverage(int[] a) {
+        int sum = 0;
         int n = a.length;
-
-        for (int ai : a) {
-            sum += ai;
-        }
-        //1. aim for the smaller one- as there must be one group that has len<=n/2. we try to find that one only
-        //2. exit early if not possible
-        for (int i = 1; i <= n / 2; i++) {
-            if (sum * i % n == 0) {
-                maxbn = i;
-            }
-        }
-        if (maxbn == 0) {
-            return false;
+        for (int i = 0; i < n; i++) {
+            sum += a[i];
         }
 
-        dp = new HashMap[n + 1][n + 1];
-        return dos(a, 0, 0, 0);
-    }
-
-    boolean dos(int[] a, int i, int bn, int bsum) {
-        int n = a.length;
-        if (bn != 0 && bn != n && bn * sum == n * bsum) {
-            return true;
-        }
-        if (i == n) {
-            return false;
-        }
-        if (bn > maxbn) {
-            // we iterate the smaller one and finish early if no hope
-            return false;
-        }
-        if (dp[i][bn] == null) {
-            dp[i][bn] = new HashMap<>();
-        }
-        Integer ch = dp[i][bn].get(bsum);
-        if (ch != null) {
-            return ch.equals(1);
-        }
-        boolean rt = dos(a, i + 1, bn + 1, bsum + a[i]) || dos(a, i + 1, bn, bsum);
-        Integer v = rt ? 1 : 2;
-        dp[i][bn].put(bsum, v);
-        return rt;
-    }
-
-
-    public static void main(String[] args) {
-        int[] a = {1, 2};
-        System.out.println(new SplitArrayWithSameAverageEnumeratebn().splitArraySameAverage(a));
-    }
-}
-
-class SplitArrayWithSameAverageEnumeratebn {
-    // alternative way: first find possible bns, then dfs on that
-    int sum = 0;
-    Map<Integer, Boolean>[][] dp;
-
-    public boolean splitArraySameAverage(int[] a) {
-        int n = a.length;
-
-        for (int ai : a) {
-            sum += ai;
-        }
-        //1. aim for the smaller one- as there must be one group that has len<=n/2. we try to find that one only
-        //2. exit early if not possible note possibility is reflected in mod
-        for (int i = 1; i <= n / 2; i++) {
-            if (sum * i % n == 0) {
-                dp = new HashMap[n + 1][n + 1];
-                if (dfs(a, 0, 0, i, 0)) {
-                    return true;
+        for (int nb = 1; nb <= n / 2; nb++) {
+            if ((sum * nb) % n == 0) {
+                int sumb = sum * nb / n;
+                if (sumb <= sum / 2) {
+                    dp = new HashMap[n + 1][nb + 1];
+                    for (int i = 0; i < dp.length; i++) {
+                        for (int j = 0; j < dp[i].length; j++) {
+                            dp[i][j] = new HashMap<>();
+                        }
+                    }
+                    int rt = dos(0, 0, 0, nb, sumb, a);
+                    if (rt == 1) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
 
-    private boolean dfs(int[] a, int i, int count, int bn, int bsum) {
+    int dos(int i, int sumb, int nb, int nbtarget, int sumtarget, int[] a) {
         int n = a.length;
-        if (count > bn) {
-            return false;
+        // pruning: we only eye on b being the smallest set. so its nb and sumb must be < the half otherwise its avg will be  either too big or too small
+        if (nb > nbtarget) {
+            return 2;
+        }
+        if (sumb > sumtarget) {
+            return 2;
         }
         if (i == n) {
-            if (count == bn) {
-                return bn * sum == n * bsum;
-            } else {
-                return false;
-            }
+            return nb == nbtarget && sumb == sumtarget ? 1 : 2;
         }
-        if (dp[i][count] == null) {
-            dp[i][count] = new HashMap<>();
-        }
-        Boolean ch = dp[i][count].get(bsum);
+        Map<Integer, Integer> cm = dp[i][nb];
+        Integer ch = cm.get(sumb);
         if (ch != null) {
             return ch;
         }
-        boolean rt = dfs(a, i + 1, count + 1, bn, bsum + a[i]) || dfs(a, i + 1, count, bn, bsum);
-        dp[i][count].put(bsum, rt);
-        return rt;
+        int tob = dos(i + 1, sumb + a[i], nb + 1, nbtarget, sumtarget, a);
+        if (tob == 1) {
+            dp[i][nb].put(sumb, tob);
+            return tob;
+        }
+        int toc = dos(i + 1, sumb, nb, nbtarget, sumtarget, a);
+        dp[i][nb].put(sumb, toc);
+        return toc;
     }
 }
 
+class SplitArraySameAverageRawDp {
+    // raw dp, worst case same complexity as above but not pruning enough
+    // the pruning on smaller set is critical
+    int[][][] dp;
+
+    public boolean splitArraySameAverage(int[] a) {
+        int sum = 0;
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            sum += a[i];
+        }
+        dp = new int[n + 1][sum / 2 + 1][n / 2 + 1];
+        return dos(0, 0, 0, 0, 0, a, sum) == 1;
+    }
+
+    int dos(int i, int sumb, int nb, int sumc, int nc, int[] a, int sum) {
+        int n = a.length;
+        if (nb > n / 2) {
+            return 2;
+        }
+        if (sumb > sum / 2) {
+            return 2;
+        }
+        if (i == n) {
+            boolean good = nb != 0 && nc != 0 && Math.abs(sumb * 1.0 / nb - sumc * 1.0 / nc) < 0.00001;
+            return good ? 1 : 2;
+        }
+        if (dp[i][sumb][nb] != 0) {
+            return dp[i][sumb][nb];
+        }
+        int tob = dos(i + 1, sumb + a[i], nb + 1, sumc, nc, a, sum);
+        if (tob == 1) {
+            dp[i][sumb][nb] = tob;
+            return tob;
+        }
+        int toc = dos(i + 1, sumb, nb, sumc + a[i], nc + 1, a, sum);
+        dp[i][sumb][nb] = toc;
+        return toc;
+    }
+}

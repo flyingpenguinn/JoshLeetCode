@@ -22,23 +22,22 @@ Explanation:
   5     4       <---
  */
 public class BinaryTreeRightsideView {
+    List<Integer> r = new ArrayList<>();
     public List<Integer> rightSideView(TreeNode root) {
-        List<Integer> r = new ArrayList<>();
-        dfs(root, 0, r);
+        dfs(root, 0);
         return r;
     }
 
-    private void dfs(TreeNode n, int l, List<Integer> r) {
-        if (n == null) {
+    void dfs(TreeNode n, int dep){
+        if(n==null){
             return;
         }
-        List<Integer> list = null;
-        if (r.size() == l) {
+        if(r.size()==dep){
             r.add(n.val);
-        } else {
-            r.set(l, n.val);
+        }else{
+            r.set(dep, n.val);
         }
-        dfs(n.left, l + 1, r);
-        dfs(n.right, l + 1, r);
+        dfs(n.left, dep+1);
+        dfs(n.right, dep+1);
     }
 }
