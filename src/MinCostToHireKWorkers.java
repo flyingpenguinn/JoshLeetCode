@@ -43,28 +43,40 @@ public class MinCostToHireKWorkers {
     // 3. iterate through k-1...n, each time a new worker joins, he enables more quality options. we use a pq to maintain k smallest quality
     // because result = ration * (sum of smallest qualities)
     // 4. must sort because we need kth to enable 0 to k-1 definitely
-    public double mincostToHireWorkers(int[] q, int[] w, int k) {
-        int n = q.length;
-        double[][] ul = new double[n][2];
-        for (int i = 0; i < n; i++) {
-            double unit = w[i] * 1.0 / q[i];
-            ul[i] = new double[]{unit, q[i]};
+    // note we can't sort then scan for k consecutive wokers because we need k smallest quality workers, not k consecutive workers
+    class Person {
+        double unit;
+        int q;
+        int w;
+
+        public Person(double unit, int q, int w) {
+            this.unit = unit;
+            this.q = q;
+            this.w = w;
         }
-        Arrays.sort(ul, (a, b) -> Double.compare(a[0], b[0]));
-        PriorityQueue<Double> pq = new PriorityQueue<>(Collections.reverseOrder());
-        double sum = 0.0;
+    }
+
+    public double mincostToHireWorkers(int[] q, int[] w, int k) {
+        int n = w.length;
+        Person[] persons = new Person[n];
+        for (int i = 0; i < n; i++) {
+            persons[i] = new Person(w[i] * 1.0 / q[i], q[i], w[i]);
+        }
+        Arrays.sort(persons, (x, y) -> Double.compare(x.unit, y.unit));
+        PriorityQueue<Person> pq = new PriorityQueue<>((x, y) -> Integer.compare(y.q, x.q));
+        int sum = 0;
         for (int i = 0; i < k - 1; i++) {
-            pq.offer(ul[i][1]);
-            sum += ul[i][1];
+            pq.offer(persons[i]);
+            sum += persons[i].q;
         }
         double min = Integer.MAX_VALUE;
+        // enumerate the "enabler": others follow its unit value
         for (int i = k - 1; i < n; i++) {
-            sum += ul[i][1];
-            // this element act as the biggest ratio among the group
-            double cr = ul[i][0] * sum;
-            min = Math.min(min, cr);
-            pq.offer(ul[i][1]);
-            sum -= pq.poll();
+            sum += persons[i].q;
+            double cur = sum * persons[i].unit;
+            min = Math.min(min, cur);
+            pq.offer(persons[i]);
+            sum -= pq.poll().q;
         }
         return min;
     }

@@ -32,15 +32,15 @@ public class MultiplyString {
                 int bv = b.charAt(j) - '0';
                 int raw = av * bv;
                 // not i+j, i+j+1. for example 33*34, 2 is at position 2+2+1 =5
-                r[i + j + 1] += raw % 10;
+                r[i + j + 1] += raw % 10; // just raw numbers %10 added together, could be well >10
                 r[i + j] += raw / 10;
             }
         }
         int carry = 0;
-        for (int i = nall - 1; i >= 1; i--) {
+        for (int i = nall - 1; i >= 0; i--) {
             int raw = r[i] + carry;
             r[i] = raw % 10;
-            r[i - 1] += raw / 10;
+            carry = raw / 10;
         }
         StringBuilder sb = new StringBuilder();
         int i = 0;

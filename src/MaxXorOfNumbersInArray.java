@@ -1,5 +1,6 @@
 import base.ArrayUtils;
 
+import java.io.*;
 import java.util.*;
 
 /*
@@ -19,9 +20,8 @@ Output: 28
 Explanation: The maximum result is 5 ^ 25 = 28.
  */
 public class MaxXorOfNumbersInArray {
-
     // with trie we can check each digit for each string in On...
-    // when we hit a node in trie we hit some string in it, a path in trie must belong to one string only
+    // use the usual trie way: check if a string we want is in this trie! here we try to "make it big" by always going reverse
     class Trie {
         int v;
 
@@ -71,33 +71,103 @@ public class MaxXorOfNumbersInArray {
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println(new MaxXorOfNumbersHashSet().findMaximumXOR(ArrayUtils.read1d("3,10,5,25,2,8")));
+    public static void main(String[] args) throws IOException {
+        String file = "E:\\dev\\project\\JoshLeet\\tests\\maxxor.txt";
+        BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+        String str = reader.readLine();
+
+
+        System.out.println(new MaxNumberOfXorAlternative().findMaximumXOR(ArrayUtils.read1d(str)));
+
     }
 }
 
-class MaxXorOfNumbersHashSet {
-    // use the fact that ^ is its own reverse
-    public int findMaximumXOR(int[] a) {
-        int max = 0;
-        int n = a.length;
-        for (int i = 31; i >= 0; i--) {
-            max = max << 1;
-            int target = max | 1;
-            Set<Integer> pref = new HashSet<>();
-            for (int j = 0; j < n; j++) {
-                int moved = (a[j] >> i);
-                pref.add(moved);
-            }
-            for (int j = 0; j < n; j++) {
-                int moved = (a[j] >> i);
-                int other = (target ^ moved);
-                if (pref.contains(other)) {
-                    max |= 1;
-                    break;
-                }
-            }
+class MaxNumberOfXorAlternative {
+    // alternative way of comparing two nodes...
+    class Trie {
+        int v;
+
+        public Trie(int v) {
+            this.v = v;
         }
-        return max;
+
+        Trie[] ch = new Trie[2];
     }
+
+    Trie root = new Trie(-1);
+
+    public int findMaximumXOR(int[] a) {
+        for (int ai : a) {
+            insert(root, ai, 31);
+        }
+        int rt = domax(root, 31);
+        return rt;
+    }
+
+    private int domax(Trie t, int i) {
+        if (i == -1) {
+            return 0;
+        }
+        if (t.ch[0] == null) {
+            return domax(t.ch[1], i - 1);
+        }
+        if (t.ch[1] == null) {
+            return domax(t.ch[0], i - 1);
+        }
+
+        int v1 = 0;
+        int v2 = 0;
+        if (t.ch[0] != null && t.ch[1] != null) {
+            v1 = (1 << i) + domax(t.ch[0], t.ch[1], i - 1);
+        }
+        if (t.ch[1] != null && t.ch[0] != null) {
+            v2 = (1 << i) + domax(t.ch[1], t.ch[0], i - 1);
+        }
+        return Math.max(v1, v2);
+    }
+
+    private int domax(Trie t1, Trie t2, int i) {
+        if (i == -1) {
+            return 0;
+        }
+
+        int v1 = 0;
+        int v2 = 0;
+
+        boolean countedone = false;
+        if (t1.ch[0] != null && t2.ch[1] != null) {
+            v1 = (1 << i) + domax(t1.ch[0], t2.ch[1], i - 1);
+            countedone = true;
+        }
+        if (t2.ch[0] != null && t1.ch[1] != null) {
+            v2 = (1 << i) + domax(t2.ch[0], t1.ch[1], i - 1);
+            countedone = true;
+        }
+        if (countedone) {
+            return Math.max(v1, v2);
+        }
+        int v3 = 0;
+        int v4 = 0;
+        if (t1.ch[0] != null && t2.ch[0] != null) {
+            v3 = domax(t1.ch[0], t2.ch[0], i - 1);
+        }
+        if (t1.ch[1] != null && t2.ch[1] != null) {
+            v4 = domax(t1.ch[1], t2.ch[1], i - 1);
+        }
+        return Math.max(v3, v4);
+    }
+
+    void insert(Trie n, int num, int i) {
+        if (i < 0) {
+            return;
+        }
+        int d = ((num >> i) & 1);
+        Trie next = n.ch[d];
+        if (next == null) {
+            next = n.ch[d] = new Trie(d);
+        }
+        insert(next, num, i - 1);
+    }
+
+
 }

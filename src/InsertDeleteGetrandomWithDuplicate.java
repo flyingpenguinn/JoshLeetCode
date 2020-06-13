@@ -39,10 +39,9 @@ public class InsertDeleteGetrandomWithDuplicate {
     // diff from #380 is we need to manage last == deleted situation
     public static void main(String[] args) {
         RandomizedCollection rc = new RandomizedCollection();
-        rc.insert(0);
-        rc.remove(0);
-        rc.insert(-1);
-        rc.remove(0);
+        rc.insert(1);
+        rc.remove(1);
+        rc.insert(1);
 
         for (int i = 0; i < 10; i++) {
             System.out.println(rc.getRandom());
@@ -72,14 +71,8 @@ class RandomizedCollection {
         if (m.containsKey(val)) {
             rt = false;
         }
-        if (rs == list.size()) {
-            m.computeIfAbsent(val, k -> new HashSet<>()).add(rs);
-            list.add(val);
-            rs++;
-        } else {
-            m.computeIfAbsent(val, k -> new HashSet<>()).add(rs);
-            list.set(rs++, val);
-        }
+        m.computeIfAbsent(val, k -> new HashSet<>()).add(rs);
+        list.add(rs++, val);
         return rt;
     }
 
@@ -88,19 +81,23 @@ class RandomizedCollection {
      */
     public boolean remove(int val) {
         Set<Integer> posset = m.get(val);
-        if (posset == null || posset.isEmpty()) {
+        if (posset == null || posset.isEmpty() || rs <= 0) {
             return false;
         }
-        Integer pos = posset.iterator().next();
-        Integer lastval = list.get(rs - 1);
-        Set<Integer> lastposset = m.get(lastval);
-        lastposset.remove(rs - 1);
-        // deal with whether it's the last element separately
+        // the end index is gone from the number's set anyway
+        int endindex = rs - 1;
+        Integer lastval = list.get(endindex);
+        Set<Integer> endset = m.get(lastval);
+        endset.remove(endindex);
+        // if the one to delete is the last val, then we are done
+        // otherwise we moved the last one to removepos and deleted endindex
         if (lastval != val) {
-            posset.remove(pos);
-            lastposset.add(pos);
+            Integer removepos = posset.iterator().next();
+            posset.remove(removepos);
+            endset.add(removepos);
+            swap(list, removepos, endindex);
         }
-        swap(list, pos, rs - 1);
+
         // correct the location of the swapped last
         rs--;
         return true;
@@ -123,3 +120,4 @@ class RandomizedCollection {
         list.set(j, tmp);
     }
 }
+

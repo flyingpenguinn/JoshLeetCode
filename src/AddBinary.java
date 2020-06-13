@@ -14,24 +14,20 @@ Input: a = "1010", b = "1011"
 Output: "10101"
  */
 public class AddBinary {
+    int base = 2;
+
     public String addBinary(String a, String b) {
-        StringBuilder sb = new StringBuilder();
-        int na = a.length();
-        int nb = b.length();
-        int i = na - 1;
-        int j = nb - 1;
+        int i = a.length() - 1;
+        int j = b.length() - 1;
         int carry = 0;
-        while (i >= 0 || j >= 0) {
-            int ia = i == -1 ? 0 : (a.charAt(i--) - '0');
-            int jb = j == -1 ? 0 : (b.charAt(j--) - '0');
-            int raw = ia + jb + carry;
-            sb.append(raw % 2);
-            carry = raw / 2;
-        }
-        if (carry == 1) {
-            sb.append(carry);
+        StringBuilder sb = new StringBuilder();
+        while (i >= 0 || j >= 0 || carry > 0) {
+            int va = i < 0 ? 0 : a.charAt(i--) - '0';
+            int vb = j < 0 ? 0 : b.charAt(j--) - '0';
+            int sum = va + vb + carry;
+            sb.append(sum % base);
+            carry = sum / base;
         }
         return sb.reverse().toString();
-
     }
 }

@@ -73,7 +73,7 @@ public class CountTripletsTwoArrayXor {
 
 
 class CountTripletsTwoArrayXorOn {
-    // because ai^ai+1^...ak==0 => a0...ai-1ai....ak ^ a0....ai...ak = 0 => a0... ai-1 and a0...ak are the same in xor
+    // because ai^ai+1^...ak==0 => a0...ai-1ai....ak ^ a0....ai-1 = 0 => a0... ai-1 and a0...ak are the same in xor
     public int countTriplets(int[] a) {
         int n = a.length;
         int r = 0;

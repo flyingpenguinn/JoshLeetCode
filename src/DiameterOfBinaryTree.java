@@ -16,22 +16,24 @@ Return 3, which is the length of the path [4,2,1,3] or [5,2,1,3].
 Note: The length of path between two nodes is represented by the number of edges between them.
  */
 public class DiameterOfBinaryTree {
-    // best result in this subtree and its longest to leaf path for upper level to use
+    // compare this to #124 max path sum: there the longest path may not be the max path
+    int max = 0;
+
     public int diameterOfBinaryTree(TreeNode root) {
-        return dod(root)[0];
+        dfs(root);
+        return max;
     }
 
-    private int[] dod(TreeNode root) {
-        if (root == null) {
-            return new int[]{0, 0};
+    // longest to leaf path, node count
+    int dfs(TreeNode n) {
+        if (n == null) {
+            return 0;
         }
-        int[] left = dod(root.left);
-        int[] right = dod(root.right);
-        int ll = left[1];
-        int rl = right[1];
-        int curlong = ll + rl;
-        int curmax = Math.max(left[0], Math.max(right[0], curlong));
-        int curmaxpath = Math.max(ll + 1, rl + 1);
-        return new int[]{curmax, curmaxpath};
+        int left = dfs(n.left);
+        int right = dfs(n.right);
+        int curpath = Math.max(left + 1, right + 1);
+        // want max edge count, so it's the sum of node counts
+        max = Math.max(max, left + right);
+        return curpath;
     }
 }

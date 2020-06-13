@@ -34,17 +34,16 @@ You may assume that next() call will always be valid, that is, there will be at 
  */
 public class BSTIterator {
 
-    // when we push a node we always push its whole left subtree
-// so that we know we can visit it directly when we see it popped
-
+    // only keep nodes whose left subtree is in searching in the stack
+    // next node is either left most of the right tree
+    // or first ancestor that this node is in its left subtree
+    // we only keep nodes whose left subtree is under searching. so when we back out we will see the ancestor above
     Deque<TreeNode> st = new ArrayDeque<>();
-    TreeNode n = null;
-    boolean ch = false;
 
-    void allleft(TreeNode node) {
-        while (node != null) {
-            st.push(node);
-            node = node.left;
+    void allleft(TreeNode p) {
+        while (p != null) {
+            st.push(p);
+            p = p.left;
         }
     }
 
@@ -57,25 +56,18 @@ public class BSTIterator {
      */
     public int next() {
         if (hasNext()) {
-            ch = false;
-            return n.val;
+            TreeNode p = st.pop();
+            allleft(p.right);
+            return p.val;
+        } else {
+            return -1;
         }
-        return -1;
     }
 
     /**
      * @return whether we have a next smallest number
      */
     public boolean hasNext() {
-        if (ch) {
-            return n != null;
-        }
-        if (st.isEmpty()) {
-            return false;
-        }
-        n = st.pop();
-        allleft(n.right);
-        ch = true;
-        return true;
+        return !st.isEmpty();
     }
 }

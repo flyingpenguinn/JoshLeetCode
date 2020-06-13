@@ -3,47 +3,42 @@ import base.TreeNode;
 import java.util.*;
 
 public class VerticalOrderTraversal {
-    class Node {
-        int y;
-        int val;
 
-        public Node(int y, int val) {
-            this.y = y;
-            this.val = val;
-        }
-    }
-
-    Map<Integer, List<Node>> map = new HashMap<>();
-    int low = Integer.MAX_VALUE;
-    int high = 0;
+    // for each vertical line, depth to list of nodes. sort if they share the same place
+    // note in each vertical line, the depth may not be continuous, and depth may not always increase in our traversial
+    Map<Integer, TreeMap<Integer, List<Integer>>> nodemap = new HashMap<>();
+    int minv = Integer.MAX_VALUE;
+    int maxv = Integer.MIN_VALUE;
 
     public List<List<Integer>> verticalTraversal(TreeNode root) {
-        List<List<Integer>> r = new ArrayList<>();
         dfs(root, 0, 0);
-        for (int i = low; i <= high; i++) {
-            List<Node> li = map.get(i);
-            Collections.sort(li, (a, b) -> a.y != b.y ? Integer.compare(a.y, b.y) : Integer.compare(a.val, b.val));
-            List<Integer> lint = new ArrayList<>();
-            for (int j = 0; j < li.size(); j++) {
-                lint.add(li.get(j).val);
+        List<List<Integer>> r = new ArrayList<>();
+        for (int i = minv; i <= maxv; i++) {
+            List<Integer> curr = new ArrayList<>();
+            TreeMap<Integer, List<Integer>> cm = nodemap.get(i);
+            for (int j : cm.keySet()) {
+                List<Integer> inner = cm.get(j);
+                curr.addAll(inner);
             }
-            r.add(lint);
+            r.add(curr);
         }
         return r;
     }
 
-    private void dfs(TreeNode root, int x, int y) {
-        if (root == null) {
+    void dfs(TreeNode n, int v, int d) {
+        if (n == null) {
             return;
         }
-        List<Node> ext = map.getOrDefault(x, new ArrayList<>());
-        ext.add(new Node(y, root.val));
-        map.put(x, ext);
-        low = Math.min(low, x);
-        high = Math.max(high, x);
-        dfs(root.left, x - 1, y + 1);
-        dfs(root.right, x + 1, y + 1);
+        minv = Math.min(minv, v);
+        maxv = Math.max(maxv, v);
+
+        TreeMap<Integer, List<Integer>> cm = nodemap.getOrDefault(v, new TreeMap<>());
+        List<Integer> clist = cm.getOrDefault(d, new ArrayList<>());
+        clist.add(n.val);
+        Collections.sort(clist);
+        cm.put(d, clist);
+        nodemap.put(v, cm);
+        dfs(n.left, v - 1, d + 1);
+        dfs(n.right, v + 1, d + 1);
     }
-
-
 }
