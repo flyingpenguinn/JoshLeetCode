@@ -69,31 +69,30 @@ You may assume the destination buffer array, buf, is guaranteed to have enough s
 It is guaranteed that in a given test case the same buffer buf is called by read.
  */
 public class ReadNCharsGivenRead4II {
-    // need a buffer because last n can be <<4 we need to put extra ones to a buf, for reading next time
+    // need a buffer because last n can be <4 we need to put extra ones to a buf, for reading next time
+    // cache the ones we overread last time into a queue
     Deque<Character> q = new ArrayDeque<>();
 
     public int read(char[] buf, int n) {
-        int i = 0;
-        while (!q.isEmpty() && i < n) {
-            buf[i++] = q.poll();
-        }
-        if (i == n) {
-            return i;
-        }
-        char[] b4 = new char[4];
-        boolean con = true;
-        while (con) {
-            int rd = read4(b4);
-            int j = 0;
-            while (j < rd && i < n) {
-                buf[i++] = b4[j++];
+        char[] rb = new char[4];
+        int pos = 0;
+        while(true){
+            while(pos<n && !q.isEmpty()){
+                buf[pos++] = q.poll();
             }
-            while (j < rd) {
-                q.offer(b4[j++]);
+            int read = read4(rb);
+            int i = 0;
+            while(pos<n && i<read){
+                buf[pos++] = rb[i++];
             }
-            con = rd == 4;
+            while(i<read){
+                q.offer(rb[i++]);
+            }
+            if(read<4 || pos==n){
+                break;
+            }
         }
-        return i;
+        return pos;
     }
 
     private int read4(char[] b4) {

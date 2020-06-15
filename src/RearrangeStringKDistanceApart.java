@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /*
 LC#358
@@ -32,35 +29,44 @@ public class RearrangeStringKDistanceApart {
         if (k <= 1) {
             return s;
         }
-        int[] count = new int[26];
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            count[c - 'a']++;
+        Map<Character, Integer> m = new HashMap<>();
+        int n = s.length();
+        for (int i = 0; i < n; i++) {
+            m.put(s.charAt(i), m.getOrDefault(s.charAt(i), 0) + 1);
         }
-        List<int[]> clist = new ArrayList<>();
-        for (int i = 0; i < 26; i++) {
-            if (count[i] != 0) {
-                clist.add(new int[]{i, count[i]});
-            }
+        // bigger first. note we MUST make the sorting stable when two chars are of the same count: aabbcc if it can be unstable then it may become acbabc
+        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> !m.get(y).equals(m.get(x)) ? Integer.compare(m.get(y), m.get(x)) : Character.compare(x, y));
+        for (char ck : m.keySet()) {
+            pq.offer(ck);
         }
-        // bigger first
-        Collections.sort(clist, (a, b) -> a[1] != b[1] ? Integer.compare(b[1], a[1]) : a[0] - b[0]);
         StringBuilder sb = new StringBuilder();
-        // use whether first >0 to judge if it's empty
-        while (clist.get(0)[1] > 0) {
-            int i = 0;
-            for (; i < k && i < clist.size(); i++) {
-                if (clist.get(i)[1] == 0) {
-                    break;
+        while (sb.length() < n) {
+            int group = 0;
+            List<Character> polled = new ArrayList<>();
+            while (group < k && !pq.isEmpty()) {
+                char c = pq.poll();
+                sb.append(c);
+                group++;
+                int ncount = m.get(c) - 1;
+                if (ncount == 0) {
+                    m.remove(c);
+                } else {
+                    m.put(c, ncount);
+                    polled.add(c);
                 }
-                clist.get(i)[1]--;
-                sb.append((char) ('a' + clist.get(i)[0]));
             }
-            if (clist.get(0)[1] > 0 && i < k) {
+            if (group < k && !polled.isEmpty()) {
+                // pq already empty but we have more to work on. note if we dont have things to work on we are good the last group can be <k
                 return "";
             }
-            Collections.sort(clist, (a, b) -> a[1] != b[1] ? Integer.compare(b[1], a[1]) : a[0] - b[0]);
+            for (int i = 0; i < polled.size(); i++) {
+                pq.offer(polled.get(i));
+            }
         }
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+
     }
 }

@@ -65,7 +65,7 @@ public class MaxPerformanceOfTeam {
         PriorityQueue<Person> pq = new PriorityQueue<>((x, y) -> Long.compare(x.s, y.s));
         long sum = 0;
         long max = 0;
-        // enumerate the enabler
+        // enumerate the enabler. note here smaller ones are enablers
         for (int i = n - 1; i >= 0; i--) {
             pq.offer(persons[i]);
             sum += persons[i].s;

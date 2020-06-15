@@ -21,63 +21,38 @@ S will consist of lowercase letters and have length in range [1, 500].
 public class ReorganizeString {
     // almost same as task scheduler, interval is 1 here while in that problem it's k
     public String reorganizeString(String s) {
-        int intv = 1;
-        int[][] f = new int[26][2];
-        for (int i = 0; i < 26; i++) {
-            f[i][0] = i;
-        }
         int n = s.length();
+        Map<Character, Integer> m = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            int cind = s.charAt(i) - 'a';
-            f[cind][1]++;
+            m.put(s.charAt(i), m.getOrDefault(s.charAt(i), 0) + 1);
         }
+
         StringBuilder sb = new StringBuilder();
-        while (!allzero(f)) {
-            Arrays.sort(f, new Comparator<int[]>() {
-                @Override
-                public int compare(int[] o1, int[] o2) {
-                    return Integer.compare(o2[1], o1[1]);
+        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> Integer.compare(m.get(y), m.get(x)));  // big freq first
+        for (char ck : m.keySet()) {
+            pq.offer(ck);
+        }
+        char pre = '*';
+        while (sb.length() < n) {
+            char top = pq.poll();
+            if (top == pre) {
+                if (pq.isEmpty()) {
+                    return "";
                 }
-            });
-            int cg = 0;
-            for (int i = 0; i < 26; i++) {
-                if (f[i][1] == 0) {
-                    continue;
-                }
-                //   System.out.println(f[i][0]+" "+f[i][1]);
-                sb.append((char) ('a' + f[i][0]));
-                f[i][1]--;
-                cg++;
-                if (cg == intv + 1) {
-                    break;
-                }
+                char top2 = pq.poll();
+                pq.offer(top);
+                top = top2;
             }
-            if (!allzero(f) && cg < intv + 1) {
-                return "";
+            pre = top;
+            sb.append(top);
+            int nv = m.get(top) - 1;
+            if (nv == 0) {
+                m.remove(top);
+            } else {
+                m.put(top, nv);
+                pq.offer(top);
             }
         }
         return sb.toString();
-    }
-
-    boolean allzero(int[][] f) {
-        for (int i = 0; i < 26; i++) {
-            if (f[i][1] > 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    public static void main(String[] args) {
-        ReorganizeString rs = new ReorganizeString();
-
-        System.out.println("[" + rs.reorganizeString("aab") + "]");
-/*
-        System.out.println("[" + rs.reorganizeString("aab") + "]");
-        System.out.println("[" + rs.reorganizeString("aaab") + "]");
-        System.out.println("[" + rs.reorganizeString("aabbbccd") + "]");
-        */
-
     }
 }

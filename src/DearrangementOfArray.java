@@ -56,9 +56,12 @@ class DerangementFormula {
     public int findDerangement(int n) {
         long r = 0;
         long base = 1;
-        for (int i = 2; i <= n; i++) {
-            r = i * r + (i % 2 == 0 ? 1 : -1);
-            r %= Mod;
+        for (int i = n; i >= 2; i--) {
+            int sign = i % 2 == 0 ? 1 : -1;
+            r += sign * base;
+            r = (r + Mod) % Mod;
+            base *= i;
+            base %= Mod;
         }
         return (int) r;
     }

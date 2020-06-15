@@ -18,35 +18,19 @@ public class ValidPalindrome {
         int i = 0;
         int j = s.length() - 1;
         while (i < j) {
-            char si = norm(s.charAt(i));
-            char sj = norm(s.charAt(j));
-            if (si == ' ') {
+            // letter or digit, not just letter
+            while (i < j && !Character.isLetterOrDigit(s.charAt(i))) {
                 i++;
-            } else if (sj == ' ') {
-                j--;
-            } else if (si != sj) {
-                return false;
-            } else { // must be else
-                i++;
+            }
+            while (i < j && !Character.isLetterOrDigit(s.charAt(j))) {
                 j--;
             }
-
+            if (Character.toLowerCase(s.charAt(i++)) != Character.toLowerCase(s.charAt(j--))) {
+                return false;
+            }
         }
         return true;
     }
-
-    char norm(char si) {
-        if (si >= 'A' && si <= 'Z') {
-            return (char) ('a' + (si - 'A'));
-        } else if (si >= 'a' && si <= 'z') {
-            return si;
-        } else if (si >= '0' && si <= '9') {
-            return si;
-        } else {
-            return ' ';
-        }
-    }
-
 
     public static void main(String[] args) {
 

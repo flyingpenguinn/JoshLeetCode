@@ -25,36 +25,44 @@ The integer n is in the range [0, 100].
 public class TaskScheduler {
     // from high to low freq. arrange up to == n+1 then resort and repeat
     // run high freq as much as possible
-    // 26log(26)*number of tasks: we have to output all of them
-    public int leastInterval(char[] ts, int n) {
-        int[] count = new int[26];
-        int all = 0;
-        for (char c : ts) {
-            count[c - 'A']++;
-            all++;
+    // similar to rearrange string k distance apart
+    public int leastInterval(char[] ts, int k) {
+        Map<Character, Integer> map = new HashMap<>();
+        for (int i = 0; i < ts.length; i++) {
+            map.put(ts[i], map.getOrDefault(ts[i], 0) + 1);
         }
-        PriorityQueue<Integer> pq = new PriorityQueue<>((x, y) -> Integer.compare(count[y], count[x]));
+        // must keep the sorting stable
+        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> !map.get(y).equals(map.get(x)) ?
+                Integer.compare(map.get(y), map.get(x)) : Character.compare(x, y));
+        for (char ck : map.keySet()) {
+            pq.offer(ck);
+        }
         // most frequent at the top
         int r = 0;
-        int oldn = n;
-        while (all > 0) {
-            n = oldn;
-            pq.clear();
-            // 26log26 almost like a constant...
-            for (int i = 0; i < 26; i++) {
-                if (count[i] > 0) {
-                    pq.offer(i);
+        int added = 0;
+        while (added < ts.length) {
+            int ingroup = 0;
+            List<Character> polled = new ArrayList<>();
+            while (ingroup < k + 1 && !pq.isEmpty()) {
+                // n apart, so a group is of length n+1
+                char c = pq.poll();
+                r++;
+                added++;
+                ingroup++;
+                int nv = map.get(c) - 1;
+                if (nv == 0) {
+                    map.remove(c);
+                } else {
+                    map.put(c, nv);
+                    polled.add(c);
                 }
             }
-            while (!pq.isEmpty() && n >= 0) {
-                int c = pq.poll();
-                count[c]--;
-                n--;
-                all--;
-                r++;
+            if (ingroup < k + 1 && !polled.isEmpty()) {
+                int diff = k + 1 - ingroup;
+                r += diff;
             }
-            if (n >= 0 && all > 0) {
-                r += n + 1;
+            for (int i = 0; i < polled.size(); i++) {
+                pq.offer(polled.get(i));
             }
         }
         return r;

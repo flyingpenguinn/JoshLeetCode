@@ -73,20 +73,21 @@ You may assume the destination buffer array, buf, is guaranteed to have enough s
 
 public class ReadNCharsGivenRead4 {
 
+    // handle both n too small (pos==n) or too large (read<4)
     public int read(char[] buf, int n) {
-        char[] b4 = new char[4];
-        int i = 0;
+        char[] rb = new char[4];
+        int pos = 0;
         while (true) {
-            int rd = read4(b4);
-            int j = 0;
-            while (j < rd && i < n) {
-                buf[i++] = b4[j++];
+            int read = read4(rb);
+            int i = 0;
+            while (i < read && pos < n) {
+                buf[pos++] = rb[i++];
             }
-            if (rd < 4 || i == n) {
+            if (read < 4 || pos == n) {
                 break;
             }
         }
-        return i;
+        return pos;
     }
 
 

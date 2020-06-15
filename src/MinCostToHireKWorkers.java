@@ -70,7 +70,7 @@ public class MinCostToHireKWorkers {
             sum += persons[i].q;
         }
         double min = Integer.MAX_VALUE;
-        // enumerate the "enabler": others follow its unit value
+        // enumerate the "enabler": others follow its unit value. note here enabler is the biggest value of the efficiencies
         for (int i = k - 1; i < n; i++) {
             sum += persons[i].q;
             double cur = sum * persons[i].unit;
