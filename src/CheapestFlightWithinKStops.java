@@ -2,28 +2,74 @@ import base.ArrayUtils;
 
 import java.util.*;
 
+/*
+LC#787
+There are n cities connected by m flights. Each flight starts from city u and arrives at v with a price w.
+
+Now given all the cities and flights, together with starting city src and the destination dst, your task is to find the cheapest price from src to dst with up to k stops. If there is no such route, output -1.
+
+Example 1:
+Input:
+n = 3, edges = [[0,1,100],[1,2,100],[0,2,500]]
+src = 0, dst = 2, k = 1
+Output: 200
+Explanation:
+The graph looks like this:
+
+
+The cheapest price from city 0 to city 2 with at most 1 stop costs 200, as marked red in the picture.
+Example 2:
+Input:
+n = 3, edges = [[0,1,100],[1,2,100],[0,2,500]]
+src = 0, dst = 2, k = 0
+Output: 500
+Explanation:
+The graph looks like this:
+
+
+The cheapest price from city 0 to city 2 with at most 0 stop costs 500, as marked blue in the picture.
+
+
+Constraints:
+
+The number of nodes n will be in range [1, 100], with nodes labeled from 0 to n - 1.
+The size of flights will be in range [0, n * (n - 1) / 2].
+The format of each flight will be (src, dst, price).
+The price of each flight will be in the range [1, 10000].
+k is in the range of [0, n - 1].
+There will not be any duplicated flights or self cycles.
+ */
 public class CheapestFlightWithinKStops {
 
     // almost raw bellman ford. the only gotcha is
     // we need a k to store previous rounds paths so that we avoid this case: s->i->j, s..i has k stop, and we accidentally update j based on dist[i]
     // we can further improve by using %2 trick since we only need k-1
     int Max = 10000000;
-    public int findCheapestPrice(int n, int[][] es, int s, int t, int round) {
-        int[][] dist = new int[n][round + 2];
+
+    public int findCheapestPrice(int n, int[][] es, int s, int t, int nodes) {
+        int[][] dist = new int[n][nodes + 1];
         for (int i = 0; i < n; i++) {
             Arrays.fill(dist[i], Max);
         }
+        // dist ij means from s to i, with j nodes on the path excluding start point
         dist[s][0] = 0;
-        // round k dist has k-1 stops
-        for (int k = 1; k <= round + 1; k++) {
+        int min = Max;
+        // because j maens the nodes on the path excluding starting point but including end point, we are looking for nodes+1 rounds of relax
+        for (int k = 1; k <= nodes + 1; k++) {
             for (int[] e : es) {
                 int i = e[0];
                 int j = e[1];
-                dist[j][k] = Math.min(dist[j][k - 1], Math.min(dist[j][k], dist[i][k - 1] + e[2]));
-                // in case k-1 stops is better!
+                int cost = e[2];
+                int newcost = dist[i][k - 1] + cost;
+                if (dist[j][k] > newcost) {
+                    dist[j][k] = newcost;
+                }
+                if (j == t) {
+                    min = Math.min(min, dist[j][k]);
+                }
             }
         }
-        return dist[t][round + 1] >= Max ? -1 : dist[t][round + 1];
+        return min >= Max ? -1 : min;
     }
 
     public static void main(String[] args) {
