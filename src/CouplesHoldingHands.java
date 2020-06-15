@@ -37,7 +37,7 @@ public class CouplesHoldingHands {
         int r = 0;
         while (i + 1 < n) {
             if (a[i + 1] != (a[i] ^ 1)) {
-                // i+1 bad, swap
+                // i+1 bad, swap. note the trick of ^1 to get couple
                 for (int j = i + 1; j < n; j++) {
                     if (a[j] == (a[i] ^ 1)) {
                         int tmp = a[i + 1];
@@ -47,14 +47,16 @@ public class CouplesHoldingHands {
                         break;
                     }
                 }
+                i += 2;
+            } else {
+                i += 2;
             }
-            i += 2;
         }
         return r;
     }
 
     public static void main(String[] args) {
-        System.out.println(new CouplesHoldingHands().minSwapsCouples(ArrayUtils.read1d("[0, 2, 1, 3]")));
+        System.out.println(new CouplesHoldingHands().minSwapsCouples(ArrayUtils.read1d("[1,0,3,2]")));
         System.out.println(new CouplesHoldingHands().minSwapsCouples(ArrayUtils.read1d("[11,5,10,13,4,1,3,7,8,6,12,9,0,2]")));
         System.out.println(new CouplesHoldingHands().minSwapsCouples(ArrayUtils.read1d("[9,12,2,10,11,0,13,6,4,5,3,8,1,7]")));
         System.out.println(new CouplesHoldingHands().minSwapsCouples(ArrayUtils.read1d("[10,7,4,2,3,0,9,11,1,5,6,8]")));

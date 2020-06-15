@@ -38,32 +38,27 @@ public class KSimilarString {
     }
 
     private int dok(String a, String b) {
+        if (a.isEmpty() || b.isEmpty()) {
+            return 0;
+        }
         if (dp.containsKey(a)) {
             return dp.get(a);
         }
-        int n = a.length();
-        int i = 0;
-        while (i < n && a.charAt(i) == b.charAt(i)) {
-            i++;
+        if (a.charAt(0) == b.charAt(0)) {
+            return dok(a.substring(1), b.substring(1));
         }
-        if (i == n) {
-            return 0;
-        }
-        char ca = a.charAt(i);
-        char cb = b.charAt(i);
         int min = Integer.MAX_VALUE;
-        for (int j = i + 1; j < n; j++) {
-            if (a.charAt(j) == cb) {
+        for (int i = 1; i < a.length(); i++) {
+            if (a.charAt(i) == b.charAt(0)) {
                 StringBuilder sb = new StringBuilder(a);
-                sb.setCharAt(j, ca);
-                sb.setCharAt(i, cb);
-                int cur = dok(sb.toString(), b);
-                min = Math.min(min, cur);
+                sb.setCharAt(i, a.charAt(0));
+                sb.setCharAt(0, b.charAt(0));
+                int cur = dok(sb.toString(), b) + 1;
+                min = Math.min(cur, min);
             }
         }
-        int rt = min + 1;
-        dp.put(a, rt);
-        return rt;
+        dp.put(a, min);
+        return min;
     }
 }
 

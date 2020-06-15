@@ -104,3 +104,91 @@ class BusRouteSimplerBfs {
         return -1;
     }
 }
+
+class BusRoutesVerboseDijkastra {
+    // in essence, it's a graph with node and bus as state. nodes with the same stop but differnt bus has dist =1. otherwise dist =0. run dijkastra on it
+    class State {
+        int node;
+        int bus;
+
+
+        public State(int node, int bus) {
+            this.node = node;
+            this.bus = bus;
+
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            State state = (State) o;
+            return node == state.node &&
+                    bus == state.bus;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(node, bus);
+        }
+    }
+
+    class Qitem {
+        State state;
+        int bustaken;
+
+        public Qitem(State state, int bustaken) {
+            this.state = state;
+            this.bustaken = bustaken;
+        }
+    }
+
+    public int numBusesToDestination(int[][] a, int s, int t) {
+        if (s == t) {
+            return 0;
+        }
+        int n = a.length;
+
+        Set<State> seen = new HashSet<>();
+        PriorityQueue<Qitem> q = new PriorityQueue<>((x, y) -> Integer.compare(x.bustaken, y.bustaken));
+        // stop, on which bus, buses taken
+        Map<State, State> g = new HashMap<>();
+        Map<Integer, Set<Integer>> buses = new HashMap<>();
+        Map<State, Integer> dist = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < a[i].length; j++) {
+                State start = new State(a[i][j], i);
+                State end = new State(a[i][(j + 1) % a[i].length], i);
+                g.put(start, end);
+                buses.computeIfAbsent(a[i][j], k -> new HashSet<>()).add(i);
+                if (a[i][j] == s) {
+                    State initial = new State(a[i][j], i);
+                    q.offer(new Qitem(initial, 1));
+                    seen.add(initial);
+                    dist.put(initial, 1);
+                }
+            }
+        }
+        while (!q.isEmpty()) {
+            Qitem top = q.poll();
+            if (top.state.node == t) {
+                return top.bustaken;
+            }
+            State next = g.get(top.state);
+            if (dist.getOrDefault(next, Max) > top.bustaken) {
+                q.offer(new Qitem(next, top.bustaken));
+            }
+            int newdist = top.bustaken + 1;
+            for (int bus : buses.getOrDefault(top.state.node, new HashSet<>())) {
+                State newstate = new State(top.state.node, bus);
+                if (dist.getOrDefault(newstate, Max) > newdist) {
+                    dist.put(newstate, newdist);
+                    q.offer(new Qitem(newstate, newdist));
+                }
+            }
+        }
+        return -1;
+    }
+
+    int Max = 10000000;
+}
