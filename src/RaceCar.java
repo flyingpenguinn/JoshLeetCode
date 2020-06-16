@@ -45,7 +45,8 @@ public class RaceCar {
         while (!q.isEmpty()) {
             int[] top = q.poll();
             int pos = top[0];
-            if (pos < -t || pos > 2 * t) {
+            if (pos < 0 || pos > 2 * t) {
+                // no point to go back: we'd rather overshoot then return....
                 continue;
             }
             int speed = top[1];
@@ -76,15 +77,21 @@ public class RaceCar {
     }
 
     public static void main(String[] args) {
-        System.out.println(new RaceCar().racecar(4));
-        System.out.println(new RaceCarDp().racecar(4));
+        System.out.println(new RaceCar().racecar(5));
+        System.out.println(new RaceCarDp().racecar(5));
 
     }
 }
 
 class RaceCarDp {
-    // similar to "least operator to express number". we either undershoot or overshoot
+    // similar to "LC#964 least operator to express number". we either undershoot or overshoot
+    // if overshoot, just come back
+    // we can undershoot in couple of places before we go pass t
+    int[] dp;
+
     public int racecar(int t) {
+        dp = new int[2 * t];
+        Arrays.fill(dp, -1);
         return domin(t);
     }
 
@@ -92,6 +99,9 @@ class RaceCarDp {
     private int domin(int t) {
         if (t == 0) {
             return 0;
+        }
+        if (dp[t] != -1) {
+            return dp[t];
         }
         int speed = 1;
         int pos = 0;
@@ -104,6 +114,20 @@ class RaceCarDp {
         if (pos == t) {
             return steps;
         }
-        return steps + 1 + domin(pos - t);
+        int min = steps + 1 + domin(pos - t);
+        pos -= speed / 2;// back to the earlier pos
+        speed = 1;
+        // no steps-- because we reversse here
+
+        // now we enumerate the spot where we turn back from a reverse journey
+        while (pos > 0) {
+            int cur = steps + 1 + domin(t - pos); // +1 for the reverse
+            steps++;
+            pos -= speed;
+            speed *= 2;
+            min = Math.min(min, cur);
+        }
+        dp[t] = min;
+        return min;
     }
 }
