@@ -96,7 +96,6 @@ public class TrappingRainWaterII {
                 if (ni >= 0 && ni < m && nj >= 0 && nj < n && !v[ni][nj]) {
                     v[ni][nj] = true;
                     if (top[2] > a[ni][nj]) {
-
                         r += top[2] - a[ni][nj];
                         pq.offer(new int[]{ni, nj, top[2]});
                         // key! as if let the wall move in if we meet a smaller cell

@@ -37,45 +37,73 @@ Note:
 public class RaceCar {
     // can't directly dp on pos and speed because there is a circle in the graph
     // have to bfs on pos and speed or use dp(pos) only to dp. choice on how many times we go A
-    // @todo implement that solution
+
     public int racecar(int t) {
         Deque<int[]> q = new ArrayDeque<>();
-        int[] st = new int[]{0, 1, 0};
-        q.offer(st);
+        q.offer(new int[]{0, 1, 0});
         Set<Long> seen = new HashSet<>();
-        seen.add(code(st));
         while (!q.isEmpty()) {
             int[] top = q.poll();
-            //System.out.println(Arrays.toString(top));
-            int p = top[0];
-            int s = top[1];
-            int step = top[2];
-            if (p == t) {
-                return step;
-            }
-            if (p > 2 * t || p < 0) {
-                // we'd rather overshoot then come back
+            int pos = top[0];
+            if (pos < -t || pos > 2 * t) {
                 continue;
             }
-            int[] w1 = new int[]{p + s, 2 * s, step + 1};
-            long cw1 = code(w1);
-            if (!seen.contains(cw1)) {
-                seen.add(cw1);
-                q.offer(w1);
+            int speed = top[1];
+            int steps = top[2];
+            if (pos == t) {
+                return steps;
             }
-            int[] w2 = new int[]{p, s > 0 ? -1 : 1, step + 1};
-            long cw2 = code(w2);
-
-            if (!seen.contains(cw2)) {
-                seen.add(cw2);
-
-                q.offer(w2);
-            }
+            int npos = pos + speed;
+            int nspeed = speed * 2;
+            int nsteps = steps + 1;
+            populate(npos, nspeed, nsteps, seen, q);
+            npos = pos;
+            nspeed = speed > 0 ? -1 : 1;
+            populate(npos, nspeed, nsteps, seen, q);
         }
         return -1;
     }
 
-    long code(int[] t) {
-        return 10000 * t[0] + t[1];
+    void populate(int npos, int nspeed, int nsteps, Set<Long> seen, Deque<int[]> q) {
+        Long change = tocode(npos, nspeed);
+        if (seen.add(change)) {
+            q.offer(new int[]{npos, nspeed, nsteps});
+        }
+    }
+
+    long tocode(int pos, int speed) {
+        return pos * 10000000 + speed;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new RaceCar().racecar(4));
+        System.out.println(new RaceCarDp().racecar(4));
+
+    }
+}
+
+class RaceCarDp {
+    // similar to "least operator to express number". we either undershoot or overshoot
+    public int racecar(int t) {
+        return domin(t);
+    }
+
+    // speed is 1. pos == 0
+    private int domin(int t) {
+        if (t == 0) {
+            return 0;
+        }
+        int speed = 1;
+        int pos = 0;
+        int steps = 0;
+        while (pos < t) {
+            pos += speed;
+            speed *= 2;
+            steps++;
+        }
+        if (pos == t) {
+            return steps;
+        }
+        return steps + 1 + domin(pos - t);
     }
 }

@@ -19,25 +19,31 @@ Explanation: 2-2 = 1/22 = 1/4 = 0.25
 public class PowerXn {
 
     // typical divide and conquer
-    public double myPow(double x, long n) {
-        if(n<0){
-            return 1.0/dop(x,-n);
-        }else{
-            return dop(x,n);
-        }
+    public double myPow(double x, int n) {
+        return dopow(x, n);
     }
 
-    double dop(double x, long n){
-        if(n==0){
-            return 1.0;
+    double dopow(double x, long n){
+        if(x==0){
+            return 0;
         }
-        double h= dop(x,n/2);
-        double sq= h*h;
-        if(n%2==0){
-            return sq;
+        else if(n==1){
+            return x;
+        }
+        else if(n==0){
+            return 1;
+        }
+        else if(n<0){
+            return 1/dopow(x, -n);
         }else{
-            return sq*x;
+            double half = dopow(x, n/2);
+            if(n%2==0){
+                return half*half;
+            }else{
+                return half*half*x;
+            }
         }
+
     }
 
     public static void main(String[] args) {

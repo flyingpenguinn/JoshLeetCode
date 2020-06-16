@@ -20,20 +20,18 @@ public class TrappingRainWater {
     // this can be further simplified to remove the arrays
     public int trap(int[] a) {
         int n = a.length;
-        int[] maxleft = new int[n];
-        int[] maxright = new int[n];
-        // excluding oneself and monotonously increasing
-        for (int i = 1; i < n; i++) {
-            maxleft[i] = Math.max(maxleft[i - 1], a[i - 1]);
+        int[] right = new int[n];
+        int rmax = -1;
+        for (int i = n - 1; i >= 0; i--) {
+            rmax = Math.max(rmax, a[i]);
+            right[i] = rmax;
         }
-        for (int i = n - 2; i >= 0; i--) {
-            maxright[i] = Math.max(maxright[i + 1], a[i + 1]);
-        }
+        int lmax = -1;
         int r = 0;
-        // left and right border can't hold rain anyway
-        for (int i = 1; i < n - 1; i++) {
-            int min = Math.min(maxleft[i], maxright[i]);
-            r += min > a[i] ? min - a[i] : 0;
+        for (int i = 0; i < n; i++) {
+            lmax = Math.max(lmax, a[i]);
+            int water = Math.min(lmax, right[i]);
+            r += water - a[i];
         }
         return r;
     }
@@ -41,6 +39,27 @@ public class TrappingRainWater {
     public static void main(String[] args) {
         int[] height = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1};
         System.out.println(new TrappingRainWaterQueueBased().trap(height));
+    }
+}
+
+class TrappingRainWaterO1Space {
+    public int trap(int[] a) {
+        int n = a.length;
+        int i = 0;
+        int j = n - 1;
+        int maxleft = -1;
+        int maxright = -1;
+        int r = 0;
+        while (i <= j) {
+            maxleft = Math.max(maxleft, a[i]);
+            maxright = Math.max(maxright, a[j]);
+            if (maxleft < maxright) {
+                r += maxleft - a[i++];
+            } else {
+                r += maxright - a[j--];
+            }
+        }
+        return r;
     }
 }
 

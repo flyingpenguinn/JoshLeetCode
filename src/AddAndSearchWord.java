@@ -23,16 +23,51 @@ public class AddAndSearchWord {
 }
 
 class WordDictionary {
-    // Trie and dfs on search of wildcard
-    class Tn {
-        char c;
-        Tn[] ch = new Tn[26];
-        boolean isw;
 
-        Tn(char c) {
+    class Trie {
+        char c;
+        Trie[] ch = new Trie[26];
+        boolean isword = false;
+
+        public Trie(char c) {
             this.c = c;
         }
+
+        void insert(String s, int i) {
+            if (i == s.length()) {
+                isword = true;
+                return;
+            }
+            char c = s.charAt(i);
+            int cind = c - 'a';
+            Trie next = ch[cind];
+            if (next == null) {
+                next = ch[cind] = new Trie(c);
+            }
+            next.insert(s, i + 1);
+        }
+
+        boolean search(String s, int i) {
+            if (i == s.length()) {
+                return isword;
+            }
+            char c = s.charAt(i);
+            int cind = c - 'a';
+            if (c != '.') {
+                Trie next = ch[cind];
+                return next != null && next.search(s, i + 1);
+            } else {
+                for (Trie next : ch) {
+                    if (next != null && next.search(s, i + 1)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
     }
+
+    Trie root = new Trie('-');
 
     /**
      * Initialize your data structure here.
@@ -41,51 +76,24 @@ class WordDictionary {
 
     }
 
-    Tn root = new Tn('-');
-
     /**
      * Adds a word into the data structure.
      */
-    public void addWord(String w) {
-        Tn cur = root;
-        // cur match till i-1
-        for (int i = 0; i < w.length(); i++) {
-            char c = w.charAt(i);
-            int cind = c - 'a';
-            if (cur.ch[cind] == null) {
-                cur.ch[cind] = new Tn(c);
-            }
-            cur = cur.ch[cind];
-        }
-        cur.isw = true;
+    public void addWord(String word) {
+        root.insert(word, 0);
     }
 
     /**
      * Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter.
      */
     public boolean search(String word) {
-        return dfs(word, root, 0);
-    }
-
-    boolean dfs(String w, Tn cur, int i) {
-        if (i == w.length()) {
-            return cur.isw;
-        }
-        char c = w.charAt(i);
-        if (c == '.') {
-            for (int j = 0; j < 26; j++) {
-                if (cur.ch[j] != null) {
-                    if (dfs(w, cur.ch[j], i + 1)) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            int cind = c - 'a';
-            if (cur.ch[cind] != null) {
-                return dfs(w, cur.ch[cind], i + 1);
-            }
-        }
-        return false;
+        return root.search(word, 0);
     }
 }
+
+/**
+ * Your WordDictionary object will be instantiated and called as such:
+ * WordDictionary obj = new WordDictionary();
+ * obj.addWord(word);
+ * boolean param_2 = obj.search(word);
+ */
