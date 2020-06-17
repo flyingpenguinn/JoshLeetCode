@@ -81,8 +81,8 @@ public class BasicCalculatorIII {
     private void collapsetilllower(Deque<Long> nst, Deque<Character> ost, char op) {
         // this is key of this problem
         // if we see +, keep doing * /  or +- itself, till we see (
-        // if we see */, keep doing */, we should stop there
-        // but at any rate, stop at (
+        // if we see */, keep doing */, until we see a +
+        // ( is of the lowest priority
         while (!ost.isEmpty() && priority(ost.peek()) >= priority(op)) {
             popandcalc(nst, ost);
         }

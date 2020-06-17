@@ -37,6 +37,7 @@ public class LFUCache {
     // use linked hashset for the lru part
     // as we always +1 or -1, we can change min easily. for newly added elements, min = 1.
     // newest freq = 1 is the main trick. because without this property it's hard to locate the 2nd smallest freq
+
     Map<Integer, Integer> m = new HashMap<>();
     // member to time
     Map<Integer, Integer> fm = new HashMap<>();
@@ -74,7 +75,6 @@ public class LFUCache {
         }
     }
 
-    // when removing we kick the whole thing out...
     private void removekey(Integer key) {
         m.remove(key);
         Integer ok = fm.get(key);
@@ -95,16 +95,15 @@ public class LFUCache {
             mintime = 1;
         }
         fm.put(key, ok + 1);
-        LinkedHashSet<Integer> oldset = cm.getOrDefault(ok, new LinkedHashSet<>());
         if (ok > 0) {
-            // doesnt exist before
+            LinkedHashSet<Integer> oldset = cm.getOrDefault(ok, new LinkedHashSet<>());
             oldset.remove(key);
             cm.put(ok, oldset);
-        }
-        if (oldset.isEmpty()) {
-            cm.remove(oldset);
-            if (ok == mintime) {
-                mintime = ok + 1;
+            if (oldset.isEmpty()) {
+                cm.remove(oldset);
+                if (ok == mintime) {
+                    mintime = ok + 1;
+                }
             }
         }
         LinkedHashSet<Integer> nset = cm.getOrDefault(ok + 1, new LinkedHashSet<>());
