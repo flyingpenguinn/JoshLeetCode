@@ -48,8 +48,8 @@ grid[i][j] == 0 or 1
 grid[0][0] == grid[m-1][n-1] == 0
  */
 public class ShortestPathWithObstacleElimination {
+    // typical bfs with state! (or say shortest path with extra status)
     // for each ij, add another status to mark the obstacles eliminated
-    // typical shortest path with extra status
     int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     int Max = 1000000007;
 

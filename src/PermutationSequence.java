@@ -26,36 +26,32 @@ Input: n = 4, k = 9
 Output: "2314"
  */
 public class PermutationSequence {
-    // at each i, count how many blocks can we get by k. block= (n-i-1)!
+    // decide each number at ith position then reduce k and move forward
     public String getPermutation(int n, int k) {
+        int blocksize = 1;
+        for (int i = 1; i <= n; i++) {
+            blocksize *= i;
+        }
         boolean[] used = new boolean[n + 1];
-        return dog(n, 0, k, used, factor(n));
-    }
-
-    int factor(int n) {
-        return n == 0 ? 1 : factor(n - 1) * n;
-    }
-
-    String dog(int n, int i, int k, boolean[] used, int blocksize) {
-        if (i == n) {
-            return "";
-        }
-        blocksize /= (n - i);
-        // how many full blocks. note k from 1
-        int blocks = (k - 1) / blocksize;
-        //   System.out.println("k="+k+" blocksize= "+blocksize +" ith= "+ith);
-        int rem = blocks;
-        for (int j = 1; j <= n; j++) {
-            if (used[j]) {
-                continue;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= n; i++) {
+            blocksize /= (n - i + 1);
+            int passedblocks = (k - 1) / blocksize;
+            // how many blocks to pass for example n==3, k==3, then we pass (3-1)/2 = 1 block, land on 2
+            int cur = 1;
+            k -= blocksize * passedblocks;
+            for (; cur <= n; cur++) {
+                if (used[cur]) {
+                    continue;
+                }
+                if (passedblocks == 0) {
+                    break;
+                }
+                passedblocks--;
             }
-            if (rem == 0) {
-                used[j] = true;
-                return String.valueOf(j) + dog(n, i + 1, k - (blocks) * blocksize, used, blocksize);
-            } else {
-                rem--;
-            }
+            sb.append(cur);
+            used[cur] = true;
         }
-        return "err";
+        return sb.toString();
     }
 }

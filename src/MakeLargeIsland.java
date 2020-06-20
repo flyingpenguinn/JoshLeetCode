@@ -2,215 +2,116 @@ import base.ArrayUtils;
 
 import java.util.*;
 
+/*
+LC#827
+In a 2D grid of 0s and 1s, we change at most one 0 to a 1.
+
+After, what is the size of the largest island? (An island is a 4-directionally connected group of 1s).
+
+Example 1:
+
+Input: [[1, 0], [0, 1]]
+Output: 3
+Explanation: Change one 0 to 1 and connect two 1s, then we get an island with area = 3.
+Example 2:
+
+Input: [[1, 1], [1, 0]]
+Output: 4
+Explanation: Change the 0 to 1 and make the island bigger, only one island with area = 4.
+Example 3:
+
+Input: [[1, 1], [1, 1]]
+Output: 4
+Explanation: Can't change any 0 to 1, only one island with area = 4.
+
+
+Notes:
+
+1 <= grid.length = grid[0].length <= 50.
+0 <= grid[i][j] <= 1.
+ */
 public class MakeLargeIsland {
-    private int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    // union find, count each segment we see on a 0 only once
+    Map<Integer, Integer> pa = new HashMap<>();
+    Map<Integer, Integer> size = new HashMap<>();
 
-    private boolean inRange(int[][] board, int ni, int nj) {
-        return ni >= 0 && ni < board.length && nj >= 0 && nj < board[0].length;
-    }
-
-    DisjointSet<Integer> djs = new DisjointSet<>();
-
-    int getKey(int row, int col) {
-        return row * 50 + col;
-    }
-
-    int maxisland = 0;
-
-    public int largestIsland(int[][] grid) {
-        processOnes(grid);
-        maxisland = Math.max(maxisland, djs.maxSetSize);
-        processZeros(grid);
-        return maxisland;
-    }
-
-    private void processZeros(int[][] grid) {
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[0].length; j++) {
-                if (grid[i][j] == 0) {
-                    int cursize = 1;
-                    Set<Integer> found = new HashSet<>();
-                    for (int[] d : directions) {
+    public int largestIsland(int[][] a) {
+        int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+        int m = a.length;
+        int n = a[0].length;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == 1) {
+                    init(code(n, i, j));
+                    for (int k = 0; k < 2; k++) {
+                        int[] d = dirs[k];
                         int ni = i + d[0];
                         int nj = j + d[1];
-                        // avoid double counting of overlapping areas
-                        if (inRange(grid, ni, nj) && grid[ni][nj] == 1) {
-                            int newkey = getKey(ni, nj);
-                            int setn = djs.find(newkey);
-                            if (!found.contains(setn)) {
-                                cursize += djs.findSize(setn);
-                                found.add(setn);
+                        if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
+
+                            union(code(n, i, j), code(n, ni, nj));
+                        }
+                    }
+                }
+            }
+        }
+        int max = 0;
+        for (int k : pa.keySet()) {
+            if (pa.get(k) == k) {
+                max = Math.max(max, size.get(k));
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == 0) {
+                    int link = 1;
+                    Set<Integer> seen = new HashSet<>();
+                    for (int[] d : dirs) {
+                        int ni = i + d[0];
+                        int nj = j + d[1];
+                        if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
+                            int parent = find(code(n, ni, nj));
+                            if (!seen.contains(parent)) {
+                                link += size.get(parent);
+                                seen.add(parent);
                             }
                         }
                     }
-                    maxisland = Math.max(maxisland, cursize);
+                    max = Math.max(max, link);
                 }
             }
         }
+        return max;
     }
 
-
-    private void processOnes(int[][] grid) {
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[0].length; j++) {
-                if (grid[i][j] == 1) {
-                    int key = getKey(i, j);
-                    int set = djs.find(key);
-                    for (int[] d : directions) {
-                        int ni = i + d[0];
-                        int nj = j + d[1];
-                        if (inRange(grid, ni, nj) && grid[ni][nj] == 1) {
-                            int newkey = getKey(ni, nj);
-                            int setn = djs.find(newkey);
-                            djs.union(set, setn);
-                        }
-                    }
-                }
-            }
-        }
+    int code(int n, int i, int j) {
+        return n * i + j;
     }
 
-    class DisjointSet<T> {
-        // from string to its representative
-        Map<T, T> parent = new HashMap<>();
-        // each representative's size
-        Map<T, Integer> size = new HashMap<>();
-        int maxSetSize = 0;
-        int numOfSets = 0;
+    void init(int code) {
+        pa.put(code, code);
+        size.put(code, 1);
+    }
 
-        public T makeSet(T s) {
-            parent.put(s, s);
-            size.put(s, 1);
-            numOfSets++;
-            maxSetSize = Math.max(maxSetSize, 1);
-            return s;
-        }
-
-        // path compression
-        public T find(T s) {
-            T p = parent.get(s);
-            if (p == null) {
-                return makeSet(s);
-            } else if (p.equals(s)) {
-                return p;
-            } else {
-                T pt = find(p);
-                parent.put(s, pt);
-                return pt;
-            }
-        }
-
-        public int findSize(T s) {
-            return size.get(find(s));
-        }
-
-        // union by size
-        public T union(T x, T y) {
-            T px = find(x);
-            T py = find(y);
-            if (px.equals(py)) {
-                // no merge! all equal
-                return px;
-            }
-            int sizex = size.get(px);
-            int sizey = size.get(py);
-            T toReturn = null;
-            numOfSets--;
-            if (sizex < sizey) {
-                parent.put(px, py);
-                toReturn = py;
-            } else if (sizex > sizey) {
-                parent.put(py, px);
-                toReturn = px;
-            } else {
-                parent.put(px, py);
-                toReturn = py;
-            }
-            size.put(toReturn, sizex + sizey);
-            maxSetSize = Math.max(maxSetSize, sizex + sizey);
-            return toReturn;
-
-        }
-
-        public int numOfSets() {
-            return numOfSets;
+    int find(int code) {
+        int parent = pa.get(code);
+        if (parent == code) {
+            return code;
+        } else {
+            int rt = find(parent);
+            pa.put(code, rt);
+            return rt;
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println(new MakeLargeIslandDfs().largestIsland(ArrayUtils.read("[[1, 1], [1, 0]]")));
-    }
-}
-
-
-class MakeLargeIslandDfs {
-    private int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    private boolean inRange(int[][] board, int ni, int nj) {
-        return ni >= 0 && ni < board.length && nj >= 0 && nj < board[0].length;
-    }
-
-    int[][] dfsSeqMap;
-    int seq = 0;
-    Map<Integer, Integer> dfssize = new HashMap<>();
-    int maxisland = 0;
-
-    public int largestIsland(int[][] grid) {
-        dfsSeqMap = new int[grid.length][grid[0].length];
-        doDfs(grid);
-        processZeros(grid);
-        return maxisland;
-    }
-
-
-    private void processZeros(int[][] grid) {
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[0].length; j++) {
-                if (grid[i][j] == 0) {
-                    int cursize = 1;
-                    Set<Integer> found = new HashSet<>();
-                    for (int[] d : directions) {
-                        int ni = i + d[0];
-                        int nj = j + d[1];
-                        // avoid double counting of overlapping areas
-                        if (inRange(grid, ni, nj) && grid[ni][nj] == 2) {
-                            int dfsseq = dfsSeqMap[ni][nj];
-                            if (!found.contains(dfsseq)) {
-                                cursize += dfssize.get(dfsseq);
-                                found.add(dfsseq);
-                            }
-                        }
-                    }
-                    maxisland = Math.max(maxisland, cursize);
-                }
-            }
+    void union(int n1, int n2) {
+        int pra = find(n1);
+        int prb = find(n2);
+        if (pra != prb) {
+            int sizea = size.get(pra);
+            int sizeb = size.get(prb);
+            pa.put(pra, prb);
+            size.put(prb, sizeb + sizea);
         }
-    }
-
-    private void doDfs(int[][] grid) {
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[0].length; j++) {
-                if (grid[i][j] == 1) {
-                    int size = dfs(grid, i, j, seq);
-                    dfssize.put(seq, size);
-                    maxisland = Math.max(maxisland, size);
-                    seq++;
-                }
-            }
-        }
-    }
-
-    private int dfs(int[][] grid, int i, int j, int dfsseq) {
-        dfsSeqMap[i][j] = dfsseq;
-        grid[i][j] = 2;
-        int count = 1;
-        for (int[] d : directions) {
-            int ni = i + d[0];
-            int nj = j + d[1];
-            if (inRange(grid, ni, nj) && grid[ni][nj] == 1) {
-                count += dfs(grid, ni, nj, dfsseq);
-            }
-        }
-        return count;
     }
 }

@@ -19,56 +19,62 @@ The result can be in any order.
  */
 public class IntersectionOfTwoArrays {
     public int[] intersection(int[] a, int[] b) {
+        if (a.length > b.length) {
+            int[] tmp = a;
+            a = b;
+            b = tmp;
+        }
         Set<Integer> set = new HashSet<>();
-        for (int i = 0; i < a.length; i++) {
-            set.add(a[i]);
+        for (int ai : a) {
+            set.add(ai);
         }
         Set<Integer> r = new HashSet<>();
-        for (int i = 0; i < b.length; i++) {
-            if (set.contains(b[i])) {
-                r.add(b[i]);
+        for (int bi : b) {
+            if (set.contains(bi)) {
+                r.add(bi);
             }
         }
-        int[] rr = new int[r.size()];
+        int[] res = new int[r.size()];
         int ri = 0;
-        for (int k : r) {
-            rr[ri++] = k;
+        for (int re : r) {
+            res[ri++] = re;
         }
-        return rr;
+        return res;
     }
 }
 
 class IntersetionOfTwoArraysSorted {
+    // traps! 1. no dup, so keep moving if the same value.
+    // 2. no final two while loops! this is intersection not merging
     public int[] intersection(int[] a, int[] b) {
         Arrays.sort(a);
         Arrays.sort(b);
-        int i = 0;
-        int j = 0;
+        int ia = 0;
+        int ib = 0;
         List<Integer> r = new ArrayList<>();
-        while (i < a.length && j < b.length) {
-            while (i < a.length && i > 0 && a[i] == a[i - 1]) {
-                i++;
-            }
-            while (j < b.length && j > 0 && b[j] == b[j - 1]) {
-                j++;
-            }
-            if (i >= a.length || j >= b.length) {
-                break;
-            }
-            if (a[i] < b[j]) {
-                i++;
-            } else if (a[i] > b[j]) {
-                j++;
+        while (ia < a.length && ib < b.length) {
+            if (a[ia] < b[ib]) {
+                ia = move(a, ia);
+            } else if (a[ia] > b[ib]) {
+                ib = move(b, ib);
             } else {
-                r.add(a[i]);
-                i++;
-                j++;
+                r.add(a[ia]);
+                ia = move(a, ia);
+                ib = move(b, ib);
             }
         }
         int[] rr = new int[r.size()];
-        for (i = 0; i < r.size(); i++) {
+        for (int i = 0; i < r.size(); i++) {
             rr[i] = r.get(i);
         }
         return rr;
+    }
+
+    int move(int[] a, int i) {
+        int j = i;
+        while (j < a.length && a[j] == a[i]) {
+            j++;
+        }
+        return j;
     }
 }

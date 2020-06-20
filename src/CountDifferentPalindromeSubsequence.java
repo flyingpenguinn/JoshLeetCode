@@ -28,7 +28,7 @@ Note:
 The length of S will be in the range [1, 1000].
 Each character S[i] will be in the set {'a', 'b', 'c', 'd'}.
  */
-public class CountDistinctPalindromeSubsequence {
+public class CountDifferentPalindromeSubsequence {
     // Let dp(i, j) be the answer for the string T = S[i][j] including the empty sequence. The answer is the number of unique characters in T,
     // plus palindromes of the form "a_a", "b_b", "c_c", and "d_d", where "_" represents zero or more characters.
     // note the gists are
@@ -91,6 +91,6 @@ public class CountDistinctPalindromeSubsequence {
     long Mod = 1000000007;
 
     public static void main(String[] args) {
-        System.out.println(new CountDistinctPalindromeSubsequence().countPalindromicSubsequences("bccb"));
+        System.out.println(new CountDifferentPalindromeSubsequence().countPalindromicSubsequences("bccb"));
     }
 }

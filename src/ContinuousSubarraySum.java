@@ -26,24 +26,22 @@ You may assume the sum of all the numbers is in the range of a signed 32-bit int
  */
 public class ContinuousSubarraySum {
     // k could be huge. use hashmap. we wont have more than n ks. k could be ==0. when mod think about ==0
+    // note this is similar to LC#974, but there mod result can be of different sign, while here mod is of the same sign.
+    // so we dont need to worry about complementing value like 3 and -2. but here k could be ==0
     public boolean checkSubarraySum(int[] a, int k) {
         Map<Integer, Integer> m = new HashMap<>();
         m.put(0, -1);
+        int n = a.length;
         int sum = 0;
-        for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < n; i++) {
             sum += a[i];
-            int mod = k == 0 ? sum : sum % k;
-            Integer last = m.get(mod);
-            // last+1...i
-            if (last != null && i - last >= 2) {
+            int target = k == 0 ? sum : sum % k;
+            Integer pre = m.get(target);
+            if (pre != null && i - pre >= 2) {
                 return true;
             }
-            m.putIfAbsent(mod, i);
+            m.putIfAbsent(target, i);
         }
         return false;
-    }
-
-    int mod(int sum, int k) {
-        return k == 0 ? sum : sum % k;
     }
 }

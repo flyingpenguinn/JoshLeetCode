@@ -31,77 +31,46 @@ The signature of the C++ function had been updated. If you still see your functi
  */
 public class ValidNumber {
 
-    // pass limit==-1 to split
-    // no inner space
-    // allow starting 0s for non zero numbers
-    // no fraction in exponent
+    // state machine based.
+    // trim
+    // note the reset of the seennumber state after seeing e
     public boolean isNumber(String s) {
-        return checke(s);
-    }
-
-    boolean checke(String s) {
         s = s.trim();
-        if (s.isEmpty()) {
-            return false;
-        }
-
-
-        String[] sp = s.split("e", -1);
-        if (sp.length > 2) {
-            return false;
-        }
-        if (sp.length == 1) {
-            return checksignreal(s);
-        } else {
-            if (sp[0].isEmpty() || sp[1].isEmpty()) {
-                // no e2 or 2e
-                return false;
-            }
-            return checksignreal(sp[0]) && checksignint(sp[1]);
-        }
-    }
-
-    private boolean checksignreal(String s) {
-        if (s.startsWith("+") || s.startsWith("-")) {
-            return s.length() > 1 && checkunsreal(s.substring(1));
-        } else {
-            return checkunsreal(s);
-        }
-    }
-
-    private boolean checkunsreal(String s) {
-        String[] sp = s.split("\\.", -1);
-        if (sp.length > 2) {
-            return false;
-        }
-        if (sp.length == 2) {
-            if (sp[0].isEmpty() && sp[1].isEmpty()) {
-                return false; // no "." only
-            }
-            // but allow 2. or .2
-            return checkunsint(sp[0]) && checkunsint(sp[1]); // no 0.-2
-        } else {
-            return checkunsint(sp[0]);
-        }
-    }
-
-
-    private boolean checksignint(String s) {
-        if (s.startsWith("+") || s.startsWith("-")) {
-            return s.length() > 1 && checkunsint(s.substring(1));
-            // no single "+"
-        } else {
-            return checkunsint(s);
-        }
-    }
-
-    private boolean checkunsint(String s) {
-
+        boolean seennumber = false;
+        boolean seene = false;
+        boolean seendot = false;
         for (int i = 0; i < s.length(); i++) {
-            if (!Character.isDigit(s.charAt(i))) {
+            char c = s.charAt(i);
+            if (Character.isDigit(c)) {
+                seennumber = true;
+            } else if (c == 'e') {
+                if (seene) {
+                    return false;
+                }
+                if (!seennumber) {
+                    // can't be e9
+                    return false;
+                }
+                seene = true;
+                seennumber = false; // reset, because we need to make sure it's not 9e
+            } else if (c == '.') {
+                if (seene) {
+                    return false;
+                }
+                if (seendot) {
+                    return false;
+                }
+                seendot = true;
+            } else if (c == '+' || c == '-') {
+                if (i == 0 || s.charAt(i - 1) == 'e') {
+                    // only allow -2 or -3e-2
+                    continue;
+                }
                 return false;
+            } else {
+                return false; // anything else return false
             }
         }
-        return true;// allow empty
+        return seennumber;
     }
 }

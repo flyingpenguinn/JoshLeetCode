@@ -23,19 +23,14 @@ public class ConsecutiveNumberSum {
     // given n we know a1
     // a1= (2*t-n(n+1))/2(n+1)
     // each int solution is counted.find it solution by %
-    public int consecutiveNumbersSum(int t) {
+    public int consecutiveNumbersSum(int s) {
         int r = 0;
-        int sqrt = (int) Math.sqrt(2 * t);
-        for (int i = 0; i <= sqrt; i++) {
-            int p1 = 2 * t - i * (i + 1);
-            int p2 = 2 * (i + 1);
-            if (p1 <= 0) {
-                break;
-            }
-            if (p1 % p2 == 0) {
+        for (int i = 2; i * (i - 1) / 2 < s; i++) {
+            int diff = s - i * (i - 1) / 2;
+            if (diff % i == 0) {
                 r++;
             }
         }
-        return r;
+        return r + 1;
     }
 }

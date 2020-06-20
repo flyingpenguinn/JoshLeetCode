@@ -28,19 +28,20 @@ The final answer is guaranteed to be less than 2^31.
  */
 public class RangeSumBst {
     public int rangeSumBST(TreeNode root, int l, int r) {
-        return dor(root, l, r);
+        return dfs(root, l, r);
     }
 
-    int dor(TreeNode n, int l, int r) {
+    int dfs(TreeNode n, int l, int r) {
         if (n == null) {
             return 0;
         }
         if (n.val < l) {
-            return dor(n.right, l, r);
-        } else if (n.val > r) {
-            return dor(n.left, l, r);
-        } else {
-            return n.val + dor(n.left, l, r) + dor(n.right, l, r);
+            // can't just write off this node: must check its right there could be bigger ones
+            return dfs(n.right, l, r);
         }
+        if (n.val > r) {
+            return dfs(n.left, l, r);
+        }
+        return dfs(n.left, l, r) + dfs(n.right, l, r) + n.val;
     }
 }

@@ -28,31 +28,27 @@ AB = | -1 0 3 | x | 0 0 0 | = | -7 0 3 |
                   | 0 0 1 |
  */
 public class SparseMatrixMultiplication {
-    // aij*bjm so iterate on i,j, and b's row hashmaps. note we dont need a hashmap for a
+    // aij*bjk so iterate on i,j, and b's row hashmaps. note we dont need a hashmap for a
     public int[][] multiply(int[][] a, int[][] b) {
-        Map<Integer, Set<Integer>> mb = new HashMap<>();
-        int ra = a.length;
-        int ca = a[0].length;
-        int rb = ca;
-        int cb = b[0].length;
-        int[][] r = new int[ra][cb];
-        for (int i = 0; i < rb; i++) {
-            for (int j = 0; j < cb; j++) {
+        Map<Integer, Map<Integer, Integer>> bm = new HashMap<>();
+
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b[0].length; j++) {
                 if (b[i][j] != 0) {
-                    mb.computeIfAbsent(i, k -> new HashSet<>()).add(j);
+                    bm.computeIfAbsent(i, k -> new HashMap<>()).put(j, b[i][j]);
                 }
             }
         }
-        for (int i = 0; i < ra; i++) {
-            for (int j = 0; j < ca; j++) {
-                if (a[i][j] != 0) {
-                    for (int cbi : mb.getOrDefault(j, new HashSet<>())) {
-                        int rbi = j;
-                        r[i][cbi] += a[i][j] * b[rbi][cbi];
-                    }
+
+        int[][] c = new int[a.length][b[0].length];
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                Map<Integer, Integer> bj = bm.getOrDefault(j, new HashMap<>());
+                for (int k : bj.keySet()) {
+                    c[i][k] += a[i][j] * bj.get(k);
                 }
             }
         }
-        return r;
+        return c;
     }
 }

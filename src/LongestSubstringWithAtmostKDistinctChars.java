@@ -17,6 +17,7 @@ Output: 2
 Explanation: T is "aa" which its length is 2.
  */
 public class LongestSubstringWithAtmostKDistinctChars {
+    // typical two pointer template...
     public int lengthOfLongestSubstringKDistinct(String s, int t) {
         int low = 0;
         int high = -1;

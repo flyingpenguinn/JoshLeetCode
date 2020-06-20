@@ -30,60 +30,56 @@ Output: []
  */
 public class ExpressionAddOperators {
     // trick 1: get a multi cache for better enumeration
-    // trick2: how to treat single elements: judge at n-1
-    // trick3: reverse for -: done with a flip flag
-    // trick4: handle numbers starting with 0
-    // do * first then +/-
-    // flatten - aggressively so that we only need to revert it
+    // trick2: handle numbers starting with 0
+    // trick3: handle long
+    List<String> r = new ArrayList<>();
+
     public List<String> addOperators(String s, int t) {
-        int[] a = new int[s.length()];
-        for (int i = 0; i < s.length(); i++) {
-            a[i] = s.charAt(i) - '0';
-        }
-        return doa(0, a, t, null, false);
+        dfs(s, 0, 0, 0, "", t);
+        return r;
     }
 
-    private List<String> doa(int i, int[] a, long t, Long multicache, boolean flip) {
-        List<String> r = new ArrayList<>();
-        int n = a.length;
+    char[] addonly = {'+'};
+    char[] all = {'+', '-', '*', '/'};
+
+    // cur pos, last operator, current result, pending multi
+    void dfs(String s, int i, long res, long pending, String cur, int t) {
+        int n = s.length();
         if (i == n) {
-            if ((multicache == null && t == 0) || (multicache != null && t == multicache)) {
-                r.add("");
+            if (res + pending == t) {
+                r.add(cur);
             }
-            // otherwise bad dont return string
-            return r;
+            return;
         }
-        long cur = 0;
+        long cv = 0;
         for (int j = i; j < n; j++) {
-            if (a[i] == 0 && j > i) {
+            cv = cv * 10 + (s.charAt(j) - '0');
+            if (s.charAt(i) == '0' && j > i) {
                 break;
             }
-            cur = cur * 10 + a[j];
-            if (cur > Integer.MAX_VALUE) {
+            // what if too long to fit into int?
+            if (cv > Integer.MAX_VALUE) {
                 break;
             }
-            long nextmulti = multicache == null ? cur : cur * multicache;
-            if (nextmulti > Integer.MAX_VALUE) {
-                continue;
+            char[] ops = all;
+            if (i == 0) {
+                ops = addonly;
             }
-            List<String> multi = doa(j + 1, a, t, nextmulti, flip);
-            for (String l : multi) {
-                r.add(l.isEmpty() ? String.valueOf(cur) : cur + "*" + l);
-            }
-            if (j + 1 >= n) {
-                // if this is the last element we dont need to process empty again: 2*3 == 2*3+0 == 2*3-0
-                continue;
-            }
-            List<String> add = doa(j + 1, a, t - nextmulti, null, flip);
-            for (String l : add) {
-                r.add(cur + (flip ? "-" : "+") + l);
-            }
-            List<String> minus = doa(j + 1, a, nextmulti - t, null, flip ? false : true);
-            for (String l : minus) {
-                r.add(cur + (flip ? "+" : "-") + l);
+            for (char op : ops) {
+                if (op == '+') {
+                    // what was pending is now ended. this number will serve as base for future *
+                    dfs(s, j + 1, res + pending, cv, (cur.isEmpty() ? "" : cur + "+") + cv, t);
+                }
+                if (op == '-') {
+                    // same, but -cv will serve as base
+                    dfs(s, j + 1, res + pending, -cv, cur + "-" + cv, t);
+                }
+                if (op == '*') {
+                    // just keep piling on the pending number to form a new pending multi cache
+                    dfs(s, j + 1, res, pending * cv, cur + "*" + cv, t);
+                }
             }
         }
-        return r;
     }
 
     public static void main(String[] args) {

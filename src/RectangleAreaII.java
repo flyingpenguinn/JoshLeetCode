@@ -28,63 +28,59 @@ rectanges[i].length = 4
 The total area covered by all rectangles will never exceed 2^63 - 1 and thus will fit in a 64-bit signed integer.
  */
 public class RectangleAreaII {
-    //sweepling lines
-    // make x discrete to be all xs of rectangles,similar to skyline
-    //use ways simialar to meeting rooms to merge segments between xs
+    // for each x that is the edge, check its intersection with ALL rectangles and use interval merge to calc the y length
+    // area is (curx- prex)*cury
     int Mod = 1000000007;
 
-
-    public int rectangleArea(int[][] rects) {
-        TreeSet<Integer> xs = new TreeSet<>();
-        for (int[] r : rects) {
-            xs.add(r[0]);
-            xs.add(r[2]);
+    public int rectangleArea(int[][] a) {
+        // sort all rects by x we will later scan on x
+        int n = a.length;
+        TreeSet<Integer> set = new TreeSet<>();
+        for (int i = 0; i < n; i++) {
+            set.add(a[i][0]);
+            set.add(a[i][2]);
         }
-        int lastx = xs.first();
-        xs.remove(lastx);
-        long r = 0L;
-        Arrays.sort(rects, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                if (o1[1] != o2[1]) {
-                    return Integer.compare(o1[1], o2[1]);
+        Arrays.sort(a, (s, t) -> Integer.compare(s[1], t[1]));
+        long r = 0;
+        int lastx = -1;
+        for (int x : set) {
+            if (lastx == -1) {
+                lastx = x;
+                continue;
+            }
+            long lasty1 = -1;
+            long lasty2 = -1;
+            long diffy = 0;
+            for (int i = 0; i < n; i++) {
+                if (a[i][2] <= lastx || a[i][0] >= x) {
+                    continue;  // too left or too right. we either handled already last time, or will handle it
+                }
+                // this x cuts all rectangles to form intervals. now merge these intervals
+                int y1 = a[i][1];
+                int y2 = a[i][3];
+                if (lasty1 == -1) {
+                    lasty1 = y1;
+                    lasty2 = y2;
+                } else if (y1 > lasty2) {
+                    diffy += lasty2 - lasty1;
+                    lasty1 = y1;
+                    lasty2 = y2;
                 } else {
-                    return Integer.compare(o1[3], o2[3]);
+                    lasty2 = Math.max(lasty2, y2);
                 }
             }
-        });
-
-        for (int x : xs) {
-            int[] last = new int[2];
-            // we sorted rects according to their starting point and height
-            for (int[] rect : rects) {
-                if (rect[2] <= lastx || rect[0] >= x) {
-                    // note also filter out ==
-                    continue;
-                }
-                int[] curs = {rect[1], rect[3]};
-                curs[0] = Math.max(curs[0], last[1]);
-                long ydiff = curs[1] - curs[0];
-                if (ydiff < 0) {
-                    // totally consumed in previous seg
-                    continue;
-                }
-                long xdiff = x - lastx;
-
-                long curr = ydiff * xdiff;
-                // System.out.println(lastx+"=>"+x+" xdiff="+xdiff+" ydiff="+ydiff);
-                r += curr;
-                last = curs;
-            }
+            diffy += lasty2 - lasty1;
+            int diffx = x - lastx;
+            // key: between x and lastx there is nothing. so if x gets diffy on y direction, we have diffx*diffy area cut out
+            r += diffx * diffy;
             lastx = x;
         }
         return (int) (r % Mod);
     }
 
+
     public static void main(String[] args) {
-        // int[][] rects = ArrayUtils.read("[[0,0,2,2],[1,1,3,3]]");
-        //    int[][] rects = ArrayUtils.read("[[0,0,2,2],[1,0,2,3],[1,0,3,1]]");
-        int[][] rects = ArrayUtils.read("[[0,0,1000000000,1000000000]]");
+        int[][] rects = ArrayUtils.read("[[0,0,2,2],[1,0,2,3],[1,0,3,1]]");
         System.out.println(new RectangleAreaII().rectangleArea(rects));
     }
 }

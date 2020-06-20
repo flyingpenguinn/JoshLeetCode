@@ -53,6 +53,7 @@ public class ShortestPathGetAllKeys {
         }
         Deque<int[]> q = new ArrayDeque<>();
         q.offer(new int[]{0, start[0], start[1], 0});
+        // state on top of bfs: here state is what are the keys we have got
         boolean[][][] v = new boolean[m][n][1 << keys];
         v[start[0]][start[1]][0] = true;
         while (!q.isEmpty()) {

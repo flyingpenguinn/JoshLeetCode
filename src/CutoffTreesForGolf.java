@@ -76,7 +76,7 @@ public class CutoffTreesForGolf {
         // height, row, col
         Collections.sort(trees, (x, y) -> Integer.compare(x[0], y[0]));
         int r = 0;
-        int[] cur = new int[]{2, 0, 0};
+        int[] cur = new int[]{0, 0, 0};
         for (int i = 0; i < trees.size(); i++) {
             int[] t = trees.get(i);
             int dist = mindist(forest, cur, t);

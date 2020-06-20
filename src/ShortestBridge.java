@@ -1,82 +1,90 @@
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/*
+LC#934
+In a given 2D binary array A, there are two islands.  (An island is a 4-directionally connected group of 1s not connected to any other 1s.)
 
+Now, we may change 0s to 1s so as to connect the two islands together to form 1 island.
+
+Return the smallest number of 0s that must be flipped.  (It is guaranteed that the answer is at least 1.)
+
+
+
+Example 1:
+
+Input: A = [[0,1],[1,0]]
+Output: 1
+Example 2:
+
+Input: A = [[0,1,0],[0,0,0],[0,0,1]]
+Output: 2
+Example 3:
+
+Input: A = [[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,0,1],[1,1,1,1,1]]
+Output: 1
+
+
+Constraints:
+
+2 <= A.length == A[0].length <= 100
+A[i][j] == 0 or A[i][j] == 1
+ */
 public class ShortestBridge {
-    class QItem {
-        int row;
-        int col;
-        int dist;
+    // we extend to wider orbit one dist at a time till we hit another 1
+    // a bit similar to "bus route": we grow one dist at a time from a "core"
+    Deque<int[]> q = new ArrayDeque<>();
+    int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
-        public QItem(int row, int col, int dist) {
-            this.row = row;
-            this.col = col;
-            this.dist = dist;
-        }
-    }
-
-
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-    int[][] visited = null;
-
-    boolean inrange(int i, int j, int[][] a) {
-        return i >= 0 && i < a.length && j >= 0 && j < a[0].length;
-    }
-
-    Deque<QItem> q = new ArrayDeque<>();
-
-    // dfs first  to mark all 1s as 2 in one island then spfa to the other. treat 2s as having 0 distance between them
     public int shortestBridge(int[][] a) {
-        q.clear();
-        int rs = a.length;
-        int cs = a[0].length;
-        visited = new int[rs][cs];
-        // change first island to 2
-        boolean done = false;
-        for (int i = 0; i < rs; i++) {
-            for (int j = 0; j < cs; j++) {
+        int m = a.length;
+        int n = a[0].length;
+        // double break here....
+        boolean found = false;
+        for (int i = 0; i < m; i++) {
+            if (found) {
+                break;
+            }
+            for (int j = 0; j < n; j++) {
                 if (a[i][j] == 1) {
-                    dfs22(i, j, a);
-                    done = true;
+                    dfs(a, i, j);
+                    found = true;
                     break;
                 }
             }
-            if (done) {
-                break;
-            }
         }
-
         while (!q.isEmpty()) {
-            QItem top = q.poll();
-            int ti = top.row;
-            int tj = top.col;
-            int dst = top.dist;
-            if (a[ti][tj] == 1) {
-                return dst - 1;
-            }
+            int[] top = q.poll();
+            int i = top[0];
+            int j = top[1];
+            int dist = top[2];
+            int ndist = dist + 1;
             for (int[] d : dirs) {
-                int nr = ti + d[0];
-                int nc = tj + d[1];
-                int dist = dst + 1;
-                if (inrange(nr, nc, a) && visited[nr][nc] != 1) {
-                    visited[nr][nc] = 1;
-                    q.offer(new QItem(nr, nc, dist));
+                int ni = i + d[0];
+                int nj = j + d[1];
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+                    if (a[ni][nj] == 0) {
+                        a[ni][nj] = 2;
+                        q.offer(new int[]{ni, nj, ndist});
+                    } else if (a[ni][nj] == 1) {
+                        return dist;
+                    }
                 }
             }
         }
         return -1;
     }
 
-    void dfs22(int i, int j, int[][] a) {
-
+    void dfs(int[][] a, int i, int j) {
+        int m = a.length;
+        int n = a[0].length;
         a[i][j] = 2;
-        q.offer(new QItem(i, j, 0));
-        visited[i][j] = 1;
+        q.offer(new int[]{i, j, 0});
         for (int[] d : dirs) {
-            int nr = i + d[0];
-            int nc = j + d[1];
-            if (inrange(nr, nc, a) && a[nr][nc] == 1 && visited[nr][nc] != 1) {
-                dfs22(nr, nc, a);
+            int ni = i + d[0];
+            int nj = j + d[1];
+            if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
+                dfs(a, ni, nj);
             }
         }
     }

@@ -29,69 +29,69 @@ public class AccountMerge {
 
     // union find: when two people have common email draw an edge between them
     // note we just need to merge with one of the same family member
-
-    public List<List<String>> accountsMerge(List<List<String>> a) {
-        Map<Integer, Integer> pa = new HashMap<>();
-        Map<String, List<Integer>> rm = new HashMap<>();
-
-        for (int i = 0; i < a.size(); i++) {
-            List<String> emails = a.get(i);
-            for (int j = 1; j < emails.size(); j++) {
-                rm.computeIfAbsent(emails.get(j), k -> new ArrayList<>()).add(i);
-            }
-            pa.put(i, i);
-        }
-        for (int i = 0; i < a.size(); i++) {
-            List<String> emails = a.get(i);
-            for (int j = 1; j < emails.size(); j++) {
-                List<Integer> other = rm.getOrDefault(emails.get(j), new ArrayList<>());
-                for (int o : other) {
-                    boolean merged = union(i, o, pa);
-                    if (merged) {
-                        // just need to merge with one of them
-                        break;
-                    }
+    public List<List<String>> accountsMerge(List<List<String>> accounts) {
+        int n = accounts.size();
+        Map<Integer, List<Integer>> graph = new HashMap<>();
+        Map<String, Integer> lastperson = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            List<String> ac = accounts.get(i);
+            for (int j = 1; j < ac.size(); j++) {
+                String mail = ac.get(j);
+                if (lastperson.containsKey(mail)) {
+                    Integer other = lastperson.get(mail);
+                    graph.computeIfAbsent(i, key -> new ArrayList<>()).add(other);
+                    graph.computeIfAbsent(other, key -> new ArrayList<>()).add(i);
                 }
+                lastperson.put(mail, i);
+            }
+        }
+        int[] pa = new int[n];
+        for (int i = 0; i < n; i++) {
+            pa[i] = i;
+        }
+        for (int i = 0; i < n; i++) {
+            List<Integer> con = graph.getOrDefault(i, new ArrayList<>());
+            for (int j : con) {
+                union(pa, i, j);
             }
         }
         Map<Integer, Set<String>> res = new HashMap<>();
-        for (int i = 0; i < a.size(); i++) {
-            int pai = find(i, pa);
-            List<String> emails = a.get(i);
-            for (int j = 1; j < emails.size(); j++) {
-                res.computeIfAbsent(pai, k -> new HashSet<>()).add(emails.get(j));
+        for (int i = 0; i < n; i++) {
+            int parent = find(pa, i);
+            for (int j = 1; j < accounts.get(i).size(); j++) {
+                res.computeIfAbsent(parent, k -> new HashSet<>()).add(accounts.get(i).get(j));
             }
         }
+
         List<List<String>> r = new ArrayList<>();
         for (int k : res.keySet()) {
-            List<String> emails = new ArrayList<>(res.get(k));
-            Collections.sort(emails);
-            List<String> ri = new ArrayList<>();
-            ri.add(a.get(k).get(0)); // add name at front
-            ri.addAll(emails);
-            r.add(ri);
+            List<String> withname = new ArrayList<>();
+            withname.add(accounts.get(k).get(0));
+            List<String> mails = new ArrayList<>(res.get(k));
+            Collections.sort(mails);
+            withname.addAll(mails);
+            r.add(withname);
         }
         return r;
     }
 
-    private boolean union(int i, int o, Map<Integer, Integer> pa) {
-        int pi = find(i, pa);
-        int po = find(o, pa);
-        if (pi != po) {
-            pa.put(po, pi);
-            return true;
-        } else {
-            return false;
+    void union(int[] pa, int i, int j) {
+
+        int pi = find(pa, i);
+        int pj = find(pa, j);
+        if (pi != pj) {
+            pa[pi] = pj;
         }
     }
 
-    private int find(int i, Map<Integer, Integer> pa) {
-        if (pa.get(i) == i) {
+    int find(int[] pa, int i) {
+        if (pa[i] == i) {
             return i;
+        } else {
+            int rt = find(pa, pa[i]);
+            pa[i] = rt;
+            return rt;
         }
-        int rt = find(pa.get(i), pa);
-        pa.put(i, rt);
-        return rt;
     }
 
 

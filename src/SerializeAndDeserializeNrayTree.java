@@ -31,6 +31,7 @@ Do not use class member/global/static variables to store states. Your encode and
 
 public class SerializeAndDeserializeNrayTree {
 
+    // store on level order or pre order, but use node val: node children count, .... format, don't use other ways!
 
     public static void main(String[] args) {
 

@@ -21,27 +21,29 @@ Input: root = [4,2,5,1,3], target = 3.714286
 Output: 4
  */
 public class ClosestBstValue {
-    Double mingap = null;
-    int min = -1;
+    double min = 1e30;
+    int minv = -1;
 
-    public int closestValue(TreeNode root, double t) {
-        dfs(root, t);
-        return min;
+    public int closestValue(TreeNode n, double t) {
+        dfs(n, t);
+        return minv;
     }
 
     void dfs(TreeNode n, double t) {
         if (n == null) {
             return;
         }
-        double cgap = Math.abs(n.val - t);
-        if (mingap == null || cgap < mingap) {
-            mingap = cgap;
-            min = n.val;
+        double diff = Math.abs(n.val - t);
+        if (diff < min) {
+            min = diff;
+            minv = n.val;
         }
-        if (n.val < t) {
-            dfs(n.right, t);
+        if (diff < 0.000001) {
+            return;
         } else if (n.val > t) {
             dfs(n.left, t);
+        } else {
+            dfs(n.right, t);
         }
     }
 }
