@@ -22,19 +22,21 @@ Note:
 0 <= fee < 50000.
  */
 public class BestTimeBuySellStockWithFee {
-    // almost identical with buysell II just -f
+    /* f(i) = {
+                max{ f(j+1)+a(j)-a(i) } +tf  j>i
+                or just f(i+1)
+        }
+        almost identical with buysell 2
+     */
     public int maxProfit(int[] a, int fee) {
         int n = a.length;
         int[] dp = new int[n + 1];
-        int maxj1 = 0;
-        int max = 0;
+        int maxlater = 0;
         for (int i = n - 1; i >= 0; i--) {
-            int cur = maxj1 - a[i] - fee;
-            max = Math.max(max, cur);
-            int curj1 = dp[i + 1] + a[i];
-            maxj1 = Math.max(maxj1, curj1);
+            int cur = maxlater - a[i] - fee;
             dp[i] = Math.max(cur, dp[i + 1]);
+            maxlater = Math.max(maxlater, dp[i + 1] + a[i]);
         }
-        return max;
+        return dp[0];
     }
 }

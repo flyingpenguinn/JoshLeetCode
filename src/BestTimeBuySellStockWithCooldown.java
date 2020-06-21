@@ -17,18 +17,14 @@ Explanation: transactions = [buy, sell, cooldown, buy, sell]
 public class BestTimeBuySellStockWithCooldown {
     // like buy sell k times, simplify the inner loop to a max over j>i
     // almost the same as buysell II, just +dp[i+2] not +dp[i+1]
-    public int maxProfit(int[] p) {
-        int n = p.length;
-        // max p from i
-        int[] dp = new int[3];
-        int maxa = 0;
+    public int maxProfit(int[] a) {
+        int n = a.length;
+        int[] dp = new int[n + 2];
+        int maxlater = 0;
         for (int i = n - 1; i >= 0; i--) {
-            int cur = maxa - p[i];
-
-            // buy or no buy
-            dp[i % 3] = Math.max(cur, dp[(i + 1) % 3]);
-            int cura = p[i] + dp[(i + 2) % 3];
-            maxa = Math.max(maxa, cura);
+            int curprofit = maxlater - a[i];
+            dp[i] = Math.max(dp[i + 1], curprofit);
+            maxlater = Math.max(maxlater, dp[i + 2] + a[i]);
         }
         return dp[0];
     }

@@ -25,28 +25,29 @@ Explanation: Buy on day 2 (price = 2) and sell on day 3 (price = 6), profit = 6-
  */
 public class BestTimeBuySellStocksIv {
     // dp[i][k] = Math.max(dp[i+1][k], maxj: p[j]-p[i]+dp[j+1][k-1] ). we can keep the max p[j]+dp[j+1][k-1] while we scan i
-    public int maxProfit(int kl, int[] p) {
-        int n = p.length;
-        if (kl >= n / 2) {
+    public int maxProfit(int k, int[] a) {
+        int n = a.length;
+        if (k >= n - 1) {
+            // can have as many transactions as we want
             int r = 0;
             for (int i = 1; i < n; i++) {
-                if (p[i] > p[i - 1]) {
-                    r += p[i] - p[i - 1];
+                if (a[i] > a[i - 1]) {
+                    r += a[i] - a[i - 1];
                 }
             }
             return r;
         }
-        int[][] dp = new int[n + 1][2];
-        // i must be in inner loop for accu purpose
-        for (int k = 1; k <= kl; k++) {
-            int maxa = 0; // maxa stores the accumulated p[j]+dp[j+1][k-1]
+        int[][] dp = new int[n + 1][k + 1];
+        for (int j = 1; j <= k; j++) {
+            int maxlater = 0;
             for (int i = n - 1; i >= 0; i--) {
-                dp[i][k % 2] = Math.max(maxa - p[i], dp[i + 1][k % 2]);
-                int cura = p[i] + dp[i + 1][(k - 1) % 2];
-                maxa = Math.max(cura, maxa);
+                int cur = maxlater - a[i];
+                dp[i][j] = Math.max(dp[i + 1][j], cur);
+                // note here dp[i+1] covers max profit we can get using index>=i+1, may not exactly buy/sell at i+1
+                maxlater = Math.max(maxlater, dp[i + 1][j - 1] + a[i]);
             }
         }
-        return dp[0][kl % 2];
+        return dp[0][k];
     }
 
     public static void main(String[] args) {

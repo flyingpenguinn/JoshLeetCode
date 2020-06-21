@@ -26,6 +26,9 @@ Output: 0
 Explanation: In this case, no transaction is done, i.e. max profit = 0.
  */
 public class BestTimeBuySellStockIII {
+    // enumerate the starting point of the 2nd transaction
+    // on its right we can do max-i
+    // on its left we can do maxl till i-1
     public int maxProfit(int[] a) {
         int n = a.length;
         if (n == 0) {
@@ -39,12 +42,10 @@ public class BestTimeBuySellStockIII {
         int min = Integer.MAX_VALUE;
         int maxl = 0;
         int max = 0;
-        // enumerate the starting point of the 2nd transaction
         for (int i = 0; i < n; i++) {
             int p = ri[i] - a[i] + maxl;
             max = Math.max(max, p);
             min = Math.min(a[i], min);
-
             maxl = Math.max(a[i] - min, maxl);
         }
         return max;
