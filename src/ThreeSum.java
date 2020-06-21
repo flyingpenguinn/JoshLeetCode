@@ -1,39 +1,62 @@
 import java.util.*;
 
+/*
+LC#15
+Given an array nums of n integers, are there elements a, b, c in nums such that a + b + c = 0? Find all unique triplets in the array which gives the sum of zero.
+
+Note:
+
+The solution set must not contain duplicate triplets.
+
+Example:
+
+Given array nums = [-1, 0, 1, 2, -1, -4],
+
+A solution set is:
+[
+  [-1, 0, 1],
+  [-1, -1, 2]
+]
+ */
 public class ThreeSum {
     // hold i stable then 2 sum sorted on j and k. o(n2)
     public List<List<Integer>> threeSum(int[] a) {
         int n = a.length;
         Arrays.sort(a);
+        int i = 0;
         List<List<Integer>> r = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            if (i - 1 >= 0 && a[i] == a[i - 1]) {
-                // wont get anything new from a dupe . use this to filter duplication
-                continue;
+        while (i < n) {
+            while (i > 0 && i < n && a[i] == a[i - 1]) {
+                i++;
+            }
+            if (i == n) {
+                break;
             }
             int j = i + 1;
             int k = n - 1;
             while (j < k) {
-                // must be > i,not 0. note we need to filter duplicated j too
-                // for example 0,0,0,0. j can be either of the middle 0s
-                if (j - 1 > i && a[j - 1] == a[j]) {
+                while (j > i + 1 && j < k && a[j] == a[j - 1]) {
                     j++;
-                    continue;
                 }
-                if (a[j] + a[k] == -a[i]) {
-                    List<Integer> list = new ArrayList<>();
-                    list.add(a[i]);
-                    list.add(a[j]);
-                    list.add(a[k]);
-                    r.add(list);
-                    j++;  // k--also works
-                } else if (a[j] + a[k] < -a[i]) {
+                if (j == k) {
+                    break;
+                }
+                int cursum = a[i] + a[j] + a[k];
+                if (cursum == 0) {
+                    List<Integer> item = new ArrayList<>();
+                    item.add(a[i]);
+                    item.add(a[j]);
+                    item.add(a[k]);
+                    r.add(item);
                     j++;
-                } else {
+                    k--;
+                } else if (cursum < 0) {
+                    j++;
+                } else { //>0
                     k--;
                 }
-
             }
+            i++;
         }
         return r;
     }

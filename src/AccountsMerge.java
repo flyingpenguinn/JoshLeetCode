@@ -25,24 +25,24 @@ The length of accounts will be in the range [1, 1000].
 The length of accounts[i] will be in the range [1, 10].
 The length of accounts[i][j] will be in the range [1, 30].
  */
-public class AccountMerge {
+public class AccountsMerge {
 
     // union find: when two people have common email draw an edge between them
     // note we just need to merge with one of the same family member
     public List<List<String>> accountsMerge(List<List<String>> accounts) {
         int n = accounts.size();
         Map<Integer, List<Integer>> graph = new HashMap<>();
-        Map<String, Integer> lastperson = new HashMap<>();
+        Map<String, Integer> mail2holder = new HashMap<>();
         for (int i = 0; i < n; i++) {
             List<String> ac = accounts.get(i);
             for (int j = 1; j < ac.size(); j++) {
                 String mail = ac.get(j);
-                if (lastperson.containsKey(mail)) {
-                    Integer other = lastperson.get(mail);
+                if (mail2holder.containsKey(mail)) {
+                    Integer other = mail2holder.get(mail);
                     graph.computeIfAbsent(i, key -> new ArrayList<>()).add(other);
                     graph.computeIfAbsent(other, key -> new ArrayList<>()).add(i);
                 }
-                lastperson.put(mail, i);
+                mail2holder.put(mail, i);
             }
         }
         int[] pa = new int[n];
@@ -97,6 +97,52 @@ public class AccountMerge {
 
     public static void main(String[] args) {
 
-        System.out.println(new AccountMerge().accountsMerge(Lists.stringToLists("[[John,johnsmith@mail.com,john_newyork@mail.com],[John,johnsmith@mail.com,john00@mail.com],[Mary,mary@mail.com],[John,johnnybravo@mail.com]]")));
+        System.out.println(new AccountsMerge().accountsMerge(Lists.stringToLists("[[John,johnsmith@mail.com,john_newyork@mail.com],[John,johnsmith@mail.com,john00@mail.com],[Mary,mary@mail.com],[John,johnnybravo@mail.com]]")));
+    }
+}
+
+class AccountsMergeDfs {
+    // easier to implement. mind the duplicated emails...
+    public List<List<String>> accountsMerge(List<List<String>> accounts) {
+        int n = accounts.size();
+        Map<Integer, Set<Integer>> graph = new HashMap<>();
+        Map<String, Integer> mail2holder = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            List<String> ac = accounts.get(i);
+            for (int j = 1; j < ac.size(); j++) {
+                String mail = ac.get(j);
+                if (mail2holder.containsKey(mail)) {
+                    int k = mail2holder.get(mail);
+                    graph.computeIfAbsent(i, key -> new HashSet<>()).add(k);
+                    graph.computeIfAbsent(k, key -> new HashSet<>()).add(i);
+                }
+                mail2holder.put(mail, i);
+            }
+        }
+        Set<Integer> seen = new HashSet<>();
+        List<List<String>> r = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (!seen.contains(i)) {
+                List<String> mails = new ArrayList<>(dfs(i, graph, seen, accounts));
+                Collections.sort(mails);
+                mails.add(0, accounts.get(i).get(0));
+                r.add(mails);
+            }
+        }
+        return r;
+    }
+
+    Set<String> dfs(int i, Map<Integer, Set<Integer>> graph, Set<Integer> seen, List<List<String>> a) {
+        seen.add(i);
+        Set<String> r = new HashSet<>();
+        for (int j = 1; j < a.get(i).size(); j++) {
+            r.add(a.get(i).get(j));
+        }
+        for (int next : graph.getOrDefault(i, new HashSet<>())) {
+            if (!seen.contains(next)) {
+                r.addAll(dfs(next, graph, seen, a));
+            }
+        }
+        return r;
     }
 }

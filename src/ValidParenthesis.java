@@ -1,5 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.*;
 
 /*
 LC#20
@@ -34,32 +33,36 @@ Input: "{[]}"
 Output: true
  */
 public class ValidParenthesis {
+    Map<Character, Character> m = new HashMap<>();
+    {
+        m.put(')', '(');
+        m.put(']', '[');
+        m.put('}', '{');
+    }
+
+    Set<Character> lset = new HashSet<>();
+    {
+        lset.add('(');
+        lset.add('[');
+        lset.add('{');
+    }
+
     public boolean isValid(String s) {
-        Deque<Character> stack = new ArrayDeque<>();
-        for (int i = 0; i < s.length(); i++) {
+        Deque<Character> st = new ArrayDeque<>();
+        int n = s.length();
+        for(int i=0; i<n;i++){
             char c = s.charAt(i);
-            if (c == '(' || c == '[' || c == '{') {
-                stack.push(c);
-            } else {
-                // right <= left at any time
-                if (stack.isEmpty()) {
-                    return false;
-                }
-                // correct order
-                char top = stack.pop();
-                if (c == ')' && top != '(') {
-                    return false;
-                }
-                if (c == ']' && top != '[') {
-                    return false;
-                }
-                if (c == '}' && top != '{') {
+            if(lset.contains(c)){
+                st.push(c);
+            }else{
+                char mapped = m.get(c);
+                if(!st.isEmpty() && st.peek() == mapped){
+                    st.pop();
+                }else{
                     return false;
                 }
             }
         }
-        // must do empty check!!!
-        // left == right in the end
-        return stack.isEmpty();
+        return st.isEmpty();
     }
 }

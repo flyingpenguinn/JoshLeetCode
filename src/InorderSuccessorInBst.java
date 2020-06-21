@@ -31,28 +31,39 @@ If the given node has no in-order successor in the tree, return null.
 It's guaranteed that the values of the tree are unique.
  */
 public class InorderSuccessorInBst {
+    // using stack here. we can doaway with a stack to traverse from the top again and determine
     public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
-        if (root == null || p == null) {
+        Deque<TreeNode> st = new ArrayDeque<>();
+        TreeNode cur = root;
+        while (cur != null && cur != p) {
+            if (cur.val == p.val) {
+                break;
+            } else if (cur.val < p.val) {
+                st.push(cur);
+                cur = cur.right;
+            } else {
+                st.push(cur);
+                cur = cur.left;
+            }
+        }
+        if (cur == null) {
             return null;
         }
-        if (p.right != null) {
-            p = p.right;
-            while (p.left != null) {
-                p = p.left;
+        if (cur.right != null) {
+            cur = cur.right;
+            while (cur.left != null) {
+                cur = cur.left;
             }
-            return p;
-        }
-        TreeNode n = root;
-        TreeNode r = null;
-        // dont need to use stack. can do top down
-        while (n.val != p.val) {
-            if (n.val < p.val) {
-                n = n.right;
-            } else {
-                r = n;
-                n = n.left;
+            return cur;
+        } else {
+            while (!st.isEmpty()) {
+                if (st.peek().left == cur) {
+                    return st.peek();
+                } else {
+                    cur = st.pop();
+                }
             }
+            return null;
         }
-        return r;
     }
 }
