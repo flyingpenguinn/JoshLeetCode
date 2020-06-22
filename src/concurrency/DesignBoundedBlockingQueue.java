@@ -4,33 +4,32 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class DesignBoundedBlockingQueue {
-}
 
+// the queue part is the same as "my circular deque"
 class BoundedBlockingQueue {
-
+    private ReentrantLock lock = new ReentrantLock();
     private int[] q;
-    private int head = 0;
-    private int tail = -1;
+    private int head = -1; // current head if we put in sth
+    private int tail = 0; // current tail if we put in sth
     private int size = 0;
-    private Lock lock = new ReentrantLock();
     private Condition notfull = lock.newCondition();
     private Condition notempty = lock.newCondition();
+    private int capacity = 0;
 
-    public BoundedBlockingQueue(int n) {
-        q = new int[n];
+    public BoundedBlockingQueue(int capacity) {
+        this.capacity = capacity;
+        q = new int[capacity];
+        this.head = capacity - 1;
     }
 
     public void enqueue(int element) throws InterruptedException {
         lock.lock();
-        int n = q.length;
         try {
-            while (size == n) {
+            while (size == capacity) {
                 notfull.await();
             }
-            int newtail = (tail + 1) % n;
-            q[newtail] = element;
-            tail = newtail;
+            q[tail] = element;
+            tail = (tail + 1) % capacity;
             size++;
             notempty.signalAll();
         } finally {
@@ -40,23 +39,20 @@ class BoundedBlockingQueue {
 
     public int dequeue() throws InterruptedException {
         lock.lock();
-        int n = q.length;
         try {
             while (size == 0) {
                 notempty.await();
             }
-            int v = q[head];
-            int nh = (head + 1) % n;
-            head = nh;
+            head = (head + 1) % capacity;
+            int rt = q[head];
             size--;
             notfull.signalAll();
-            return v;
+            return rt;
         } finally {
             lock.unlock();
         }
     }
 
-    // size needs lock as well for visibility!
     public int size() {
         lock.lock();
         try {

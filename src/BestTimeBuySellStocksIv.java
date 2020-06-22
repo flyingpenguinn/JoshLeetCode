@@ -43,7 +43,7 @@ public class BestTimeBuySellStocksIv {
             for (int i = n - 1; i >= 0; i--) {
                 int cur = maxlater - a[i];
                 dp[i][j] = Math.max(dp[i + 1][j], cur);
-                // note here dp[i+1] covers max profit we can get using index>=i+1, may not exactly buy/sell at i+1
+                // note here dp[i+1][j-1] covers max profit we can get using index>=i+1, may not exactly buy/sell at i+1
                 maxlater = Math.max(maxlater, dp[i + 1][j - 1] + a[i]);
             }
         }
@@ -57,28 +57,4 @@ public class BestTimeBuySellStocksIv {
         System.out.println(new BestTimeBuySellStocksIv().maxProfit(2, ArrayUtils.read1d("2,4,1")));
     }
 
-}
-
-class BestTimeBuySellRawDp {
-    public int maxProfit(int ts, int[] a) {
-        int n = a.length;
-        // max profit from i transactions, up to jth day
-        int[][] dp = new int[2][n];
-        int max = 0;
-        for (int k = 1; k <= ts; k++) {
-            // enumerate sell point
-            int kth = k % 2;
-            for (int i = 1; i < n; i++) {
-                // maxi is the part that we can calc in passing when we get dp[kth][i]
-                int maxi = Integer.MIN_VALUE;
-                for (int j = 0; j < i; j++) {
-                    maxi = Math.max(maxi, (j == 0 ? 0 : dp[(k - 1) % 2][j - 1]) - a[j]);
-                }
-                dp[kth][i] = maxi + a[i];
-                dp[kth][i] = Math.max(dp[kth][i - 1], dp[kth][i]);
-                max = Math.max(max, dp[kth][i]);
-            }
-        }
-        return max;
-    }
 }

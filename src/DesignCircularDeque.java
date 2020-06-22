@@ -43,86 +43,77 @@ public class DesignCircularDeque {
 // 2. head and tail can't start as the same value. here we put head = n-1
 class MyCircularDeque {
 
-    /**
-     * Initialize your data structure here. Set the size of the deque to be k.
-     */
-
-    int[] a;
-    // where to put if we insert now.
-    // when head==tail its full
-    int head;
-    int tail = 0;
+    int[] a = null;
     int size = 0;
-    int n = 0;
+    int head = -1; // where to put head if we insert now
+    int tail = 0; // where to put tail if we insert now
+    int cap = 0;
 
-    public MyCircularDeque(int k) {
-        n = k;
-        a = new int[n];
-        head = n - 1;// so head and tail wont compete for 0
+    public MyCircularDeque(int cap) {
+        a = new int[cap];
+        this.cap = cap;
+        this.head = cap - 1; // set head to n-1
     }
 
     /**
      * Adds an item at the front of Deque. Return true if the operation is successful.
      */
-    public boolean insertFront(int v) {
-        if (size < n) {
-            a[head--] = v;
-            head = (head + n) % n;
-            size++;
-            return true;
+    public boolean insertFront(int value) {
+        if (isFull()) {
+            return false;
         }
-        return false;
+        a[head] = value;
+        head = (head - 1 + cap) % cap;
+        size++;
+        return true;
     }
 
     /**
      * Adds an item at the rear of Deque. Return true if the operation is successful.
      */
-    public boolean insertLast(int v) {
-        if (size < n) {
-            a[tail++] = v;
-            tail = tail % n;
-            size++;
-            return true;
+    public boolean insertLast(int value) {
+        if (isFull()) {
+            return false;
         }
-        return false;
+        a[tail] = value;
+        tail = (tail + 1) % cap;
+        size++;
+        return true;
     }
 
     /**
      * Deletes an item from the front of Deque. Return true if the operation is successful.
      */
     public boolean deleteFront() {
-        if (size > 0) {
-            head++;
-            head = head % n;
-            size--;
-            return true;
+        if (isEmpty()) {
+            return false;
         }
-        return false;
+        head = (head + 1) % cap;
+        size--;
+        return true;
     }
 
     /**
      * Deletes an item from the rear of Deque. Return true if the operation is successful.
      */
     public boolean deleteLast() {
-        if (size > 0) {
-            tail--;
-            tail = (tail + n) % n;
-            size--;
-            return true;
+        if (isEmpty()) {
+            return false;
         }
-        return false;
-
+        tail = (tail - 1 + cap) % cap;
+        size--;
+        return true;
     }
 
     /**
      * Get the front item from the deque.
      */
+    // note because head is where we put the next head element, we need to +1 here
     public int getFront() {
-        if (isEmpty()) { // <=...
+        if (isEmpty()) {
             return -1;
         }
-        int ch = (head + 1) % n;
-        return a[ch];
+        return a[(head + 1) % cap];
     }
 
     /**
@@ -132,9 +123,7 @@ class MyCircularDeque {
         if (isEmpty()) {
             return -1;
         }
-        int ct = (tail - 1 + n) % n;
-        return a[ct];
-
+        return a[(tail - 1 + cap) % cap];
     }
 
     /**
@@ -148,6 +137,6 @@ class MyCircularDeque {
      * Checks whether the circular deque is full or not.
      */
     public boolean isFull() {
-        return size == n;
+        return size == cap;
     }
 }
