@@ -33,25 +33,25 @@ import static java.lang.Math.*;
 
 
 public class DungoenGame {
+    // go to the min path either on the right or down
+    // at each cell, the health we need is next-current. if it's <=0, health needed is 1
+    // at the final point, the "next" cell health is 1 to survive
     public int calculateMinimumHP(int[][] a) {
         int m = a.length;
         int n = a[0].length;
         int[][] dp = new int[m][n];
-
         for (int i = m - 1; i >= 0; i--) {
             for (int j = n - 1; j >= 0; j--) {
-                int cur = -a[i][j]; // cur is the demand of this cell
                 if (i == m - 1 && j == n - 1) {
-                    dp[i][j] = cur > 0 ? 1 + cur : 1;
+                    dp[i][j] = Math.max(1 - a[i][j], 1);
                 } else if (i == m - 1) {
-                    // should max with 1 because at any cell we can't drop below 1
-                    dp[i][j] = max(dp[i][j + 1] + cur, 1);
+                    dp[i][j] = Math.max(dp[i][j + 1] - a[i][j], 1);
                 } else if (j == n - 1) {
-                    dp[i][j] = max(dp[i + 1][j] + cur, 1);
+                    dp[i][j] = Math.max(dp[i + 1][j] - a[i][j], 1);
                 } else {
-                    int right = max(dp[i][j + 1] + cur, 1);
-                    int down = max(dp[i + 1][j] + cur, 1);
-                    dp[i][j] = min(right, down);
+                    int right = Math.max(dp[i][j + 1] - a[i][j], 1);
+                    int down = Math.max(dp[i + 1][j] - a[i][j], 1);
+                    dp[i][j] = Math.min(right, down);
                 }
             }
         }
@@ -60,5 +60,30 @@ public class DungoenGame {
 
     public static void main(String[] args) {
         System.out.println(new DungoenGame().calculateMinimumHP(ArrayUtils.read("[[-2,-3,3],[-5,-10,1],[10,30,-5]]")));
+    }
+}
+
+class DungeonGameOptimized {
+    // rolling array to get rid of one dimension
+    public int calculateMinimumHP(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int[] dp = new int[n];
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                if (i == m - 1 && j == n - 1) {
+                    dp[j] = Math.max(1 - a[i][j], 1);
+                } else if (i == m - 1) {
+                    dp[j] = Math.max(dp[j + 1] - a[i][j], 1);
+                } else if (j == n - 1) {
+                    dp[j] = Math.max(dp[j] - a[i][j], 1);
+                } else {
+                    int right = Math.max(dp[j + 1] - a[i][j], 1);
+                    int down = Math.max(dp[j] - a[i][j], 1);
+                    dp[j] = Math.min(right, down);
+                }
+            }
+        }
+        return dp[0];
     }
 }
