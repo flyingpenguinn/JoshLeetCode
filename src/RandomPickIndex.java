@@ -35,27 +35,26 @@ So we can say that when we now has n chars and there is still another char in th
      */
     class Solution {
 
-        int[] a;
+        int[] a = null;
 
-        public Solution(int[] a) {
-            this.a = a;
+        public Solution(int[] nums) {
+            this.a = nums;
         }
 
         Random rand = new Random();
 
-        public int pick(int target) {
-            int count = 0;
-            int chosen = -1;
+        public int pick(int t) {
+            int cand = -1;
+            int pool = 1;
             for (int i = 0; i < a.length; i++) {
-                if (a[i] == target) {
-                    count++;
-                    int ran = rand.nextInt(count);
+                if (a[i] == t) {
+                    int ran = rand.nextInt(pool++);
                     if (ran == 0) {
-                        chosen = i;
+                        cand = i;
                     }
                 }
             }
-            return chosen;
+            return cand;
         }
     }
 }

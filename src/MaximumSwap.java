@@ -18,30 +18,30 @@ The given number is in the range [0, 108]
  */
 public class MaximumSwap {
 
-    // find the last number that is > this digit, then swap
+    // from right to left: find the biggest index on the right (if eq, favor right ones: 9299 => 9992
+    // from left to right: if that biggest digit != this digit, swap. note we skip nums == biggest
+    // dont need a right arrray to do this
     public int maximumSwap(int num) {
         String sn = String.valueOf(num);
         int n = sn.length();
-        int max = sn.charAt(n - 1);
-        int maxi = n - 1;
-        int lc = -1;
-        int rc = -1;
+        int right = n - 1;
+        int cand = -1;
+        int candright = right;
         for (int i = n - 2; i >= 0; i--) {
-            if (sn.charAt(i) > max) {
-                maxi = i;
-                max = sn.charAt(i);
-            } else if (sn.charAt(i) < max) {
-                // record the last one that is of this nature
-                lc = i;
-                rc = maxi;
+            if (sn.charAt(right) < sn.charAt(i)) {
+                right = i;
+            } else if (sn.charAt(right) > sn.charAt(i)) {
+                cand = i;
+                candright = right;
             }
-            // if ==, then =-1
         }
-        if (lc != -1) {
+        if (cand != -1) {
             StringBuilder sb = new StringBuilder(sn);
-            sb.setCharAt(lc, sn.charAt(rc));
-            sb.setCharAt(rc, sn.charAt(lc));
+            char tmp = sb.charAt(cand);
+            sb.setCharAt(cand, sb.charAt(candright));
+            sb.setCharAt(candright, tmp);
             return Integer.valueOf(sb.toString());
+
         } else {
             return num;
         }

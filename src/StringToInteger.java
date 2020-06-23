@@ -49,48 +49,35 @@ Explanation: The number "-91283472332" is out of the range of a 32-bit signed in
 
 public class StringToInteger {
 
-    public int myAtoi(String str) {
+    public int myAtoi(String s) {
+        int n = s.length();
         int i = 0;
-        int n = str.length();
-        while (i < n && str.charAt(i) == ' ') {
+        while (i < n && s.charAt(i) == ' ') {
             i++;
         }
-        boolean neg = false;
-        // plus or minus
-        if (i < n) {
-            char c = str.charAt(i);
-            if (c == '-') {
-                neg = true;
-                i++;
-            } else if (c == '+') {
-                i++;
-            }
-            // else do nothing
+        int sign = 1;
+        if (i < n && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
+            sign = s.charAt(i) == '-' ? -1 : 1;
+            i++;
         }
-        long r = 0L;
-        // convert till non digit
-        while (i < n) {
-            char c = str.charAt(i++);
-            if (!Character.isDigit(c)) {
+        if (i == n || !Character.isDigit(s.charAt(i))) {
+            return 0;
+        }
+        int r = 0;
+        while (i < n && Character.isDigit(s.charAt(i))) {
+            int curc = s.charAt(i) - '0';
+            // must have sign check before the max value check because if sign <0 -sign*curc might overflow
+            if (sign == 1 && r > (Integer.MAX_VALUE - curc) / 10) {
+                r = Integer.MAX_VALUE;
                 break;
             }
-            int diff = c - '0';
-            //overflow! free string even long can break
-            if (!neg) {
-                r = r * 10 + diff;
-            } else {
-                r = r * 10 - diff;
+            if (sign == -1 && r < (Integer.MIN_VALUE + curc) / 10) {
+                r = Integer.MIN_VALUE;
+                break;
             }
-            // return early on rather than returning when we breach long
-            if (r > Integer.MAX_VALUE) {
-                return Integer.MAX_VALUE;
-            }
-            if (r < Integer.MIN_VALUE) {
-                return Integer.MIN_VALUE;
-            }
+            r = r * 10 + sign * curc;
+            i++;
         }
-
-        return (int) r;
-
+        return r;
     }
 }

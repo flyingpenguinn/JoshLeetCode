@@ -56,30 +56,64 @@ cols == mat[i].length
 mat[i][j] is either 0 or 1.
 mat[i] is sorted in a non-decreasing way.
  */
+
+interface BinaryMatrix {
+    public int get(int x, int y);
+
+    public List<Integer> dimensions();
+}
+
 public class LeftMostColWithAtleastOne {
-    interface BinaryMatrix {
-        public int get(int x, int y);
 
-        public List<Integer> dimensions();
-    }
-
-    public int leftMostColumnWithOne(BinaryMatrix a) {
-        List<Integer> mn = a.dimensions();
-        int m = mn.get(0);
-        int n = mn.get(1);
-        int i = 0;
+    // because each row columns are sorted and each row is sorted, we can do O(m+n) like finding a value in a sorted matrix
+    public int leftMostColumnWithOne(BinaryMatrix binaryMatrix) {
+        List<Integer> dim = binaryMatrix.dimensions();
+        int m = dim.get(0);
+        int n = dim.get(1);
         int j = n - 1;
+        int i = 0;
         int lastj = -1;
-        while (j >= 0 && i < m) {
-            while (i < m && a.get(i, j) == 0) {
+        while (j >= 0) {
+            while (i < m && binaryMatrix.get(i, j) == 0) {
                 i++;
             }
-            if (i < m) {
-                lastj = j;
-                j--;
+            if (i == m) {
+                break;
             }
+            // i,j is 1 that's why we stopped
+            lastj = j;
+            j--;
         }
         return lastj;
     }
 
+}
+
+
+class LeftMostColumnAtleastOneBinarySearch {
+    public int leftMostColumnWithOne(BinaryMatrix bm) {
+        List<Integer> dim = bm.dimensions();
+        int m = dim.get(0);
+        int n = dim.get(1);
+        int l = 0;
+        int u = n - 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            boolean found = false;
+            for (int i = 0; i < m; i++) {
+                if (bm.get(i, mid) == 1) {
+                    found = true;
+                    break;
+                }
+
+            }
+            if (found) {
+                u = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        // binary search when there is a possbility of nothing found, make sure we can handle it!
+        return l == n ? -1 : l;
+    }
 }

@@ -44,6 +44,7 @@ public class OptimizeWaterDistributionInVillage {
         for (int i = 0; i < pp.length; i++) {
             edges.add(pp[i]);
         }
+        // kruskal, sort edges first
         Collections.sort(edges, (a, b) -> Integer.compare(a[2], b[2]));
         int[] pa = new int[n + 1];
         Arrays.fill(pa, -1);
@@ -54,7 +55,6 @@ public class OptimizeWaterDistributionInVillage {
             int edge = pi[2];
             boolean rt = union(i, j, pa);
             if (rt) {
-
                 r += edge;
             }
         }

@@ -19,17 +19,16 @@ public class SingleNumberII {
     // for digits at certain position if ans has 1 count= 3x+1 otherwise 3x
     // works for neg too in this way
     public int singleNumber(int[] a) {
-        int r=0;
-        for(int j=0;j<32;j++){
-            int bc=0;
-            for(int i=0;i<a.length;i++){
-                int bit= (a[i]>>j) & 1;
-                if(bit==1){
-                    bc++;
+        int r = 0;
+        for (int j = 0; j < 32; j++) {
+            int count = 0;
+            for (int i = 0; i < a.length; i++) {
+                if (((a[i] >> j) & 1) == 1) {
+                    count++;
                 }
             }
-            if(bc%3==1){
-                r += 1<<j;
+            if (count % 3 == 1) {
+                r |= (1 << j);
             }
         }
         return r;

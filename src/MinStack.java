@@ -24,40 +24,37 @@ minStack.getMin();   --> Returns -2.
  */
 public class MinStack {
 
+    Deque<int[]> min = new ArrayDeque<>();
+    Deque<Integer> st = new ArrayDeque<>();
+
     /**
      * initialize your data structure here.
      */
-    Deque<Integer> stack = new ArrayDeque<>();
-    // min value and the stack size at that time. in this way if min value is duplicated we only save once
-    Deque<int[]> min = new ArrayDeque<int[]>();
-
     public MinStack() {
 
     }
 
     public void push(int x) {
-        stack.push(x);
-        if (min.isEmpty() || x < min.peek()[0]) {
-            min.push(new int[]{x, stack.size()});
+        st.push(x);
+        if (min.isEmpty() || min.peek()[0] > x) {
+            min.push(new int[]{x, st.size() - 1});
         }
     }
 
     public void pop() {
-        if (stack.isEmpty()) {
-            return;
-        }
-        if (stack.peek() == min.peek()[0] && stack.size() == min.peek()[1]) {
+        int rt = st.pop();
+        if (min.peek()[0] == rt && min.peek()[1] == st.size()) {
             min.pop();
         }
-        stack.pop();
     }
 
     public int top() {
-        return stack.peek();
+        return st.peek();
     }
 
     public int getMin() {
         return min.peek()[0];
     }
 }
+
 

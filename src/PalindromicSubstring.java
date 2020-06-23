@@ -23,28 +23,27 @@ Note:
 The input string length won't exceed 1000.
  */
 public class PalindromicSubstring {
-    // extend from center
-    int r = 0;
-
     public int countSubstrings(String s) {
         int n = s.length();
+        int r = 0;
         for (int i = 0; i < n; i++) {
-            calc(s, n, i, i);
-            if (i + 1 < n) {
-                calc(s, n, i, i + 1);
-            }
+            r += palin(s, i, i);
+            r += palin(s, i, i + 1);
         }
         return r;
     }
 
-    private void calc(String s, int n, int j, int k) {
-        while (j >= 0 && k < n) {
-            if (s.charAt(j--) == s.charAt(k++)) {
-                r++;
-            } else {
+    private int palin(String s, int i, int j) {
+        int n = s.length();
+        int r = 0;
+        while (i >= 0 && j < n) {
+            if (s.charAt(i--) != s.charAt(j++)) {
                 break;
+            } else {
+                r++;
             }
         }
+        return r;
     }
 
     public static void main(String[] args) {
@@ -53,7 +52,7 @@ public class PalindromicSubstring {
 }
 
 class PalindromicSubstringDp {
-    // compare with subsequence...
+    // compare with subsequence...here if they are not equal, we = false. only true when eq and inner also eq
     public int countSubstrings(String s) {
         int n = s.length();
         boolean[][] dp = new boolean[n][n];

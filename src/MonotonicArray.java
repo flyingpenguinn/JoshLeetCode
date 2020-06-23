@@ -1,18 +1,14 @@
 public class MonotonicArray {
+
     public boolean isMonotonic(int[] a) {
-        boolean bg = false;
-        boolean sm = false;
+        // increase, 1. decrease, -1
+        return mono(a, 1) || mono(a, -1);
+    }
+
+    boolean mono(int[] a, int direction) {
         for (int i = 1; i < a.length; i++) {
-            if (a[i] > a[i - 1]) {
-                if (sm) {
-                    return false;
-                }
-                bg = true;
-            } else if (a[i] < a[i - 1]) {
-                if (bg) {
-                    return false;
-                }
-                sm = true;
+            if ((a[i] - a[i - 1]) * direction < 0) {
+                return false;
             }
         }
         return true;

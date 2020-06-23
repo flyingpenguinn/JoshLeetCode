@@ -30,9 +30,10 @@ public class ImplementQueueUsingStack {
 
 class MyQueue {
     // o(1) amortized complexity
+    // note we only do shuffle when stack2 is empty. we dont do shuffle every time we pop
 
-    Deque<Integer> s1 = new ArrayDeque<>();
-    Deque<Integer> s2 = new ArrayDeque<>();
+    Deque<Integer> st1 = new ArrayDeque<>();
+    Deque<Integer> st2 = new ArrayDeque<>();
 
     /**
      * Initialize your data structure here.
@@ -45,46 +46,34 @@ class MyQueue {
      * Push element x to the back of queue.
      */
     public void push(int x) {
-        s1.push(x);
+        st1.push(x);
     }
 
     /**
      * Removes the element from in front of queue and returns that element.
      */
     public int pop() {
-        prep();
-        if (!s2.isEmpty()) {
-            return s2.pop();
-        }
-        return -1;
-    }
-
-    void prep() {
-        if (s2.isEmpty()) {
-            while (!s1.isEmpty()) {
-                s2.push(s1.pop());
-            }
-        }
+        peek();
+        return st2.isEmpty() ? -1 : st2.pop();
     }
 
     /**
      * Get the front element.
      */
     public int peek() {
-        prep();
-        if (!s2.isEmpty()) {
-            return s2.peek();
+        if (st2.isEmpty()) {
+            while (!st1.isEmpty()) {
+                st2.push(st1.pop());
+            }
         }
-        return -1;
-
+        return st2.peek();
     }
 
     /**
      * Returns whether the queue is empty.
      */
     public boolean empty() {
-        prep();
-        return s2.isEmpty();
+        return st1.isEmpty() && st2.isEmpty();
     }
 }
 

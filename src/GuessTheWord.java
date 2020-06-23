@@ -51,6 +51,7 @@ it needs 26 tries to find the secret.
         // biggest problem is 0 match. so to filter better we need a way to filter 0 matches quickly
         // one way is to see who shares chars with more strings and pick this more "representative" string first so as to filter more
         Map<String, Integer> map = new HashMap<>();
+        // find the word with fewest 0 matches to start with
         for (String s : wordlist) {
             int nz = 0;
             for (String t : wordlist) {
