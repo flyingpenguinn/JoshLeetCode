@@ -23,32 +23,31 @@ public class MergeKSortedLists {
 
     // O nlogk. note we dont really need to remember which index: just need to store pointer
     public ListNode mergeKLists(ListNode[] lists) {
-        int n = lists.length;
-        if (n == 0) {
-            return null;
-        }
+        // check null, error out if so
+        ListNode dummy = new ListNode(-1);
+        ListNode p = dummy;
+        // non null nodes compare by val small first
         PriorityQueue<ListNode> pq = new PriorityQueue<>((x, y) -> Integer.compare(x.val, y.val));
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < lists.length; i++) {
             if (lists[i] != null) {
                 pq.offer(lists[i]);
             }
         }
-        ListNode head = new ListNode(-1);
-        ListNode rp = head;
         while (!pq.isEmpty()) {
             ListNode top = pq.poll();
-            rp.next = top;
-            rp = rp.next;
+            p.next = top;
+            p = p.next;
             if (top.next != null) {
                 pq.offer(top.next);
             }
+            top.next = null;
         }
-        return head.next;
+        return dummy.next;
     }
 }
 
 class MergeKSortedListsDivideConquer {
-    // Onlogn
+    // Onlogk because there are k lists
     public ListNode mergeKLists(ListNode[] lists) {
         return domerge(lists, 0, lists.length - 1);
     }

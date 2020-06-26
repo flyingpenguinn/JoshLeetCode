@@ -72,41 +72,35 @@ public class ReadNCharsGivenRead4II {
     // need a buffer because last n can be <4 we need to put extra ones to a buf, for reading next time
     // cache the ones we overread last time into a queue
     // cache the ones we overread last time into a queue
-    Deque<Character> q = new ArrayDeque<>();
 
-    public int read(char[] buf, int k) {
-        char[] buf4 = new char[4];
-        int pos = 0;
-        while(k>0){
-            // read buffer
-            while(!q.isEmpty() && k>0){
-                buf[pos++] = q.poll();
-                k--;
-            }
-            // buffer is enough
-            if(k==0){
-                break;
-            }
-            int r4 = read4(buf4);
-            // nothing to read
-            if(r4==0){
-                break;
-            }
-            // use what we read to populate
-            int j = 0;
-            while(k>0 && j<r4){
-                buf[pos++] = buf4[j++];
-                k--;
-            }
-            if(k==0){
-                // cache the remaining
-                while(j<r4){
-                    q.offer(buf4[j++]);
-                }
-            }
-            // if j==r4 then we start a new loop
+    Deque<Character> cache = new ArrayDeque<>();
+
+    public int read(char[] buf, int n) {
+        if (n <= 0) {
+            return 0;
         }
-        return pos;
+        int bi = 0;
+        while (true) {
+            while (bi < n && !cache.isEmpty()) {
+                buf[bi++] = cache.poll();
+            }
+            if (bi == n) { // n too small
+                break;
+            }
+            char[] buf4 = new char[4];
+            int r4 = read4(buf4);
+            if (r4 == 0) {// n too big
+                break;
+            }
+            int i = 0;
+            while (bi < n && i < r4) {
+                buf[bi++] = buf4[i++];
+            }
+            while (i < r4) {// n too small, stuff to cache
+                cache.offer(buf4[i++]);
+            }
+        }
+        return bi;
     }
 
     private int read4(char[] b4) {
