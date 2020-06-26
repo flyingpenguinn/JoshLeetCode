@@ -35,38 +35,35 @@ order.length == 26
 All characters in words[i] and order are English lowercase letters.
  */
 public class VerifyingAlienDictionary {
-    public boolean isAlienSorted(String[] w, String order) {
-        for (int i = 0; i + 1 < w.length; i++) {
-            int cmp = compare(w[i], w[i + 1], order);
-            if (cmp > 0) {
+    public boolean isAlienSorted(String[] words, String order) {
+        for (int i = 1; i < words.length; i++) {
+            if (!valid(words[i - 1], words[i], order)) {
                 return false;
             }
         }
         return true;
     }
 
-    int compare(String a, String b, String order) {
+    private boolean valid(String s, String t, String order) {
         int i = 0;
-        int j = 0;
-        while (i < a.length() && j < b.length()) {
-            int cmp = comparechar(a.charAt(i), b.charAt(j), order);
-            if (cmp != 0) {
-                return cmp;
+        for (; i < s.length() && i < t.length(); i++) {
+            char sc = s.charAt(i);
+            char tc = t.charAt(i);
+            if (sc != tc) {
+                int sindex = order.indexOf(sc);
+                int tindex = order.indexOf(tc);
+                if (sindex > tindex) {
+                    return false;
+                } else if (sindex < tindex) {
+                    break;
+                }
             }
-            i++;
-            j++;
         }
-        if (j == b.length() && i < a.length()) {
-            return 1;
-        } else if (i == a.length() && j < b.length()) {
-            return -1;
+        if (i == t.length() && i != s.length()) {
+            return false;
         } else {
-            return 0;
+            return true;
         }
-    }
-
-    int comparechar(char c, char d, String order) {
-        return order.indexOf(c) - order.indexOf(d);
     }
 
     public static void main(String[] args) {

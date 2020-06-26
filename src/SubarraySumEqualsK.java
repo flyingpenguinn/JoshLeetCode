@@ -14,18 +14,16 @@ The range of numbers in the array is [-1000, 1000] and the range of the integer 
  */
 public class SubarraySumEqualsK {
     public int subarraySum(int[] a, int k) {
-        int n = a.length;
         Map<Integer, Integer> m = new HashMap<>();
         m.put(0, 1);
         int sum = 0;
-        int r = 0;
-        for (int i = 0; i < n; i++) {
+        int res = 0;
+        for (int i = 0; i < a.length; i++) {
             sum += a[i];
-            int cur = m.getOrDefault(sum - k, 0);
-            r += cur;
+            res += m.getOrDefault(sum - k, 0);
             m.put(sum, m.getOrDefault(sum, 0) + 1);
         }
-        return r;
+        return res;
     }
 }
 

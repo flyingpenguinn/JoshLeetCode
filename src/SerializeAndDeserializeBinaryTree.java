@@ -27,57 +27,66 @@ Clarification: The above format is the same as how LeetCode serializes a binary 
 Note: Do not use class member/global/static variables to store states. Your serialize and deserialize algorithms should be stateless.
  */
 public class SerializeAndDeserializeBinaryTree {
-}
 
-class CodecBinary {
-    // leetcode style layer by layer.
-    // when deseralize s[i] is either left or right of the top of node queue. because we always enqueue both children of a non null node
-    public String serialize(TreeNode root) {
-        LinkedList<TreeNode> q = new LinkedList<>();
-        StringBuilder sb = new StringBuilder();
-        q.offerLast(root);
-        while (!q.isEmpty()) {
-            TreeNode top = q.pollFirst();
-            if (sb.length() > 0) {
+    private class Codec {
+
+        // level order, null as #
+        public String serialize(TreeNode root) {
+            StringBuilder sb = new StringBuilder();
+            LinkedList<TreeNode> q = new LinkedList<>();
+            q.offer(root);
+            while (!q.isEmpty()) {
+                TreeNode top = q.poll();
+                sb.append(toString(top));
                 sb.append(",");
+                if (top != null) {
+                    q.offer(top.left);
+                    q.offer(top.right);
+                }
             }
-            sb.append(top == null ? "#" : top.val);
-            if (top != null) {
-                q.offerLast(top.left);
-                q.offerLast(top.right);
-            }
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
         }
-        return sb.toString();
-    }
 
-    // when we are at a[i] its father is in the queue
-    public TreeNode deserialize(String data) {
-        String[] ss = data.split(",");
-        TreeNode root = tonode(ss[0]);
-        LinkedList<TreeNode> q = new LinkedList<>();
-        q.offerLast(root);
-        boolean leftset = false;
-        for (int i = 1; i < ss.length; i++) {
-            TreeNode cur = tonode(ss[i]);
-            if (!leftset) {
-                q.peekFirst().left = cur;
-                leftset = true;
-            } else {
-                q.pollFirst().right = cur; // poll it if left is set and we are setting right
-                leftset = false;
+        // dont push a null node to queue.
+        // use the fact that we alway show both children of a non null node to restore the tree using setleft flag
+        public TreeNode deserialize(String data) {
+            if (data.isEmpty()) {
+                return null;
             }
-            if (cur != null) {
-                q.offerLast(cur);
+            String[] sd = data.split(",");
+            TreeNode root = toNode(sd[0]);
+            LinkedList<TreeNode> q = new LinkedList<>();
+            q.offer(root);
+            boolean setLeft = false;
+            for (int i = 1; i < sd.length; i++) {
+                String cur = sd[i];
+                TreeNode curNode = toNode(cur);
+                if (!setLeft) {
+                    q.peek().left = curNode;
+                    setLeft = true;
+                } else {
+                    q.poll().right = curNode;
+                    setLeft = false;
+                }
+                if (curNode != null) {
+                    q.offer(curNode);
+                }
             }
+            return root;
         }
-        return root;
-    }
 
-    TreeNode tonode(String s) {
-        return "#".equals(s) ? null : new TreeNode(Integer.valueOf(s));
-    }
+        private String toString(TreeNode n) {
+            return n == null ? "#" : String.valueOf(n.val);
+        }
 
+        private TreeNode toNode(String s) {
+            return "#".equals(s) ? null : new TreeNode(Integer.valueOf(s));
+        }
+
+    }
 }
+
 
 class CodecPreOrder {
 

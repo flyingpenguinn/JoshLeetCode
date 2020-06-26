@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 /*
 Given a string s and a non-empty string p, find all the start indices of p's anagrams in s.
 
@@ -33,36 +35,33 @@ The substring with start index = 2 is "ab", which is an anagram of "ab".
  */
 public class FindAllAnagramsInaString {
     public List<Integer> findAnagrams(String s, String p) {
+        // check null and error if needed
         List<Integer> r = new ArrayList<>();
-        int pn = p.length();
-        int sn = s.length();
-        if (sn < pn) {
+        if (s.length() < p.length()) {
             return r;
         }
-        int[] pm = new int[26];
-        for (int i = 0; i < pn; i++) {
-            pm[p.charAt(i) - 'a']++;
+        int[] pset = new int[26];
+        int k = p.length();
+        for (int i = 0; i < k; i++) {
+            pset[toInt(p.charAt(i))]++;
         }
-        int[] sm = new int[26];
-        for (int i = 0; i < pn - 1; i++) {
-            sm[s.charAt(i) - 'a']++;
+        int[] sset = new int[26];
+        for (int i = 0; i < k - 1; i++) {
+            sset[toInt(s.charAt(i))]++;
         }
-        for (int i = pn - 1; i < sn; i++) {
-            sm[s.charAt(i) - 'a']++;
-            if (eq(sm, pm)) {
-                r.add(i - pn + 1);
+        for (int i = k - 1; i < s.length(); i++) {
+            sset[toInt(s.charAt(i))]++;
+            int head = i - k + 1;
+            if (Arrays.equals(sset, pset)) {
+                r.add((head));
             }
-            sm[s.charAt(i - pn + 1) - 'a']--;
+            sset[toInt(s.charAt(head))]--;
         }
         return r;
     }
 
-    boolean eq(int[] s1, int[] s2) {
-        for (int i = 0; i < 26; i++) {
-            if (s1[i] != s2[i]) {
-                return false;
-            }
-        }
-        return true;
+    int toInt(char c) {
+        return c - 'a';
     }
+
 }

@@ -15,17 +15,15 @@ public class ProductOfArrayExceptSelf {
     // use the result, not original array, for left/right purpose
     public int[] productExceptSelf(int[] a) {
         int n = a.length;
-        // use r to cache left
         int[] r = new int[n];
-        r[0] = 1;
-        for (int i = 1; i < n; i++) {
-            r[i] = r[i - 1] * a[i - 1];
-        }
-        int prod = 1;
-        // later lefts are useless. we scan backward to avoid using right
+        r[n - 1] = a[n - 1];
         for (int i = n - 2; i >= 0; i--) {
-            prod *= a[i + 1];
-            r[i] *= prod;
+            r[i] = r[i + 1] * a[i];
+        }
+        int left = 1;
+        for (int i = 0; i < n; i++) {
+            r[i] = left * (i == n - 1 ? 1 : r[i + 1]);
+            left = left * a[i];
         }
         return r;
     }

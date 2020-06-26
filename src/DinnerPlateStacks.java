@@ -87,60 +87,57 @@ public class DinnerPlateStacks {
 }
 
 class DinnerPlates {
-    List<Deque<Integer>> list = new ArrayList<>();
-    int cap;
-    TreeSet<Integer> free = new TreeSet<>();
 
+    private TreeSet<Integer> notempty = new TreeSet<>();
+    private TreeSet<Integer> notfull = new TreeSet<>();
+    private List<Deque<Integer>> plates = new ArrayList<>();
+    int cap = 0;
 
     public DinnerPlates(int capacity) {
         this.cap = capacity;
     }
 
-    public void push(int v) {
-        Integer leftmost = free.isEmpty() ? null : free.first();
-        Deque<Integer> dq = null;
-        int index = -1;
-        if (leftmost == null || leftmost >= list.size()) {
-            dq = new ArrayDeque<>();
-            dq.push(v);
-            list.add(dq);
-            index = list.size() - 1;
-        } else {
-            dq = list.get(leftmost);
-            dq.push(v);
-            index = leftmost;
+    public void push(int val) {
+        int topush = notfull.isEmpty()? plates.size(): notfull.first();
+        Deque<Integer> st = new ArrayDeque<>();
+        if(topush==plates.size()){
+            st = new ArrayDeque<>();
+            plates.add(st);
+        }else{
+            st = plates.get(topush);
         }
-        if (dq.size() < cap) {
-            free.add(index);
-        } else if (dq.size() == cap) {
-            free.remove(index);
+        st.push(val);
+        notempty.add(topush);
+        if(st.size()<cap){
+            // can't miss this, for the sake of adding when it becomes avail first
+            notfull.add(topush);
+        }else{
+            notfull.remove(topush);
         }
+
     }
 
     public int pop() {
-        if (list.isEmpty()) {
+        if(notempty.isEmpty()){
             return -1;
         }
-        int n = list.size();
-        return popAtStack(n - 1);
+        return popAtStack(notempty.last());
     }
 
     public int popAtStack(int index) {
-        if (index >= list.size()) {
-            return -1;
-        }
-        Deque<Integer> dq = list.get(index);
-        if (dq.isEmpty()) {
-            return -1;
-        }
-        free.add(index);
-        int rt = dq.pop();
-        // if we pop  from right side, it's amortized O(1): each element is inserted and popped once
-        while (!list.isEmpty() && index == list.size() - 1 && list.get(index).isEmpty()) {
-            list.remove(index);
-            index--;
-        }
 
+        if(index >= plates.size()){
+            return -1;
+        }
+        Deque<Integer> st = plates.get(index);
+        if(st.isEmpty()){
+            return -1;
+        }
+        int rt = st.pop();
+        notfull.add(index);
+        if(st.isEmpty()){
+            notempty.remove(index);
+        }
         return rt;
     }
 }

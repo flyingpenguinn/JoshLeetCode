@@ -47,67 +47,63 @@ There may be multiple valid order of letters, return any one of them is fine.
 public class AlienDictionary {
     // trap1: what are the chars in the dict? need to traverse. not all 26 chars are in the dict
     // trap2: abc, ab will yield an invalid seq
-    List<Integer>[] g = new ArrayList[26];
-    boolean bad = false;
-    int[] status;
-    StringBuilder sb = new StringBuilder();
-
     public String alienOrder(String[] ws) {
-        status = new int[26];
-        Arrays.fill(status, -1);
-        for(int i=0; i<ws.length;i++){
-            for(int j=0; j<ws[i].length();j++){
-                status[ws[i].charAt(j)-'a'] = 0;
+        Map<Character, Set<Character>> m = new HashMap<>();
+        for (int i = 0; i < ws.length; i++) {
+            for (int j = 0; j < ws[i].length(); j++) {
+                m.put(ws[i].charAt(j), new HashSet<>());
             }
         }
-        for(int i=0; i<26;i++){
-            g[i] = new ArrayList<>();
-        }
-        for(int i=1; i<ws.length;i++){
-            link(ws[i-1], ws[i]);
-        }
-        for(int i=0; i<26;i++){
-            if(bad){
+        for (int i = 1; i < ws.length; i++) {
+            if (!link(ws[i - 1], ws[i], m)) {
                 return "";
             }
-            if(status[i]==0){
-                dfs(i);
+        }
+        int[] status = new int[26];
+        StringBuilder sb = new StringBuilder();
+        for (char k : m.keySet()) {
+            if (status[k - 'a'] == 0) {
+                boolean valid = dfs(k, m, status, sb);
+                if (!valid) {
+                    return "";
+                }
             }
         }
         return sb.reverse().toString();
+
     }
 
-    void link(String s, String t){
+    private boolean dfs(char k, Map<Character, Set<Character>> m, int[] st, StringBuilder sb) {
+        st[k - 'a'] = 1;
+        for (char next : m.getOrDefault(k, new HashSet<>())) {
+            if (st[next - 'a'] == 0) {
+                if (!dfs(next, m, st, sb)) {
+                    return false;
+                }
+            } else if (st[next - 'a'] == 1) {
+                return false;
+            }
+        }
+        st[k - 'a'] = 2;
+        sb.append(k);
+        return true;
+    }
+
+
+    private boolean link(String s, String t, Map<Character, Set<Character>> m) {
         int i = 0;
-        int j = 0;
-        while(i<s.length() && j<t.length()){
-            int sind = s.charAt(i)-'a';
-            int tind = t.charAt(j)-'a';
-            if(sind!= tind){
-                g[sind].add(tind);
-                break;  // break on the first mismatch. we can only build relationship on the first mismatch
-            }else{
-                i++;
-                j++;
+        for (; i < s.length() && i < t.length(); i++) {
+            char sc = s.charAt(i);
+            char tc = t.charAt(i);
+            if (sc != tc) {
+                m.get(sc).add(tc);
+                break;
             }
         }
-        if(i<s.length() && j==t.length()){
-            bad = true; // eq all the way but a longer one is smaller, bad
+        if (i == t.length() && i != s.length()) {
+            return false;
         }
-    }
-
-    void dfs(int i){
-        status[i] = 1;
-        for(int next: g[i]){
-            if(status[next]==0){
-                dfs(next);
-            }else if (status[next] == 1){ // found circle
-                bad = true;
-                return;
-            }
-        }
-        sb.append((char)('a'+i));
-        status[i] = 2;
+        return true;
     }
 
     public static void main(String[] args) {

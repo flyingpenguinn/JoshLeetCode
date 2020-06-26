@@ -47,25 +47,26 @@ public class MinMovesToMakeValidParenthesis {
     // 2. remove left brackets that can't find a pair
     // 3. use a stack to keep open left indexes
     public String minRemoveToMakeValid(String s) {
-        int n = s.length();
-        Deque<Integer> st = new ArrayDeque<>();
-        Set<Integer> del = new HashSet<>();
-        for (int i = 0; i < n; i++) {
+        Deque<Integer> left = new ArrayDeque<>();
+        Set<Integer> gone = new HashSet<>();
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '(') {
-                st.push(i);
+                left.push(i);
             } else if (c == ')') {
-                if (!st.isEmpty()) {
-                    st.pop();
+                if (left.isEmpty()) {
+                    gone.add(i);
                 } else {
-                    del.add(i);
+                    left.pop();
                 }
             }
         }
-        del.addAll(st);
+        while (!left.isEmpty()) {
+            gone.add(left.pop());
+        }
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < n; i++) {
-            if (!del.contains(i)) {
+        for (int i = 0; i < s.length(); i++) {
+            if (!gone.contains(i)) {
                 sb.append(s.charAt(i));
             }
         }

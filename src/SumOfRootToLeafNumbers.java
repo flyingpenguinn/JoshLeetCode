@@ -1,4 +1,5 @@
 import base.TreeNode;
+
 /*
 lc#129
 Given a binary tree containing digits from 0-9 only, each root-to-leaf path could represent a number.
@@ -35,23 +36,27 @@ The root-to-leaf path 4->9->1 represents the number 491.
 The root-to-leaf path 4->0 represents the number 40.
 Therefore, sum = 495 + 491 + 40 = 1026.
  */
-public class SumRootToLeaf {
+public class SumOfRootToLeafNumbers {
     // leaf only, dont fall for half empty nodes!
-    int sum=0;
+
     public int sumNumbers(TreeNode root) {
-        dos(root,0);
-        return sum;
+        if (root == null) {
+            return 0;
+        }
+        return dfs(root, 0);
     }
-    void dos(TreeNode n,int above){
-        if(n==null){
-            return;
+
+    // n not null
+    private int dfs(TreeNode n, int cur) {
+        int curnum = cur * 10 + n.val;
+        if (n.left == null && n.right == null) {
+            return curnum;
+        } else if (n.left == null) {
+            return dfs(n.right, curnum);
+        } else if (n.right == null) {
+            return dfs(n.left, curnum);
+        } else {
+            return dfs(n.left, curnum) + dfs(n.right, curnum);
         }
-        above = above*10+n.val;
-        if(n.left==null && n.right==null){
-            sum +=above;
-            return;
-        }
-        dos(n.left,above);
-        dos(n.right,above);
     }
 }

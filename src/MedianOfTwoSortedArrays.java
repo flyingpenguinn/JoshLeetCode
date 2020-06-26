@@ -25,59 +25,46 @@ https://leetcode.com/problems/median-of-two-sorted-arrays/
 
  */
 public class MedianOfTwoSortedArrays {
-    // Lg a+b  make sure we throw away a fixed percentage of numbers each time. here we at least throw away either na or nb numbers each time
+    // Lg a+b  make sure we throw away a fixed percentage of numbers each time.
+    // here we at least throw away either na or nb numbers each time
     public double findMedianSortedArrays(int[] a, int[] b) {
-        int na = a.length;
-        int nb = b.length;
-        int n = na + nb;
-        if (n == 0) {
-            return 0.0;
-        }
-        if (n % 2 == 1) {
-            return find(a, 0, na - 1, b, 0, nb - 1, (n + 1) / 2);
+        int an = a.length;
+        int bn = b.length;
+        int n = an + bn;
+        if (n % 2 == 0) {
+            int v1 = find(a, 0, an - 1, b, 0, bn - 1, n / 2);
+            int v2 = find(a, 0, an - 1, b, 0, bn - 1, n / 2 + 1);
+            return (0.0 + v1 + v2) / 2.0;
         } else {
-            // if there are two we take the avg of them
-            int n1 = find(a, 0, na - 1, b, 0, nb - 1, n / 2);
-            int n2 = find(a, 0, na - 1, b, 0, nb - 1, n / 2 + 1);
-            return (n1 + n2) / 2.0;
-
+            return find(a, 0, an - 1, b, 0, bn - 1, n / 2 + 1);
         }
-
     }
 
-    // find the kth number among sorted a and b.   k from 1
-    private int find(int[] a, int al, int au, int[] b, int bl, int bu, int k) {
-        // b could become shorter than a...
-        int lena = au - al + 1;
-        int lenb = bu - bl + 1;
-        if (lena > lenb) {
-            return find(b, bl, bu, a, al, au, k);
+    int find(int[] a, int la, int ua, int[] b, int lb, int ub, int k) {
+        if (ua - la > ub - lb) {
+            return find(b, lb, ub, a, la, ua, k);
         }
-        if (al > au) {
-            // exhausted a. note a is shorter
-            return b[bl + k - 1];
+        if (la > ua) {
+            // need to do this first otherwise error will be thrown from below line when we get the "first"
+            return b[k - 1];
         }
         if (k == 1) {
-            return Math.min(a[al], b[bl]);
+            return Math.min(a[la], b[lb]);
         }
 
-        int cutlena = Math.min(lena, k / 2);
-        int cutlenb = k - cutlena;
-        int cuta = al + cutlena - 1;
-        int cutb = bl + cutlenb - 1;
-        if (a[cuta] == b[cutb]) {
-            // including itself this number >= cutlena numbers in a, cutlenb numbers in b. so k numbers in all. it's the kth number
-            return a[cuta];
-        } else if (a[cuta] < b[cutb]) {
-            // a[cuta] is guaranteed <= na-cutlena numbers in a, and <= nb-cutlenb+1 numbers in b.
-            // in all excluding itself, it's <= na+nb-k+1 +1 (+self) numbers, hence >= k-2 other numbers at most.
-            // so it won't be the kth number as that number >=k-1 others. note even if it equals the real kth number, throwing it away won't hurt
-            // similarly, b[cutb+1] is guaranteed >= cutlenb numbers in b, cutlena numbers in a. it's >= k numbers, excluding itself can't be the kth number
-            // so cutb is the last possible one
-            return find(a, cuta + 1, au, b, bl, cutb, k - cutlena);
+        int cuta = Math.min(k / 2, ua - la + 1);
+        int cutb = k - cuta;
+        int ma = la + cuta - 1;
+        int mb = lb + cutb - 1;
+        if (a[ma] == b[mb]) {
+            return a[ma];
+        } else if (a[ma] < b[mb]) {
+            // the number at mb+1 has at least k numbers < it, won't be the kth number
+            // the number at ma has at least lena-k/2+lenb-k/2+1 == lena+lenb-k+1 numbers > it, won't be the kth number either
+            // so we throw numbers that are too big, or too small
+            return find(a, ma + 1, ua, b, lb, mb, k - cuta);
         } else {
-            // if reverse, we reverse the above verdict
-            return find(a, al, cuta, b, cutb + 1, bu, k - cutlenb);
+            return find(a, la, ma, b, mb + 1, ub, k - cutb);
         }
     }
 }

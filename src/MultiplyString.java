@@ -18,39 +18,41 @@ Both num1 and num2 do not contain any leading zero, except the number 0 itself.
 You must not use any built-in BigInteger library or convert the inputs to integer directly.
  */
 
+import java.util.Arrays;
+
 public class MultiplyString {
 
-    // put raw numbers from i and j to i+j+1 first then from n-1 to 0 do the carrying
+    // put raw numbers from i and j to i+j+1 and i+j first then from n-1 to 0 do the carrying
     public String multiply(String a, String b) {
-        int na = a.length();
-        int nb = b.length();
-        int nall = na + nb;
-        int[] r = new int[nall];
-        for (int i = na - 1; i >= 0; i--) {
-            for (int j = nb - 1; j >= 0; j--) {
-                int av = a.charAt(i) - '0';
-                int bv = b.charAt(j) - '0';
-                int raw = av * bv;
-                // not i+j, i+j+1. for example 33*34, 2 is at position 2+2+1 =5
-                r[i + j + 1] += raw % 10; // just raw numbers %10 added together, could be well >10
-                r[i + j] += raw / 10;
+
+        int[] prod = new int[a.length() + b.length()];
+        for (int i = a.length() - 1; i >= 0; i--) {
+            for (int j = b.length() - 1; j >= 0; j--) {
+                int va = a.charAt(i) - '0';
+                int vb = b.charAt(j) - '0';
+                int multi = va * vb;
+                prod[i + j + 1] += multi % 10;  // must be +=
+                prod[i + j] += multi / 10;
             }
         }
         int carry = 0;
-        for (int i = nall - 1; i >= 0; i--) {
-            int raw = r[i] + carry;
-            r[i] = raw % 10;
-            carry = raw / 10;
+        for (int i = prod.length - 1; i >= 0; i--) {
+            int cur = prod[i] + carry;
+            carry = cur / 10;
+            prod[i] = cur % 10;
         }
-        StringBuilder sb = new StringBuilder();
         int i = 0;
-        while (i < nall && r[i] == 0) {
+        while (i < prod.length && prod[i] == 0) {
             i++;
         }
-        while (i < nall) {
-            sb.append(r[i++]);
+        if (i == prod.length) {
+            return "0";
         }
-        return sb.length() == 0 ? "0" : sb.toString();
+        StringBuilder sb = new StringBuilder();
+        while (i < prod.length) {
+            sb.append(prod[i++]);
+        }
+        return sb.toString();
     }
 
     public static void main(String[] args) {

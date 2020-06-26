@@ -62,29 +62,33 @@ class KClosestPointsSelection {
     // select the kth and partition it
     // when we get the kth, due to partition,we also get the first ks
     public int[][] kClosest(int[][] a, int k) {
-        int n = a.length;
-        select(a, 0, n - 1, k);
+        find(a, 0, a.length - 1, k);
         int[][] r = Arrays.copyOf(a, k);
         return r;
     }
 
-    void select(int[][] a, int l, int u, int k) {
+    private void find(int[][] a, int l, int u, int k) {
+        if (l >= u) { // k would be 1
+            return;
+        }
         int pivot = partition(a, l, u);
         int plen = pivot - l + 1;
         if (plen == k) {
             return;
         } else if (plen < k) {
-            select(a, pivot + 1, u, k - plen);
+            find(a, pivot + 1, u, k - plen);
         } else {
-            select(a, l, pivot - 1, k);
+            // plen>k
+            find(a, l, pivot - 1, k);
         }
     }
 
-    int partition(int[][] a, int l, int u) {
+    private int partition(int[][] a, int l, int u) {
         int i = l - 1;
         int j = l;
+        int distu = dist(a, u);
         while (j <= u) {
-            if (dist(a[j]) <= dist(a[u])) {
+            if (dist(a, j) <= distu) {
                 swap(a, ++i, j);
             }
             j++;
@@ -92,13 +96,13 @@ class KClosestPointsSelection {
         return i;
     }
 
-    void swap(int[][] a, int i, int j) {
+    private int dist(int[][] a, int i) {
+        return a[i][0] * a[i][0] + a[i][1] * a[i][1];
+    }
+
+    private void swap(int[][] a, int i, int j) {
         int[] tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
-    }
-
-    long dist(int[] x) {
-        return x[0] * x[0] + x[1] * x[1];
     }
 }

@@ -26,58 +26,66 @@ k will be between 1 and floor(nums.length / 3).
  */
 public class MaxSumOfThreeNonOverlappingSubarrays {
     // enumerate the middle subarray, similar to best time buy sell stock III
+    // 1. find subarray sums
+    // 2. find start array where start[i] means the subsum when starting at i
+    // 3. find the right max start value and index of each i, inclusive
+    // 4. enumerate middle starting point i
+    // 5. when doing it, handle the left max and i properly (exclusive)
     public int[] maxSumOfThreeSubarrays(int[] a, int k) {
         int n = a.length;
         int[] sum = new int[n];
         for (int i = 0; i < n; i++) {
             sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
         }
-        // max left subarray of size k, their end point
-        int[] maxleft = new int[n];
-        int[] maxleftindex = new int[n];
-        maxleft[k - 1] = sum[k - 1];
-        maxleftindex[k - 1] = k - 1;
-        for (int i = k; i < n; i++) {
-            int segsum = sum[i] - sum[i - k];
-            if (segsum > maxleft[i - 1]) {
-                maxleft[i] = segsum;
-                maxleftindex[i] = i;
-            } else {
-                // leco small one
-                maxleft[i] = maxleft[i - 1];
-                maxleftindex[i] = maxleftindex[i - 1];
+        // max k subarray sum starting at i
+        int[] start = new int[n];
+        for (int i = 0; i < n; i++) {
+            int head = i - k + 1;
+            if (head >= 0) {
+                start[head] = subsum(sum, head, i);
             }
         }
-        // max subarray with i as starting point
-        int[] maxright = new int[n];
-        int[] maxrightindex = new int[n];
-        maxright[n - k] = sum[n - 1] - sum[n - k - 1];
-        maxrightindex[n - k] = n - k;
-        for (int i = n - k - 1; i >= 1; i--) {
-            int segsum = sum[i + k - 1] - sum[i - 1];
-            if (segsum >= maxright[i + 1]) {
-                maxright[i] = segsum;
-                maxrightindex[i] = i;
+        int[] right = new int[n];
+        int rightv = start[n - 1];
+        right[n - 1] = n - 1;
+        for (int i = n - 2; i >= 0; i--) {
+            if (start[i] >= rightv) {
+                rightv = start[i];
+                right[i] = i;
             } else {
-                maxright[i] = maxright[i + 1];
-                maxrightindex[i] = maxrightindex[i + 1];
+                right[i] = right[i + 1];
             }
         }
+        // i is start point of the middle one
         int max = 0;
         int[] r = new int[3];
-        for (int i = 2 * k - 1; i + k < n; i++) {
-            int curseg = sum[i] - sum[i - k];
-            int leftsum = maxleft[i - k];
-            int rightsum = maxright[i + 1];
-            int cursum = curseg + leftsum + rightsum;
+        int leftv = subsum(sum, 0, k - 1);
+        int left = 0;
+        for (int i = k; i < n && i + k + k - 1 < n; i++) {
+            int curstart = i;
+            int curend = i + k - 1;
+            int nextstart = i + k;
+            int prev = leftv;
+            int cur = subsum(sum, curstart, curend);
+            int next = start[right[nextstart]];
+            int cursum = prev + cur + next;
             if (cursum > max) {
                 max = cursum;
-                r[0] = maxleftindex[i - k] - k + 1;
-                r[1] = i - k + 1;
-                r[2] = maxrightindex[i + 1];
+                r = new int[]{left, curstart, right[nextstart]};
+            }
+            if (i - k + 1 >= 0) {
+                int curv = subsum(sum, i - k + 1, i);
+                if (curv > leftv) {
+                    leftv = curv;
+                    left = i - k + 1;
+                }
             }
         }
         return r;
+    }
+
+    int subsum(int[] sum, int i, int j) {
+        return sum[j] - (i == 0 ? 0 : sum[i - 1]);
     }
 
     public static void main(String[] args) {

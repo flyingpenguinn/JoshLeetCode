@@ -37,70 +37,52 @@ stamp and target only contain lowercase letters.
 public class StampTheSequence {
     // work backward. set every matching substring to ???. ? matches to anything
     // we dont really need to stamp the sme position twice
-    // time complexity n-m * n-m * m
+    // time complexity n-m * n: we execute the inner most for loop at most n times together with the for loop at the while line
     // abc must be revealed before ab?. but later ones' sequences can't be determined. the ones with more ? may be matched later in the stamping
-    List<Integer> r = new ArrayList<>();
-    boolean[] added;
-
-    public int[] movesToStamp(String s, String t) {
-        added = new boolean[t.length()];
-        dfs(s, t.toCharArray(), new ArrayList<>(), 0);
-        Collections.reverse(r);
-        return toarray(r);
-    }
-
-
-    private void dfs(String s, char[] t, List<Integer> cur, int matched) {
-        if (matched == t.length) {
-            r = cur;
-            return;
-        }
-        int i = 0;
-        boolean found = false;
-        while (i + s.length() - 1 < t.length) {
-            if (startswith(t, i, s)) {
-                found = true;
-                added[i] = true;
-                for (int j = 0; j < s.length(); j++) {
-                    if (t[i + j] != '?') {
-                        matched++;
-                        t[i + j] = '?';
+    public int[] movesToStamp(String stamp, String target) {
+        int mark = 0;
+        Set<Integer> stamped = new HashSet<>();
+        List<Integer> res = new ArrayList<>();
+        char[] t = target.toCharArray();
+        while (mark != t.length) {
+            boolean found = false;
+            for (int i = 0; i + stamp.length() - 1 < t.length; i++) {
+                if (!stamped.contains(i) && match(t, stamp, i)) {
+                    found = true;
+                    stamped.add(i);
+                    res.add(i);
+                    int j = i;
+                    for (; j < i + stamp.length(); j++) {
+                        if (t[j] != '?') {
+                            t[j] = '?';
+                            mark++;
+                        }
                     }
+                    i = j;
                 }
-                cur.add(i);
-                i = i + s.length() - 1;
-            } else {
-                i++;
+            }
+            if (!found) {
+                return new int[0];
             }
         }
-        // no change at all, not found
-        if (!found) {
-            return;
+        int[] r = new int[res.size()];
+        for (int i = 0; i < res.size(); i++) {
+            r[i] = res.get(res.size() - 1 - i);
         }
-        dfs(s, t, cur, matched);
+        return r;
     }
 
-    private boolean startswith(char[] tc, int j, String s) {
-        // whether tc starts with s at j. question mark can match unless it's all ?- which means we added before
-        if (added[j]) {
-            return false;
-        }
-        int k = 0;
-        while (k < s.length()) {
-            if (tc[j + k] != '?' && tc[j + k] != s.charAt(k)) {
+    boolean match(char[] t, String s, int i) {
+        int j = 0;
+        while (j < s.length()) {
+            if (t[i] == '?' || t[i] == s.charAt(j)) {
+                i++;
+                j++;
+            } else {
                 return false;
             }
-            k++;
         }
         return true;
-    }
-
-    private int[] toarray(List<Integer> r) {
-        int[] rr = new int[r.size()];
-        for (int i = 0; i < rr.length; i++) {
-            rr[i] = r.get(i);
-        }
-        return rr;
     }
 
     public static void main(String[] args) {

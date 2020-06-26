@@ -16,11 +16,9 @@ public class ValidPalindromeII {
     public boolean validPalindrome(String s) {
         int i = 0;
         int j = s.length() - 1;
-
         while (i < j) {
             if (s.charAt(i) != s.charAt(j)) {
-                // if differed, then one side must be palindrome
-                return ispalin(s, i + 1, j) || ispalin(s, i, j - 1);
+                return ispalin(s, i, j - 1) || ispalin(s, i + 1, j);
             } else {
                 i++;
                 j--;
@@ -29,13 +27,10 @@ public class ValidPalindromeII {
         return true;
     }
 
-    boolean ispalin(String s, int i, int j) {
+    private boolean ispalin(String s, int i, int j) {
         while (i < j) {
-            if (s.charAt(i) != s.charAt(j)) {
+            if (s.charAt(i++) != s.charAt(j--)) {
                 return false;
-            } else {
-                i++;
-                j--;
             }
         }
         return true;
@@ -43,7 +38,6 @@ public class ValidPalindromeII {
 
     public static void main(String[] args) {
         System.out.println(new ValidPalindromeII().validPalindrome("cupuuuupucu"));
-        ;
-        ;
+
     }
 }
