@@ -22,38 +22,40 @@ import java.util.Arrays;
 
 public class MultiplyString {
 
-    // put raw numbers from i and j to i+j+1 and i+j first then from n-1 to 0 do the carrying
     public String multiply(String a, String b) {
-
-        int[] prod = new int[a.length() + b.length()];
+        // check null and error out if so
+        int[] r = new int[a.length() + b.length()];
         for (int i = a.length() - 1; i >= 0; i--) {
             for (int j = b.length() - 1; j >= 0; j--) {
                 int va = a.charAt(i) - '0';
                 int vb = b.charAt(j) - '0';
                 int multi = va * vb;
-                prod[i + j + 1] += multi % 10;  // must be +=
-                prod[i + j] += multi / 10;
+                r[i + j + 1] += multi % 10;  // here must be +=
+                r[i + j] += multi / 10;
             }
         }
         int carry = 0;
-        for (int i = prod.length - 1; i >= 0; i--) {
-            int cur = prod[i] + carry;
-            carry = cur / 10;
-            prod[i] = cur % 10;
+        for (int i = r.length - 1; i >= 0; i--) {
+            int sum = r[i] + carry;
+            r[i] = sum % 10;
+            carry = sum / 10;
         }
+        // drop leading zeros
         int i = 0;
-        while (i < prod.length && prod[i] == 0) {
+        while (i < r.length && r[i] == 0) {
             i++;
         }
-        if (i == prod.length) {
+        // process 0 separately
+        if (i == r.length) {
             return "0";
         }
         StringBuilder sb = new StringBuilder();
-        while (i < prod.length) {
-            sb.append(prod[i++]);
+        while (i < r.length) {
+            sb.append(r[i++]);
         }
         return sb.toString();
     }
+
 
     public static void main(String[] args) {
         System.out.println(new MultiplyString().multiply("999", "999"));

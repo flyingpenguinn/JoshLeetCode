@@ -11,16 +11,20 @@ You must not use any built-in BigInteger library or convert the inputs to intege
  */
 public class AddStrings {
     public String addStrings(String a, String b) {
+        // check null. if so error out
         int i = a.length() - 1;
         int j = b.length() - 1;
-        StringBuilder sb = new StringBuilder();
         int carry = 0;
-        while (i >= 0 || j >= 0 || carry > 0) {
-            int va = i < 0 ? 0 : a.charAt(i--) - '0';
-            int vb = j < 0 ? 0 : b.charAt(j--) - '0';
+        StringBuilder sb = new StringBuilder();
+        while (i >= 0 || j >= 0) {
+            int va = i == -1 ? 0 : (a.charAt(i--) - '0');
+            int vb = j == -1 ? 0 : (b.charAt(j--) - '0');
             int sum = va + vb + carry;
             sb.append(sum % 10);
             carry = sum / 10;
+        }
+        if (carry > 0) {
+            sb.append(carry);
         }
         return sb.reverse().toString();
     }
