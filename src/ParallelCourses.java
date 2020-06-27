@@ -116,74 +116,44 @@ public class ParallelCourses {
 }
 
 class ParallelCoursesDfs {
-    // dag longest path, dp it...
-    Set<Integer>[] graph;
-    int[] indg;
-
-    int[] visited;
-    boolean cycle = false;
-    int[] dp;
-
-    public int minimumSemesters(int n, int[][] relations) {
-        dp = new int[n + 1];
-        graph = new HashSet[n + 1];
-        indg = new int[n + 1];
-        for (int i = 1; i <= n; i++) {
-            graph[i] = new HashSet<>();
+    // dag longest path, dp it....
+    public int minimumSemesters(int n, int[][] deps) {
+        Map<Integer, Set<Integer>> g = new HashMap<>();
+        for (int[] dep : deps) {
+            int start = dep[0];
+            int end = dep[1];
+            g.computeIfAbsent(start, key -> new HashSet<>()).add(end);
         }
-        visited = new int[n + 1];
-        for (int[] e : relations) {
-            graph[e[0]].add(e[1]);
-            indg[e[1]]++;
-        }
-
-        for (int i = 1; i <= n; i++) {
-            if (visited[i] == 0) {
-                dfs(i);
-            }
-        }
-        if (cycle) {
-            return -1;
-        }
-
+        int[] dp = new int[n + 1]; // <0: visiting. ==0: not visited >0 visited
         int max = 0;
-        Arrays.fill(dp, -1);
         for (int i = 1; i <= n; i++) {
-            if (indg[i] == 0) {
-                int cur = dfsorder(i);
-                max = Math.max(max, cur);
+            int depth = dfs(i, g, dp);
+            if (depth == -1) {
+                return -1;
             }
+            max = Math.max(max, dp[i]);
         }
         return max;
     }
 
-    private int dfsorder(int i) {
-        if (dp[i] != -1) {
+    int dfs(int i, Map<Integer, Set<Integer>> g, int[] dp) {
+        if (dp[i] != 0) {
             return dp[i];
         }
+        dp[i] = -1;
+        Set<Integer> next = g.getOrDefault(i, new HashSet<>());
         int max = 1;
-        for (int next : graph[i]) {
-            int cur = dfsorder(next) + 1;
-            max = Math.max(max, cur);
+        for (int n : next) {
+            int later = dfs(n, g, dp);
+            if (later < 0) {
+                dp[i] = -1;
+                return -1;
+            } else {
+                max = Math.max(max, 1 + later);
+            }
         }
         dp[i] = max;
         return max;
-    }
-
-    private void dfs(int i) {
-        if (cycle) {
-            return;
-        }
-        visited[i] = 1;
-        for (Integer next : graph[i]) {
-            if (visited[next] == 0) {
-                dfs(next);
-            } else if (visited[next] == 1) {
-                cycle = true;
-                return;
-            }
-        }
-        visited[i] = 2;
     }
 
     public static void main(String[] args) {

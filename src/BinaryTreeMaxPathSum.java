@@ -3,6 +3,8 @@ import base.TreeNode;
 import java.util.HashMap;
 import java.util.TreeSet;
 
+import static java.lang.Math.max;
+
 /*
 LC#124
 Given a non-empty binary tree, find the maximum path sum.
@@ -31,20 +33,23 @@ Input: [-10,9,20,null,null,15,7]
 Output: 42
  */
 public class BinaryTreeMaxPathSum {
-    public int maxPathSum(TreeNode n) {
-        return dfs(n)[0];
-    }
-
-    // return: max path sum of this subtree, max sum of this node to a leaf
-    private int[] dfs(TreeNode n) {
-        if (n == null) {
-            return new int[]{Integer.MIN_VALUE, 0};
+    class Solution {
+        public int maxPathSum(TreeNode root) {
+            return dfs(root)[0];
         }
-        int[] left = dfs(n.left);
-        int[] right = dfs(n.right);
-        int curpath = Math.max(n.val, Math.max(n.val + left[1], n.val + right[1]));
-        int cursum = Math.max(curpath, n.val + left[1] + right[1]);
-        int curmax = Math.max(left[0], Math.max(right[0], cursum));
-        return new int[]{curmax, curpath};
+
+        // max dist under this subtree, and max tree path sum from this node to some deeper nodes
+        private int[] dfs(TreeNode n) {
+            if (n == null) {
+                return new int[]{Integer.MIN_VALUE, 0};
+            }
+            int[] left = dfs(n.left);
+            int[] right = dfs(n.right);
+            int curpath = max(n.val, max(n.val + left[1], n.val + right[1]));
+            // when left1 and right1 are both neg, keep n.val is the best
+            int maxchild = max(left[0], right[0]);
+            int curmax = max(maxchild, max(curpath, n.val + left[1] + right[1]));
+            return new int[]{curmax, curpath};
+        }
     }
 }
