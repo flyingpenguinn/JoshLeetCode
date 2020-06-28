@@ -55,39 +55,38 @@ public class DecodeWays {
 }
 
 class DecodeWaysMemoization {
-    private int[] dp = null;
-
+    private int[] dp;
     public int numDecodings(String s) {
-        dp = new int[s.length()];
+        // check null, throw or error if so
+        // assuming s is all numbers, no mknus sign etc
+        dp = new int[s.length()+1];
         Arrays.fill(dp, -1);
-        return doDp(s, 0);
+        return solve(s, 0);
     }
 
-    // doDp(i) = doDp(i+1)  if single digit !=0
-    //        = 0   if single digit = 0
-    // +
-    //   doDp(i+2) // if 2 digits make sense
-    private int doDp(String s, int i) {
-        int n = s.length();
-        if (i == n) {
-            return 1; // base!
+    private int solve(String s, int i){
+        if(i==s.length()){
+            return 1;
         }
-        if (dp[i] != -1) {
+        if(dp[i]!= -1){
             return dp[i];
         }
-        int ci = s.charAt(i);
-        if (ci == '0') {
-            // no number starts with 0 so no way
+        int ith = s.charAt(i)-'0';
+        if(ith==0){
+            // can't start with 0
             return 0;
         }
-        int c = doDp(s, i + 1);
-        if (i + 1 < n) {
-            int twoDigits = Integer.valueOf(s.substring(i, i + 2));
-            if (twoDigits <= 26) {
-                c += doDp(s, i + 2);
+        int way1 = solve(s, i+1);
+        int way2 = 0;
+        if(i+1<s.length()){
+            int iplus1 = s.charAt(i+1)-'0';
+            int cur = ith*10+ iplus1;
+            if(cur<=26){
+                way2 = solve(s, i+2);
             }
         }
-        dp[i] = c;
-        return c;
+        int res = way1+way2;
+        dp[i] = res;
+        return res;
     }
 }

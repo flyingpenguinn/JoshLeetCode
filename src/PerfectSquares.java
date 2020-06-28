@@ -16,19 +16,29 @@ Output: 2
 Explanation: 13 = 4 + 9.
  */
 public class PerfectSquares {
-    //TODO: do line sweep myself
-    // shortest unweighted path on dag. this is dp using dfs
-    // we can also do bfs as it's unweighted...
+    //memoization... can also use iterative ways. On*sqrt(n)
+    int[] dp;
+
     public int numSquares(int n) {
-        int[] dp = new int[n + 1];
-        Arrays.fill(dp, n + 1);
-        dp[0] = 0;
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j * j <= i; j++) {
-                dp[i] = Math.min(dp[i], 1 + dp[i - j * j]);
-            }
+        dp = new int[n + 1];
+        return dp(n);
+    }
+
+    private int dp(int n) {
+        if (n == 0) {
+            return 0;
         }
-        return dp[n];
+        if (dp[n] != 0) {
+            return dp[n];
+        }
+        int min = n;
+        for (int i = 1; i * i <= n; i++) {
+            int sq = i * i;
+            int later = dp(n - sq);
+            min = Math.min(min, later + 1);
+        }
+        dp[n] = min;
+        return min;
     }
 
     public static void main(String[] args) {

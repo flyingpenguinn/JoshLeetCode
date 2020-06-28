@@ -27,51 +27,58 @@ The input string will only contain the character '*' and digits '0' - '9'.
  */
 public class DecodeWaysII {
 
+    private int Mod = 1000000007;
 
-    long Mod = 1000000007;
-    long[] dp;
+    private long[] dp;
 
     public int numDecodings(String s) {
-        dp = new long[s.length()];
+        // check null or other invalid input, error if needed
+        // must be positive numbers 0-9 and *
+        dp = new long[s.length() + 1];
         Arrays.fill(dp, -1);
-        return (int) don(0, s);
+        return (int) solve(s, 0);
     }
 
-    private long don(int i, String s) {
-        int n = s.length();
-        if (i == n) {
-            return 1l;
+
+    private long solve(String s, int i) {
+        if (i == s.length()) {
+            return 1; // base. if single 2, we have one way
+        }
+        if (dp[i] != -1) {
+            return dp[i];
         }
         char c = s.charAt(i);
         if (c == '0') {
             return 0;
         }
-        if (dp[i] != -1) {
-            return dp[i];
+        int start = 1;
+        int end = 9;
+        if (c != '*') {
+            start = c - '0';
+            end = start;
         }
-        long rt = 0;
-        int cstart = c == '*' ? 1 : c - '0';
-        int cend = c == '*' ? 9 : c - '0';
-        for (int j = cstart; j <= cend; j++) {
-            rt += don(i + 1, s);
-            rt %= Mod;
-        }
-        if (i + 1 < n) {
-            char c1 = s.charAt(i + 1);
-            int c1start = c1 == '*' ? 1 : c1 - '0';
-            int c1end = c1 == '*' ? 9 : c1 - '0';
-            for (int j = cstart; j <= cend; j++) {
-                for (int k = c1start; k <= c1end; k++) {
-                    int v = j * 10 + k;
-                    if (v >= 1 && v <= 26) {
-                        rt += don(i + 2, s);
-                        rt %= Mod;
+        long ways = (end - start + 1) * solve(s, i + 1);
+        if (i + 1 < s.length()) {
+            int nstart = 1;
+            int nend = 9;
+            char nc = s.charAt(i + 1);
+            if (nc != '*') {
+                nstart = nc - '0';
+                nend = nstart;
+            }
+            // can't be an outright 2: what if end is 1?
+            for (int j = start; j <= Math.min(2, end); j++) {
+                for (int k = nstart; k <= nend; k++) {
+                    int cur = j * 10 + k;
+                    if (cur <= 26) {
+                        ways += solve(s, i + 2);
                     }
                 }
             }
         }
-        dp[i] = rt;
-        return rt;
+        long res = ways % Mod;
+        dp[i] = (int) res;
+        return dp[i];
     }
 
     public static void main(String[] args) {
