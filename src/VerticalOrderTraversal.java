@@ -2,43 +2,76 @@ import base.TreeNode;
 
 import java.util.*;
 
+/*
+LC#987
+Given a binary tree, return the vertical order traversal of its nodes values.
+
+For each node at position (X, Y), its left and right children respectively will be at positions (X-1, Y-1) and (X+1, Y-1).
+
+Running a vertical line from X = -infinity to X = +infinity, whenever the vertical line touches some nodes, we report the values of the nodes in order from top to bottom (decreasing Y coordinates).
+
+If two nodes have the same position, then the value of the node that is reported first is the value that is smaller.
+
+Return an list of non-empty reports in order of X coordinate.  Every report will have a list of values of nodes.
+
+
+
+Example 1:
+
+
+
+Input: [3,9,20,null,null,15,7]
+Output: [[9],[3,15],[20],[7]]
+Explanation:
+Without loss of generality, we can assume the root node is at position (0, 0):
+Then, the node with value 9 occurs at position (-1, -1);
+The nodes with values 3 and 15 occur at positions (0, 0) and (0, -2);
+The node with value 20 occurs at position (1, -1);
+The node with value 7 occurs at position (2, -2).
+Example 2:
+
+
+
+Input: [1,2,3,4,5,6,7]
+Output: [[4],[2],[1,5,6],[3],[7]]
+Explanation:
+The node with value 5 and the node with value 6 have the same position according to the given scheme.
+However, in the report "[1,5,6]", the node value of 5 comes first since 5 is smaller than 6.
+
+
+Note:
+
+The tree will have between 1 and 1000 nodes.
+Each node's value will be between 0 and 1000.
+ */
 public class VerticalOrderTraversal {
 
-    // for each vertical line, depth to list of nodes. sort if they share the same place
-    // note in each vertical line, the depth may not be continuous, and depth may not always increase in our traversial
-    Map<Integer, TreeMap<Integer, List<Integer>>> nodemap = new HashMap<>();
-    int minv = Integer.MAX_VALUE;
-    int maxv = Integer.MIN_VALUE;
-
+    // put each node into correct position. note must use treemap as y values can be non-continuous
     public List<List<Integer>> verticalTraversal(TreeNode root) {
-        dfs(root, 0, 0);
+        TreeMap<Integer, TreeMap<Integer, List<Integer>>> map = new TreeMap<>();
+        dfs(root, 0, 0, map);
         List<List<Integer>> r = new ArrayList<>();
-        for (int i = minv; i <= maxv; i++) {
-            List<Integer> curr = new ArrayList<>();
-            TreeMap<Integer, List<Integer>> cm = nodemap.get(i);
-            for (int j : cm.keySet()) {
-                List<Integer> inner = cm.get(j);
-                curr.addAll(inner);
+        for (int x : map.keySet()) {
+            List<Integer> cx = new ArrayList<>();
+            TreeMap<Integer, List<Integer>> my = map.get(x);
+            for (int y : my.keySet()) {
+                List<Integer> values = my.get(y);
+                Collections.sort(values);
+                cx.addAll(values);
             }
-            r.add(curr);
+            r.add(cx);
         }
         return r;
     }
 
-    void dfs(TreeNode n, int v, int d) {
+    private void dfs(TreeNode n, int x, int y, TreeMap<Integer, TreeMap<Integer, List<Integer>>> map) {
         if (n == null) {
             return;
         }
-        minv = Math.min(minv, v);
-        maxv = Math.max(maxv, v);
-
-        TreeMap<Integer, List<Integer>> cm = nodemap.getOrDefault(v, new TreeMap<>());
-        List<Integer> clist = cm.getOrDefault(d, new ArrayList<>());
-        clist.add(n.val);
-        Collections.sort(clist);
-        cm.put(d, clist);
-        nodemap.put(v, cm);
-        dfs(n.left, v - 1, d + 1);
-        dfs(n.right, v + 1, d + 1);
+        TreeMap<Integer, List<Integer>> cx = map.getOrDefault(x, new TreeMap<>());
+        cx.computeIfAbsent(y, k -> new ArrayList<>()).add(n.val);
+        map.put(x, cx);
+        dfs(n.left, x - 1, y + 1, map);
+        dfs(n.right, x + 1, y + 1, map);
     }
 }

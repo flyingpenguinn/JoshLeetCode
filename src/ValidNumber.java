@@ -34,43 +34,55 @@ public class ValidNumber {
     // state machine based.
     // trim
     // note the reset of the seennumber state after seeing e
-    public boolean isNumber(String s) {
-        s = s.trim();
-        boolean seennumber = false;
-        boolean seene = false;
-        boolean seendot = false;
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (Character.isDigit(c)) {
-                seennumber = true;
-            } else if (c == 'e') {
-                if (seene) {
-                    return false;
-                }
-                if (!seennumber) {
-                    // can't be e9
-                    return false;
-                }
-                seene = true;
-                seennumber = false; // reset, because we need to make sure it's not 9e
-            } else if (c == '.') {
-                if (seene) {
-                    return false;
-                }
-                if (seendot) {
-                    return false;
-                }
-                seendot = true;
-            } else if (c == '+' || c == '-') {
-                if (i == 0 || s.charAt(i - 1) == 'e') {
-                    // only allow -2 or -3e-2
-                    continue;
-                }
+    class Solution {
+        public boolean isNumber(String s) {
+            if (s == null) {
                 return false;
-            } else {
-                return false; // anything else return false
             }
+            boolean seenNumber = false;
+            boolean seenDot = false;
+            boolean seenE = false;
+            s = s.trim();
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == '+' || c == '-') {
+                    if (i > 0 && s.charAt(i - 1) != 'e') {
+                        // +/- can only be the first or after e
+                        return false;
+                    }
+                } else if (c == '.') {
+                    if (seenDot) {
+                        //cant be two dots
+                        return false;
+                    }
+                    if (seenE) {
+                        // . cant show up after e
+                        return false;
+                    }
+                    // may or may not have number yet. allow ".6"
+                    seenDot = true;
+                } else if (c == 'e') {
+                    if (!seenNumber) {
+                        // cant be "e5" or ".e6"
+                        return false;
+                    }
+                    if (seenE) { // can't have 2 "e"s
+                        return false;
+                    }
+                    // may or may not have dot  2e5 and 2.3e5 both fine
+                    seenE = true;
+                    // must have number after e
+                    seenNumber = false;
+                } else if (Character.isDigit(c)) {
+                    seenNumber = true;
+                } else {
+                    // invlaid char, return false
+                    return false;
+                }
+            }
+            // capture "2e" or empty string
+            return seenNumber;
+
         }
-        return seennumber;
     }
 }

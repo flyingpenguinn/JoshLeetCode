@@ -21,30 +21,28 @@ NOTE: input types have been changed on April 15, 2019. Please reset to default c
  */
 public class MergeIntervals {
     public int[][] merge(int[][] a) {
-        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
-        int n = a.length;
-        if (n == 0) {
+        // check null
+        if (a.length == 0) {
             return new int[0][0];
         }
         List<int[]> r = new ArrayList<>();
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
         int start = a[0][0];
         int end = a[0][1];
-        for (int i = 1; i < n; i++) {
+        for (int i = 1; i < a.length; i++) {
             if (a[i][0] > end) {
                 r.add(new int[]{start, end});
-                // dont forget to open new ones!
                 start = a[i][0];
                 end = a[i][1];
             } else {
                 end = Math.max(end, a[i][1]);
             }
         }
-        // dont forget the last one
         r.add(new int[]{start, end});
-        int[][] rr = new int[r.size()][2];
+        int[][] res = new int[r.size()][2];
         for (int i = 0; i < r.size(); i++) {
-            rr[i] = r.get(i);
+            res[i] = r.get(i);
         }
-        return rr;
+        return res;
     }
 }
