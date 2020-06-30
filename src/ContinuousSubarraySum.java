@@ -30,7 +30,7 @@ public class ContinuousSubarraySum {
     // so we dont need to worry about complementing value like 3 and -2. but here k could be ==0
     public boolean checkSubarraySum(int[] a, int k) {
         Map<Integer, Integer> m = new HashMap<>();
-        m.put(0, -1);
+        m.put(0, -1);l
         int n = a.length;
         int sum = 0;
         for (int i = 0; i < n; i++) {

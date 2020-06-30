@@ -30,66 +30,65 @@ The values of words are distinct.
 public class WordSearchII {
     // use trie to build the dictionary then dfs every i,j on the board to see if they can form any word....
     // backtrack with a trie, On^2*L^4 note we go L on 4 directions,n=edge len
-    Set<String> r = new HashSet<>();
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-    class Tn {
-        char c;
-        boolean iw;
-        Tn[] ch = new Tn[26];
-
-        Tn(char c) {
-            this.c = c;
+    class Solution {
+        private class Trie{
+            private boolean isWord = false;
+            private Trie[] ch = new Trie[26];
         }
 
-        void insert(String w, int i) {
-            if (i == w.length()) {
-                iw = true;
-                return;
+        public List<String> findWords(char[][] a, String[] words) {
+            Trie root = new Trie();
+            for(String w: words){
+                insert(root, w);
             }
-            char wc = w.charAt(i);
-            if (ch[wc - 'a'] == null) {
-                ch[wc - 'a'] = new Tn(wc);
-            }
-            ch[wc - 'a'].insert(w, i + 1);
-        }
-
-        // up to this node it matches w
-        void find(char[][] b, int i, int j, String w) {
-
-            char c = b[i][j];
-
-
-            if (ch[c - 'a'] == null) {
-                return;
-            }
-            if (ch[c - 'a'].iw) {
-                r.add(w + c);
-            }
-            b[i][j] = '#';
-            for (int[] d : dirs) {
-                int ni = i + d[0];
-                int nj = j + d[1];
-                if (ni >= 0 && ni < b.length && nj >= 0 && nj < b[0].length && b[ni][nj] != '#') {
-                    ch[c - 'a'].find(b, ni, nj, w + c);
+            Set<String> r = new HashSet<>();
+            for(int i=0; i<a.length;i++){
+                for(int j = 0; j<a[0].length;j++){
+                    Trie first = root.ch[a[i][j]-'a'];
+                    if(first != null){
+                        dfs(a, i, j, ""+a[i][j] ,first, r);
+                    }
                 }
             }
-            b[i][j] = c;
+            return new ArrayList<>(r);
         }
-    }
 
-    Tn trie = new Tn('-');
-
-    public List<String> findWords(char[][] b, String[] words) {
-        for (String w : words) {
-            trie.insert(w, 0);
-        }
-        for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < b[0].length; j++) {
-                trie.find(b, i, j, "");
+        private void insert(Trie root, String w){
+            Trie p= root;
+            for(int i=0; i<w.length(); i++){
+                char c = w.charAt(i);
+                int cind = c-'a';
+                Trie next = p.ch[cind];
+                if(next == null){
+                    next = p.ch[cind] = new Trie();
+                }
+                p = next;
             }
-
+            p.isWord = true;
         }
-        return new ArrayList<>(r);
+
+        private int[][] dirs= {{-1,0}, {1,0}, {0,-1}, {0,1}};
+
+        private void dfs(char[][] a, int i, int j, String cur, Trie node, Set<String> r){
+            // a[i][j] == node == cur
+            if(node.isWord){
+                r.add(cur);
+            }
+            char orig = a[i][j];
+            a[i][j] = '-';
+            for(int[] d: dirs){
+                int ni = i+d[0];
+                int nj = j+d[1];
+                if(ni>=0 && ni<a.length && nj>=0 && nj<a[0].length && a[ni][nj] != '-'){
+                    char nc = a[ni][nj];
+                    int ncind = nc-'a';
+                    Trie nnext = node.ch[ncind];
+                    if( nnext != null){
+                        dfs(a, ni, nj, cur+a[ni][nj], nnext, r);
+                    }
+                }
+            }
+            a[i][j] = orig;
+        }
     }
 }

@@ -23,26 +23,24 @@ Output:
  */
 public class GroupShiftedStrings {
     public List<List<String>> groupStrings(String[] ss) {
-        Map<List<Integer>, List<String>> map = new HashMap<>();
-        for (String s : ss) {
-            List<Integer> sig = sig(s);
-            map.computeIfAbsent(sig, k -> new ArrayList<>()).add(s);
+        // check null error out if needed
+        // only lower case letters. non empty strings
+        Map<List<Integer>, List<String>> m = new HashMap<>();
+        for(String s: ss){
+            List<Integer> key = getKey(s);
+            m.computeIfAbsent(key, k-> new ArrayList<>()).add(s);
         }
-        return new ArrayList<>(map.values());
+        return new ArrayList<>(m.values());
     }
 
-    List<Integer> sig(String s) {
+    private List<Integer> getKey(String s){
         List<Integer> r = new ArrayList<>();
-        if (s.isEmpty()) {
-            return r;
-        }
-        r.add(0);
-        char pre = s.charAt(0);
-        for (int i = 1; i < s.length(); i++) {
-            char cur = s.charAt(i);
-            int d = (cur - pre + 26) % 26;
-            r.add(d);
-            pre = cur;
+        for(int i=1; i<s.length(); i++){
+            int diff = s.charAt(i)-s.charAt(i-1);
+            if(diff<0){
+                diff += 26;
+            }
+            r.add(diff);
         }
         return r;
     }

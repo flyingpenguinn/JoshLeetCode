@@ -24,28 +24,30 @@ Explanation: Another possible reconstruction is ["JFK","SFO","ATL","JFK","ATL","
 
 public class ReconstructItinerary {
     // classical euler path finding: remove an edge after visiting the next node...once we exhaust a node, we add it at the last (actually first in this problem)
-    List<String> r = new ArrayList<>();
-
     public List<String> findItinerary(List<List<String>> tickets) {
-        Map<String, Deque<String>> map = new HashMap<>();
-        // sort small to big : note even if we reverse in the end, we want to go to smaller ones first because that's next to our starting point
-        Collections.sort(tickets, (a, b) -> a.get(0).equals(b.get(0)) ? a.get(1).compareTo(b.get(1)) : a.get(0).compareTo(b.get(0)));
-        for (List<String> t : tickets) {
-            map.computeIfAbsent(t.get(0), k -> new ArrayDeque<>()).offer(t.get(1));
+        Collections.sort(tickets, (x, y) -> x.get(1).compareTo(y.get(1)));
+        Map<String, Deque<String>> g = new HashMap<>();
+        for (List<String> tick : tickets) {
+            String start = tick.get(0);
+            String end = tick.get(1);
+            g.computeIfAbsent(start, key -> new ArrayDeque<>()).add(end);
         }
-        dfs("JFK", map);
+        List<String> r = dfs("JFK", g);
         Collections.reverse(r);
         return r;
     }
 
-    // note in euler path finding a node can be visited multiple times, so we dont use seen set. instead, we poll edges so each edge is only used once
-    private void dfs(String s, Map<String, Deque<String>> map) {
-        Deque<String> dk = map.getOrDefault(s, new ArrayDeque<>());
-        while (!dk.isEmpty()) {
-            String next = dk.poll();
-            dfs(next, map);
+    private List<String> dfs(String s, Map<String, Deque<String>> g) {
+        Deque<String> q = g.getOrDefault(s, new ArrayDeque<>());
+        List<String> r = new ArrayList<>();
+        while (!q.isEmpty()) {
+            String next = q.poll();
+            // remove the edge after we visit it
+            List<String> later = dfs(next, g);
+            r.addAll(later);
         }
         r.add(s);
+        return r;
     }
 
     public static void main(String[] args) {

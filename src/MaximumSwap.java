@@ -22,28 +22,29 @@ public class MaximumSwap {
     // from left to right: if that biggest digit != this digit, swap. note we skip nums == biggest
     // dont need a right arrray to do this
     public int maximumSwap(int num) {
-        String sn = String.valueOf(num);
-        int n = sn.length();
-        int right = n - 1;
+        // non neg int
+        // after swap won't overflow int
+        char[] sn = String.valueOf(num).toCharArray();
+        int rmax = sn.length-1;
         int cand = -1;
-        int candright = right;
-        for (int i = n - 2; i >= 0; i--) {
-            if (sn.charAt(right) < sn.charAt(i)) {
-                right = i;
-            } else if (sn.charAt(right) > sn.charAt(i)) {
+        int candmax = -1;
+        for(int i=sn.length-2; i>=0; i--){
+            if(sn[i] < sn[rmax]){
                 cand = i;
-                candright = right;
+                candmax = rmax;
+                // note we must record the max to swap as well. otherwise we could have sth like 9,9,5,8. we swap 5 with 8, not 9
+            }else if(sn[i] > sn[rmax]){
+                rmax = i;
             }
+            // if ==, keep rmax because we want to record the right most biggest
         }
-        if (cand != -1) {
-            StringBuilder sb = new StringBuilder(sn);
-            char tmp = sb.charAt(cand);
-            sb.setCharAt(cand, sb.charAt(candright));
-            sb.setCharAt(candright, tmp);
-            return Integer.valueOf(sb.toString());
-
-        } else {
+        if(cand==-1){
             return num;
+        }else{
+            char tmp = sn[cand];
+            sn[cand] = sn[candmax];
+            sn[candmax] = tmp;
+            return Integer.valueOf(new String(sn));
         }
     }
 

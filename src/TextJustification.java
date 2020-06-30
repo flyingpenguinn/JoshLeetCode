@@ -58,80 +58,73 @@ Output:
 ]
  */
 public class TextJustification {
-
-    private final String Blank = " ";
-
-    // next space length = ceil(rem space/ rem slots) the subtract and continue
-    public List<String> fullJustify(String[] w, int max) {
+    public List<String> fullJustify(String[] ws, int wid) {
+        // check null error out if needed
+        // wid must be >= any single word
+        // words are non empty
         List<String> r = new ArrayList<>();
-        List<String> cr = new ArrayList<>();
-        cr.add(w[0]);
-        int clen = w[0].length();
-        int cwlen = clen;
-        for (int i = 1; i < w.length; i++) {
-            String wi = w[i];
-            int nl = clen + 1 + wi.length();
-            if (nl <= max) {
-                cr.add(wi);
-                clen = nl;
-                cwlen += wi.length();
-            } else {
-                String reo = reorg(cr, cwlen, max);
-                r.add(reo);
-                cr.clear();
-                cr.add(wi);
-                clen = cwlen = wi.length();
+        if (ws.length == 0) {
+            return r;
+        }
+        int rowStart = 0; // row starts from this index
+        int rowLen = ws[0].length();
+        int wordLen = ws[0].length();
+        for (int i = 1; i < ws.length; i++) {
+            String w = ws[i];
+            rowLen += (1 + w.length());
+            wordLen += w.length();
+            if (rowLen > wid) {
+                // from i can't be fit into the row
+                r.add(justify(ws, rowStart, i - 1, wordLen - w.length(), wid));
+                rowLen = w.length(); // can't be ==0, need to count i in
+                wordLen = w.length();
+                rowStart = i;
             }
         }
-        String last = reorglast(cr, max);
-        r.add(last);
+        r.add(lastRow(ws, wid, rowStart).toString());
         return r;
     }
 
-    String pad(int c) {
+    protected StringBuilder lastRow(String[] ws, int wid, int rowStart) {
+        // last row just normal padding
         StringBuilder sb = new StringBuilder();
-        while (c > 0) {
-            sb.append(Blank);
-            c--;
-        }
-        return sb.toString();
-    }
-
-    String reorg(List<String> words, int wl, int max) {
-        StringBuilder r = new StringBuilder();
-        int wc = words.size();
-        if (wc == 1) {
-            int sp = max - wl;
-            r.append(words.get(0));
-            r.append(pad(sp));
-        } else {
-            int slots = wc - 1;
-            int sps = max - wl;
-            for (int i = 0; i < words.size(); i++) {
-                r.append(words.get(i));
-                if (slots > 0) {
-                    int sp = sps % slots == 0 ? sps / slots : (sps / slots + 1);// int ceil division, key here
-                    r.append(pad(sp));
-                    sps -= sp;
-                    slots--;
-                }
-            }
-        }
-        return r.toString();
-    }
-
-    String reorglast(List<String> cur, int max) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : cur) {
+        for (int i = rowStart; i < ws.length; i++) {
             if (sb.length() > 0) {
-                sb.append(Blank);
+                sb.append(" ");
             }
-            sb.append(s);
+            sb.append(ws[i]);
         }
-        while (sb.length() < max) {
-            sb.append(Blank);
+        // need to pad last row but still need it to be full wid
+        while (sb.length() < wid) {
+            pad(sb, 1);
         }
+        return sb;
+    }
+
+    private String justify(String[] ws, int start, int end, int wordLen, int wid) {
+        int words = end - start + 1;
+        int spaces = wid - wordLen;
+        int spaceSlots = words - 1;
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i <= end; i++) {
+            if (sb.length() > 0) {
+                // won't execute this line if spaceSlots is 0 so won't /0
+                int curspace = (int) (Math.ceil(1.0 * spaces / spaceSlots));
+                spaces -= curspace;
+                spaceSlots--;
+                pad(sb, curspace);
+            }
+            sb.append(ws[i]);
+        }
+        pad(sb, spaces); // in case just one word...still need to pad
         return sb.toString();
+    }
+
+    private void pad(StringBuilder sb, int spaces) {
+        while (spaces > 0) {
+            sb.append(" ");
+            spaces--;
+        }
     }
 
     public static void main(String[] args) {

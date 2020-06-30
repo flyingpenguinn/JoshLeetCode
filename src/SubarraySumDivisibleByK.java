@@ -23,26 +23,21 @@ Note:
  */
 public class SubarraySumDivisibleByK {
     // similar to "continuous subarray sum" but numbers there are positive and k could be 0 there
+    // convert negative number to positive to group them together with peers. -2 ==> 1
     public int subarraysDivByK(int[] a, int k) {
         Map<Integer, Integer> m = new HashMap<>();
         int n = a.length;
         int sum = 0;
         int r = 0;
+        m.put(0, 1);
         for (int i = 0; i < n; i++) {
             sum += a[i];
             int mod = sum % k;
-            if (sum % k == 0) {
-                r++;
+            if (mod < 0) {
+                mod += k;
             }
-            // same mod as this one
-            int pre1 = m.getOrDefault(mod, 0);
-            r += pre1;
-            if (mod != 0) {
-                int t = mod < 0 ? mod + k : mod - k;
-                // negative mod -2==> 3  3==> -2
-                int pre2 = m.getOrDefault(t, 0);
-                r += pre2;
-            }
+            // find myself is enough after neg conversion
+            r += m.getOrDefault(mod, 0);
             m.put(mod, m.getOrDefault(mod, 0) + 1);
         }
         return r;

@@ -32,21 +32,23 @@ Note:
  */
 public class MissingElementInSortedArray {
     // find the first index that can be used as the "base"
-    public int missingElement(int[] a, int k) {
-        int l = 0;
-        int u = a.length - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            // a[mid]-a[0] is the ith number of a[mid]. mid is the ith number in the array. the diff means
-            // how many missing numbers do we have till this index. find the last index that has <k missing numbers till it.
-            // then we can add on top of it
-            if (a[mid] - a[0] - mid >= k) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
+    class Solution {
+        public int missingElement(int[] a, int k) {
+            // check null error out if needed
+            // k>=1
+            // a.length>=1
+            int l = 0;
+            int u = a.length - 1;
+            while (l <= u) {
+                int mid = l + (u - l) / 2;
+                if (a[mid] - a[0] - mid >= k) {
+                    u = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
             }
+            int cur = a[u] - a[0] - u;
+            return a[u] + (k - cur);
         }
-        // from a[u] we count
-        return a[u] + k - (a[u] - a[0] - u);
     }
 }

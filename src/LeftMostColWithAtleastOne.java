@@ -66,25 +66,27 @@ interface BinaryMatrix {
 public class LeftMostColWithAtleastOne {
 
     // because each row columns are sorted and each row is sorted, we can do O(m+n) like finding a value in a sorted matrix
-    public int leftMostColumnWithOne(BinaryMatrix binaryMatrix) {
-        List<Integer> dim = binaryMatrix.dimensions();
+    public int leftMostColumnWithOne(BinaryMatrix bm) {
+        // check null error out if needed
+        List<Integer> dim = bm.dimensions();
         int m = dim.get(0);
         int n = dim.get(1);
-        int j = n - 1;
         int i = 0;
-        int lastj = -1;
+        int j = n - 1;
+        int lastcol = -1;
         while (j >= 0) {
-            while (i < m && binaryMatrix.get(i, j) == 0) {
+            while (i < m && bm.get(i, j) == 0) {
                 i++;
             }
             if (i == m) {
-                break;
+                break; // no more 1 beyond this col, return the last good col (could be -1)
+            } else {
+                lastcol = j;
+                j--;
+                // don't move i here!
             }
-            // i,j is 1 that's why we stopped
-            lastj = j;
-            j--;
         }
-        return lastj;
+        return lastcol;
     }
 
 }

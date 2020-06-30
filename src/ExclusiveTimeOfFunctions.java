@@ -45,22 +45,25 @@ public class ExclusiveTimeOfFunctions {
     //Whenever a function completes using T time, any functions that were running in the background take a penalty of T.
     // we record the penalty on the top of the stack so that it can be passed along
     public int[] exclusiveTime(int n, List<String> logs) {
+        // check null, error out if needed
+        // assuming well paired logs otherwise we check and throw
+        // id, start time, time taken by others
         int[] r = new int[n];
-        // name, start time, subtract
         Deque<int[]> st = new ArrayDeque<>();
-        for (String log : logs) {
-            String[] ss = log.split(":");
-            int id = Integer.valueOf(ss[0]);
-            int time = Integer.valueOf(ss[2]);
-            if ("start".equals(ss[1])) {
+        for(String log: logs){
+            String[] seg = log.split(":");
+            int id = Integer.valueOf(seg[0]);
+            int time = Integer.valueOf(seg[2]);
+            if("start".equals(seg[1])){
                 st.push(new int[]{id, time, 0});
-            } else {
-                int[] top = st.pop();
-                int duration = time - top[1] + 1;
-                int excduration = duration - top[2]; // subtract other's durations.
-                r[id] += excduration;
-                if (!st.isEmpty()) {
-                    st.peek()[2] += duration;// note we subtract the total duration, not exclusive duratoin of this task, on higher level
+            }else{
+                // end. can check id here with the popped item
+                int[] ext = st.pop();
+                int diff = time - ext[1] +1; // mind the +1 here
+                int curTime = diff- ext[2]; // take away the time others spent
+                r[id] += curTime;
+                if(!st.isEmpty()){
+                    st.peek()[2] += diff;
                 }
             }
         }
