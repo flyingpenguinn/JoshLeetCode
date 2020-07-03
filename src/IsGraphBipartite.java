@@ -40,16 +40,16 @@ graph[i] will not contain i or duplicate values.
 The graph is undirected: if any element j is in graph[i], then i will be in graph[j].
  */
 public class IsGraphBipartite {
-
     // label the nodes as 1 if it's an unvisited component because components are not connected with each other anyway
-
     public boolean isBipartite(int[][] g) {
+        // simple graph, no duplicated edge. vertexs...0..n-1
+        // undirected graph
         int n = g.length;
-        int[] st = new int[n];
-        for (int i = 0; i < n; i++) {
-            if (st[i] == 0) {
-                boolean good = dfs(i, g, st, 1);
-                if (!good) {
+        int[] color = new int[n];
+        for(int i=0; i<n; i++){
+            if(color[i] == 0){
+                boolean res = dfs(i, 1, g, color);
+                if(!res){
                     return false;
                 }
             }
@@ -57,18 +57,24 @@ public class IsGraphBipartite {
         return true;
     }
 
-    boolean dfs(int i, int[][] g, int[] st, int color) {
-        st[i] = color;
-        int nextcolor = color == 1 ? 2 : 1;
-        for (int j : g[i]) {
-            if (st[j] == 0) {
-                boolean rt = dfs(j, g, st, nextcolor);
-                if (!rt) {
+
+    private boolean dfs(int i, int curColor, int[][] g, int[] color){
+        // we know i can be on curColor
+        color[i] = curColor;
+        int nextColor = (curColor==1?2:1);
+        if(g[i]==null){
+            return true;
+        }
+        for(int next: g[i]){
+            if(color[next] == 0){
+                boolean res = dfs(next, nextColor, g, color);
+                if(!res){
                     return false;
                 }
-            } else if (st[j] != nextcolor) {
+            }else if (color[next] != nextColor){
                 return false;
             }
+            // otherwise good let go
         }
         return true;
     }

@@ -96,3 +96,63 @@ public class SimilarStringGroups {
         System.out.println(end - start);
     }
 }
+
+class SimilarStringGroupsUnionFind {
+    // if same group, union the groups
+    public int numSimilarGroups(String[] ss) {
+        // must all be anagrams. array non null
+        int[] pa = new int[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            pa[i] = i;
+        }
+        int groups = ss.length;
+        for (int i = 0; i < ss.length; i++) {
+            for (int j = i + 1; j < ss.length; j++) {
+                if (sameGroup(ss[i], ss[j])) {
+                    if (union(pa, i, j)) {
+                        groups--;
+                    }
+                }
+            }
+        }
+        return groups;
+    }
+
+    private boolean union(int[] pa, int i, int j) {
+        int ri = find(pa, i);
+        int rj = find(pa, j);
+        if (ri != rj) {
+            pa[ri] = rj;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int find(int[] pa, int cur) {
+        int pcur = pa[cur];
+        if (pcur == cur) {
+            return cur;
+        } else {
+            int rcur = find(pa, pcur);
+            pa[cur] = rcur;
+            return rcur;
+        }
+    }
+
+    private boolean sameGroup(String s, String t) {
+        // anagrams, same length
+        int diff = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char cs = s.charAt(i);
+            char ct = t.charAt(i);
+            if (cs != ct) {
+                diff++;
+            }
+            if (diff > 2) {
+                break;
+            }
+        }
+        return diff == 2 || diff == 0; // equal also counted as similar
+    }
+}

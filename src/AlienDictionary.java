@@ -47,62 +47,76 @@ There may be multiple valid order of letters, return any one of them is fine.
 public class AlienDictionary {
     // trap1: what are the chars in the dict? need to traverse. not all 26 chars are in the dict
     // trap2: abc, ab will yield an invalid seq
-    public String alienOrder(String[] ws) {
-        Map<Character, Set<Character>> m = new HashMap<>();
-        for (int i = 0; i < ws.length; i++) {
-            for (int j = 0; j < ws[i].length(); j++) {
-                m.put(ws[i].charAt(j), new HashSet<>());
-            }
+    public String alienOrder(String[] words) {
+        // all lower case
+        // if multiple, return anyone
+        // if has circle, return ""
+        // check null error out if needed
+        Map<Integer, Set<Integer>> g = buildGraph(words);
+        if (g == null) {
+            return "";
         }
-        for (int i = 1; i < ws.length; i++) {
-            if (!link(ws[i - 1], ws[i], m)) {
-                return "";
-            }
-        }
-        int[] status = new int[26];
+        int[] st = new int[26];
         StringBuilder sb = new StringBuilder();
-        for (char k : m.keySet()) {
-            if (status[k - 'a'] == 0) {
-                boolean valid = dfs(k, m, status, sb);
+        for (int k : g.keySet()) {
+            if (st[k] == 0) {
+                boolean valid = dfs(k, g, sb, st);
                 if (!valid) {
                     return "";
                 }
             }
         }
         return sb.reverse().toString();
-
     }
 
-    private boolean dfs(char k, Map<Character, Set<Character>> m, int[] st, StringBuilder sb) {
-        st[k - 'a'] = 1;
-        for (char next : m.getOrDefault(k, new HashSet<>())) {
-            if (st[next - 'a'] == 0) {
-                if (!dfs(next, m, st, sb)) {
+    private Map<Integer, Set<Integer>> buildGraph(String[] words) {
+        // make sure we capture all words
+        Map<Integer, Set<Integer>> g = new HashMap<>();
+        for (String w : words) {
+            for (int j = 0; j < w.length(); j++) {
+                g.put((w.charAt(j) - 'a'), new HashSet<>());
+            }
+        }
+        for (int i = 0; i + 1 < words.length; i++) {
+            String w1 = words[i];
+            String w2 = words[i + 1];
+            int j = 0;
+            int k = 0;
+            while (j < w1.length() && k < w2.length()) {
+                if (w1.charAt(j) != w2.charAt(k)) {
+                    int ind1 = w1.charAt(j) - 'a';
+                    int ind2 = w2.charAt(k) - 'a';
+                    g.get(ind1).add(ind2);
+                    break;
+                } else {
+                    j++;
+                    k++;
+                }
+            }
+            // abcd vs abc
+            if (j < w1.length() && k == w2.length()) {
+                return null;
+            }
+        }
+        return g;
+    }
+
+
+    private boolean dfs(int i, Map<Integer, Set<Integer>> g, StringBuilder res, int[] st) {
+        st[i] = 1;
+        Set<Integer> nexts = g.get(i);
+        for (int next : nexts) {
+            if (st[next] == 1) {
+                return false;
+            } else if (st[next] == 0) {
+                boolean valid = dfs(next, g, res, st);
+                if (!valid) {
                     return false;
                 }
-            } else if (st[next - 'a'] == 1) {
-                return false;
             }
         }
-        st[k - 'a'] = 2;
-        sb.append(k);
-        return true;
-    }
-
-
-    private boolean link(String s, String t, Map<Character, Set<Character>> m) {
-        int i = 0;
-        for (; i < s.length() && i < t.length(); i++) {
-            char sc = s.charAt(i);
-            char tc = t.charAt(i);
-            if (sc != tc) {
-                m.get(sc).add(tc);
-                break;
-            }
-        }
-        if (i == t.length() && i != s.length()) {
-            return false;
-        }
+        res.append((char) ('a' + i));
+        st[i] = 2;
         return true;
     }
 

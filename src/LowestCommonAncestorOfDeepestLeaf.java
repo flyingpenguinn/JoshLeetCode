@@ -1,94 +1,113 @@
 import base.TreeNode;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/*
+LC#1123
+Given a rooted binary tree, return the lowest common ancestor of its deepest leaves.
+
+Recall that:
+
+The node of a binary tree is a leaf if and only if it has no children
+The depth of the root of the tree is 0, and if the depth of a node is d, the depth of each of its children is d+1.
+The lowest common ancestor of a set S of nodes is the node A with the largest depth such that every node in S is in the subtree with root A.
+
+
+Example 1:
+
+Input: root = [1,2,3]
+Output: [1,2,3]
+Explanation:
+The deepest leaves are the nodes with values 2 and 3.
+The lowest common ancestor of these leaves is the node with value 1.
+The answer returned is a TreeNode object (not an array) with serialization "[1,2,3]".
+Example 2:
+
+Input: root = [1,2,3,4]
+Output: [4]
+Example 3:
+
+Input: root = [1,2,3,4,5]
+Output: [2,4,5]
+
+
+Constraints:
+
+The given tree will have between 1 and 1000 nodes.
+Each node of the tree will have a distinct value between 1 and 1000.
+ */
 public class LowestCommonAncestorOfDeepestLeaf {
-    int maxdc = 0;
-    int maxd = -1;
-    TreeNode found = null;
+    // use a set to record lowest leaves then get their parents until there is only one left in the set
+    private Set<TreeNode> set = new HashSet<TreeNode>();
+    private Map<TreeNode, TreeNode> pa = new HashMap<>();
+    private int maxdep = -1;
 
     public TreeNode lcaDeepestLeaves(TreeNode root) {
-        if (root == null) {
-            return null;
+        // non empty
+        dfs(root, null, 0);
+        while (set.size() > 1) {
+            Set<TreeNode> nset = new HashSet<>();
+            for (TreeNode t : set) {
+                nset.add(pa.get(t));
+            }
+            set.clear();
+            set = nset;
         }
-        dfsdepth(root, 0);
-        //  System.out.println(maxd);
-        //  System.out.println(maxdc);
-
-        dfsfind(root, 0);
-        return found;
+        return set.iterator().next();
     }
 
-    // get max depth
-    void dfsdepth(TreeNode n, int d) {
+    private void dfs(TreeNode n, TreeNode p, int dep) {
         if (n == null) {
             return;
         }
-        if (n.left == null && n.right == null) {
-            if (d > maxd) {
-                maxd = d;
-                maxdc = 1;
-            } else if (d == maxd) {
-                maxdc++;
-            }
-        } else {
-            dfsdepth(n.left, d + 1);
-            dfsdepth(n.right, d + 1);
+        if (dep > maxdep) {
+            maxdep = dep;
+            set.clear();
+            set.add(n);
+        } else if (dep == maxdep) {
+            set.add(n);
         }
-
-    }
-
-    // how many depth== maxd leaves in subtree of n
-    int dfsfind(TreeNode n, int d) {
-        if (found != null) {
-            return -1;
+        if (p != null) {
+            pa.put(n, p);
         }
-
-        if (n == null) {
-            return 0;
-        }
-        int curcount = 0;
-        if (n.left == null && n.right == null && d == maxd) {
-            curcount = 1;
-        }
-        int left = dfsfind(n.left, d + 1);
-        int right = dfsfind(n.right, d + 1);
-        if (left + right + curcount == maxdc) {
-            if (found == null) {
-                // avoid overriding
-                found = n;
-            }
-        }
-        return left + right + curcount;
+        dfs(n.left, n, dep + 1);
+        dfs(n.right, n, dep + 1);
     }
 }
 
 class LowestCommonAncestorOnePass {
-    class ReturnValue {
-        // maxdepth in this subtree
-        int depth;
-        // the lca node we got in this subtree. may not be the root
-        TreeNode lca;
+    // if left height == right height then it's this node n
+    // otherwise, it's the lca in the higher subtree
+    // note, this ndoe can well override local lcas in left or right subtree
+    private class Result {
+        private int depth;
+        private TreeNode lca;
 
-        public ReturnValue(int depth, TreeNode lca) {
+        public Result(int depth, TreeNode lca) {
             this.depth = depth;
             this.lca = lca;
         }
     }
 
     public TreeNode lcaDeepestLeaves(TreeNode root) {
-        return dolca(root,0).lca;
+        return lca(root).lca;
     }
 
-    private ReturnValue dolca(TreeNode root, int depth) {
-        if (root == null) {
-            return new ReturnValue(depth, null);
+    private Result lca(TreeNode n) {
+        if (n == null) {
+            return new Result(0, null);
         }
-        ReturnValue left = dolca(root.left, depth+1);
-        ReturnValue right = dolca(root.right, depth+1);
-        // if depth is the same we found an lca at root for left and right tree
+        Result left = lca(n.left);
+        Result right = lca(n.right);
         if (left.depth == right.depth) {
-            return new ReturnValue(left.depth, root);
+            return new Result(left.depth + 1, n);
+        } else if (left.depth > right.depth) {
+            return new Result(left.depth + 1, left.lca);
         } else {
-            return left.depth > right.depth ? new ReturnValue(left.depth, left.lca) : new ReturnValue(right.depth, right.lca);
+            return new Result(right.depth + 1, right.lca);
         }
     }
 }

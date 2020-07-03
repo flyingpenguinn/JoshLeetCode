@@ -32,52 +32,37 @@ public class ExpressionAddOperators {
     // trick 1: get a multi cache for better enumeration
     // trick2: handle numbers starting with 0
     // trick3: handle long
-    List<String> r = new ArrayList<>();
-
     public List<String> addOperators(String s, int t) {
-        dfs(s, 0, 0, 0, "", t);
-        return r;
+        List<String> r = new ArrayList<>();
+        if(s==null){
+            return r;
+        }
+        // s only has digits
+        dfs(s, 0, 0, 0, "",t, r);
+        return new ArrayList<>(r);
     }
 
-    char[] addonly = {'+'};
-    char[] all = {'+', '-', '*', '/'};
-
-    // cur pos, last operator, current result, pending multi
-    void dfs(String s, int i, long res, long pending, String cur, int t) {
-        int n = s.length();
-        if (i == n) {
-            if (res + pending == t) {
-                r.add(cur);
+    // at pos i, numbers before realized cur, pending numbers are waiting for decision about the sign before current num
+    private void dfs(String s, int i, long cur, long pending, String sol, long t, List<String> r){
+        if(i==s.length()){
+            if(cur+pending == t){
+                r.add(sol);
             }
             return;
         }
-        long cv = 0;
-        for (int j = i; j < n; j++) {
-            cv = cv * 10 + (s.charAt(j) - '0');
-            if (s.charAt(i) == '0' && j > i) {
+        long num = 0;
+        for(int j=i; j<s.length(); j++){
+            if(s.charAt(i)== '0' && j>i){
                 break;
             }
-            // what if too long to fit into int?
-            if (cv > Integer.MAX_VALUE) {
-                break;
-            }
-            char[] ops = all;
-            if (i == 0) {
-                ops = addonly;
-            }
-            for (char op : ops) {
-                if (op == '+') {
-                    // what was pending is now ended. this number will serve as base for future *
-                    dfs(s, j + 1, res + pending, cv, (cur.isEmpty() ? "" : cur + "+") + cv, t);
-                }
-                if (op == '-') {
-                    // same, but -cv will serve as base
-                    dfs(s, j + 1, res + pending, -cv, cur + "-" + cv, t);
-                }
-                if (op == '*') {
-                    // just keep piling on the pending number to form a new pending multi cache
-                    dfs(s, j + 1, res, pending * cv, cur + "*" + cv, t);
-                }
+            num = num*10L+ (s.charAt(j)-'0');
+            // cur-> + -> num. note the first num is always an implicit +
+            if(i==0){
+                dfs(s, j+1, 0, num, String.valueOf(num), t, r);
+            }else{
+                dfs(s, j+1, cur+pending, num, sol+"+"+num, t, r);
+                dfs(s, j+1, cur+pending, -num, sol+"-"+num, t, r);
+                dfs(s, j+1, cur, pending*num, sol+"*"+num, t, r);
             }
         }
     }

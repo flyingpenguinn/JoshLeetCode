@@ -103,44 +103,69 @@ public class AccountsMerge {
 
 class AccountsMergeDfs {
     // easier to implement. mind the duplicated emails...
-    public List<List<String>> accountsMerge(List<List<String>> accounts) {
-        int n = accounts.size();
-        Map<Integer, Set<Integer>> graph = new HashMap<>();
-        Map<String, Integer> mail2holder = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            List<String> ac = accounts.get(i);
-            for (int j = 1; j < ac.size(); j++) {
-                String mail = ac.get(j);
-                if (mail2holder.containsKey(mail)) {
-                    int k = mail2holder.get(mail);
-                    graph.computeIfAbsent(i, key -> new HashSet<>()).add(k);
-                    graph.computeIfAbsent(k, key -> new HashSet<>()).add(i);
-                }
-                mail2holder.put(mail, i);
-            }
-        }
+
+    public List<List<String>> accountsMerge(List<List<String>> accts) {
+        // check null error out if needed
+        Map<Integer,Set<Integer>> g = buildGraph(accts);
         Set<Integer> seen = new HashSet<>();
         List<List<String>> r = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            if (!seen.contains(i)) {
-                List<String> mails = new ArrayList<>(dfs(i, graph, seen, accounts));
-                Collections.sort(mails);
-                mails.add(0, accounts.get(i).get(0));
-                r.add(mails);
+        for(int i=0; i<accts.size(); i++){
+            if(!seen.contains(i)){
+                List<Integer> comp = dfs(accts,i, g, seen);
+                List<String> compSol = buildSol(comp, accts,i);
+                r.add(compSol);
             }
         }
         return r;
     }
 
-    Set<String> dfs(int i, Map<Integer, Set<Integer>> graph, Set<Integer> seen, List<List<String>> a) {
-        seen.add(i);
-        Set<String> r = new HashSet<>();
-        for (int j = 1; j < a.get(i).size(); j++) {
-            r.add(a.get(i).get(j));
+    private Map<Integer,Set<Integer>> buildGraph(List<List<String>> accts){
+        // mail to last seen id of accounts
+        Map<String, Integer> m2Id = new HashMap<>();
+        Map<Integer,Set<Integer>> g = new HashMap<>();
+        for(int i = 0; i<accts.size(); i++){
+            List<String> detail = accts.get(i);
+            for(int j=1; j<detail.size(); j++){
+                String mail = detail.get(j);
+                if(m2Id.containsKey(mail)){
+                    int other = m2Id.get(mail);
+                    // bidirectional connection
+                    g.computeIfAbsent(i, k-> new HashSet<>()).add(other);
+                    g.computeIfAbsent(other, k-> new HashSet<>()).add(i);
+                }
+                m2Id.put(mail, i);
+            }
         }
-        for (int next : graph.getOrDefault(i, new HashSet<>())) {
-            if (!seen.contains(next)) {
-                r.addAll(dfs(next, graph, seen, a));
+        return g;
+    }
+
+    private List<String> buildSol(List<Integer> comp,List<List<String>> accts, int i ){
+        List<String> compSol = new ArrayList<>();
+        compSol.add(accts.get(i).get(0));
+        // all same emails map to same name
+        Set<String> emails = new HashSet<>();
+        // emails may have duplications
+        for(int index: comp){
+            for(int j=1; j<accts.get(index).size(); j++){
+                emails.add(accts.get(index).get(j));
+            }
+        }
+        List<String> sortedMail = new ArrayList<>(emails);
+        Collections.sort(sortedMail);
+        compSol.addAll(sortedMail);
+        return compSol;
+    }
+
+
+    private List<Integer> dfs(List<List<String>> accts, int i, Map<Integer,Set<Integer>> g, Set<Integer> seen){
+        seen.add(i);
+        List<Integer> r = new ArrayList<>();
+        r.add(i);
+        Set<Integer> nexts = g.getOrDefault(i, new HashSet<>());
+        for(int ne: nexts){
+            if(!seen.contains(ne)){
+                List<Integer> nr = dfs(accts, ne, g, seen);
+                r.addAll(nr);
             }
         }
         return r;

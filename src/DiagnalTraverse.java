@@ -30,45 +30,41 @@ The total number of elements of the given matrix will not exceed 10,000.
 public class DiagnalTraverse {
     // traverse according to sum of i, j.  starting point is either m-1 or 0. when it yields bad col, we just move the row over to good area
     public int[] findDiagonalOrder(int[][] a) {
-        int m = a.length;
-        if (m == 0) {
+        // if over right border? bottom border? top border? left border? deal with them differently.
+        // note we must deal with right/bottom first then top/eft for the processing of diagnoals. diagonals follow the right/bottom way
+        if (a == null || a.length == 0 || a[0].length == 0) {
             return new int[0];
         }
+        int m = a.length;
         int n = a[0].length;
-        int[] r = new int[m * n];
+        int r = 0;
+        int c = 0;
+        int d = 1;
         int ri = 0;
-        for (int sum = 0; sum <= m + n - 2; sum++) {
-            if (sum % 2 == 0) {
-                int rowstart = m - 1;
-                int colstart = sum - rowstart;
-                if (colstart < 0) {
-                    rowstart += colstart;
-                    colstart = 0;
-                }
-                int i = rowstart;
-                int j = colstart;
-                while (i >= 0 && i < m && j >= 0 && j < n) {
-                    r[ri++] = a[i][j];
-                    i--;
-                    j++;
-                }
-            } else {
-                int rowstart = 0;
-                int colstart = sum - rowstart;
-                if (colstart > (n - 1)) {
-                    rowstart += colstart - (n - 1);
-                    colstart = n - 1;
-                }
-                int i = rowstart;
-                int j = colstart;
-                while (i >= 0 && i < m && j >= 0 && j < n) {
-                    r[ri++] = a[i][j];
-                    i++;
-                    j--;
-                }
+        int[] res = new int[m * n];
+        while (ri < res.length) {
+
+            res[ri++] = a[r][c];
+            r -= d;
+            c += d;
+            // order matters! r==m and c==n must be before the <0 cases
+            if (r == m) {
+                c += 2;
+                r = m - 1;
+                d = -d;
+            } else if (c == n) {
+                r += 2;
+                c = n - 1;
+                d = -d;
+            } else if (c < 0) {
+                c = 0;
+                d = -d;
+            } else if (r < 0) {
+                r = 0;
+                d = -d;
             }
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {
@@ -80,32 +76,28 @@ public class DiagnalTraverse {
 class DiagonalTraverseMine {
     // or we can use a map to keep the sums
     public int[] findDiagonalOrder(int[][] a) {
-        int m = a.length;
-        if (m == 0) {
+        if (a == null) {
             return new int[0];
         }
+        int m = a.length;
         int n = a[0].length;
-
         Map<Integer, LinkedList<Integer>> map = new HashMap<>();
-        int maxsum = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                int sum = i + j;
-                maxsum = Math.max(maxsum, sum);
-                if (sum % 2 == 1) {
-                    map.computeIfAbsent(sum, k -> new LinkedList<>()).offerLast(a[i][j]);
+                int key = i + j;
+                if (key % 2 == 1) {
+                    map.computeIfAbsent(key, k -> new LinkedList<>()).offerLast(a[i][j]);
                 } else {
-                    map.computeIfAbsent(sum, k -> new LinkedList<>()).offerFirst(a[i][j]);
+                    map.computeIfAbsent(key, k -> new LinkedList<>()).offerFirst(a[i][j]);
                 }
             }
         }
         int[] r = new int[m * n];
         int ri = 0;
-        for (int i = 0; i <= maxsum; i++) {
-            LinkedList<Integer> v = map.get(i);
-            Iterator<Integer> it = v.iterator();
-            while (it.hasNext()) {
-                r[ri++] = it.next();
+        for (int i = 0; i <= m + n - 2; i++) {
+            LinkedList<Integer> list = map.get(i);
+            while (!list.isEmpty()) {
+                r[ri++] = list.pollFirst();
             }
         }
         return r;

@@ -26,43 +26,43 @@ public class TaskScheduler {
     // from high to low freq. arrange up to == n+1 then resort and repeat
     // run high freq as much as possible
     // similar to rearrange string k distance apart
-    public int leastInterval(char[] ts, int k) {
-        Map<Character, Integer> map = new HashMap<>();
-        for (int i = 0; i < ts.length; i++) {
-            map.put(ts[i], map.getOrDefault(ts[i], 0) + 1);
+    /*
+    traps:
+    1. last segment can be a stub
+    2. num++: must be num apart, means segment is num+1 in length
+
+     */
+    public int leastInterval(char[] a, int num) {
+        num++; // ++ first: the segments are of num+1 in size
+        Map<Character, Integer> m = new HashMap<>();
+        for (int i = 0; i < a.length; i++) {
+            m.put(a[i], m.getOrDefault(a[i], 0) + 1);
         }
-        // must keep the sorting stable
-        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> !map.get(y).equals(map.get(x)) ?
-                Integer.compare(map.get(y), map.get(x)) : Character.compare(x, y));
-        for (char ck : map.keySet()) {
-            pq.offer(ck);
+        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> Integer.compare(m.get(y), m.get(x)));
+        for (char k : m.keySet()) {
+            pq.offer(k);
         }
-        // most frequent at the top
         int r = 0;
-        int added = 0;
-        while (added < ts.length) {
-            int ingroup = 0;
+        while (!m.isEmpty()) {
             List<Character> polled = new ArrayList<>();
-            while (ingroup < k + 1 && !pq.isEmpty()) {
-                // n apart, so a group is of length n+1
-                char c = pq.poll();
+            int count = 0;
+            while (!pq.isEmpty() && count < num) {
+                Character c = pq.poll();
+                count++;
                 r++;
-                added++;
-                ingroup++;
-                int nv = map.get(c) - 1;
-                if (nv == 0) {
-                    map.remove(c);
-                } else {
-                    map.put(c, nv);
+                int ncount = m.get(c) - 1;
+                if (ncount != 0) {
+                    m.put(c, ncount);
                     polled.add(c);
+                } else {
+                    m.remove(c);  // not putting 0 counts back
                 }
             }
-            if (ingroup < k + 1 && !polled.isEmpty()) {
-                int diff = k + 1 - ingroup;
-                r += diff;
+            if (!m.isEmpty() && count < num) {
+                r += (num - count);   // mind the final segment that may not be as long as the whole segment
             }
-            for (int i = 0; i < polled.size(); i++) {
-                pq.offer(polled.get(i));
+            for (char c : polled) {
+                pq.offer(c);
             }
         }
         return r;

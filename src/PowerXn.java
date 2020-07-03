@@ -17,33 +17,27 @@ Output: 0.25000
 Explanation: 2-2 = 1/22 = 1/4 = 0.25
  */
 public class PowerXn {
-
-    // typical divide and conquer
     public double myPow(double x, int n) {
-        return dopow(x, n);
+        return doPow(x, n);
     }
 
-    double dopow(double x, long n){
-        if(x==0){
-            return 0;
-        }
-        else if(n==1){
-            return x;
-        }
-        else if(n==0){
+    // long in case -n overflows....
+    private double doPow(double x, long n) {
+        if (n == 0) {
             return 1;
         }
-        else if(n<0){
-            return 1/dopow(x, -n);
-        }else{
-            double half = dopow(x, n/2);
-            if(n%2==0){
-                return half*half;
-            }else{
-                return half*half*x;
-            }
+        if (x == 0 || x == 1 || n == 1) {
+            return x;
         }
-
+        if (n < 0) {
+            return 1.0 / doPow(x, -n);
+        }
+        double half = doPow(x, n / 2);
+        if (n % 2 == 0) {
+            return half * half;
+        } else {
+            return x * half * half;
+        }
     }
 
     public static void main(String[] args) {

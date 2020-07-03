@@ -29,6 +29,14 @@ The coins can form the following rows:
 Because the 4th row is incomplete, we return 3.
  */
 public class ArrangeCoins {
+    /*
+    Math sol:
+     public int arrangeCoins(int n) {
+        double sol = (Math.sqrt(1.0+8.0*n) -1)/2.0;
+        return (int) sol;
+    }
+
+     */
     public int arrangeCoins(int n) {
         long l = 1L;
         long u = n;

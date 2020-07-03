@@ -20,33 +20,40 @@ public class NextPermutation {
     // 3. swap that number and i-1
     // 4. reverse everything from i to n-1
     public void nextPermutation(int[] a) {
-        int n = a.length;
-        int i = n - 1;
-        while (i >= 1 && a[i] <= a[i - 1]) {
-            i--;
+        // check null and return/error
+        int p1 = -1;
+        for(int i=a.length-1; i>=1; i--){
+            // first number < the one after
+            if(a[i]>a[i-1]){
+                p1 = i-1;
+                break;
+            }
         }
-        if (i == 0) {
+        if(p1==-1){
+            // 54321 or 22222
             Arrays.sort(a);
             return;
         }
-        int t = i - 1;
-        i = n - 1;
-        // the smallest >
-        while (a[i] <= a[t]) {
-            i--;
+        // first number > p1 on the right
+        int p2 = p1+1;
+        for(int i=a.length-1; i>p1; i--){
+            if(a[i]>a[p1]){
+                p2 = i;
+                break;
+            }
         }
-        swap(a, t, i);
-        reverse(a, t + 1, n - 1);
+        swap(a, p1, p2);
+        reverse(a, p1+1, a.length-1);
     }
 
-    void swap(int[] a, int i, int j) {
+    private void swap(int[] a, int i, int j){
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
     }
 
-    void reverse(int[] a, int i, int j) {
-        while (i < j) {
+    private void reverse(int[] a, int i, int j){
+        while(i<j){
             swap(a, i++, j--);
         }
     }

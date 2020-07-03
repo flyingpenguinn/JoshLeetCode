@@ -30,35 +30,39 @@ All of the nodes' values will be unique.
 p and q are different and both values will exist in the binary tree.
  */
 public class LowestCommonAncestorOfBinaryTree {
+    // all values unique in tree. note we can handle the case where lca doesnt exist we return null
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         return dfs(root, p, q)[0];
     }
 
-    // the lcp itself, or p or q if found
-    // using this way we can tell if lca exists
-    private TreeNode[] dfs(TreeNode n, TreeNode p, TreeNode q) {
-        if (n == null) {
+    // if lca, return lca+null
+    // otherwise, return null and either p or q found
+    private TreeNode[] dfs(TreeNode n, TreeNode p, TreeNode q){
+        if(n==null){
             return new TreeNode[]{null, null};
         }
         TreeNode[] left = dfs(n.left, p, q);
-        if (left[0] != null) {
+        if(left[0] != null){
             return left;
         }
-        TreeNode[] right = dfs(n.right, p, q);
-        if (right[0] != null) {
+        TreeNode[] right = dfs(n.right, p,q);
+        if(right[0] != null){
             return right;
         }
-        if (left[1] != null && right[1] != null) {
+        if(left[1]!= null && right[1]!= null){
             return new TreeNode[]{n, null};
-        }
-        TreeNode cur = (n == p || n == q) ? n : null;
-        TreeNode child = left[1] != null ? left[1] : right[1];
-        if (cur != null && child != null) {
-            return new TreeNode[]{n, null};
-        } else if (cur != null || child != null) {
-            return new TreeNode[]{null, cur != null ? cur : child};
-        } else {
-            return new TreeNode[]{null, null};
+        } else if (left[1] != null || right[1] != null){
+            if(n==p || n==q){
+                return new TreeNode[]{n, null};
+            }else{
+                return new TreeNode[]{null, left[1]!= null? left[1]: right[1]};
+            }
+        } else{
+            if(n==p || n==q){
+                return new TreeNode[]{null,n};
+            }else{
+                return new TreeNode[]{null, null};
+            }
         }
     }
 

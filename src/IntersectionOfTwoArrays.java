@@ -19,27 +19,27 @@ The result can be in any order.
  */
 public class IntersectionOfTwoArrays {
     public int[] intersection(int[] a, int[] b) {
+        // check null
         if (a.length > b.length) {
-            int[] tmp = a;
-            a = b;
-            b = tmp;
+            return intersection(b, a);
         }
-        Set<Integer> set = new HashSet<>();
+        Set<Integer> sa = new HashSet<>();
         for (int ai : a) {
-            set.add(ai);
+            sa.add(ai);
         }
-        Set<Integer> r = new HashSet<>();
+        // what if b has duplicates? must use a set
+        Set<Integer> res = new HashSet<>();
         for (int bi : b) {
-            if (set.contains(bi)) {
-                r.add(bi);
+            if (sa.contains(bi)) {
+                res.add(bi);
             }
         }
-        int[] res = new int[r.size()];
+        int[] arrayRes = new int[res.size()];
         int ri = 0;
-        for (int re : r) {
-            res[ri++] = re;
+        for (int k : res) {
+            arrayRes[ri++] = k;
         }
-        return res;
+        return arrayRes;
     }
 }
 
