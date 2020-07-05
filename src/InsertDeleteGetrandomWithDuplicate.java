@@ -33,7 +33,7 @@ collection.getRandom();
  */
 public class InsertDeleteGetrandomWithDuplicate {
 
-    // essence: we can delete in a list with o(1) time if we know the position to delete. we can swap with the last
+    // essence: we can delete in a list with o(1) time if we know the position to delete. we can swap with the last and delete the last in o1
     // we can insert in O(1) time with array list concept
     // to pick from list with linear possibility we dont really need to sort the list
     // diff from #380 is we need to manage last == deleted situation
@@ -51,73 +51,58 @@ public class InsertDeleteGetrandomWithDuplicate {
 }
 
 class RandomizedCollection {
-    // use swapping to make the remaining elements consecutive...
-    Map<Integer, Set<Integer>> m = new HashMap<>();
-    ArrayList<Integer> list = new ArrayList<>();
-    int rs = 0;
 
-    /**
-     * Initialize your data structure here.
-     */
+    private List<Integer> list = new ArrayList<>();
+    private Map<Integer, Set<Integer>> lm = new HashMap<>();
+    private int index = 0; // next position to insert
+    /** Initialize your data structure here. */
     public RandomizedCollection() {
 
     }
 
-    /**
-     * Inserts a value to the set. Returns true if the set did not already contain the specified element.
-     */
+    /** Inserts a value to the set. Returns true if the set did not already contain the specified element. */
     public boolean insert(int val) {
-        boolean rt = true;
-        if (m.containsKey(val)) {
-            rt = false;
-        }
-        m.computeIfAbsent(val, k -> new HashSet<>()).add(rs);
-        list.add(rs++, val);
-        return rt;
+        Set<Integer> l1 = lm.get(val);
+        boolean nonExt = l1==null || l1.isEmpty();
+        list.add(index, val);
+        lm.computeIfAbsent(val, k-> new HashSet<>()).add(index);
+        index++;
+        return nonExt;
     }
 
-    /**
-     * Removes a value from the set. Returns true if the set contained the specified element.
-     */
+    /** Removes a value from the set. Returns true if the set contained the specified element. */
     public boolean remove(int val) {
-        Set<Integer> posset = m.get(val);
-        if (posset == null || posset.isEmpty() || rs <= 0) {
+        Set<Integer> l1 = lm.get(val);
+        if(l1==null || l1.isEmpty()){
             return false;
         }
-        // the end index is gone from the number's set anyway
-        int endindex = rs - 1;
-        Integer lastval = list.get(endindex);
-        Set<Integer> endset = m.get(lastval);
-        endset.remove(endindex);
-        // if the one to delete is the last val, then we are done
-        // otherwise we moved the last one to removepos and deleted endindex
-        if (lastval != val) {
-            Integer removepos = posset.iterator().next();
-            posset.remove(removepos);
-            endset.add(removepos);
-            swap(list, removepos, endindex);
+        int p1 = l1.iterator().next();
+        int p2 = index-1; // can't be size-1
+        int v2 = list.get(p2);
+        Set<Integer> l2 = lm.get(v2);
+        if(val == v2){
+            l1.remove(p2); // just need to remove the last if they are equal
+        }else{
+            swap(list, p1, p2);
+            l1.remove(p1);
+            l2.remove(p2);
+            l2.add(p1);
         }
-
-        // correct the location of the swapped last
-        rs--;
+        index--;
         return true;
     }
 
-    Random rand = new Random();
-
-    /**
-     * Get a random element from the set.
-     */
-    public int getRandom() {
-        //  System.out.println(list+" "+rs);
-        int ran = rand.nextInt(rs);
-        return list.get(ran);
+    private void swap(List<Integer> list, int p1, int p2){
+        int v1 = list.get(p1);
+        int v2 = list.get(p2);
+        list.set(p2, v1);
+        list.set(p1, v2);
     }
 
-    void swap(List<Integer> list, int i, int j) {
-        int tmp = list.get(i);
-        list.set(i, list.get(j));
-        list.set(j, tmp);
+    private Random ran = new Random();
+    /** Get a random element from the set. */
+    public int getRandom() {
+        return list.get(ran.nextInt(index));
     }
 }
 

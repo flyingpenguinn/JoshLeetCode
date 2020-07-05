@@ -67,7 +67,7 @@ public class TextJustification {
             return r;
         }
         int rowStart = 0; // row starts from this index
-        int rowLen = ws[0].length();
+        int rowLen = ws[0].length(); // always contains one word at least try to fit the next one
         int wordLen = ws[0].length();
         for (int i = 1; i < ws.length; i++) {
             String w = ws[i];

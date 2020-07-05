@@ -42,22 +42,23 @@ public class WordBreakII {
 
     // using the n*len^2 solution from word break 1 with string result caching simple dfs will tle
     // in the worst case the solution space can be exponential: for len i, it generates 2^i-1 strings. for example aaaa with any len of a as dict string
-    List<String>[] dp;
-
-    public List<String> wordBreak(String s, List<String> wordDict) {
-        int n = s.length();
-        dp = new ArrayList[n];
-        int maxlen = 0;
-        Set<String> set = new HashSet<>();
-        for (String w : wordDict) {
-            set.add(w);
-            maxlen = Math.max(maxlen, w.length());
+    public List<String> wordBreak(String s, List<String> dict) {
+        List<String> r = new ArrayList<>();
+        if (s == null || s.isEmpty() || dict.isEmpty()) {
+            return r;
         }
-        return dow(0, maxlen, s, set);
+        int n = s.length();
+        List<String>[] dp = new ArrayList[n];
+        int mlen = 0;
+        Set<String> set = new HashSet<>();
+        for (String w : dict) {
+            set.add(w);
+            mlen = Math.max(mlen, w.length());
+        }
+        return dfs(0, s, set, mlen, dp);
     }
 
-    // empty means invalid, null means not calced yet
-    List<String> dow(int i, int maxlen, String s, Set<String> set) {
+    private List<String> dfs(int i, String s, Set<String> dict, int mlen, List<String>[] dp) {
         int n = s.length();
         List<String> r = new ArrayList<>();
         if (i == n) {
@@ -68,20 +69,14 @@ public class WordBreakII {
             return dp[i];
         }
         StringBuilder sb = new StringBuilder();
-        for (int j = i; j < n; j++) {
+        for (int j = i; j < n && j < i + mlen; j++) {
             sb.append(s.charAt(j));
-            String str = sb.toString();
-            if (str.length() > maxlen) {
-                break;
-            }
-            if (set.contains(str)) {
-                List<String> later = dow(j + 1, maxlen, s, set);
-                for (String l : later) {
-                    if (l.isEmpty()) {
-                        r.add(str);
-                    } else {
-                        r.add(str + " " + l);
-                    }
+            String str = sb.toString(); // i...j in string
+            if (dict.contains(str)) {
+                List<String> later = dfs(j + 1, s, dict, mlen, dp); // next one from j+1
+                for (String ls : later) {
+                    String cur = str + (ls.isEmpty() ? "" : " " + ls);
+                    r.add(cur);
                 }
             }
         }

@@ -18,22 +18,21 @@ Output: 27
 Explanation: One 1 at depth 1, one 4 at depth 2, and one 6 at depth 3; 1 + 4*2 + 6*3 = 27.
  */
 public class NestedListWeightI {
-    public int depthSum(List<NestedInteger> l) {
-        return dfslist(l, 1);
+    public int depthSum(List<NestedInteger> list) {
+        return dfs(list, 1);
     }
 
-    int dfs(NestedInteger ni, int d) {
-        if (ni.isInteger()) {
-            return ni.getInteger() * d;
-        } else {
-            return dfslist(ni.getList(), d + 1);
-        }
-    }
-
-    int dfslist(List<NestedInteger> l, int d) {
+    private int dfs(List<NestedInteger> list, int depth) {
         int r = 0;
-        for (NestedInteger ni : l) {
-            r += dfs(ni, d);
+        if (list == null || list.isEmpty()) {
+            return r;
+        }
+        for (NestedInteger nl : list) {
+            if (nl.isInteger()) {
+                r += nl.getInteger() * depth;
+            } else {
+                r += dfs(nl.getList(), depth + 1);
+            }
         }
         return r;
     }

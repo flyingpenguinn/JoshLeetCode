@@ -42,24 +42,27 @@ Output: "/a/b/c"
 public class SimplifyPath {
     // use deque to get results more quickly
     public String simplifyPath(String path) {
-        String[] sp = path.split("/");
-        Deque<String> ps = new ArrayDeque<>();
-        for (String p : sp) {
+        String[] ps = path.split("/");
+        Deque<String> dq = new ArrayDeque<>();
+        for (String p : ps) {
             if (p.isEmpty() || ".".equals(p)) {
                 continue;
+            } else if ("..".equals(p)) {
+                if (!dq.isEmpty()) {
+                    dq.pollLast();
+                }// otherwise walk away
+            } else {
+                dq.offerLast(p);
             }
-            if ("..".equals(p)) {
-                // poll return null if empty so no need to check empty
-                ps.pollLast();
-                continue;
-            }
-            ps.offerLast(p);
         }
         StringBuilder sb = new StringBuilder();
-        while (!ps.isEmpty()) {
-            sb.append("/");
-            sb.append(ps.pollFirst());
+        if (dq.isEmpty()) {// mind this!
+            return "/";
         }
-        return sb.length() == 0 ? "/" : sb.toString();
+        while (!dq.isEmpty()) {
+            sb.append("/");
+            sb.append(dq.pollFirst());
+        }
+        return sb.toString();
     }
 }

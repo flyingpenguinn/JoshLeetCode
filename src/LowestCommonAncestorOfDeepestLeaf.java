@@ -83,31 +83,31 @@ class LowestCommonAncestorOnePass {
     // otherwise, it's the lca in the higher subtree
     // note, this ndoe can well override local lcas in left or right subtree
     private class Result {
-        private int depth;
         private TreeNode lca;
+        private int depth;
 
-        public Result(int depth, TreeNode lca) {
-            this.depth = depth;
+        public Result(TreeNode lca, int depth) {
             this.lca = lca;
+            this.depth = depth;
         }
     }
 
     public TreeNode lcaDeepestLeaves(TreeNode root) {
-        return lca(root).lca;
+        return dfs(root).lca;
     }
 
-    private Result lca(TreeNode n) {
+    private Result dfs(TreeNode n) {
         if (n == null) {
-            return new Result(0, null);
+            return new Result(null, 0);
         }
-        Result left = lca(n.left);
-        Result right = lca(n.right);
+        Result left = dfs(n.left);
+        Result right = dfs(n.right);
         if (left.depth == right.depth) {
-            return new Result(left.depth + 1, n);
+            return new Result(n, left.depth + 1);
         } else if (left.depth > right.depth) {
-            return new Result(left.depth + 1, left.lca);
+            return new Result(left.lca, left.depth + 1);
         } else {
-            return new Result(right.depth + 1, right.lca);
+            return new Result(right.lca, right.depth + 1);
         }
     }
 }
