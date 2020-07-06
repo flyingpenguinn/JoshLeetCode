@@ -33,37 +33,36 @@ Constraints:
  */
 public class MinimumKnightMoves {
     // everything in first quadrant, at most go to -2 because if we further there is no better solution
-    int[][] dirs = {{2, 1}, {-2, 1}, {2, -1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+    private int[][] dirs = {{2, 1}, {-2, 1}, {2, -1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
 
     public int minKnightMoves(int x, int y) {
-        Deque<int[]> q = new ArrayDeque<>();
         x = Math.abs(x);
         y = Math.abs(y);
-        int mini = -2;
-        int minj = -2;
-        int maxi = x + 2;
-        int maxj = y + 2;
-        q.offer(new int[]{0, 0, 0});
+        int sx = 0;
+        int sy = 0;
+        Deque<int[]> q = new ArrayDeque<>();
+        q.offer(new int[]{sx, sy, 0});
         Set<String> seen = new HashSet<>();
-        seen.add(tocode(0, 0));
+        seen.add(toCode(sx, sy));
         while (!q.isEmpty()) {
             int[] top = q.poll();
             if (top[0] == x && top[1] == y) {
                 return top[2];
             }
             for (int[] d : dirs) {
-                int ni = top[0] + d[0];
-                int nj = top[1] + d[1];
-                String code = tocode(ni, nj);
-                if (ni >= mini && ni <= maxi && nj >= minj && nj <= maxj && seen.add(code)) { // trick to save one line of add
-                    q.offer(new int[]{ni, nj, top[2] + 1});
+                int nx = top[0] + d[0];
+                int ny = top[1] + d[1];
+                String code = toCode(nx, ny);
+                if (nx >= -2 && ny >= -2 && nx <= x + 2 && ny <= y + 2 && !seen.contains(code)) {
+                    seen.add(code);
+                    q.offer(new int[]{nx, ny, top[2] + 1});
                 }
             }
         }
         return -1;
     }
 
-    String tocode(int x, int y) {
+    private String toCode(int x, int y) {
         return x + "," + y;
     }
 

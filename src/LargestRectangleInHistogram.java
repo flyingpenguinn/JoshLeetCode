@@ -51,7 +51,7 @@ class LargestRectangleInHistogramTemplatedStack {
         int n = a.length;
         int[] right = new int[n];
         for (int i = 0; i <= n; i++) {
-            int val = i == n ? -1 : a[i];
+            int val = i == n ? 0 : a[i];
             while (!stack.isEmpty() && a[stack.peek()] > val) {
                 int pos = stack.pop();
                 right[pos] = i;

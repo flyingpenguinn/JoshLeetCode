@@ -33,28 +33,28 @@ Note:
 The tree will have between 1 and 100 nodes.
  */
 public class CheckCompletenessOfBinaryTree {
-    // when we see a null next generation, no more nodes with next generation.
+    // once a node has null left/right, all later nodes would have empty children
     public boolean isCompleteTree(TreeNode root) {
-        if (root == null) {
+        if(root==null){
             return true;
         }
         Deque<TreeNode> q = new ArrayDeque<>();
         q.offer(root);
         boolean seen = false;
-        while (!q.isEmpty()) {
+        while(!q.isEmpty()){
             TreeNode top = q.poll();
-            if (top.left == null) {
+            if(top.left==null){
                 seen = true;
-            } else {
-                if (seen) {
+            }else{
+                if(seen){
                     return false;
                 }
                 q.offer(top.left);
             }
-            if (top.right == null) {
+            if(top.right == null){
                 seen = true;
-            } else {
-                if (seen) {
+            }else{
+                if(seen){
                     return false;
                 }
                 q.offer(top.right);

@@ -27,19 +27,19 @@ After running your function, the 2D grid should be:
  */
 public class WallsAndGates {
     // spfa. think of all 0 connected with 0 dist
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public void wallsAndGates(int[][] a) {
-        Deque<int[]> q = new ArrayDeque<>();
-        int m = a.length;
-        if (m == 0) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
             return;
         }
+        int m = a.length;
         int n = a[0].length;
+        Deque<int[]> q = new ArrayDeque<>();
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (a[i][j] == 0) {
-                    q.offer(new int[]{i, j});
+                    q.offer(new int[]{i, j, 0});
                 }
             }
         }
@@ -47,13 +47,15 @@ public class WallsAndGates {
             int[] top = q.poll();
             int r = top[0];
             int c = top[1];
-            int nd = a[r][c] + 1;
+            int dist = top[2];
+            a[r][c] = dist;
             for (int[] d : dirs) {
                 int nr = r + d[0];
                 int nc = c + d[1];
-                if (nr >= 0 && nr < m && nc >= 0 && nc < n && a[nr][nc] != -1 && a[nr][nc] > nd) {
-                    a[nr][nc] = nd;
-                    q.offer(new int[]{nr, nc});
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n && a[nr][nc] != -1 && a[nr][nc] > dist + 1) {
+                    // if already visited, would be < dist+1
+                    a[nr][nc] = dist + 1;
+                    q.offer(new int[]{nr, nc, dist + 1});
                 }
             }
         }

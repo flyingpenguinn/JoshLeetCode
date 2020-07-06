@@ -46,6 +46,7 @@ public class ShortestBridge {
                 break;
             }
             for (int j = 0; j < n; j++) {
+                // set these 1 to 2 first then search for the first 1. bypass 2s later
                 if (a[i][j] == 1) {
                     dfs(a, i, j);
                     found = true;

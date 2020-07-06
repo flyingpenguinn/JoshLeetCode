@@ -18,26 +18,25 @@ Output: [4,3,2,2]
 Explanation: The array represents the integer 4321.
  */
 public class PlusOne {
-
-    // break early by checking carry. only possibility of a different length is like 100=99+1
-    public int[] plusOne(int[] d) {
-        int n = d.length;
-        int carry = 1;
-        for (int i = n - 1; i >= 0; i--) {
-            if (carry == 0) {
-                break;
-            }
-            int raw = d[i] + carry;
-            d[i] = raw % 10;
-            carry = raw / 10;
+    // find first non 9 digit on the right, +1. all we pass by should now be 0
+    public int[] plusOne(int[] a) {
+        if (a == null) {
+            return new int[0];
         }
-        // only possibility is 99+1=100
-        if (carry == 1) {
-            int[] r = new int[n + 1];
+        int i = a.length - 1;
+        // right most non nine digit at i
+        while (i >= 0 && a[i] == 9) {
+            a[i] = 0;
+            i--;
+        }
+        if (i == -1) {
+            // all 9, new an array
+            int[] r = new int[a.length + 1];
             r[0] = 1;
             return r;
         } else {
-            return d;
+            a[i]++;
+            return a;
         }
     }
 }

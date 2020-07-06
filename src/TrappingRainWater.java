@@ -44,19 +44,18 @@ public class TrappingRainWater {
 
 class TrappingRainWaterO1Space {
     public int trap(int[] a) {
-        int n = a.length;
-        int i = 0;
-        int j = n - 1;
         int maxleft = -1;
         int maxright = -1;
+        int i = 0;
+        int j = a.length - 1;
         int r = 0;
         while (i <= j) {
             maxleft = Math.max(maxleft, a[i]);
             maxright = Math.max(maxright, a[j]);
             if (maxleft < maxright) {
-                r += maxleft - a[i++];
+                r += Math.max(0, maxleft - a[i++]);
             } else {
-                r += maxright - a[j--];
+                r += Math.max(0, maxright - a[j--]);
             }
         }
         return r;

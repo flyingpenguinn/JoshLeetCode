@@ -37,7 +37,7 @@ public class MaximalRectangle {
             }
             int cur = largesthisto(a);
             // System.out.println(Arrays.toString(a));
-            System.out.println(cur);
+            //System.out.println(cur);
 
             max = Math.max(max, cur);
         }

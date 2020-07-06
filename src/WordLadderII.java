@@ -38,73 +38,82 @@ Explanation: The endWord "cog" is not in wordList, therefore no possible transfo
  */
 
 public class WordLadderII {
-// improved BFS, results are backtrack generated from a map.
+    // improved BFS, results are backtrack generated from a map.
 // key observation is if bfs sees first some word, the step count must be the shortest
 // only caveat is there could be multiple sources, each landing at current word at the same step. we need to record them
-
     // shortest path is usually not solved by DFS
-    Map<String, Set<String>> wm = new HashMap<>();
-    Map<String, Set<String>> pred = new HashMap<>();
-    Map<String, Integer> steps = new HashMap<>(); // use this as seen
-    List<List<String>> r = new ArrayList<>();
-
-    public List<List<String>> findLadders(String bw, String ew, List<String> wordList) {
-        for (String w : wordList) {
-            addwm(w);
+    public List<List<String>> findLadders(String s, String e, List<String> wordList) {
+        // non null
+        List<List<String>> r = new ArrayList<>();
+        if (s == null || e == null || s.equals(e) || wordList.isEmpty()) {
+            return r;
         }
-        Deque<String> q = new ArrayDeque<>();
-        q.offerFirst(bw);
-        steps.put(bw, 0);
-        while (!q.isEmpty()) {
-            String top = q.poll();
-            if (top.equals(ew)) {
-                continue;
-            }
-            int topstep = steps.get(top);
-            int nextstep = topstep + 1;
-            for (int i = 0; i < top.length(); i++) {
-                StringBuilder sb = new StringBuilder(top);
-                sb.setCharAt(i, '_');
-                for (String next : wm.getOrDefault(sb.toString(), new HashSet<>())) {
-                    if (next.equals(top)) {
-                        continue;
-                    }
-                    Integer cur = steps.get(next);
-                    if (cur == null) { // never seen before
-                        steps.put(next, nextstep);
-                        pred.computeIfAbsent(next, k -> new HashSet<>()).add(top);
-                        q.offer(next);
-                    } else if (cur == nextstep) {
-                        // a-> b->c->d, a->e->c->d. we need to record 2 routes a-b-c and a-e-c.
-                        // so for c need to record both b and e. no need to expand in q again
-                        pred.computeIfAbsent(next, k -> new HashSet<>()).add(top);
-                    }// throw away if cur <. cur won't >
-                }
-            }
+        Set<String> dict = new HashSet<>();
+        for (String str : wordList) {
+            dict.add(str);
         }
-        dfs(ew, bw, new ArrayList<>());
+        Map<String, Set<String>> pre = bfs(s, e, dict);
+        if (pre == null) {
+            return r;
+        }
+        List<String> list = new ArrayList<>();
+        list.add(e);
+        dfs(s, e, pre, r, list);
         return r;
     }
 
-    private void dfs(String ew, String bw, List<String> cur) {
-        cur.add(ew);
-        if (ew.equals(bw)) {
-            ArrayList<String> copied = new ArrayList<>(cur);
-            Collections.reverse(copied);
-            r.add(copied);
-        } else {
-            for (String p : pred.getOrDefault(ew, new HashSet<>())) {
-                dfs(p, bw, cur);
+    private Map<String, Set<String>> bfs(String s, String e, Set<String> dict) {
+        Map<String, Integer> dist = new HashMap<>();
+        Map<String, Set<String>> pre = new HashMap<>();
+        Deque<String> q = new ArrayDeque<>();
+        q.offer(s);
+        dist.put(s, 0);
+
+        while (!q.isEmpty()) {
+            String top = q.poll();
+            if (e.equals(top)) {
+                continue;
+            }
+            int curDist = dist.get(top);
+            int newDist = curDist + 1;
+            for (int i = 0; i < top.length(); i++) {
+                for (char j = 'a'; j <= 'z'; j++) {
+                    StringBuilder sb = new StringBuilder(top);
+                    sb.setCharAt(i, j);
+                    String next = sb.toString();
+                    if (dict.contains(next)) {
+                        Integer nextDist = dist.get(next);
+                        if (nextDist == null) {
+                            dist.put(next, newDist);
+                            q.offer(next);
+                            pre.computeIfAbsent(next, key -> new HashSet<>()).add(top);
+                        } else if (nextDist == newDist) {
+                            pre.computeIfAbsent(next, key -> new HashSet<>()).add(top);
+                        }
+                    }
+                }
             }
         }
-        cur.remove(cur.size() - 1); // dont remember to remove from cur when ew = bw
+        return pre;
     }
 
-    private void addwm(String w) {
-        for (int i = 0; i < w.length(); i++) {
-            StringBuilder sb = new StringBuilder(w);
-            sb.setCharAt(i, '_');
-            wm.computeIfAbsent(sb.toString(), k -> new HashSet<>()).add(w);
+
+    // list contains up to cur
+    private void dfs(String s, String cur, Map<String, Set<String>> pre, List<List<String>> r, List<String> list) {
+        if (s.equals(cur)) {
+            List<String> added = new ArrayList<>(list);
+            Collections.reverse(added);
+            r.add(added);
+            return;
+        }
+        // what if there is no such path?
+        if (pre.get(cur) == null) {
+            return;
+        }
+        for (String next : pre.get(cur)) {
+            list.add(next);
+            dfs(s, next, pre, r, list);
+            list.remove(list.size() - 1);
         }
     }
 

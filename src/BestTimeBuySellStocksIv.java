@@ -27,7 +27,7 @@ public class BestTimeBuySellStocksIv {
     // dp[i][k] = Math.max(dp[i+1][k], maxj: p[j]-p[i]+dp[j+1][k-1] ). we can keep the max p[j]+dp[j+1][k-1] while we scan i
     public int maxProfit(int k, int[] a) {
         int n = a.length;
-        if (k >= n - 1) {
+        if (k >= n / 2) {
             // can have as many transactions as we want
             int r = 0;
             for (int i = 1; i < n; i++) {
@@ -39,10 +39,10 @@ public class BestTimeBuySellStocksIv {
         }
         int[][] dp = new int[n + 1][k + 1];
         for (int j = 1; j <= k; j++) {
-            int maxlater = 0;
+            int maxlater = 0; // maxlater caches the max value of p[j]+dp[j+1][k-1]
             for (int i = n - 1; i >= 0; i--) {
                 int cur = maxlater - a[i];
-                dp[i][j] = Math.max(dp[i + 1][j], cur);
+                dp[i][j] = Math.max(dp[i + 1][j], cur);  // note to transfer the later values to i
                 // note here dp[i+1][j-1] covers max profit we can get using index>=i+1, may not exactly buy/sell at i+1
                 maxlater = Math.max(maxlater, dp[i + 1][j - 1] + a[i]);
             }

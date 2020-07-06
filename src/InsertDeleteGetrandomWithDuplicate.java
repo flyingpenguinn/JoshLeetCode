@@ -52,57 +52,67 @@ public class InsertDeleteGetrandomWithDuplicate {
 
 class RandomizedCollection {
 
+    private Map<Integer, Set<Integer>> pm = new HashMap<>();
     private List<Integer> list = new ArrayList<>();
-    private Map<Integer, Set<Integer>> lm = new HashMap<>();
-    private int index = 0; // next position to insert
-    /** Initialize your data structure here. */
+
+    /**
+     * Initialize your data structure here.
+     */
     public RandomizedCollection() {
 
     }
 
-    /** Inserts a value to the set. Returns true if the set did not already contain the specified element. */
+    /**
+     * Inserts a value to the collection. Returns true if the collection did not already contain the specified element.
+     */
     public boolean insert(int val) {
-        Set<Integer> l1 = lm.get(val);
-        boolean nonExt = l1==null || l1.isEmpty();
-        list.add(index, val);
-        lm.computeIfAbsent(val, k-> new HashSet<>()).add(index);
-        index++;
-        return nonExt;
+        boolean ext = pm.containsKey(val);
+        int pos = list.size();
+        pm.computeIfAbsent(val, k -> new HashSet<>()).add(pos);
+        list.add(val);
+        return !ext;
     }
 
-    /** Removes a value from the set. Returns true if the set contained the specified element. */
+    /**
+     * Removes a value from the collection. Returns true if the collection contained the specified element.
+     */
     public boolean remove(int val) {
-        Set<Integer> l1 = lm.get(val);
-        if(l1==null || l1.isEmpty()){
+        Set<Integer> set1 = pm.get(val);
+        if (set1 == null || set1.isEmpty()) {
+            // dont forget empty processing
             return false;
         }
-        int p1 = l1.iterator().next();
-        int p2 = index-1; // can't be size-1
+        int p2 = list.size() - 1;
         int v2 = list.get(p2);
-        Set<Integer> l2 = lm.get(v2);
-        if(val == v2){
-            l1.remove(p2); // just need to remove the last if they are equal
-        }else{
-            swap(list, p1, p2);
-            l1.remove(p1);
-            l2.remove(p2);
-            l2.add(p1);
+        Set<Integer> set2 = pm.get(v2);
+        int p1 = pm.get(val).iterator().next();
+        swap(list, p1, p2); // dont forget swapping it!
+        set2.remove(p2);
+        if (val != v2) {
+            set2.add(p1);
+            set1.remove(p1);
         }
-        index--;
+        list.remove(list.size() - 1);
         return true;
     }
 
-    private void swap(List<Integer> list, int p1, int p2){
-        int v1 = list.get(p1);
-        int v2 = list.get(p2);
-        list.set(p2, v1);
-        list.set(p1, v2);
+    private void swap(List<Integer> list, int i, int j) {
+        int vi = list.get(i);
+        int vj = list.get(j);
+        list.set(i, vj);
+        list.set(j, vi);
     }
 
     private Random ran = new Random();
-    /** Get a random element from the set. */
+
+    /**
+     * Get a random element from the collection.
+     */
     public int getRandom() {
-        return list.get(ran.nextInt(index));
+        if (list.isEmpty()) {
+            return -1;
+        }
+        return list.get(ran.nextInt(list.size()));
     }
 }
 
