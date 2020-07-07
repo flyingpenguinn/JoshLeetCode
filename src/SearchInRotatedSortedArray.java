@@ -23,29 +23,31 @@ Output: -1
 import static base.ArrayUtils.read1d;
 
 public class SearchInRotatedSortedArray {
-    public int search(int[] a, int target) {
+    // depending on relationship of a[l], mid, know where mid is. then depending on t vs a[l] and a[u], know where to go
+    public int search(int[] a, int t) {
+        // no dupe in array
+        if (a == null) {
+            return -1;
+        }
         int l = 0;
         int u = a.length - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a[mid] == target) {
+            if (a[mid] == t) {
                 return mid;
-            }
-            // mid and target are in well sorted segments. note using ==
-            boolean sameside = (a[mid] >= a[l] && target >= a[l]) || (a[mid] < a[l] && target < a[l]);
-            if (sameside) {
-                // use normal binary search for same side
-                if (a[mid] > target) {
-                    u = mid - 1;
-                } else {
-                    l = mid + 1;
-                }
             } else {
-                // use opposite binary search for different sides
-                if (a[mid] < target) {
-                    u = mid - 1;
-                } else {
-                    l = mid + 1;
+                if (a[l] > a[mid]) { // 2nd half the smaller one
+                    if (t > a[mid] && t <= a[u]) {
+                        l = mid + 1;
+                    } else {
+                        u = mid - 1;
+                    }
+                } else { // first half the bigger one
+                    if (t < a[mid] && t >= a[l]) {
+                        u = mid - 1;
+                    } else {
+                        l = mid + 1;
+                    }
                 }
             }
         }

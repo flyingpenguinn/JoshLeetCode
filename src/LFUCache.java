@@ -32,100 +32,74 @@ LFUCache cache = new LFUCache( 2 )
         cache.get(4);       // returns 4
         */
 
+class LFUCache {
 
-public class LFUCache {
-    // use linked hashset for the lru part
-    // as we always +1 or -1, we can change min easily. for newly added elements, min = 1.
-    // newest freq = 1 is the main trick. because without this property it's hard to locate the 2nd smallest freq
-
-    Map<Integer, Integer> m = new HashMap<>();
-    // member to time
-    Map<Integer, Integer> fm = new HashMap<>();
-    // time to members
-    Map<Integer, LinkedHashSet<Integer>> cm = new HashMap<>();
-    int cap = 0;
-    int mintime = 0;
-
+    private Map<Integer, Integer> m = new HashMap<>(); // key/value
+    private Map<Integer, Integer> f = new HashMap<>(); // key freq
+    private Map<Integer, LinkedHashSet<Integer>> f2k = new HashMap<>(); // freq to the keys having this freq
+    private int cap = 0;
+    private int min = 0;
 
     public LFUCache(int capacity) {
+        // cap could be 0 here!
         this.cap = capacity;
     }
 
     public int get(int key) {
-        if (m.containsKey(key)) {
-            Integer rt = m.get(key);
-            addkey(key, rt);
-            return rt;
-        } else {
+        if (cap <= 0) {
             return -1;
         }
+        Integer v = m.get(key);
+        if (v == null) {
+            return -1;
+        }
+        adj(key);
+        return v;
     }
 
     public void put(int key, int value) {
-        if (cap == 0) {
+        if (cap <= 0) {
             return;
         }
-        if (m.size() < cap || m.containsKey(key)) {
-            addkey(key, value);
+        Integer v = m.get(key);
+        if (v != null) {
+            m.put(key, value);
+            adj(key);
         } else {
-            LinkedHashSet<Integer> set = cm.get(mintime);
-            Integer toremove = set.iterator().next();
-            removekey(toremove);
-            addkey(key, value);
+            if (m.size() == cap) {
+                removeMin();
+            }
+            m.put(key, value);
+            adj(key);
+            min = 1;
         }
     }
 
-    private void removekey(Integer key) {
-        m.remove(key);
-        Integer ok = fm.get(key);
-        fm.remove(key);
-        LinkedHashSet<Integer> oset = cm.get(ok);
-        oset.remove(key);
-        if (oset.isEmpty()) {
-            cm.remove(ok);
-        }
-        cm.put(ok, oset);
+    private void removeMin() {
+        LinkedHashSet<Integer> keys = f2k.get(min);
+        Integer targetKey = keys.iterator().next(); // in insertion order, older ones first
+        keys.remove(targetKey); // remove from f2k
+        m.remove(targetKey);
+        f.remove(targetKey);
     }
 
-    private void addkey(int key, int val) {
-        m.put(key, val);
-        Integer ok = fm.getOrDefault(key, 0);
-        if (ok == 0) {
-            // key: new element is always of freq 1
-            mintime = 1;
-        }
-        fm.put(key, ok + 1);
-        if (ok > 0) {
-            LinkedHashSet<Integer> oldset = cm.getOrDefault(ok, new LinkedHashSet<>());
-            oldset.remove(key);
-            cm.put(ok, oldset);
-            if (oldset.isEmpty()) {
-                cm.remove(oldset);
-                if (ok == mintime) {
-                    mintime = ok + 1;
+    private void adj(int key) {
+        // not handling m, just doing f and f2k maintainence
+        int of = f.getOrDefault(key, 0);
+        int nf = of + 1;
+        f.put(key, nf);
+        LinkedHashSet<Integer> oset = f2k.get(of);
+        if (oset != null) {
+            oset.remove(key);
+            if (oset.isEmpty()) {
+                f2k.remove(of);
+                if (min == of) {
+                    min = nf; // min can move up dont miss this part!
                 }
             }
         }
-        LinkedHashSet<Integer> nset = cm.getOrDefault(ok + 1, new LinkedHashSet<>());
-        nset.add(key);
-        cm.put(ok + 1, nset);
-    }
-
-
-    public static void main(String[] args) {
-        LFUCache lfu = new LFUCache(3);
-        lfu.put(2, 2);
-        lfu.put(1, 1);
-        System.out.println(lfu.get(2));
-        System.out.println(lfu.get(1));
-        System.out.println(lfu.get(2));
-        lfu.put(3, 3);
-        lfu.put(4, 4);
-        System.out.println(lfu.get(3));
-        System.out.println(lfu.get(2));
-        System.out.println(lfu.get(1));
-        System.out.println(lfu.get(4));
-
+        f2k.computeIfAbsent(nf, k -> new LinkedHashSet<>()).add(key);
     }
 }
+
 

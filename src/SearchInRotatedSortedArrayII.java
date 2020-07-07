@@ -20,52 +20,42 @@ This is a follow up problem to Search in Rotated Sorted Array, where nums may co
 Would this affect the run-time complexity? How and why?
  */
 public class SearchInRotatedSortedArrayII {
-    public boolean search(int[] a, int target) {
+    public boolean search(int[] a, int t) {
+        // has dupe in array. apart from the l, u, mid check, all rest are the same as problem 1
+        if (a == null) {
+            return false;
+        }
         int l = 0;
         int u = a.length - 1;
-
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a[mid] == target) {
+            if (a[mid] == t) {
                 return true;
-            }
-            // hard to tell...have to revert to normal search
-            // for example we can't tell between
-            // 13xxxx mid =11111
-            // 1xxxxxxmid=1xxx31111
-            // 3 could be on both sides...
-            if (a[mid] == a[l] && a[mid] == a[u]) {
-                for (int i = l; i <= u; i++) {
-                    if (a[i] == target) {
-                        return true;
+            } else {
+                // if all 3 the same, hard to tell where i am...
+                // could be 13[1]11 (2nd half here) or
+                //  33[3]123 (first half here)
+                if (a[l] == a[u] && a[l] == a[mid]) {
+                    for (int i = l; i <= u; i++) {
+                        if (a[i] == t) {
+                            return true;
+                        }
+                    }
+                    return false;
+                } else if (a[l] > a[mid]) {   // can still use this same check to see which section it is in: 2nd half
+                    if (t > a[mid] && t <= a[u]) {
+                        l = mid + 1;
+                    } else {
+                        u = mid - 1;
+                    }
+                } else { // or first half
+                    if (t < a[mid] && t >= a[l]) {
+                        u = mid - 1;
+                    } else {
+                        l = mid + 1;
                     }
                 }
-                return false;
             }
-            // otherwise if >=a[l] then on the same side.
-            // note amid!= atarget so if they are both >=a[l] they must be on the same side even when al == au
-            // (i.e. they could well be on right side but that doesn't hurt)
-
-            // below is almost the same as search I
-
-            // mid and target are in well sorted segments. note using ==
-            boolean sameside = (a[mid] >= a[l] && target >= a[l]) || (a[mid] < a[l] && target < a[l]);
-            if (sameside) {
-                // use normal binary search for same side
-                if (a[mid] > target) {
-                    u = mid - 1;
-                } else {
-                    l = mid + 1;
-                }
-            } else {
-                // use opposite binary search for different sides
-                if (a[mid] < target) {
-                    u = mid - 1;
-                } else {
-                    l = mid + 1;
-                }
-            }
-
         }
         return false;
     }

@@ -41,45 +41,46 @@ grid[i].length == 3
 1 <= n <= 5000
  */
 public class NumberOfWaysPaintN3 {
-    // O(12*12*5000)  last row has at most 12 possibilities
+    // O(12*12*3*5000)  last row has at most 12 possibilities
     // similar to max students take exams. we dp on each row and enumerate possibilities
-    int Mod = 1000000007;
-
-    int[][] dp;
-    // all valid one row occurences to pick from
-    int[] valids = {121, 123, 131, 132, 212, 213, 231, 232, 312, 313, 321, 323};
+    private int[] choices = {0, 121, 123, 131, 132, 212, 213, 232, 231, 313, 312, 323, 321};
+    private int Mod = 1000000007;
 
     public int numOfWays(int n) {
-        dp = new int[n][334];
+        int[][] dp = new int[n][13];
         for (int i = 0; i < n; i++) {
             Arrays.fill(dp[i], -1);
         }
-        return (int) don(0, 0, n);
+        return dfs(0, 0, n, dp);// 0 means the first row no last row
     }
 
-    private long don(int i, int lastrow, int n) {
+    private int dfs(int i, int last, int n, int[][] dp) {
         if (i == n) {
-            return 1L;
+            return 1;  // find solutions, return 1 not 0 otherwise there is nothing to return...
         }
-        if (dp[i][lastrow] != -1) {
-            return dp[i][lastrow];
+        if (dp[i][last] != -1) {
+            return dp[i][last];
         }
-        long r = 0L;
-        for (int cur : valids) {
-            boolean bad = false;
-            for (int j = 1; j <= 100; j *= 10) {
-                if ((lastrow / j) % 10 == (cur / j) % 10) {
-                    bad = true;
-                    break;
-                }
-            }
-            if (!bad) {
-                r += don(i + 1, cur, n);
+        long r = 0;
+        for (int j = 1; j < choices.length; j++) {
+            if (works(choices[j], choices[last])) {
+                r += dfs(i + 1, j, n, dp);
                 r %= Mod;
             }
         }
-        dp[i][lastrow] = (int) (r % Mod);
-        return dp[i][lastrow];
+        dp[i][last] = (int) (r % Mod);
+        return dp[i][last];
+    }
+
+    private boolean works(int s, int t) {
+        while (s > 0 && t > 0) {
+            if (s % 10 == t % 10) {
+                return false;
+            }
+            s /= 10;
+            t /= 10;
+        }
+        return true;
     }
 
 }

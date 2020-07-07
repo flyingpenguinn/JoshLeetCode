@@ -33,50 +33,55 @@ A[i][j] == 0 or A[i][j] == 1
 public class ShortestBridge {
     // we extend to wider orbit one dist at a time till we hit another 1
     // a bit similar to "bus route": we grow one dist at a time from a "core"
-    Deque<int[]> q = new ArrayDeque<>();
-    int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+    // trap: we return dist, not dist+1 here, because it's asking for 0s to be flipped. it's == min dist-1
+
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public int shortestBridge(int[][] a) {
+        // only 0s and 1s
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return 0;
+        }
         int m = a.length;
         int n = a[0].length;
-        // double break here....
+        Deque<int[]> q = new ArrayDeque<>();
         boolean found = false;
         for (int i = 0; i < m; i++) {
             if (found) {
                 break;
             }
             for (int j = 0; j < n; j++) {
-                // set these 1 to 2 first then search for the first 1. bypass 2s later
                 if (a[i][j] == 1) {
-                    dfs(a, i, j);
                     found = true;
+                    dfs(a, i, j, q); // set 1s here to 2s and put them to q
                     break;
                 }
             }
         }
+        // from 2s find 1s
         while (!q.isEmpty()) {
-            int[] top = q.poll();
+            int[] top = q.poll(); // must be 2s out here
             int i = top[0];
             int j = top[1];
             int dist = top[2];
-            int ndist = dist + 1;
             for (int[] d : dirs) {
                 int ni = i + d[0];
                 int nj = j + d[1];
                 if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
                     if (a[ni][nj] == 0) {
                         a[ni][nj] = 2;
-                        q.offer(new int[]{ni, nj, ndist});
+                        q.offer(new int[]{ni, nj, dist + 1});
                     } else if (a[ni][nj] == 1) {
                         return dist;
                     }
+                    // otherwise ignore 2s
                 }
             }
         }
         return -1;
     }
 
-    void dfs(int[][] a, int i, int j) {
+    private void dfs(int[][] a, int i, int j, Deque<int[]> q) {
         int m = a.length;
         int n = a[0].length;
         a[i][j] = 2;
@@ -85,7 +90,7 @@ public class ShortestBridge {
             int ni = i + d[0];
             int nj = j + d[1];
             if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
-                dfs(a, ni, nj);
+                dfs(a, ni, nj, q);
             }
         }
     }

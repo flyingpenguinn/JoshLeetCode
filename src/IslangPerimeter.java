@@ -23,21 +23,23 @@ Explanation: The perimeter is the 16 yellow stripes in the image below:
 
  */
 public class IslangPerimeter {
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    public int islandPerimeter(int[][] g) {
+    public int islandPerimeter(int[][] a) {
+        // no lake, only one island. values either 0 or 1
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return 0;
+        }
         int r = 0;
-        for (int i = 0; i < g.length; i++) {
-            for (int j = 0; j < g[0].length; j++) {
-                if (g[i][j] == 1) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                if (a[i][j] == 1) {
                     for (int[] d : dirs) {
                         int ni = i + d[0];
                         int nj = j + d[1];
-                        if (ni >= 0 && ni < g.length && nj >= 0 && nj < g[0].length) {
-                            if (g[ni][nj] == 0) {
-                                r++;
-                            }
-                        } else {
+                        if (ni < 0 || ni >= a.length || nj < 0 || nj >= a[0].length) {
+                            r++;
+                        } else if (a[ni][nj] == 0) {
                             r++;
                         }
                     }

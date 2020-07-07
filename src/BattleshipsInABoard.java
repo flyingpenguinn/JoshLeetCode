@@ -20,13 +20,20 @@ Could you do it in one-pass, using only O(1) extra memory and without modifying 
 public class BattleshipsInABoard {
     // only count the start of a battleship: the leftmost, topmost point in a streak
     public int countBattleships(char[][] a) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return 0;
+        }
         int r = 0;
-        int m = a.length;
-        int n = a[0].length;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 'X' && (i == 0 || a[i - 1][j] == '.') && (j == 0 || a[i][j - 1] == '.')) {
-                    r++;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                if (a[i][j] == 'X') {
+                    if (i > 0 && a[i - 1][j] == 'X') {
+                        continue;
+                    } else if (j > 0 && a[i][j - 1] == 'X') {
+                        continue;
+                    } else {
+                        r++;
+                    }
                 }
             }
         }

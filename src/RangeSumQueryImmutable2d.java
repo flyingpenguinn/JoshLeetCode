@@ -26,43 +26,25 @@ public class RangeSumQueryImmutable2d {
 
     // typical DP
     class NumMatrix {
-        int[][] sum;
 
+        private int[][] sum;
         public NumMatrix(int[][] a) {
-            int m = a.length;
-            if (m == 0) {
+            if(a.length==0){
                 return;
             }
-            int n = a[0].length;
-            sum = new int[m][n];
-            for (int i = 0; i < m; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (i == 0 && j == 0) {
-                        sum[i][j] = a[0][0];
-                    } else if (i == 0) {
-                        sum[i][j] = sum[i][j - 1] + a[i][j];
-                    } else if (j == 0) {
-                        sum[i][j] = sum[i - 1][j] + a[i][j];
-                    } else {
-                        sum[i][j] = sum[i][j - 1] + sum[i - 1][j] - sum[i - 1][j - 1] + a[i][j];
-                    }
+            sum = new int[a.length][a[0].length];
+            for(int i=0; i<a.length;i++){
+                for(int j=0; j<a[0].length;j++){
+                    sum[i][j] = (i==0?0:sum[i-1][j])+(j==0?0:sum[i][j-1])-( (i==0 || j==0) ?0:sum[i-1][j-1])+a[i][j];
                 }
             }
         }
 
-        public int sumRegion(int r1, int c1, int r2, int c2) {
-            if (sum == null) {
-                return 0;
+        public int sumRegion(int i, int j, int s, int t) {
+            if(sum==null || s>=sum.length || t>=sum[0].length){
+                return -1;
             }
-            if (r1 == 0 && c1 == 0) {
-                return sum[r2][c2];
-            } else if (r1 == 0) {
-                return sum[r2][c2] - sum[r2][c1 - 1];
-            } else if (c1 == 0) {
-                return sum[r2][c2] - sum[r1 - 1][c2];
-            } else {
-                return sum[r2][c2] - sum[r1 - 1][c2] - sum[r2][c1 - 1] + sum[r1 - 1][c1 - 1];
-            }
+            return sum[s][t] - (i==0?0:sum[i-1][t])- (j==0?0:sum[s][j-1])+ (i==0 || j==0?0:sum[i-1][j-1]);
         }
     }
 }

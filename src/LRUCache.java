@@ -28,124 +28,94 @@ LRUCache cache = new LRUCache( 2 );
         */
 
 public class LRUCache {
-    class DLNode {
-        DLNode prev;
-        DLNode next;
-        int val;
+    // doubly linked list
+    private class Node {
+        private int val;
+        private Node pre = null;
+        private Node next = null;
 
-        public DLNode(int val) {
+        public Node(int val) {
             this.val = val;
         }
     }
 
-    Map<Integer, DLNode> nodemap = new HashMap<>();
-    Map<Integer, Integer> map = new HashMap<>();
-    DLNode head = new DLNode(-1);
-    DLNode tail = head; // point to the last element or head
-    int cap;
+    private Map<Integer, Integer> m = new HashMap<>();
+    private Map<Integer, Node> key2node = new HashMap<>();
+    private Node head = new Node(-1);
+    private Node tail = head;
+    private int cap = 0;
+
 
     public LRUCache(int capacity) {
+        // >0
         this.cap = capacity;
     }
 
     public int get(int key) {
-        if (map.containsKey(key)) {
-            DLNode node = nodemap.get(key);
-            recordUsage(node);
-            return map.get(key);
-        } else {
+        Integer value = m.get(key);
+        if (value == null) {
             return -1;
         }
+        adj(key);
+        return value;
     }
 
-    private void recordUsage(DLNode node) {
-        removeNode(node);
-        addTail(node);
-    }
-
-    private void addTail(DLNode node) {
-        tail.next = node;
-        node.prev = tail;
-        node.next = null;
-        tail = node;
-    }
-
-    private void removeNode(DLNode node) {
-        DLNode prev = node.prev;
-        DLNode next = node.next;
-        prev.next = next;
-        if (next != null) {
-            next.prev = prev;
-        }
-        node.prev = null;
-        node.next = null;
-        if (tail == node) {
-            // if we remove the last need to move the tail
-            tail = prev;
-        }
-    }
-
-    public void put(int key, int value) {
-        if (map.containsKey(key)) {
-            map.put(key, value);
-            DLNode node = nodemap.get(key);
-            // record a usage
-            recordUsage(node);
+    // put this key to the front
+    private void adj(int key) {
+        if (key2node.containsKey(key)) {
+            Node node = key2node.get(key);
+            remove(node);
+            addFirst(node);
         } else {
-            if (map.size() < cap) {
-                map.put(key, value);
-            } else {
-                DLNode oldest = head.next;
-                if (oldest != null) {
-                    // if oldest == null cap == 0
-                    removeNode(oldest);
-                    map.remove(oldest.val);
-                } else {
-                    return;
-                }
-            }
-            DLNode nt = new DLNode(key);
-            addTail(nt);
-            map.put(key, value);
-            nodemap.put(key, nt);
+            Node node = new Node(key);
+            key2node.put(key, node); // dont forget to maintain this map too!
+            addFirst(node);
         }
     }
 
-    public static void main(String[] args) {
-        LRUCache lru = new LRUCache(2);
-        lru.put(2, 1);
-        lru.put(1, 1);
-        lru.put(2, 3);
-        lru.put(4, 1);
-
-    }
-}
-
-class LRULib {
-    LinkedHashMap<Integer, Integer> map;
-    int capacity;
-
-    public LRULib(int capacity) {
-        // must makeit access order
-        this.capacity = capacity;
-        map = new LinkedHashMap<>(capacity, 0.75f, true);
-
+    // remove node n, may or may not add it back
+    private void remove(Node n) {
+        // n non null
+        Node pre = n.pre;
+        Node next = n.next;
+        pre.next = next;
+        if (next != null) {
+            next.pre = pre;
+        }
+        if (tail == n) {
+            tail = pre;
+        }
+        n.pre = null;
+        n.next = null;
     }
 
-    public int get(int key) {
-        return map.getOrDefault(key, -1);
+    // add the node after head
+    private void addFirst(Node n) {
+        // n non null
+        Node oldNext = head.next;
+        head.next = n;
+        n.next = oldNext;
+        n.pre = head;
+        if (oldNext != null) {
+            oldNext.pre = n;
+        }
+        if (tail == head) {
+            tail = n;
+        }
     }
 
     public void put(int key, int value) {
-        // only delete when map doesn't alraedy have keys, i.e. about to increase size
-        if (!map.containsKey(key) && map.size() == capacity) {
-            // linked hashmap can gurantee ordering of keyset iteration
-            Iterator<Integer> keys = map.keySet().iterator();
-            if (keys.hasNext()) {
-                Integer oldestkey = keys.next();
-                map.remove(oldestkey);
+        if (m.containsKey(key)) {
+            m.put(key, value);
+            adj(key);
+        } else {
+            if (m.size() == cap) {
+                m.remove(tail.val);
+                key2node.remove(tail.val); // dont forget to maintain this map too!
+                remove(tail);
             }
+            m.put(key, value);
+            adj(key);
         }
-        map.put(key, value);
     }
 }

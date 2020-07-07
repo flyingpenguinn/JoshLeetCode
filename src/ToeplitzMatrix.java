@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /*
 LC#766
 A matrix is Toeplitz if every diagonal from top-left to bottom-right has the same element.
@@ -41,21 +44,38 @@ What if the matrix is stored on disk, and the memory is limited such that you ca
 What if the matrix is so large that you can only load up a partial row into the memory at once?
  */
 public class ToeplitzMatrix {
-    public boolean isToeplitzMatrix(int[][] m) {
-        int rs = m.length;
-        for (int i = 1; i < rs; i++) {
-            if (!same(m, i)) {
-                return false;
+    public boolean isToeplitzMatrix(int[][] a) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return false;
+        }
+
+        for (int i = 1; i < a.length; i++) {
+            for (int j = 1; j < a[0].length; j++) {
+                if (a[i][j] != a[i - 1][j - 1]) {
+                    return false;
+                }
             }
         }
         return true;
     }
+}
 
-    boolean same(int[][] m, int i) {
-        int cs = m[0].length;
-        for (int k = 0; k < cs - 1; k++) {
-            if (m[i - 1][k] != m[i][k + 1]) {
-                return false;
+class ToeplitzMatrixMapBased {
+    // can work for follow ups. O(m+n) in space consumption
+    public boolean isToeplitzMatrix(int[][] a) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return false;
+        }
+        Map<Integer, Integer> m = new HashMap<>();
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                Integer ext = m.get(i - j);
+                if (ext == null) {
+                    m.put(i - j, a[i][j]);
+                } else if (ext != a[i][j]) {
+                    return false;
+                }
+
             }
         }
         return true;
