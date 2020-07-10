@@ -46,7 +46,7 @@ public class FindTheCelebrity {
         int cand = 0;
         // cand... i-1, defeated by cand, or no hope
         for (int i = 1; i < n; i++) {
-            if (!knows(i, cand) || knows(cand, i)) {
+            if (defeated(cand, i)) { // actually just needs knows(cand, i)
                 cand = i;
             }
         }
@@ -54,12 +54,16 @@ public class FindTheCelebrity {
             if (i == cand) {
                 continue;
             } else {
-                if (!knows(i, cand) || knows(cand, i)) {
+                if (defeated(cand, i)) {
                     return -1;
                 }
             }
         }
         return cand;
+    }
+
+    protected boolean defeated(int cand, int i) {
+        return !knows(i, cand) || knows(cand, i);
     }
 
     private boolean knows(int p2, int p1) {

@@ -28,23 +28,32 @@ public class RangeSumQueryImmutable2d {
     class NumMatrix {
 
         private int[][] sum;
-        public NumMatrix(int[][] a) {
-            if(a.length==0){
+
+        public NumMatrix(int[][] matrix) {
+            if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
                 return;
             }
-            sum = new int[a.length][a[0].length];
-            for(int i=0; i<a.length;i++){
-                for(int j=0; j<a[0].length;j++){
-                    sum[i][j] = (i==0?0:sum[i-1][j])+(j==0?0:sum[i][j-1])-( (i==0 || j==0) ?0:sum[i-1][j-1])+a[i][j];
+            sum = new int[matrix.length][matrix[0].length];
+            for (int i = 0; i < matrix.length; i++) {
+                for (int j = 0; j < matrix[0].length; j++) {
+                    sum[i][j] = value(i - 1, j) + value(i, j - 1) - value(i - 1, j - 1) + matrix[i][j];
                 }
             }
         }
 
-        public int sumRegion(int i, int j, int s, int t) {
-            if(sum==null || s>=sum.length || t>=sum[0].length){
-                return -1;
+        // O(1)
+        public int sumRegion(int row1, int col1, int row2, int col2) {
+            if (sum == null) {
+                return 0;
             }
-            return sum[s][t] - (i==0?0:sum[i-1][t])- (j==0?0:sum[s][j-1])+ (i==0 || j==0?0:sum[i-1][j-1]);
+            return value(row2, col2) - value(row1 - 1, col2) - value(row2, col1 - 1) + value(row1 - 1, col1 - 1);
+        }
+
+        private int value(int i, int j) {
+            if (i < 0 || j < 0) {
+                return 0;
+            }
+            return sum[i][j];
         }
     }
 }
