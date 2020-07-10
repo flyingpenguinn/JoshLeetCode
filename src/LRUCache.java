@@ -28,94 +28,99 @@ LRUCache cache = new LRUCache( 2 );
         */
 
 public class LRUCache {
-    // doubly linked list
+    // use two dummy nodes head and tail so that the list is between head and tail. greatly easing the code for edge cases
     private class Node {
+        private int key;
         private int val;
         private Node pre = null;
         private Node next = null;
 
-        public Node(int val) {
+        public Node(int key, int val) {
+            this.key = key;
             this.val = val;
         }
     }
 
-    private Map<Integer, Integer> m = new HashMap<>();
-    private Map<Integer, Node> key2node = new HashMap<>();
-    private Node head = new Node(-1);
-    private Node tail = head;
+    private Map<Integer, Node> m = new HashMap<>();
+    private Node head = new Node(-1, -1);
+    private Node tail = new Node(-1, -1);
     private int cap = 0;
 
-
     public LRUCache(int capacity) {
-        // >0
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("capacity must be >0");
+        }
         this.cap = capacity;
+        head.pre = tail;
+        head.next = tail;
+        tail.next = head;
+        tail.pre = head;
     }
 
-    public int get(int key) {
-        Integer value = m.get(key);
-        if (value == null) {
-            return -1;
-        }
-        adj(key);
-        return value;
-    }
-
-    // put this key to the front
-    private void adj(int key) {
-        if (key2node.containsKey(key)) {
-            Node node = key2node.get(key);
-            remove(node);
-            addFirst(node);
-        } else {
-            Node node = new Node(key);
-            key2node.put(key, node); // dont forget to maintain this map too!
-            addFirst(node);
-        }
-    }
-
-    // remove node n, may or may not add it back
     private void remove(Node n) {
-        // n non null
         Node pre = n.pre;
         Node next = n.next;
         pre.next = next;
-        if (next != null) {
-            next.pre = pre;
-        }
-        if (tail == n) {
-            tail = pre;
-        }
+        next.pre = pre;
         n.pre = null;
         n.next = null;
     }
 
-    // add the node after head
-    private void addFirst(Node n) {
-        // n non null
-        Node oldNext = head.next;
-        head.next = n;
-        n.next = oldNext;
+    private void removeLast() {
+        Node last = tail.pre;
+        m.remove(last.key);
+        remove(last);
+    }
+
+    private void addHead(Node n) {
+        Node hn = head.next;
+        n.next = hn;
         n.pre = head;
-        if (oldNext != null) {
-            oldNext.pre = n;
+        hn.pre = n;
+        head.next = n;
+    }
+
+    private void removeAndAddHead(Node n) {
+        remove(n);
+        addHead(n);
+    }
+
+    public int get(int key) {
+        Node ext = m.get(key);
+        if (ext == null) {
+            return -1;
         }
-        if (tail == head) {
-            tail = n;
-        }
+        removeAndAddHead(ext);
+        return ext.val;
     }
 
     public void put(int key, int value) {
-        if (m.containsKey(key)) {
-            m.put(key, value);
-            adj(key);
-        } else {
-            if (m.size() == cap) {
-                m.remove(tail.val);
-                key2node.remove(tail.val); // dont forget to maintain this map too!
-                remove(tail);
-            }
-            m.put(key, value);
-            adj(key);
+        Node ext = m.get(key);
+        if (ext != null) {
+            ext.val = value;
+            removeAndAddHead(ext);
+            return;
+        }
+        Node newNode = new Node(key, value);
+        addHead(newNode);
+        m.put(key, newNode);
+        if (m.size() > cap) {
+            removeLast();
         }
     }
+
+    public static void main(String[] args) {
+        LRUCache cache = new LRUCache(2 /* capacity */);
+
+        cache.put(1, 1);
+        cache.put(2, 2);
+        cache.get(1);       // returns 1
+        cache.put(3, 3);    // evicts key 2
+        cache.get(2);       // returns -1 (not found)
+        cache.put(4, 4);    // evicts key 1
+        cache.get(1);       // returns -1 (not found)
+        cache.get(3);       // returns 3
+        cache.get(4);       // returns 4
+    }
 }
+

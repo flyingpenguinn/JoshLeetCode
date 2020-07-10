@@ -67,49 +67,52 @@ class MajorityElementIIGeneralized {
     // generalized way, take away k different values each time and majority must be among the ones left
     // note we wait for k different numbers to be there hence the check on <k then put
     // O(n) because we can't hide a vote more than once. we do the map operation only n/k times each costing k
-    int k = 2;
-
-    public List<Integer> majorityElement(int[] a) {
-        int n = a.length;
-        Map<Integer, Integer> map = new HashMap<>();
-        for (int v : a) {
-            if (map.containsKey(v)) {
-                map.put(v, map.getOrDefault(v, 0) + 1);
-            } else {
-                if (map.size() < k) {
-                    map.put(v, 1);
+    class Solution {
+        // generalized solution for k majority elements....
+        public List<Integer> majorityElement(int[] a) {
+            int n = a.length;
+            List<Integer> r = new ArrayList<>();
+            if (a == null || n == 0) {
+                return r;
+            }
+            Map<Integer, Integer> m = new HashMap<>();
+            int k = 3;  // k must >=2. k means we look for elements > n/k
+            // Ok in complexity... for k==3 it's O(3)
+            // if requires >n/k,  wont be more than k-1 elements
+            for (int i = 0; i < n; i++) {
+                if (m.size() < k - 1) {
+                    m.put(a[i], m.getOrDefault(a[i], 0) + 1);
+                } else if (m.containsKey(a[i])) {
+                    m.put(a[i], m.get(a[i]) + 1);
                 } else {
-                    Set<Integer> ks = new HashSet<>(map.keySet());
-                    for (int ov : ks) {
-                        minusone(map, ov);
+                    List<Integer> toRemove = new ArrayList<>();
+                    for (int key : m.keySet()) {
+                        int ncount = m.get(key) - 1;
+                        if (ncount == 0) {
+                            toRemove.add(key);
+                        } else {
+                            m.put(key, ncount);
+                        }
+                    }
+                    for (int key : toRemove) {
+                        m.remove(key);
                     }
                 }
             }
-        }
-
-        for (int k : map.keySet()) {
-            map.put(k, 0);
-        }
-        for (int i = 0; i < n; i++) {
-            if (map.containsKey(a[i])) {
-                map.put(a[i], map.getOrDefault(a[i], 0) + 1);
+            for (int key : m.keySet()) {
+                m.put(key, 0);
             }
-        }
-        List<Integer> r = new ArrayList<>();
-        for (int k : map.keySet()) {
-            if (map.get(k) > n / 3) {
-                r.add(k);
+            for (int i = 0; i < n; i++) {
+                if (m.containsKey(a[i])) {
+                    m.put(a[i], m.get(a[i]) + 1);
+                }
             }
-        }
-        return r;
-    }
-
-    private void minusone(Map<Integer, Integer> map, int ov) {
-        int ovc = map.get(ov) - 1;
-        if (ovc == 0) {
-            map.remove(ov);
-        } else {
-            map.put(ov, ovc);
+            for (int key : m.keySet()) {
+                if (m.get(key) > n / 3) {
+                    r.add(key);
+                }
+            }
+            return r;
         }
     }
 }
