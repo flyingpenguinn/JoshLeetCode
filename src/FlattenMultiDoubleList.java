@@ -83,27 +83,28 @@ public class FlattenMultiDoubleList {
         }
     }
 
-    Node last = null;
+    private Node last = null;
 
     public Node flatten(Node head) {
         dfs(head);
         return head;
     }
 
-    void dfs(Node cur) {
-        if (cur == null) {
+    private void dfs(Node head) {
+        if (head == null) {
             return;
         }
-        Node next = cur.next;
-        Node child = cur.child;
         if (last != null) {
-            last.next = cur;
-            cur.prev = last;
+            last.next = head;
+            head.prev = last;
         }
-        cur.child = null;
-        last = cur;
-        dfs(child);
-        dfs(next);
+        last = head;
+        Node headNext = head.next;  // protect the next node, otherwise it's going to be ruined by child
+        if (head.child != null) {
+            dfs(head.child);
+            head.child = null;
+        }
+        dfs(headNext);
     }
 
     public static void main(String[] args) {

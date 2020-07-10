@@ -35,13 +35,14 @@ improvement on normal bfs!
 Short version: BFS from every building, calculate the distances and find the minimum distance in the end.
 
 Key optimization : we do not go into a land, if it is not accessible by at least one of previous buildings.
-because otherwise expanding fromthat land is useless.
+because otherwise expanding from that land is useless. any 0 nodes on the subgraph of that node is dead
 
 so if g[i][j] == 0 but it's not reachable from one of the buildings then no point of expanding this node further
 
 we bfs from building because this way it can filter useless empty lands quickly
  */
     public int shortestDistance(int[][] g) {
+        // if no solution, return -1
         int m = g.length;
         int n = g[0].length;
         int[][] reach = new int[m][n];
@@ -99,5 +100,4 @@ we bfs from building because this way it can filter useless empty lands quickly
             }
         }
     }
-
 }

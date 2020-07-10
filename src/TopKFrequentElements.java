@@ -19,61 +19,33 @@ Your algorithm's time complexity must be better than O(n log n), where n is the 
  */
 public class TopKFrequentElements {
     // the loop in the end is On
-    public List<Integer> topKFrequent(int[] a, int k) {
-        Map<Integer, List<Integer>> m = new HashMap<>();
-        Map<Integer, Integer> cm = new HashMap<>();
-        int max = 0;
-        int n = a.length;
-        for (int i = 0; i < n; i++) {
-            int nv = cm.getOrDefault(a[i], 0) + 1;
-            cm.put(a[i], nv);
-            max = Math.max(max, nv);
-        }
-        // can just do this after the first traverse....
-        for (int i = 0; i < n; i++) {
-            int count = cm.get(a[i]);
-            List<Integer> cur = m.get(count);
-            if (cur == null) {
-                cur = new ArrayList<>();
-                m.put(count, cur);
+    class Solution {
+        public int[] topKFrequent(int[] a, int k) {
+            // all valid, k elements unique
+            Map<Integer, Integer> f = new HashMap<>();
+            for (int i = 0; i < a.length; i++) {
+                f.put(a[i], f.getOrDefault(a[i], 0) + 1);
             }
-            cur.add(a[i]);
-        }
-        int i = max;
-        int rem = k;
-        List<Integer> r = new ArrayList<>();
-        while (rem > 0) {
-            Iterator<Integer> it = m.getOrDefault(i, new ArrayList<>()).iterator();
-            while (it.hasNext() && rem > 0) { // must add && rem>0
-                r.add(it.next());
-                rem--;
+            Map<Integer, Set<Integer>> f2num = new HashMap<>();
+            int maxFreq = 0;
+            for (int num : f.keySet()) {
+                int freq = f.get(num);
+                f2num.computeIfAbsent(freq, key -> new HashSet<>()).add(num);
+                maxFreq = Math.max(maxFreq, freq);
             }
-            i--;
-        }
-        return r;
-    }
-}
-
-class TopKFrequentPq {
-    // similar to top k biggest
-    public List<Integer> topKFrequent(int[] a, int k) {
-        final Map<Integer, Integer> m = new HashMap<>();
-        for (int ai : a) {
-            m.put(ai, m.getOrDefault(ai, 0) + 1);
-        }
-        // min queue for top k biggest
-        PriorityQueue<Integer> pq = new PriorityQueue<>((x, y) -> Integer.compare(m.get(x), m.get(y)));
-        for (int ai : m.keySet()) {
-            pq.offer(ai);
-            if (pq.size() > k) {
-                pq.poll();
+            List<Integer> r = new ArrayList<>();
+            while (r.size() < k) {
+                Set<Integer> nums = f2num.get(maxFreq);
+                if (nums != null) {
+                    r.addAll(nums);
+                }
+                maxFreq--;
             }
+            int[] res = new int[r.size()];
+            for (int i = 0; i < r.size(); i++) {
+                res[i] = r.get(i);
+            }
+            return res;
         }
-        List<Integer> r = new ArrayList<>();
-        while (!pq.isEmpty()) {
-            r.add(pq.poll());
-        }
-        Collections.reverse(r);
-        return r;
     }
 }

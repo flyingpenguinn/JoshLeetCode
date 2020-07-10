@@ -39,20 +39,28 @@ public class DesignCircularDeque {
 
 }
 
-// 1. use size
-// 2. head and tail can't start as the same value. here we put head = n-1
 class MyCircularDeque {
 
-    int[] a = null;
-    int size = 0;
-    int head = -1; // where to put head if we insert now
-    int tail = 0; // where to put tail if we insert now
-    int cap = 0;
+// 1. use size
+// 2. head and tail can't start as the same value. here we put head = n-1
+// 3. make sure you move size!!!
 
-    public MyCircularDeque(int cap) {
-        a = new int[cap];
-        this.cap = cap;
-        this.head = cap - 1; // set head to n-1
+    private int[] q;
+    private int head = 0;// where to put the head element
+    private int tail = 0;// where to put the tail element
+    private int size = 0;
+    private int cap = 0;
+
+    /**
+     * Initialize your data structure here. Set the size of the deque to be k.
+     */
+    public MyCircularDeque(int k) {
+        q = new int[k];
+        head = k - 1;
+        cap = k;
+        if (cap < 0) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -62,7 +70,7 @@ class MyCircularDeque {
         if (isFull()) {
             return false;
         }
-        a[head] = value;
+        q[head] = value;
         head = (head - 1 + cap) % cap;
         size++;
         return true;
@@ -75,7 +83,7 @@ class MyCircularDeque {
         if (isFull()) {
             return false;
         }
-        a[tail] = value;
+        q[tail] = value;
         tail = (tail + 1) % cap;
         size++;
         return true;
@@ -108,12 +116,12 @@ class MyCircularDeque {
     /**
      * Get the front item from the deque.
      */
-    // note because head is where we put the next head element, we need to +1 here
     public int getFront() {
         if (isEmpty()) {
             return -1;
         }
-        return a[(head + 1) % cap];
+        int realHead = (head + 1) % cap;
+        return q[realHead];
     }
 
     /**
@@ -123,7 +131,8 @@ class MyCircularDeque {
         if (isEmpty()) {
             return -1;
         }
-        return a[(tail - 1 + cap) % cap];
+        int realTail = (tail - 1 + cap) % cap;
+        return q[realTail];
     }
 
     /**

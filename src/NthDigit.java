@@ -28,28 +28,23 @@ public class NthDigit {
     // find the number x
     // find the digit we need
     public int findNthDigit(int n) {
-        // n>=1
-        if(n<1){
+        if (n <= 0) {
             return -1;
         }
-        int len =1;
         long base = 1;
+        int len = 1;
         long walked = 0;
-        // 9*1*1, 9*2*10, .....
-        while(walked+ 9*base*len <n){
-            walked += 9*base*len;
-            base *=10;
+        while (walked + 9 * base * len < n) {
+            walked += 9 * base * len;
+            base *= 10;
             len++;
         }
-        // the number is of length == len
         n -= walked;
-        int nums = (n-1)/len;
-        // skip how many numbers to get to n
-        // 1,2,-> 0   3,4->1
-        int numLen = nums*len;
-        n -= numLen;
-        long number = base + nums;
-        String sn = String.valueOf(number);
-        return sn.charAt(n-1)-'0';
+        // length equals len
+        long passed = (n - 1) / len;
+        long num = base + passed;
+        n -= passed * len;
+        String sn = String.valueOf(num);
+        return sn.charAt(n - 1) - '0';
     }
 }
