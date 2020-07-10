@@ -21,38 +21,36 @@ A solution set is:
 public class ThreeSum {
     // hold i stable then 2 sum sorted on j and k. o(n2)
     public List<List<Integer>> threeSum(int[] a) {
-        int n = a.length;
         Arrays.sort(a);
         int i = 0;
+        int n = a.length;
         List<List<Integer>> r = new ArrayList<>();
         while (i < n) {
-            while (i > 0 && i < n && a[i] == a[i - 1]) {
+            while (i < n && i > 0 && a[i] == a[i - 1]) {
                 i++;
-            }
-            if (i == n) {
-                break;
             }
             int j = i + 1;
             int k = n - 1;
             while (j < k) {
-                while (j > i + 1 && j < k && a[j] == a[j - 1]) {
+                while (j < k && j > i + 1 && a[j] == a[j - 1]) {
                     j++;
                 }
+                // dont need to move k because if either i or j is bigger k wont be the same
                 if (j == k) {
                     break;
                 }
-                int cursum = a[i] + a[j] + a[k];
-                if (cursum == 0) {
-                    List<Integer> item = new ArrayList<>();
-                    item.add(a[i]);
-                    item.add(a[j]);
-                    item.add(a[k]);
-                    r.add(item);
+                int sum = a[i] + a[j] + a[k];
+                if (sum == 0) {
+                    List<Integer> ri = new ArrayList<>();
+                    ri.add(a[i]);
+                    ri.add(a[j]);
+                    ri.add(a[k]);
+                    r.add(ri);
                     j++;
                     k--;
-                } else if (cursum < 0) {
+                } else if (sum < 0) {
                     j++;
-                } else { //>0
+                } else {
                     k--;
                 }
             }
@@ -62,7 +60,7 @@ public class ThreeSum {
     }
 
     public static void main(String[] args) {
-        int[] a = {-1, 0, 1, 2, -1, -4};
+        int[] a = {-2, 0, 0, 2, 2};
         System.out.println(new ThreeSum().threeSum(a));
     }
 }

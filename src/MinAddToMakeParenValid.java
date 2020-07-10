@@ -67,21 +67,24 @@ public class MinAddToMakeParenValid {
 
 class MinAddToMakeParenValidO1space {
     public int minAddToMakeValid(String s) {
-        int lc = 0;
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        // s just has ( and )
+        int openLeft = 0;
         int r = 0;
         for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == ')') {
-                if (lc == 0) {
+            if (s.charAt(i) == '(') {
+                openLeft++;
+            } else {
+                if (openLeft == 0) {
                     r++;
                 } else {
-                    lc--;
+                    openLeft--;
                 }
-            } else {
-                lc++;
             }
         }
-        return r + lc;
+        return r + openLeft;
     }
 }
 

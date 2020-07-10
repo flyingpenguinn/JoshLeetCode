@@ -44,42 +44,38 @@ Constraints:
 1 <= arrLen <= 10^6
  */
 public class NumberOfWaysStayInSamePlace {
-    long[][] dp;
-    int Mod = 1000000007;
+    private int[][] dp;
 
-    public int numWays(int steps, int len) {
-        dp = new long[steps + 2][steps + 2];
+    public int numWays(int steps, int n) {
+        dp = new int[steps + 1][steps + 1];
         for (int i = 0; i < dp.length; i++) {
             Arrays.fill(dp[i], -1);
         }
-        return (int) dos(0, len, steps);
+        return solve(0, 0, steps, n);
     }
 
-    private long dos(int i, int len, int steps) {
-        if (i > steps) {
+    private int Mod = 1000000007;
+
+    private int solve(int step, int pos, int steps, int n) {
+        if (pos < 0 || pos >= n) {
             return 0;
         }
-        if (steps == 0) {
-            if (i == 0) {
-                return 1;
-            } else {
-                return 0;
-            }
+        if (step == steps) {
+            return pos == 0 ? 1 : 0;
         }
-        if (dp[i][steps] != -1) {
-            return dp[i][steps];
+        if (dp[step][pos] != -1) {
+            return dp[step][pos];
         }
-        long wayr = 0;
-        if (i + 1 < len) {
-            wayr = dos(i + 1, len, steps - 1);
+        int remSteps = steps - step;
+        if (pos > remSteps) {
+            return 0;
         }
-        long wayl = 0;
-        if (i - 1 >= 0) {
-            wayl = dos(i - 1, len, steps - 1);
-        }
-        long ways = dos(i, len, steps - 1);
-        dp[i][steps] = wayl + wayr + ways;
-        dp[i][steps] %= Mod;
-        return dp[i][steps];
+        int left = solve(step + 1, pos - 1, steps, n);
+        int right = solve(step + 1, pos + 1, steps, n);
+        int stay = solve(step + 1, pos, steps, n);
+        long rawRes = (0L + left + right + stay);
+        int res = (int) (rawRes % Mod);
+        dp[step][pos] = res;
+        return res;
     }
 }

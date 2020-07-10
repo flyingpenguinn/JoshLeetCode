@@ -57,34 +57,34 @@ public class ConvertBstToSortedDoublyLinkedList {
         }
     }
 
-    ;
-    Node pre = null;
-    Node head = null;
+    private Node pre = null;
+    private Node head = null;
 
     public Node treeToDoublyList(Node root) {
         if (root == null) {
             return null;
         }
         inorder(root);
-        head.left = pre;
         pre.right = head;
+        head.left = pre;
         return head;
     }
 
-    void inorder(Node root) {
+    private void inorder(Node root) {
         if (root == null) {
             return;
         }
-        inorder(root.left);
-        if (head == null) {
-            head = root;
-        }
+        Node left = root.left;
+        Node right = root.right;
+        inorder(left);
         if (pre != null) {
             pre.right = root;
-            root.left = pre;
+        } else {
+            head = root;
         }
+        root.left = pre;
         pre = root;
-        inorder(root.right);
+        inorder(right);
     }
 
     public static void main(String[] args) {

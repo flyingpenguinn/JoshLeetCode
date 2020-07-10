@@ -20,37 +20,38 @@ One possible answer is: [0,-3,9,-10,null,5], which represents the following heig
  -10  5
  */
 public class ConvertSortedListToBst {
-    // use two pointers dont need to get len. Onlgn
-    ListNode dummy = new ListNode(-1);
+    // if we traverse in order, then the visiting sequence happens to be the linked list sequence. This makes it an o(n) algorithm
+    /*
+    The invariance that we maintain in this algorithm is that whenever we are done building the left half of the BST, the head pointer in the linked list will point to the root node or the middle node (which becomes the root).
+    So, we simply use the current value pointed to by head as the root node and progress the head node by once i.e. head = head.next
+     */
+    private ListNode node = null;
 
     public TreeNode sortedListToBST(ListNode head) {
-        return dos(head);
-    }
-
-    TreeNode dos(ListNode head) {
         if (head == null) {
             return null;
         }
-        if (head.next == null) {
-            return new TreeNode(head.val);
+        ListNode p = head;
+        int count = 1;
+        while (p.next != null) {
+            p = p.next;
+            count++;
         }
-        dummy.next = head;
-        ListNode fast = dummy.next;//!!!
-        ListNode slow = dummy;
-        //slow.next points to middle
-        while (fast != null && fast.next != null) {
-            fast = fast.next.next;
-            slow = slow.next;
+        node = head;
+        return inorder(0, count - 1);
+    }
+
+    private TreeNode inorder(int l, int u) {
+        if (l > u) {
+            return null;
         }
-
-        ListNode nh = slow.next;
-        slow.next = null;
-        TreeNode left = dos(head);
-        TreeNode right = dos(nh.next);
-
-        TreeNode root = new TreeNode(nh.val);
-        root.left = left;
-        root.right = right;
-        return root;
+        int mid = l + (u - l) / 2;
+        TreeNode left = inorder(l, mid - 1);
+        TreeNode cur = new TreeNode(node.val);
+        node = node.next;
+        TreeNode right = inorder(mid + 1, u);
+        cur.left = left;
+        cur.right = right;
+        return cur;
     }
 }

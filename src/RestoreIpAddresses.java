@@ -13,37 +13,38 @@ Output: ["255.255.11.135", "255.255.111.35"]
 public class RestoreIpAddresses {
     //no leading zeros for non zero number in recursion
     // handle string too long
-    List<String> r = new ArrayList<>();
-
     public List<String> restoreIpAddresses(String s) {
-        dfs(s, 0, "", 0);
+        // s is digit only
+        List<String> r = new ArrayList<>();
+        if (s == null) {
+            return r;
+        }
+        dfs(s, 0, 0, "", r);
         return r;
     }
 
-    void dfs(String s, int i, String cur, int parts) {
+    private void dfs(String s, int i, int seg, String cur, List<String> r) {
         int n = s.length();
-        if (i == n) {
-            if (parts == 4) {
-                r.add(cur);
-            }
+        if (seg == 4 && i == n) {
+            r.add(cur);
             return;
-        }
-        // if more than 4 parts for sure
-        if (parts >= 4) {
+        } else if (seg == 4 || i == n) {
+            // early terminate on strings too long for ip address
             return;
         }
         StringBuilder sb = new StringBuilder();
-        for (int j = i; j < n && j - i < 3; j++) {
-            char jc = s.charAt(j);
-            sb.append(jc);
-            int num = Integer.valueOf(sb.toString());
-            if (sb.length() > 1 && s.charAt(i) == '0') {
+        int num = 0;
+        for (int j = i; j < n && j - i <= 2; j++) {
+            if (s.charAt(i) == '0' && j > i) {
                 break;
-            } else if (num <= 255) {
-                String ns = cur.isEmpty() ? sb.toString() : cur + "." + sb.toString();
-                dfs(s, j + 1, ns, parts + 1);
             }
-
+            sb.append(s.charAt(j));
+            String str = sb.toString();
+            num = num * 10 + (s.charAt(j) - '0');
+            if (num <= 255) {
+                String nstr = cur.isEmpty() ? str : cur + "." + str;
+                dfs(s, j + 1, seg + 1, nstr, r);
+            }
         }
     }
 }

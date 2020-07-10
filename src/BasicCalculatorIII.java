@@ -23,99 +23,103 @@ Note: Do not use the eval built-in library function.
  */
 public class BasicCalculatorIII {
     public int calculate(String s) {
-        Deque<Long> nst = new ArrayDeque<>();
-        Deque<Character> ost = new ArrayDeque<>();
-        int n = s.length();
-        StringBuilder sb = new StringBuilder();
+        // assuming s valid
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        Deque<Long> num = new ArrayDeque<>();
+        Deque<Character> op = new ArrayDeque<>();
         int i = 0;
+        int n = s.length();
+        StringBuilder pending = new StringBuilder();
         while (i < n) {
             char c = s.charAt(i);
-            int nexti = i + 1;
-            if (c == '(' && s.charAt(i + 1) == '-') {
-                // negative number
-                int end = s.indexOf(")", i + 1);
-                long neg = Long.valueOf(s.substring(i + 1, end));
-                nst.push(neg);
-                nexti = end + 1;
+            if (c >= '0' && c <= '9') {
+                pending.append(c);
             } else if (c == '(') {
-                ost.push(c);
+                if (i + 1 < n && s.charAt(i + 1) == '-') {
+                    // (-2)*3
+                    int end = s.indexOf(')', i + 1);
+                    pending = pushNumber(s.substring(i + 1, end), num);
+                    i = end;
+                } else {
+                    op.push(c);
+                }
             } else if (c == ')') {
-                sb = pushnumber(nst, sb);
-                collapsetillchar('(', nst, ost);
-            } else if (i > 0 && (c == '+' || c == '-' || c == '*' || c == '/')) {
-                // note the handling of -2-5 or +3+6
-                sb = pushnumber(nst, sb);
-                collapsetilllower(nst, ost, c);
-            } else {
-                sb.append(c);
+                pending = pushNumber(pending.toString(), num);
+                collapseTillLeft(num, op);
+            } else if (c == '-' && i == 0) {
+                pending.append(c); // -2 +5 : -2 is part of the num
+            } else if (c != ' ') {
+                // operations, - without making numbers negative
+                pending = pushNumber(pending.toString(), num);
+                collapseAndPut(num, op, c);
             }
-            i = nexti;
+            i++;
         }
-        pushnumber(nst, sb);
-        collapsall(nst, ost);
-        return (int) nst.pop().longValue();
+        // don't forget to push the final number
+        pending = pushNumber(pending.toString(), num);
+        while (!op.isEmpty()) {
+            collapseAll(num, op);
+        }
+        return num.pop().intValue();
     }
 
-    protected StringBuilder pushnumber(Deque<Long> nst, StringBuilder sb) {
-        String trim = sb.toString().trim();
-        if (!trim.isEmpty()) {
-            nst.push(Long.valueOf(trim));
+    private StringBuilder pushNumber(String s, Deque<Long> st) {
+        if (!s.isEmpty()) {
+            st.push(Long.valueOf(s));
         }
         return new StringBuilder();
     }
 
-    private void collapsall(Deque<Long> nst, Deque<Character> ost) {
-        while (!ost.isEmpty()) {
-            popandcalc(nst, ost);
+    private void collapseAndPut(Deque<Long> num, Deque<Character> op, char c) {
+        while (!op.isEmpty() && shouldCollapse(op.peek(), c)) {
+            calc(num, op);
+        }
+        op.push(c);
+    }
+
+    private void collapseAll(Deque<Long> num, Deque<Character> op) {
+        while (!op.isEmpty()) {
+            calc(num, op);
         }
     }
 
-    private void collapsetillchar(char c, Deque<Long> nst, Deque<Character> ost) {
-        // must be of same priority, or higher priorities are at the top of stack so done first anyway
-        while (ost.peek() != c) {
-            popandcalc(nst, ost);
+    private void collapseTillLeft(Deque<Long> num, Deque<Character> op) {
+        while (!op.isEmpty() && op.peek() != '(') {
+            calc(num, op);
         }
-        ost.pop();
+        op.pop(); // pop the ( out
     }
 
-    private void collapsetilllower(Deque<Long> nst, Deque<Character> ost, char op) {
-        // this is key of this problem
-        // if we see +, keep doing * /  or +- itself, till we see (
-        // if we see */, keep doing */, until we see a +
-        // ( is of the lowest priority
-        while (!ost.isEmpty() && priority(ost.peek()) >= priority(op)) {
-            popandcalc(nst, ost);
-        }
-        ost.push(op);
+    private void calc(Deque<Long> num, Deque<Character> op) {
+        long v2 = num.pop();
+        long v1 = num.pop();
+        char func = op.pop();
+        num.push(runCalc(func, v1, v2));
     }
 
-    private void popandcalc(Deque<Long> nst, Deque<Character> ost) {
-        char topop = ost.pop();
-        long v1 = nst.pop();
-        long v2 = nst.pop();
-        nst.push(operation(v2, v1, topop));
-    }
-
-    private int priority(char c) {
-        if (c == '*' || c == '/') {
-            return 2;
-        } else if (c == '+' || c == '-') {
-            return 1;
-        } else {
-            /// ( is the lowest, we stop at it all the time
-            return 0;
-        }
-    }
-
-    private long operation(long v1, long v2, char op) {
-        if (op == '+') {
+    private long runCalc(char f, long v1, long v2) {
+        if (f == '+') {
             return v1 + v2;
-        } else if (op == '-') {
+        } else if (f == '-') {
             return v1 - v2;
-        } else if (op == '*') {
+        } else if (f == '*') {
             return v1 * v2;
         } else {
             return v1 / v2;
         }
+    }
+
+    // should we trigger the calc of op1 immediately?
+    private boolean shouldCollapse(char op1, char op2) {
+        // nothing can trigger a calc on (
+        if (op1 == '(') {
+            return false;
+        } else if ((op1 == '+' || op1 == '-') && (op2 == '*' || op2 == '/')) {
+            // the only case that we need to store the operation to realize later
+            return false;
+        }
+        return true;
     }
 }

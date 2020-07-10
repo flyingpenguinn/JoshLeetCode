@@ -65,24 +65,33 @@ Note: Answer will in the range of 32-bit signed integer.
 public class MaxWidthBinaryTree {
 
     // note we talk about width in complete tree here so using complete tree index
-    Map<Integer, Integer> small = new HashMap<>();
-    Map<Integer, Integer> big = new HashMap<>();
-    int maxwidth = 0;
+    private Map<Integer,Integer> min = new HashMap<>();
+    private Map<Integer,Integer> max = new HashMap<>();
+    private int maxDepth = -1;
 
     public int widthOfBinaryTree(TreeNode root) {
-        dfs(root, 0, 0);
-        return maxwidth;
+        dfs(root, 0, 1);
+        int r = 0;
+        for(int i=0; i<=maxDepth; i++){
+            r = Math.max(max.get(i)-min.get(i)+1, r);
+        }
+        return r;
     }
 
-    private void dfs(TreeNode root, int d, int w) {
-        int curmin = small.getOrDefault(d, Integer.MAX_VALUE);
-        int curmax = big.getOrDefault(d, Integer.MIN_VALUE);
-        int min = Math.min(curmin, w);
-        int max = Math.max(curmax, w);
-        maxwidth = Math.max(maxwidth, max - min);
-        small.put(d, min);
-        big.put(d, max);
-        dfs(root.left, d + 1, w - 1);
-        dfs(root.right, d + 1, w + 1);
+    private void dfs(TreeNode n, int depth, int index){
+        if(n==null){
+            return;
+        }
+        maxDepth = Math.max(depth, maxDepth);
+        Integer curmin = min.get(depth);
+        if(curmin == null || curmin>index){
+            min.put(depth, index);
+        }
+        Integer curmax = max.get(depth);
+        if(curmax==null || curmax<index){
+            max.put(depth, index);
+        }
+        dfs(n.left, depth+1, 2*index);
+        dfs(n.right, depth+1, 2*index+1);
     }
 }

@@ -19,17 +19,31 @@ import static java.lang.Math.*;
 public class MaxProductSubarray {
     // max aend at ai is either max ending at ai-1 *ai,or min ending at ai-1*ai,or ai itself
     public int maxProduct(int[] a) {
-        int n = a.length;
-        int maxe = a[0];
-        int mine = a[0];
+        if (a == null) {
+            return -1; // or throw
+        }
+        int maxEnding = a[0];
+        int minEnding = a[0];
         int max = a[0];
-        for (int i = 1; i < n; i++) {
-            int nmaxe = max(maxe * a[i], max(mine * a[i], a[i])); // need this not to override maxe for mine
-            mine = min(maxe * a[i], min(mine * a[i], a[i]));
-            maxe = nmaxe;
-            max = Math.max(maxe, max);
+        for (int i = 1; i < a.length; i++) {
+            int newMaxEnding = max(maxEnding * a[i], minEnding * a[i], a[i]); // avoid maxending being overwritten- we need it later
+            minEnding = min(maxEnding * a[i], minEnding * a[i], a[i]);
+            maxEnding = newMaxEnding;
+            max = max(max, maxEnding);
         }
         return max;
+    }
+
+    private int max(int a, int b) {
+        return Math.max(a, b);
+    }
+
+    private int max(int a, int b, int c) {
+        return Math.max(a, Math.max(b, c));
+    }
+
+    private int min(int a, int b, int c) {
+        return Math.min(a, Math.min(b, c));
     }
 
 

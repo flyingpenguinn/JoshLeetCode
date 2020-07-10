@@ -28,58 +28,28 @@ public class NthDigit {
     // find the number x
     // find the digit we need
     public int findNthDigit(int n) {
-        int len = 1;
-        long base = 1;
-        long count = 0;
-        while (count + len * 9 * base < n) {
-            // 1*9*1, 2*9*10, 3*9*100, etc
-            // looking for the first >=, this is the len we are looking for
-            count += len * 9 * base;
-            len++;
-            base *= 10;
+        // n>=1
+        if(n<1){
+            return -1;
         }
-        n -= count;
-        // must be of length = len, using base = base
-        int x = (int) ((n - 1) / len + base);
-        String sx = String.valueOf(x);
-        return sx.charAt((n - 1) % len) - '0';
-    }
-}
-
-class NthDigitBinarySearch {
-    public int findNthDigit(int n) {
-        // n positive
-        int l = 1;
-        int u = Integer.MAX_VALUE;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            // number of digits till mid, inclusive
-            long nth = nth(mid);
-            if (nth >= n) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
-        }
-        // u is the first number that including it, we have <n digits
-        int countu = (int) nth(u);
-        String str = String.valueOf(u + 1);
-        return (str.charAt(n - countu - 1) - '0');
-    }
-
-    private long nth(int num) {
-        long r = 0;
+        int len =1;
         long base = 1;
-        long len = 1;
-        while (base <= num) {
-            if (num / base > 9) {
-                r += len * 9 * base;
-            } else {
-                r += len * (num - base + 1);
-            }
-            base *= 10;
+        long walked = 0;
+        // 9*1*1, 9*2*10, .....
+        while(walked+ 9*base*len <n){
+            walked += 9*base*len;
+            base *=10;
             len++;
         }
-        return r;
+        // the number is of length == len
+        n -= walked;
+        int nums = (n-1)/len;
+        // skip how many numbers to get to n
+        // 1,2,-> 0   3,4->1
+        int numLen = nums*len;
+        n -= numLen;
+        long number = base + nums;
+        String sn = String.valueOf(number);
+        return sn.charAt(n-1)-'0';
     }
 }

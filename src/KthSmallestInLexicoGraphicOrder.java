@@ -19,41 +19,42 @@ public class KthSmallestInLexicoGraphicOrder {
     // mimic the way we would do this on a paper: start with 1? how many are there? start with 2?....
     // similar to #386
     public int findKthNumber(int n, int k) {
-        return (int) dof(0, n, k);
+        long r = 0;
+        while (k > 0) {
+            long start = r == 0 ? 1 : 0;
+            long i = start;
+            while (i < 9) {
+                long cur = nums(r, i, n);
+                if (cur < k) {
+                    k -= cur;
+                } else {
+                    break;
+                }
+                i++;
+            }
+            r = r * 10 + i;
+            k--;
+            // key: r is now standing one number forward than before.
+            // if r==7 and i==8 before, it would be 78 here. note it's 78 without any trailing 0
+        }
+        return (int) r;
+
     }
 
-    private long dof(long cur, long n, long k) {
-        // deal with empty concatenation, i.e. cur itself first
-        if (cur > 0) {
-            if (k == 1) {
-                return cur;
+    // 11 vs 12: 11->12, 110-> 120, 1100->1200....
+    private long nums(long cur, long i, long n) {
+        long r = 0;
+        long now = cur * 10 + i;
+        long next = cur * 10 + (i + 1);
+        while (now <= n) {
+            if (next <= n) {
+                r += next - now;
             } else {
-                k--;
+                r += n - now + 1;
+                break;
             }
-        }
-        int start = cur == 0 ? 1 : 0;
-        for (int i = start; i <= 9; i++) {
-            long next = cur * 10 + i;
-            long gap = gap(next, n);
-            // gap>=1
-            if (gap < k) {
-                k -= gap;
-            } else {
-                // if ==, wait for eating up k in dealing with "next"
-                return dof(next, n, k);
-            }
-        }
-        return -1;
-    }
-
-    // gap between base and base+1 (exclusive) under limit n. gap must be >=1
-    private long gap(long base, long n) {
-        long r = 0L;
-        long times = 1L;
-        // base *times is like 10, gap between 10 and 20 is 10. gap between 10 and 15 is 16
-        while (base * times <= n) {
-            r += (base + 1L) * times <= n ? times : n - base * times + 1; // must be <=! base+1 is not included
-            times *= 10;
+            now *= 10;
+            next *= 10;
         }
         return r;
     }

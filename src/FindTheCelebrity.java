@@ -40,28 +40,23 @@ Remember that you won't have direct access to the adjacency matrix.
  */
 public class FindTheCelebrity {
     // eliminate one person a time and then check if the remaining one is really celebrity
-    // similar to townjudge problem, but here we hae an o1 online api to use, while in town judge we know the array directly
+    // similar to townjudge problem, but here we have an o1 online api to use, while in town judge we know the array directly
     public int findCelebrity(int n) {
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < n; i++) {
-            st.push(i);
-        }
-        while (st.size() > 1) {
-            int p1 = st.pop();
-            int p2 = st.pop();
-            if (knows(p1, p2) || !knows(p2, p1)) {
-                st.push(p2);
-            } else {
-                st.push(p1);
+        // n>=1
+        int cand = 0;
+        // cand... i-1, defeated by cand, or no hope
+        for (int i = 1; i < n; i++) {
+            if (!knows(i, cand) || knows(cand, i)) {
+                cand = i;
             }
         }
-        int cand = st.pop();
         for (int i = 0; i < n; i++) {
             if (i == cand) {
                 continue;
-            }
-            if (knows(cand, i) || !knows(i, cand)) {
-                return -1;
+            } else {
+                if (!knows(i, cand) || knows(cand, i)) {
+                    return -1;
+                }
             }
         }
         return cand;
