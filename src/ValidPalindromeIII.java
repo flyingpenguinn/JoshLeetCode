@@ -23,6 +23,7 @@ s has only lowercase English letters.
 
 public class ValidPalindromeIII {
 
+    // in dp storing boolean is usually a waste. here we just need to check how many step in min do we need to turn it to palin
     public boolean isValidPalindrome(String s, int k) {
         int n = s.length();
         // i...j needs to delete how many to become palin

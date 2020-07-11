@@ -20,25 +20,26 @@ public class SingleElementInSortedArray {
 
     // the first element must %2==0 if there is no single element mudding the water
     public int singleNonDuplicate(int[] a) {
-        int n = a.length;
+        // a is guranteed non null and valid: all but one show up twice
         int l = 0;
-        int u = n - 1;
+        int u = a.length - 1;
         while (l <= u) {
-            int m = l + (u - l) / 2;
-            if (m == 0 || m == n - 1) {
-                return a[m];
-            }
-            if (a[m] != a[m - 1] && a[m] != a[m + 1]) {
-                return a[m];
-            }
-            int first = a[m] == a[m - 1] ? m - 1 : m;
-            if (first % 2 != 0) {
-                u = m - 1;
+            int mid = l + (u - l) / 2;
+            if ((mid == 0 || mid == a.length - 1)) {
+                // all others are excluded, must be them
+                return a[mid];
+            } else if (a[mid] != a[mid - 1] & a[mid] != a[mid + 1]) {
+                return a[mid];
             } else {
-                l = m + 1;
+                int first = a[mid - 1] == a[mid] ? mid - 1 : mid;
+                if (first % 2 == 0) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
+                }
             }
         }
-        return -1;
+        return -1; // or throw
     }
 
     public static void main(String[] args) {

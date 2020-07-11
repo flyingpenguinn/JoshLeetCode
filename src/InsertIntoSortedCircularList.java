@@ -52,37 +52,37 @@ public class InsertIntoSortedCircularList {
     }
 
     // either find a good place, or insert after max- for biggest or smallest
-    public Node insert(Node head, int v) {
-        Node nn = new Node(v);
-
-        if (head == null) {
-            nn.next = nn;
-            return nn;
-        }
-        Node pre = head;
-        Node p = head.next;
-        Node max = head;
-
-        while (p != head && !(pre.val <= v && p.val >= v)) {
-            // must check this-head can already >=v
-            if (p.val >= max.val) {
-                // must be == to get last max
-                max = p;
+    public Node insert(Node head, int val) {
+        Node node = new Node(val);
+        if(head == null){
+            node.next = node;
+            return node;
+        }else{
+            Node p = head.next;
+            Node pre = head;
+            int max = head.val;
+            Node maxNode = head;
+            while(p!= head){
+                if(p.val>=max){ // find the last max node
+                    max = p.val;
+                    maxNode = p;
+                }
+                if(pre.val <= val && p.val >=val){
+                    break;
+                }
+                pre=p;
+                p = p.next;
             }
-            pre = p;
-            p = p.next;
+            // note here we are covering head.pre val head situation too!
+            if(pre.val <=val && p.val >=val){
+                pre.next = node;
+                node.next = p;
+            }else {
+                Node oldNext = maxNode.next;
+                maxNode.next = node;
+                node.next = oldNext;
+            }
         }
-        if (pre.val <= v && p.val >= v) {
-            // p may ==head
-            pre.next = nn;
-            nn.next = p;
-        } else {
-            // max or min,insert after max
-            Node min = max.next;
-            max.next = nn;
-            nn.next = min;
-        }
-
         return head;
     }
 }

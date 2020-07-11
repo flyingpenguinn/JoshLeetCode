@@ -78,43 +78,42 @@ public class ConstructBinaryTreeFromString {
 }
 
 class ConstructBinaryTreeFromStringStack {
-    // (: find out number then put to stack as we are going to its left tree
-    // ): create a node for current top, or keep popping and linking a node whose value we know already
+    // ): pop out current
+    // (: do nothing
+    // numbers or -: loop on the spot to get all numbers!
     public TreeNode str2tree(String s) {
+        if (s == null || s.isEmpty()) {
+            return null;
+        }
+        int n = s.length();
+        int i = 0;
         Deque<TreeNode> st = new ArrayDeque<>();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
+        while (i < n) {
             char c = s.charAt(i);
-            if (c == '(') {
-                if (sb.length() > 0) {
-                    int num = Integer.valueOf(sb.toString());
-                    sb = new StringBuilder();
-                    st.push(new TreeNode(num));
-                }
-
-            } else if (c == ')') {
-                TreeNode cur = null;
-                if (sb.length() > 0) {
-                    int num = Integer.valueOf(sb.toString());
-                    sb = new StringBuilder();
-                    cur = new TreeNode(num);
-                } else {
-                    cur = st.pop();
-                }
-                if (st.peek().left == null) {
-                    st.peek().left = cur;
-                } else {
-                    st.peek().right = cur;
-                }
+            if (c == ')') {
+                st.pop();
+                i++;
+            } else if (c == '(') {
+                i++;
             } else {
-                sb.append(c);
+                // i could be on number, or -
+                int j = i + 1;
+                while (j < n && s.charAt(j) >= '0' && s.charAt(j) <= '9') {
+                    j++;
+                }
+                int val = Integer.valueOf(s.substring(i, j));
+                TreeNode node = new TreeNode(val);
+                if (!st.isEmpty()) {
+                    if (st.peek().left == null) {
+                        st.peek().left = node;
+                    } else {
+                        st.peek().right = node;
+                    }
+                }
+                st.push(node);
+                i = j;
             }
         }
-        // just nummbers no ()
-        if (sb.length() > 0) {
-            return new TreeNode(Integer.valueOf(sb.toString()));
-        } else {
-            return st.isEmpty() ? null : st.pop();
-        }
+        return st.pop();
     }
 }
