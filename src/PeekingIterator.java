@@ -17,29 +17,20 @@ Calling hasNext() after that should return false.
 Follow up: How would you extend your design to be generic and work with all types, not just integer?
  */
 public class PeekingIterator implements Iterator<Integer> {
-
-    Iterator<Integer> it;
-    Integer next = null;
-    boolean cached = false;
+    private Iterator<Integer> iter;
+    private Integer cache = null;
 
     public PeekingIterator(Iterator<Integer> iterator) {
-        // initialize any member here.
-        it = iterator;
+        this.iter = iterator;
     }
 
     // Returns the next element in the iteration without advancing the iterator.
     public Integer peek() {
-
-        if (cached) {
-            return next;
+        if (cache != null) {
+            return cache;
         } else {
-            if (it.hasNext()) {
-                next = it.next();
-            } else {
-                next = null;
-            }
-            cached = true;
-            return next;
+            cache = next();
+            return cache;
         }
     }
 
@@ -47,15 +38,23 @@ public class PeekingIterator implements Iterator<Integer> {
     // Override them if needed.
     @Override
     public Integer next() {
-        if (hasNext()) {
-            cached = false;
-            return next;
+        if (cache != null) {
+            Integer rt = cache;
+            cache = null;
+            return rt;
+        } else {
+            if (!hasNext()) {
+                return null;
+            }
+            return iter.next();
         }
-        return null;
     }
 
     @Override
     public boolean hasNext() {
-        return peek() != null;
+        if (cache != null) {
+            return true;
+        }
+        return iter.hasNext();
     }
 }

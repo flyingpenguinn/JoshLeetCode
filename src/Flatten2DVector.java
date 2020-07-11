@@ -44,44 +44,37 @@ public class Flatten2DVector {
 }
 
 class Vector2D {
-    int i=0;
-    int j=-1;
-    int[][] a;
-    boolean cached=false;
+    // we can also put all iterators in a queue and pull from there
+    private int row = 0;
+    private int col = 0;
+    private int[][] v;
 
     public Vector2D(int[][] v) {
-        this.a=v;
+        this.v = v;
+        adj();
+    }
+
+    private void adj() {
+        // we are about to start at row, check if fine. if not go to the next
+        col = 0;
+        while (row < v.length && v[row].length == 0) {
+            row++;
+        }
     }
 
     public int next() {
-        int n=a.length;
-        if(cached){
-            cached=false;
-            return i==n?-1:a[i][j];
-        }
-        if(hasNext()){
-            cached=false;
-            return a[i][j];
-        }else{
+        if (!hasNext()) {
             return -1;
         }
+        int rt = v[row][col++];
+        if (col == v[row].length) {
+            row++;
+            adj();
+        }
+        return rt;
     }
 
-    // has next is like peek
     public boolean hasNext() {
-        int n=a.length;
-        if(cached){
-            return i!=n;
-        }
-        j++;
-        while(i<n && j>=a[i].length){
-            i++;
-            j=0;
-        }
-        if(i==n){
-            return false;
-        }
-        cached=true;
-        return true;
+        return row < v.length;
     }
 }
