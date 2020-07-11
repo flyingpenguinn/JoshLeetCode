@@ -4,46 +4,49 @@ import java.util.*;
 
 public class ZigzagIterator {
     // without iterators, pay attention to the usage of tried in hasNext
-    int k = 2;
-    int i = 0;
-    int[] ps = new int[k];
-
-    boolean cached = false;
-    List<Integer>[] a = new ArrayList[k];
+    // without iterators, pay attention to the usage of tried in hasNext
+    private int cur = 0;
+    private List<Deque<Integer>> dqs = new ArrayList<>();
+    private int empty = 0; // how many empty deques do we have
 
     public ZigzagIterator(List<Integer> v1, List<Integer> v2) {
-        Arrays.fill(ps, -1);
-        a[0] = v1;
-        a[1] = v2;
+        List<List<Integer>> input = new ArrayList<>();
+        input.add(v1);
+        input.add(v2);
+        for (List<Integer> list : input) {
+            if (!list.isEmpty()) {
+                dqs.add(new ArrayDeque<>(list));
+            }
+        }
+        // note we only add non empty ones so dont need to move in the start
+    }
+
+    private void moveToNext() {
+        if (dqs.get(cur).isEmpty()) {
+            empty++;
+        }
+        if (empty == dqs.size()) {
+            return; // already empty
+        }
+        // note we MUST MOVE so here must be cur+1 to start checking
+        int j = (cur + 1) % dqs.size();
+        while (dqs.get(j).isEmpty()) {
+            j = (j + 1) % dqs.size();
+        }
+        cur = j;
     }
 
     public int next() {
-        if (hasNext()) {
-            cached = false;
-            int rt = a[i].get(ps[i]);
-            i = (i + 1) % k;
-            return rt;
+        if (!hasNext()) {
+            return -1;
         }
-        return -1;
+        int rt = dqs.get(cur).poll();
+        moveToNext();
+        return rt;
     }
 
     public boolean hasNext() {
-        if (cached) {
-            return i != -1;
-        }
-        int tried = 0;
-        while (tried < k && ps[i] + 1 >= a[i].size()) {
-            i = (i + 1) % k;
-            tried++;
-        }
-        if (tried == k) {
-            i = -1;
-            return false;
-        } else {
-            ps[i]++;
-            cached = true;
-            return true;
-        }
+        return empty < dqs.size();
     }
 }
 

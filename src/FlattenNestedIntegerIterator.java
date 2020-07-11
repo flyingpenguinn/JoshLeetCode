@@ -38,92 +38,40 @@ interface NestedInteger {
 }
 
 class NestedIterator implements Iterator<Integer> {
-    // either nint or inn the iterator that has next, or both null
-    List<NestedInteger> l;
-    int p = -1;
-    NestedIterator inn = null;
-    Integer nint = null;
-    boolean cached = false;
+    // make sure top is an integer. otherwise keep digging them
+    // for non top, we can keep list in the stack and unwrap later
+    private Deque<NestedInteger> st = new ArrayDeque<>();
 
-    public NestedIterator(List<NestedInteger> list) {
-        l = list;
+    public NestedIterator(List<NestedInteger> nestedList) {
+        populate(nestedList);
+        dig();
     }
 
-    @Override
-    public Integer next() {
-        Integer rt = null;
-        if (nint != null) {
-            rt = nint;
-        } else if (inn != null && inn.hasNext()) {
-            rt = inn.next();
-        }
-        cached = false;
-        return rt;
-    }
-
-    // point to valid nint or inn. ni or inn.next gives next
-    @Override
-    public boolean hasNext() {
-        if (cached) {
-            boolean rt = nint != null || (inn != null && inn.hasNext());
-            return rt;
-        } else {
-            if (inn != null && inn.hasNext()) {
-                cached = true;
-                return true;
-            }
-            inn = null;
-            nint = null;
-            while (p + 1 < l.size()) {
-                NestedInteger ni = l.get(p + 1);
-                p++;
-                if (ni.isInteger()) {
-                    nint = ni.getInteger();
-                    break;
-                } else {
-                    inn = new NestedIterator(ni.getList());
-                    if (inn.hasNext()) {
-                        break;
-                    }
-                }
-            }
-            cached = true;
-            boolean rt = nint != null || (inn != null && inn.hasNext());
-            return rt;
-        }
-    }
-}
-
-class NestedIteratorStack implements Iterator<Integer> {
-
-    Deque<NestedInteger> stack = new ArrayDeque<>();
-
-    public NestedIteratorStack(List<NestedInteger> nestedList) {
+    private void populate(List<NestedInteger> nestedList) {
         for (int i = nestedList.size() - 1; i >= 0; i--) {
-            stack.push(nestedList.get(i));
+            st.push(nestedList.get(i));
         }
     }
 
     @Override
     public Integer next() {
-        return hasNext() ? stack.pop().getInteger() : null;
+        if (!hasNext()) {
+            return null;
+        }
+        NestedInteger top = st.pop();
+        dig();
+        return top.getInteger();
     }
 
-    // backout the next integer put it on the top of the stack, or it becomes empty
+    private void dig() {
+        while (!st.isEmpty() && !st.peek().isInteger()) {
+            NestedInteger ni = st.pop();
+            populate(ni.getList());
+        }
+    }
+
     @Override
     public boolean hasNext() {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        while (!stack.isEmpty()) {
-            if (stack.peek().isInteger()) {
-                break;
-            }
-            List<NestedInteger> top = stack.pop().getList();
-            for (int i = top.size() - 1; i >= 0; i--) {
-                stack.push(top.get(i));
-            }
-        }
-        return !stack.isEmpty();
+        return !st.isEmpty();
     }
 }
