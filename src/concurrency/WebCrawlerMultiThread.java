@@ -1,7 +1,8 @@
 package concurrency;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -40,178 +41,56 @@ public class WebCrawlerMultiThread {
 }
 
 class WebCrawler {
-
-    private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
-
-    class Crawler implements Runnable {
-        // only craw one url
-        String url;
-
-        public Crawler(String url) {
-            this.url = url;
-        }
-
-        @Override
-        public void run() {
-            map.putIfAbsent(url, true);
-            //     System.out.println("crawling..." + url + " " + Thread.currentThread());
-            List<String> urls = htmlParser.getUrls(url);
-            List<Thread> ts = new ArrayList<>();
-            for (String u : urls) {
-                String uhost = gethost(u);
-                if (uhost.equals(host) && !map.containsKey(u)) {
-                    Thread t = new Thread(new Crawler(u));
-                    ts.add(t);
-                    t.start();
-                }
-            }
-            for (Thread t : ts) {
-                try {
-                    t.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    // assuming thread safe
-    private HtmlParser htmlParser;
-
+    // use fork join!
     private String host = "";
-    private String protocol = "http://";
 
-    public List<String> crawl(String startUrl, HtmlParser htmlParser) {
-        this.host = gethost(startUrl);
-        this.htmlParser = htmlParser;
-
-        Thread t = new Thread(new Crawler(startUrl));
-        t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>(map.keySet());
-    }
-
-    private String gethost(String startUrl) {
-        int start = protocol.length();
-        int end = startUrl.indexOf("/", start);
-        return startUrl.substring(start, end == -1 ? startUrl.length() : end);
-    }
-}
-
-// TLE for no reason
-class WebCrawlerThreadPool {
-
-    private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
-    // assuming thread safe
-    private HtmlParser htmlParser;
-
-    private String host = "";
-    private String protocol = "http://";
-
-    class CrawlAction implements Callable<Integer> {
-        String url;
-
-        public CrawlAction(String url) {
-            this.url = url;
-        }
-
-        @Override
-        public Integer call() throws Exception {
-            //    System.out.println(url);
-            List<String> urls = htmlParser.getUrls(url);
-            List<CrawlAction> actions = new ArrayList<>();
-            for (String u : urls) {
-                if (map.containsKey(u)) {
-                    continue;
-                }
-
-                if (u.startsWith(host)) {
-                    map.putIfAbsent(u, true);
-                    actions.add(new CrawlAction(u));
-                }
-            }
-            pool.invokeAll(actions);
-            return 0;
-        }
-    }
-
-    ExecutorService pool = Executors.newFixedThreadPool(100);
-
-    public List<String> crawl(String startUrl, HtmlParser htmlParser) {
-        this.pool = ForkJoinPool.commonPool();
-        this.host = gethost(startUrl);
-        this.htmlParser = htmlParser;
-        map.put(startUrl, true);
-        List<CrawlAction> actions = new ArrayList<>();
-        actions.add(new CrawlAction(startUrl));
-        try {
-            pool.invokeAll(actions);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>(map.keySet());
-    }
-
-    private String gethost(String startUrl) {
-        int start = protocol.length();
-        int end = startUrl.indexOf("/", start);
-        return startUrl.substring(0, end == -1 ? startUrl.length() : end);
-    }
-}
-
-// TLE for no reason
-class WebCrawlerForkJoin {
-
-    private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
-    // assuming thread safe
-    private HtmlParser htmlParser;
-
-    private String host = "";
-    private String protocol = "http://";
+    private ConcurrentHashMap<String, Boolean> found = new ConcurrentHashMap<>();
 
     class CrawlAction extends RecursiveAction {
-        String url;
 
-        public CrawlAction(String url) {
+        private String url;
+        private HtmlParser htmlParser;
+
+        public CrawlAction(String url, HtmlParser htmlParser) {
             this.url = url;
+            this.htmlParser = htmlParser;
         }
 
         @Override
         protected void compute() {
-            //    System.out.println(url);
-            List<String> urls = htmlParser.getUrls(url);
-            List<CrawlAction> actions = new ArrayList<>();
-            for (String u : urls) {
-                if (map.containsKey(u)) {
-                    continue;
-                }
-                if (u.startsWith(host)) {
-                    map.putIfAbsent(u, true);
-                    actions.add(new CrawlAction(u));
+            List<CrawlAction> newTasks = new ArrayList<>();
+            List<String> toCrawl = htmlParser.getUrls(url);
+            if (toCrawl != null) {
+                for (String newUrl : toCrawl) {
+                    try {
+                        URL u = new URL(newUrl);
+                        if (!u.getHost().equalsIgnoreCase(host)) {
+                            continue;
+                        }
+                    } catch (MalformedURLException e) {
+                        // log errors
+                    }
+                    Boolean ov = found.put(newUrl, true);
+                    // must use put to check otherwise two ifs may result in race condition
+                    if (ov == null) {
+                        newTasks.add(new CrawlAction(newUrl, htmlParser));
+                    }
                 }
             }
-            invokeAll(actions);
+            invokeAll(newTasks);
         }
     }
 
-    ForkJoinPool pool = ForkJoinPool.commonPool();
-
     public List<String> crawl(String startUrl, HtmlParser htmlParser) {
-        this.pool = ForkJoinPool.commonPool();
-        this.host = gethost(startUrl);
-        this.htmlParser = htmlParser;
-        map.put(startUrl, true);
-        pool.invoke(new CrawlAction(startUrl));
-        return new ArrayList<>(map.keySet());
-    }
-
-    private String gethost(String startUrl) {
-        int start = protocol.length();
-        int end = startUrl.indexOf("/", start);
-        return startUrl.substring(0, end == -1 ? startUrl.length() : end);
+        try {
+            URL url = new URL(startUrl);
+            host = url.getHost();
+        } catch (
+                MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        found.put(startUrl, true);
+        ForkJoinPool.commonPool().invoke(new CrawlAction(startUrl, htmlParser));
+        return new ArrayList<>(found.keySet());
     }
 }
