@@ -22,102 +22,99 @@ Some examples:
 Note: Do not use the eval built-in library function.
  */
 public class BasicCalculatorIII {
+    // classical two stack solution. note the definition of shouldCollapse
+    private Deque<Long> nums = new ArrayDeque<>();
+    private Deque<Character> ops = new ArrayDeque<>();
+
     public int calculate(String s) {
-        // assuming s valid
         if (s == null || s.isEmpty()) {
             return 0;
         }
-        Deque<Long> num = new ArrayDeque<>();
-        Deque<Character> op = new ArrayDeque<>();
-        int i = 0;
         int n = s.length();
-        StringBuilder pending = new StringBuilder();
+        int i = 0;
         while (i < n) {
             char c = s.charAt(i);
-            if (c >= '0' && c <= '9') {
-                pending.append(c);
+            if (c == ')') {
+                collapse2Left();
+                i++;
             } else if (c == '(') {
-                if (i + 1 < n && s.charAt(i + 1) == '-') {
-                    // (-2)*3
-                    int end = s.indexOf(')', i + 1);
-                    pending = pushNumber(s.substring(i + 1, end), num);
-                    i = end;
+                if (i + 1 < n && s.charAt(i + 1) == '-') {  // (-1) neg number
+                    int j = s.indexOf(')', i + 1);
+                    Long num = Long.valueOf(s.substring(i + 1, j));
+                    nums.push(num);
+                    i = j + 1;
                 } else {
-                    op.push(c);
+                    ops.push(c); // push single ( non neg
+                    i++;
                 }
-            } else if (c == ')') {
-                pending = pushNumber(pending.toString(), num);
-                collapseTillLeft(num, op);
-            } else if (c == '-' && i == 0) {
-                pending.append(c); // -2 +5 : -2 is part of the num
+            } else if ((c == '-' && i == 0) || isNum(c)) {
+                int j = i + 1;
+                while (j < n && isNum(s.charAt(j))) {
+                    j++;
+                }
+                Long num = Long.valueOf(s.substring(i, j));
+                nums.push(num);
+                i = j;
             } else if (c != ' ') {
-                // operations, - without making numbers negative
-                pending = pushNumber(pending.toString(), num);
-                collapseAndPut(num, op, c);
+                // operators like +-*/
+                collapse(c);
+                i++;
+            } else {
+                i++;
             }
-            i++;
         }
-        // don't forget to push the final number
-        pending = pushNumber(pending.toString(), num);
-        while (!op.isEmpty()) {
-            collapseAll(num, op);
-        }
-        return num.pop().intValue();
+        collapseAll();
+        return nums.pop().intValue();
     }
 
-    private StringBuilder pushNumber(String s, Deque<Long> st) {
-        if (!s.isEmpty()) {
-            st.push(Long.valueOf(s));
-        }
-        return new StringBuilder();
+    private boolean isNum(char c) {
+        return c >= '0' && c <= '9';
     }
 
-    private void collapseAndPut(Deque<Long> num, Deque<Character> op, char c) {
-        while (!op.isEmpty() && shouldCollapse(op.peek(), c)) {
-            calc(num, op);
-        }
-        op.push(c);
+    private void calc() {
+        char curop = ops.pop();
+        long num2 = nums.pop();
+        long num1 = nums.pop();
+        nums.push(doCalc(num1, num2, curop));
     }
 
-    private void collapseAll(Deque<Long> num, Deque<Character> op) {
-        while (!op.isEmpty()) {
-            calc(num, op);
-        }
-    }
-
-    private void collapseTillLeft(Deque<Long> num, Deque<Character> op) {
-        while (!op.isEmpty() && op.peek() != '(') {
-            calc(num, op);
-        }
-        op.pop(); // pop the ( out
-    }
-
-    private void calc(Deque<Long> num, Deque<Character> op) {
-        long v2 = num.pop();
-        long v1 = num.pop();
-        char func = op.pop();
-        num.push(runCalc(func, v1, v2));
-    }
-
-    private long runCalc(char f, long v1, long v2) {
-        if (f == '+') {
-            return v1 + v2;
-        } else if (f == '-') {
-            return v1 - v2;
-        } else if (f == '*') {
-            return v1 * v2;
+    private long doCalc(long n1, long n2, char op) {
+        if (op == '+') {
+            return n1 + n2;
+        } else if (op == '-') {
+            return n1 - n2;
+        } else if (op == '*') {
+            return n1 * n2;
         } else {
-            return v1 / v2;
+            return n1 / n2;
         }
     }
 
-    // should we trigger the calc of op1 immediately?
-    private boolean shouldCollapse(char op1, char op2) {
-        // nothing can trigger a calc on (
-        if (op1 == '(') {
+    private void collapse(char c) {
+        while (!ops.isEmpty() && shouldCollapse(ops.peek(), c)) {
+            calc();
+        }
+        ops.push(c);
+    }
+
+    private void collapseAll() {
+        while (!ops.isEmpty()) {
+            calc();
+        }
+    }
+
+    private void collapse2Left() {
+        while (!ops.isEmpty() && ops.peek() != '(') {
+            calc();
+        }
+        ops.pop(); // dont forget this!
+    }
+
+    private boolean shouldCollapse(char o1, char o2) {
+        if (o1 == '(') { // ( means dont calc beyond this yet
             return false;
-        } else if ((op1 == '+' || op1 == '-') && (op2 == '*' || op2 == '/')) {
-            // the only case that we need to store the operation to realize later
+        }
+        if ((o1 == '+' || o1 == '-') && (o2 == '*' || o2 == '/')) {
             return false;
         }
         return true;

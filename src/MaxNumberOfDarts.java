@@ -55,7 +55,7 @@ public class MaxNumberOfDarts {
                 if (i == j) {
                     continue;
                 }
-                List<double[]> cs = getcs(points[i][0], points[i][1], points[j][0], points[j][1], r);
+                List<double[]> cs = getCircles(points[i][0], points[i][1], points[j][0], points[j][1], r);
                 centers.addAll(cs);
             }
         }
@@ -84,7 +84,7 @@ public class MaxNumberOfDarts {
     }
 
 
-    private List<double[]> getcs(double x1, double y1, double x2, double y2, double r) {
+    private List<double[]> getCircles(double x1, double y1, double x2, double y2, double r) {
         double q = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         double x3 = (x1 + x2) / 2.0;
         double y3 = (y1 + y2) / 2.0;
