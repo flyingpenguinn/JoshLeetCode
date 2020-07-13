@@ -19,13 +19,17 @@ Output: 0
 Explanation: In this case, no transaction is done, i.e. max profit = 0.
  */
 public class BestTimeBuySellStockI {
-    // not just max-min. min can be after max. so need to remember the min till i and do subtraction
+    // iterate the selling point and seek the best profit
     public int maxProfit(int[] prices) {
-        int min = Integer.MAX_VALUE;
+        if (prices == null || prices.length == 0) {
+            return 0;
+        }
+        int min = prices[0];
         int r = 0;
-        for (int p : prices) {
-            r = Math.max(r, p - min);
-            min = Math.min(p, min);
+        // sell at i, what are the max profits
+        for (int i = 1; i < prices.length; i++) {
+            r = Math.max(r, prices[i] - min);
+            min = Math.min(prices[i], min);
         }
         return r;
     }

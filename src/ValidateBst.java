@@ -48,3 +48,26 @@ public class ValidateBst {
     }
 
 }
+
+class ValidateBstPostOrder {
+    // slower as it needs to traverse the whole tree. but this approach can solve larget bst subtree problem
+    public boolean isValidBST(TreeNode root) {
+        return dfs(root)[2] == 1;
+    }
+
+    // min, max, isbst
+    private long[] dfs(TreeNode n) {
+        if (n == null) {
+            return new long[]{Integer.MAX_VALUE + 1L, Integer.MIN_VALUE - 1L, 1};
+        }
+        long[] left = dfs(n.left);
+        long[] right = dfs(n.right);
+        long min = Math.min(n.val, Math.min(left[0], right[0]));
+        long max = Math.max(n.val, Math.max(left[1], right[1]));
+        if (n.val > left[1] && n.val < right[0] && left[2] == 1 && right[2] == 1) {
+            return new long[]{min, max, 1};
+        } else {
+            return new long[]{min, max, 0};
+        }
+    }
+}

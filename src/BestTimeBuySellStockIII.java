@@ -30,24 +30,27 @@ public class BestTimeBuySellStockIII {
     // on its right we can do max-i
     // on its left we can do maxl till i-1
     public int maxProfit(int[] a) {
-        int n = a.length;
-        if (n == 0) {
+        // iterate the 2nd buy point. its profit is
+        // best profit from left + maxright-this price
+        // a[i]>=0
+        if(a==null || a.length==0){
             return 0;
         }
-        int[] ri = new int[n];
-        ri[n - 1] = a[n - 1];
-        for (int i = n - 2; i >= 0; i--) {
-            ri[i] = Math.max(ri[i + 1], a[i]);
+        int n= a.length;
+        int[] rightMax = new int[n];
+        rightMax[n-1] = a[n-1];
+        for(int i=n-2; i>=0; i--){
+            rightMax[i] = Math.max(a[i], rightMax[i+1]);
         }
-        int min = Integer.MAX_VALUE;
-        int maxl = 0;
-        int max = 0;
-        for (int i = 0; i < n; i++) {
-            int p = ri[i] - a[i] + maxl;
-            max = Math.max(max, p);
-            min = Math.min(a[i], min);
-            maxl = Math.max(a[i] - min, maxl);
+        int leftMin = Integer.MAX_VALUE;
+        int leftProfit = 0;
+        int r = 0;
+        for(int i=0; i<n-1; i++){ // 2nd buy! so wont touch n-1
+            int curProfit = leftProfit+ rightMax[i+1]-a[i]; // left + right of i - a[i]
+            r = Math.max(r, curProfit);
+            leftProfit = Math.max(leftProfit, a[i]-leftMin);
+            leftMin = Math.min(leftMin, a[i]);
         }
-        return max;
+        return r;
     }
 }

@@ -25,24 +25,28 @@ Can you figure out ways to solve it with O(n) time complexity?
  */
 public class LargestBSTSubTree {
     // post traverse. note here bst requires strict order, == is not allowed
+    // note here we can't use top down approach: that will only check if the whole tree is bst, not the subtrees!
+    // to reckon subtree we have to do post order
     public int largestBSTSubtree(TreeNode root) {
-        return dol(root)[4];
+        return dfs(root)[4];
     }
 
-    // size, min, max, isbst, maxbstsize
-    int[] dol(TreeNode n) {
-        if (n == null) {
-            return new int[]{0, Integer.MAX_VALUE, Integer.MIN_VALUE, 1, 0};
+    // min, max, isbst, size, largest bst size
+    private int[] dfs(TreeNode n){
+        if(n==null){
+            return new int[]{Integer.MAX_VALUE, Integer.MIN_VALUE, 1, 0, 0};
         }
-        int[] left = dol(n.left);
-        int[] right = dol(n.right);
-        int all = left[0] + right[0] + 1;
-        int min = Math.min(n.val, Math.min(left[1], right[1]));
-        int max = Math.max(n.val, Math.max(left[2], right[2]));
-        if (left[3] == 1 && right[3] == 1 && left[2] < n.val && right[1] > n.val) {
-            return new int[]{all, min, max, 1, all};
-        } else {
-            return new int[]{all, min, max, 0, Math.max(left[4], right[4])};
+        int[] left = dfs(n.left);
+        int[] right = dfs(n.right);
+        int min = Math.min(left[0], Math.min(right[0], n.val));
+        int max = Math.max(left[1], Math.max(right[1], n.val));
+        int isBst = 0;
+        int maxBstSize = Math.max(left[4], right[4]);
+        int count = 1+left[3]+right[3];
+        if(left[2]==1 && right[2]==1 && n.val > left[1] && n.val <right[0]){
+            isBst =1;
+            maxBstSize = Math.max(maxBstSize, count);
         }
+        return new int[]{min, max, isBst, count, maxBstSize};
     }
 }

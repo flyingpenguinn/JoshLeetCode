@@ -18,25 +18,19 @@ Explanation:
 One way is to shoot one arrow for example at x = 6 (bursting the balloons [2,8] and [1,6]) and another arrow at x = 11 (bursting the other two balloons).
  */
 public class MinArrowToBurstBallon {
-    // if current public space intersects with interval use it. otherwise start a new one
-    // can also sort by end point an then we dont need to maintain the min end
+    // typical pick least point to cover intervals! sort by end
     public int findMinArrowShots(int[][] a) {
-        int n = a.length;
-        if (n == 0) {
+        // check null error out if needed
+        if (a.length == 0) {
             return 0;
         }
-        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]) );
+        int end = a[0][1];
         int r = 1;
-        // dont need to involve cs at all... we only care about s vs ce
-        int ce = a[0][1];
-        for (int i = 1; i < n; i++) {
-            int s = a[i][0];
-            int e = a[i][1];
-            if (s > ce) {
+        for (int i = 1; i < a.length; i++) {
+            if (a[i][0] > end) {
+                end = a[i][1];
                 r++;
-                ce = e;
-            } else {
-                ce = Math.min(e, ce);
             }
         }
         return r;

@@ -28,10 +28,28 @@ Explanation: In this case, no transaction is done, i.e. max profit = 0.
 public class BestTimeBuySellStockII {
     // just exploit any positive price move....
     public int maxProfit(int[] a) {
-        int r=0;
-        for(int i=1;i<a.length;i++){
-            r += Math.max(0,a[i]-a[i-1]);
+        int r = 0;
+        for (int i = 1; i < a.length; i++) {
+            r += Math.max(0, a[i] - a[i - 1]);
         }
         return r;
+    }
+}
+
+class BestTimeBuySellIIDp {
+    // we can actually dp it
+    public int maxProfit(int[] a) {
+        if (a == null || a.length == 0) {
+            return 0;
+        }
+        int n = a.length;
+        int[] dp = new int[n]; // max profit we can get using stocks from i... n
+        int maxLater = a[n - 1]; // dp[n-1+1] + a[n-1]
+        // dp[n] and dp[n-1] both 0
+        for (int i = n - 2; i >= 0; i--) {
+            dp[i] = Math.max(dp[i + 1], maxLater - a[i]);
+            maxLater = Math.max(maxLater, dp[i + 1] + a[i]);
+        }
+        return dp[0];
     }
 }

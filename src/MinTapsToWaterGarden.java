@@ -54,6 +54,7 @@ import java.util.List;
 
 public class MinTapsToWaterGarden {
     // interval coverage problem, similar to video stitching
+    // we first pick the longest interval starting at 0. get the end point. then find the longest whose start <= that end point, and extend it
     public int minTaps(int n, int[] a) {
         List<int[]> ins = new ArrayList<>();
         for (int i = 0; i < n + 1; i++) {

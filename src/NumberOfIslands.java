@@ -93,3 +93,34 @@ public class NumberOfIslands {
         System.out.println(new NumberOfIslands().numIslands(ArrayUtils.readAsChar("[[1,1,1,1,1,1,1],[0,0,0,0,0,0,1],[1,1,1,1,1,0,1],[1,0,0,0,1,0,1],[1,0,1,0,1,0,1],[1,0,1,1,1,0,1],[1,1,1,1,1,1,1]]")));
     }
 }
+
+class NumberOfIslandsDfs {
+    public int numIslands(char[][] a) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return 0;
+        }
+        int r = 0;
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                if (a[i][j] == '1') {
+                    dfs(a, i, j);
+                    r++;
+                }
+            }
+        }
+        return r;
+    }
+
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    private void dfs(char[][] a, int i, int j) {
+        a[i][j] = '2';
+        for (int[] d : dirs) {
+            int ni = i + d[0];
+            int nj = j + d[1];
+            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] == '1') {
+                dfs(a, ni, nj);
+            }
+        }
+    }
+}

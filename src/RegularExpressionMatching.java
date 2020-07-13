@@ -48,44 +48,46 @@ Output: false
 
 public class RegularExpressionMatching {
     // note s has no pattern! only need to deal with * in p
-    private static int[][] dp;
-
-    public boolean isMatch(String s, String t) {
-        dp = new int[s.length() + 1][t.length() + 1];
-        return domatch(s, t, 0, 0);
+    public boolean isMatch(String s, String p) {
+        // check null etc
+        Boolean[][] dp = new Boolean[s.length()+1][p.length()];
+        return match(s, 0, p, 0, dp);
     }
 
-    private boolean domatch(String s, String t, int i, int j) {
-        int sn = s.length();
-        int tn = t.length();
-        if (i == sn && j == tn) {
+    private Boolean match(String s, int i, String p, int j, Boolean[][] dp){
+        if(i==s.length() && j==p.length()){
             return true;
-        }
-        // allow s to be empty to match empty with b*
-        if (i > sn || j == tn) {
+        }else if (j==p.length()){
+            return false;
+        }else if (i>s.length()){
             return false;
         }
-        if (dp[i][j] != 0) {
-            return dp[i][j] == 1;
+        if(dp[i][j]!= null){
+            return dp[i][j];
         }
-        char nt = j + 1 < tn ? t.charAt(j + 1) : 0;
-        if (nt == '*') {
-            // match zero, or one. similar to WildcardMatching dont need a loop here
-            boolean rt = domatch(s, t, i, j + 2) || (same(s, t, i, j) && domatch(s, t, i + 1, j));
-            return cache(i, j, rt);
-        } else {
-            boolean rt = (same(s, t, i, j) && domatch(s, t, i + 1, j + 1));
-            return cache(i, j, rt);
+        if(j+1<p.length() && p.charAt(j+1)=='*'){
+            // j always points to a non * char, here we get a* in p
+            boolean zero = match(s, i, p, j+2, dp); // b in s. zero match
+            if(zero){
+                dp[i][j] = true;
+            }
+            else if(same(s, i, p, j)){   // a* vs a. we match one here but later can match more in i+1
+                dp[i][j] = match(s, i+1, p, j, dp);
+            }else{
+                dp[i][j] = false;  // a* vs b but that can't match so return false
+            }
+        }else{
+            if(same(s, i, p, j)){   // .or a vs a without *, can only move one step
+                dp[i][j] = match(s, i+1, p, j+1, dp);
+            }else{
+                dp[i][j] = false;
+            }
         }
+        return dp[i][j];
     }
 
-    private boolean same(String s, String t, int i, int j) {
-        return i < s.length() && j < t.length() && (s.charAt(i) == '.' || t.charAt(j) == '.' || s.charAt(i) == t.charAt(j));
-    }
-
-    private boolean cache(int i, int j, boolean r) {
-        dp[i][j] = r == true ? 1 : 2;
-        return r;
+    private boolean same(String s, int i, String p, int j){
+        return i<s.length() && (s.charAt(i) == p.charAt(j) || p.charAt(j)=='.');
     }
 
     public static void main(String[] args) {
