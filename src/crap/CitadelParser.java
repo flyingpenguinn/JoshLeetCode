@@ -9,10 +9,10 @@ public class CitadelParser {
         StringBuilder sb = new StringBuilder();
         while (i < s.length()) {
             int count = Integer.valueOf(s.substring(i, i + 2));
-            int j = i + 2;
-            String str = s.substring(j, j + count);
+            i += 2;
+            String str = s.substring(i, i + count);
             sb.append(str);
-            i = j + count;
+            i += count;
         }
         return sb.toString();
     }
@@ -54,6 +54,7 @@ public class CitadelParser {
 
 
     public static void main(String[] args) {
+        System.out.println(new CitadelParser().parse("02bc101234567890"));// bc...0
         System.out.println(new CitadelParser().parseList(List.of("0", "2bb01", "c")));// bbc
         System.out.println(new CitadelParser().parseList(List.of("02bc101234567890")));// bc...0
         System.out.println(new CitadelParser().parseList(List.of("02cc01b"))); //ccb
