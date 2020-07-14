@@ -29,6 +29,7 @@ public class PowerXn {
         if (x == 0 || x == 1 || n == 1) {
             return x;
         }
+        // must do after ==0 because 1/0 is nan
         if (n < 0) {
             return 1.0 / doPow(x, -n);
         }

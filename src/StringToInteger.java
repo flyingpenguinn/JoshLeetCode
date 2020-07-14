@@ -50,34 +50,40 @@ Explanation: The number "-91283472332" is out of the range of a 32-bit signed in
 public class StringToInteger {
 
     public int myAtoi(String s) {
-        int n = s.length();
-        int i = 0;
-        while (i < n && s.charAt(i) == ' ') {
-            i++;
-        }
-        int sign = 1;
-        if (i < n && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
-            sign = s.charAt(i) == '-' ? -1 : 1;
-            i++;
-        }
-        if (i == n || !Character.isDigit(s.charAt(i))) {
+        if(s==null || s.isEmpty()){
             return 0;
         }
-        int r = 0;
-        while (i < n && Character.isDigit(s.charAt(i))) {
-            int curc = s.charAt(i) - '0';
-            // must have sign check before the max value check because if sign <0 -sign*curc might overflow
-            if (sign == 1 && r > (Integer.MAX_VALUE - curc) / 10) {
-                r = Integer.MAX_VALUE;
-                break;
-            }
-            if (sign == -1 && r < (Integer.MIN_VALUE + curc) / 10) {
-                r = Integer.MIN_VALUE;
-                break;
-            }
-            r = r * 10 + sign * curc;
+        int i = 0;
+        while(i<s.length() && s.charAt(i)==' '){
             i++;
+        }  // exclude white spaces
+        if(i==s.length()){
+            return 0;
         }
-        return r;
+        boolean pos = true;
+        if(s.charAt(i)=='+'||s.charAt(i)=='-'){
+            pos = s.charAt(i)=='+';
+            i++;
+        } //optional + or -
+        int j = i;
+        int res = 0;
+        while(j<s.length() &&  Character.isDigit(s.charAt(j))){
+            int v = s.charAt(j)-'0';
+            if(pos ){
+                if(res> (Integer.MAX_VALUE - v)/10){
+                    return Integer.MAX_VALUE;
+                }else{
+                    res = res*10+v;
+                }
+            }else {
+                if(res< (Integer.MIN_VALUE + v)/10){
+                    return Integer.MIN_VALUE;
+                }else{
+                    res = res*10-v;
+                }
+            }
+            j++;
+        }
+        return res;
     }
 }

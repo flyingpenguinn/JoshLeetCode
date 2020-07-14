@@ -20,29 +20,43 @@ public class TwentyFourGames {
     // fetch two numbers every time. put their result back to list. this is equivalent to adding () to every two numbers and get thei result
     // note in getting result we do a-b and b-a as well so that we can cover all possible sequences
     public boolean judgePoint24(int[] a) {
-        List<Double> ns = new ArrayList<>();
-        for (int i = 0; i < a.length; i++) {
-            ns.add(Double.valueOf(a[i]));
+        if (a == null || a.length == 0) {
+            return false;
         }
-        return dojudge(ns);
+        // assuming a is valid positive number only
+        List<Double> input = new ArrayList<>();
+        for (int i = 0; i < a.length; i++) {
+            input.add(Double.valueOf(a[i]));
+        }
+        return dfs(input);
     }
 
-    // merge two different numbers every time and put the result into list, then recursion forward
-    boolean dojudge(List<Double> a) {
-        int n = a.size();
-        if (n == 1) {
-            return Math.abs(a.get(0) - 24.0) < 0.00001;
+    private double Eps = 0.000001;
+
+    private boolean dfs(List<Double> input) {
+        if (input.size() == 1) {
+            if (Math.abs(input.get(0) - 24.0) < Eps) {
+                return true;
+            } else {
+                return false;
+            }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                double v1 = a.get(i);
-                double v2 = a.get(j);
-                for (double gen : gen(v1, v2)) {
-                    List<Double> nlist = new ArrayList<>(a);
-                    nlist.remove(v1);
-                    nlist.remove(v2);
-                    nlist.add(gen);
-                    if (dojudge(nlist)) {
+        // get two different numbers together, j can start from i+1 because we loop both i-j and j-i in. but note this is NOT first two numbers!
+        for (int i = 0; i < input.size(); i++) {
+            for (int j = i + 1; j < input.size(); j++) {
+                List<Double> combi = combinations(input.get(i), input.get(j));
+                List<Double> ninput = new ArrayList<>();
+                // can't do copy list and remove i+ remove j, because j's index may be impacted by i
+                for (int k = 0; k < input.size(); k++) {
+                    if (k != i && k != j) {
+                        ninput.add(input.get(k));
+                    }
+                }
+                for (double com : combi) {
+                    List<Double> innerInput = new ArrayList<>(ninput);
+                    innerInput.add(com);
+                    boolean res = dfs(innerInput);
+                    if (res) {
                         return true;
                     }
                 }
@@ -51,15 +65,14 @@ public class TwentyFourGames {
         return false;
     }
 
-    // must try out all sequences because this is like adding () around two numbers
-    List<Double> gen(double v1, double v2) {
+    private List<Double> combinations(double n1, double n2) {
         List<Double> r = new ArrayList<>();
-        r.add(v1 + v2);
-        r.add(v1 - v2);
-        r.add(v2 - v1);
-        r.add(v1 * v2);
-        r.add(v1 / v2);
-        r.add(v2 / v1);
+        r.add(n1 + n2);
+        r.add(n1 - n2);
+        r.add(n2 - n1);
+        r.add(n1 * n2);
+        r.add(n1 / n2);
+        r.add(n2 / n1);
         return r;
     }
 

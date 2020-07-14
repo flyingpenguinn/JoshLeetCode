@@ -34,29 +34,30 @@ public class FindKPairsWithSmallestSums {
     // can't do binary search as this one asks for all k elements
     // note here a and b don't have bigger/smaller relationship. Similar to #1439
     public List<List<Integer>> kSmallestPairs(int[] a, int[] b, int k) {
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
+        // treat 2nd array as the column in kth in sorted array problem!
         List<List<Integer>> r = new ArrayList<>();
-        if (a.length == 0 || b.length == 0 || k == 0) {
+        if (a == null || a.length == 0 || b == null || b.length == 0 || k <= 0) {
             return r;
         }
+        int na = a.length;
+        int nb = b.length;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
         pq.offer(new int[]{0, 0, a[0] + b[0]});
-        while (!pq.isEmpty()) {
+        while (!pq.isEmpty() && k > 0) {
             int[] top = pq.poll();
-            int ai = top[0];
-            int bi = top[1];
-            List<Integer> ri = new ArrayList<>();
-            ri.add(a[ai]);
-            ri.add(b[bi]);
-            r.add(ri);
-            if (r.size() == k) {
-                break;
+            int i = top[0];
+            int j = top[1];
+            List<Integer> cur = new ArrayList<>();
+            cur.add(a[i]);
+            cur.add(b[j]);
+            r.add(cur);
+            if (j + 1 < nb) {
+                pq.offer(new int[]{i, j + 1, a[i] + b[j + 1]});
             }
-            if (ai + 1 < a.length) {
-                pq.offer(new int[]{ai + 1, bi, a[ai + 1] + b[bi]});
+            if (i + 1 < na && j == 0) {
+                pq.offer(new int[]{i + 1, j, a[i + 1] + b[j]});
             }
-            if (ai == 0 && bi + 1 < b.length) {
-                pq.offer(new int[]{ai, bi + 1, a[ai] + b[bi + 1]});
-            }
+            k--;
         }
         return r;
     }

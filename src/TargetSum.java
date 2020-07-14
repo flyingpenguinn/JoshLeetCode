@@ -25,30 +25,33 @@ The sum of elements in the given array will not exceed 1000.
 Your output answer is guaranteed to be fitted in a 32-bit integer.
  */
 public class TargetSum {
-    // for each number either -a or +a and move on to the next
-    Map<Integer, Integer>[] dp;
+    // for each number either -a or +a and move on to the next. note we could convert this to a 1d dp
+    // by factoring out i since we only need i+1
+    private Map<Integer, Map<Integer, Integer>> dp = new HashMap<>();
 
     public int findTargetSumWays(int[] a, int t) {
-        dp = new HashMap[a.length];
-        for (int i = 0; i < dp.length; i++) {
-            dp[i] = new HashMap<>();
+        if (a == null || a.length == 0) {
+            return 0;
         }
-        return dof(a, t, 0);
+        return solve(a, 0, 0, t);
     }
 
-    int dof(int[] a, int t, int i) {
-        int n = a.length;
-        if (i == n) {
-            return t == 0 ? 1 : 0;
+    private int solve(int[] a, int i, int cur, int t) {
+        if (i == a.length) {
+            if (cur == t) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
-        Integer ch = dp[i].get(t);
-        if (ch != null) {
-            return ch;
+        Map<Integer, Integer> cm = dp.getOrDefault(i, new HashMap<>());
+        Integer cached = cm.get(cur);
+        if (cached != null) {
+            return cached;
         }
-        int pos = dof(a, t - a[i], i + 1);
-        int neg = dof(a, t + a[i], i + 1);
-        int rt = pos + neg;
-        dp[i].put(t, rt);
+        int rt = solve(a, i + 1, cur + a[i], t) + solve(a, i + 1, cur - a[i], t);
+        cm.put(cur, rt);
+        dp.put(i, cm);
         return rt;
     }
 }

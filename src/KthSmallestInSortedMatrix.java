@@ -24,33 +24,35 @@ You may assume k is always valid, 1 ≤ k ≤ n2.
 public class KthSmallestInSortedMatrix {
     // klogk similar to LC#373. actually 373 can be converted to this question
     public int kthSmallest(int[][] a, int k) {
+        if (a == null || a.length == 0 || k <= 0) {
+            return -1; // or throw
+        }
         int m = a.length;
-        if (m == 0 || k == 0) {
+        int n = a[0].length;
+        if (k > m * n) {
             return -1;
         }
-        int n = a[0].length;
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(a[x[0]][x[1]], a[y[0]][y[1]]));
-        pq.offer(new int[]{0, 0});
-        int rem = k;
-        while (!pq.isEmpty()) {
+        // r,c,v
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
+        pq.offer(new int[]{0, 0, a[0][0]});
+        while (k > 1) {
             int[] top = pq.poll();
-            rem--;
-            if (rem == 0) {
-                return a[top[0]][top[1]];
+            int r = top[0];
+            int c = top[1];
+            if (c + 1 < n) {
+                pq.offer(new int[]{r, c + 1, a[r][c + 1]});
             }
-            if (top[1] + 1 < n) {
-                pq.offer(new int[]{top[0], top[1] + 1});
+            if (r + 1 < m && c == 0) {
+                pq.offer(new int[]{r + 1, c, a[r + 1][c]});
             }
-            if (top[1] == 0 && top[0] + 1 < m) {
-                pq.offer(new int[]{top[0] + 1, top[1]});
-            }
+            k--;
         }
-        return -1;
+        return pq.poll()[2];
     }
 }
 
 class KthSmallestSortedMatrixBfs {
-   // similar to 373's bfs.
+    // similar to 373's bfs.
     public int kthSmallest(int[][] a, int k) {
         PriorityQueue<int[]> q = new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0]));
         int m = a.length;
@@ -97,33 +99,38 @@ class KthSmallestSortedMatrixBfs {
 class KthSmallestSortedMatrixBinarySearch {
     // similar to find duplicated number, search number, not range. unlike search in sorted matrix!
     public int kthSmallest(int[][] a, int k) {
-        int l = a[0][0];
-        int m = a.length;
-        if (m == 0 || k == 0) {
-            return -1;
+        if(a==null || a.length==0 || k<=0){
+            return -1; // or throw
         }
+        int m = a.length;
         int n = a[0].length;
-        int u = a[m - 1][n - 1];
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (kth(a, mid) >= k) {
-                u = mid - 1; // squeeze out the solution
-            } else {
-                l = mid + 1;
+        int l = a[0][0];
+        int u = a[m-1][n-1];
+        while(l<=u){
+            int mid = l+(u-l)/2;
+            int count = count(a, mid); // how many nums <=k
+            if(count>=k){
+                u = mid-1;
+            }else{
+                l = mid+1;
             }
         }
         return l;
     }
 
-    private int kth(int[][] a, int mid) {
+    // how many nums <=t
+    private int count(int[][] a, int t){
+        int m = a.length;
+        int n = a[0].length;
+
         int i = 0;
-        int j = a[0].length - 1;
+        int j = n-1;
         int r = 0;
-        while (j >= 0) {
-            while (i < a.length && a[i][j] <= mid) {
+        while(j>=0){
+            while(i<m && a[i][j]<=t){
                 i++;
             }
-            // 0... i-1 in column j <= mid
+            // 0.. i-1 on this j is known to be <=t
             r += i;
             j--;
         }

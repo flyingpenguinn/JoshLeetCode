@@ -39,15 +39,12 @@ Constraints:
 Answers within 10^-5 of the actual value will be accepted as correct.
  */
 public class AngleBetweenClockHands {
-    public double angleClock(int hour, int minutes) {
-        if (hour == 12) {
-            hour = 0;
-        }
-        double minangle = minutes * 360.0 / 60.0;
-        double hourangle = (hour + minutes / 60.0) * 360.0 / 12.0;
-        double max = Math.max(minangle, hourangle);
-        double min = Math.min(minangle, hourangle);
-        // smaller angle!
-        return max - min <= 180.0 ? max - min : 360.0 - (max - min);
+    // the smaller angle!
+    public double angleClock(int hour, int min) {
+        double hourRatio = (hour % 12) / 12.0;
+        double longer = min / 60.0;
+        double shorter = hourRatio + longer / 12.0;
+        double ang = Math.abs(shorter - longer) * 360.0;
+        return ang <= 180.0 ? ang : 360.0 - ang;
     }
 }
