@@ -35,12 +35,12 @@ public class ContinuousSubarraySum {
         int sum = 0;
         for (int i = 0; i < n; i++) {
             sum += a[i];
-            int target = k == 0 ? sum : sum % k;
+            int target = k == 0 ? sum : sum % k; // sum up to a multiple of 0 == sum up to 0 == find continuous sub-array sum ==0 size >=2
             Integer pre = m.get(target);
             if (pre != null && i - pre >= 2) {
                 return true;
             }
-            m.putIfAbsent(target, i);
+            m.putIfAbsent(target, i); // size at least 2, so we use put if absent to record the first occurrence
         }
         return false;
     }

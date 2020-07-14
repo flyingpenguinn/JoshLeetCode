@@ -7,57 +7,58 @@ import java.util.concurrent.locks.ReentrantLock;
 
 // the queue part is the same as "my circular deque"
 class BoundedBlockingQueue {
+    private int[] q = null;
+    private int tail = 0;  // where to put next tail
+    private int head = -1;  // where to put next head. real head is head +1 then mod
+    private int cap = 0;
     private ReentrantLock lock = new ReentrantLock();
-    private int[] q;
-    private int head = -1; // current head if we put in sth
-    private int tail = 0; // current tail if we put in sth
+    private Condition notFull = lock.newCondition();
+    private Condition notEmpty = lock.newCondition();
     private int size = 0;
-    private Condition notfull = lock.newCondition();
-    private Condition notempty = lock.newCondition();
-    private int capacity = 0;
 
     public BoundedBlockingQueue(int capacity) {
-        this.capacity = capacity;
-        q = new int[capacity];
-        this.head = capacity - 1;
+        cap = capacity;
+        q = new int[cap];
+        head = cap-1;
     }
 
     public void enqueue(int element) throws InterruptedException {
         lock.lock();
-        try {
-            while (size == capacity) {
-                notfull.await();
+        try{
+            while(size==cap){
+                notFull.await();
             }
             q[tail] = element;
-            tail = (tail + 1) % capacity;
+            tail = (tail+1)%cap;
             size++;
-            notempty.signalAll();
-        } finally {
+            notEmpty.signalAll();
+        }finally{
             lock.unlock();
         }
     }
 
     public int dequeue() throws InterruptedException {
         lock.lock();
-        try {
-            while (size == 0) {
-                notempty.await();
+        try{
+            while(size==0){
+                notEmpty.await();
             }
-            head = (head + 1) % capacity;
+            head = (head+1) % cap;
             int rt = q[head];
             size--;
-            notfull.signalAll();
+            notFull.signalAll();
             return rt;
-        } finally {
+        }finally{
             lock.unlock();
         }
+
     }
 
     public int size() {
         lock.lock();
-        try {
+        try{
             return size;
-        } finally {
+        }finally{
             lock.unlock();
         }
     }

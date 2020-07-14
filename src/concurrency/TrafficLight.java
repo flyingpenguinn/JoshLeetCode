@@ -4,8 +4,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TrafficLight {
-    Object lock = new Object();
-    int state = 0;
+
+    private int signalId = 1;
 
     public TrafficLight() {
 
@@ -18,20 +18,13 @@ public class TrafficLight {
             Runnable turnGreen,  // Use turnGreen.run() to turn light to green on current road
             Runnable crossCar    // Use crossCar.run() to make car cross the intersection
     ) {
-        synchronized (lock) {
-            if ((direction - 1) / 2 == 0) {
-                dowork(turnGreen, crossCar,0);
-            }else{
-                dowork(turnGreen, crossCar,1);
+        synchronized (this) {
+            if (signalId != roadId) {
+                // 1 and 2 share the same one while 3 and 4 use the other one
+                turnGreen.run();
+                signalId = roadId;
             }
+            crossCar.run();
         }
-    }
-
-    private void dowork(Runnable turnGreen, Runnable crossCar, int newstate) {
-        if (state != newstate) {
-            state = newstate;
-            turnGreen.run();
-        }
-        crossCar.run();
     }
 }

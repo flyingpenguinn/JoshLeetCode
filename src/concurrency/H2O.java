@@ -4,13 +4,11 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class H2O {
+class H2O {
+    private int hcount = 2;
 
-    ReentrantLock lock = new ReentrantLock();
-    Condition oxyCondition = lock.newCondition();
-    Condition hydroCondition = lock.newCondition();
-    int hydro = 2;
-    int oxy = 0;
+    private Semaphore hSem = new Semaphore(hcount, true);
+    private Semaphore oSem = new Semaphore(0, true);// use fairness to give the earliest coming thread some priviledge
 
     public H2O() {
 
@@ -18,69 +16,53 @@ public class H2O {
 
     public void hydrogen(Runnable releaseHydrogen) throws InterruptedException {
 
-
-        lock.lock();
-        try {
-            while (hydro == 0) {
-                hydroCondition.await();
-            }
-            // releaseHydrogen.run() outputs "H". Do not change or remove this line.
-            releaseHydrogen.run();
-            hydro--;
-            if (hydro == 0) {
-                oxy = 1;
-            }
-            // must be signal all, not notify all!
-            oxyCondition.signalAll();
-        } finally {
-            lock.unlock();
-        }
+        // releaseHydrogen.run() outputs "H". Do not change or remove this line.
+        hSem.acquire(1);
+        releaseHydrogen.run();
+        oSem.release(1);
     }
 
     public void oxygen(Runnable releaseOxygen) throws InterruptedException {
 
         // releaseOxygen.run() outputs "O". Do not change or remove this line.
-        lock.lock();
-        try {
-            while (oxy == 0) {
-                oxyCondition.await();
-            }
-            releaseOxygen.run();
-            oxy--;
-            if (oxy == 0) {
-                hydro = 2;
-            }
-            hydroCondition.signalAll();
-        } finally {
-            lock.unlock();
-        }
-
+        oSem.acquire(hcount);
+        releaseOxygen.run();
+        hSem.release(hcount);
     }
 }
 
-class H2oSemaphore {
-    class H2O {
-        Semaphore hydro = new Semaphore(2);
-        Semaphore oxy = new Semaphore(0);
+class H2oWaitNotify {
+    public H2oWaitNotify() {
 
-        public H2O() {
+    }
 
-        }
+    // can solve h3o2 in this way
+    private int cur = 0;
+    private int hs = 2;
+    private int os = 1;
+    private int n = hs + os;
 
-        public void hydrogen(Runnable releaseHydrogen) throws InterruptedException {
+    public void hydrogen(Runnable releaseHydrogen) throws InterruptedException {
 
-            // releaseHydrogen.run() outputs "H". Do not change or remove this line.
-            hydro.acquire();
+        synchronized (this) {
+            while (cur % n >= hs) {
+                wait();
+            }
             releaseHydrogen.run();
-            oxy.release();
-        }
-
-        public void oxygen(Runnable releaseOxygen) throws InterruptedException {
-
-            // releaseOxygen.run() outputs "O". Do not change or remove this line.
-            oxy.acquire(2); // key: oxy to acquire 2
-            releaseOxygen.run();
-            hydro.release(2);
+            cur++;
+            notifyAll();
         }
     }
+
+    public void oxygen(Runnable releaseOxygen) throws InterruptedException {
+        synchronized (this) {
+            while (cur % n < hs) {
+                wait();
+            }
+            releaseOxygen.run();
+            cur++;
+            notifyAll();
+        }
+    }
+
 }
