@@ -44,24 +44,33 @@ What is the time complexity of your modified solution? What is the most time-con
 How to make sure the duplicated files you find are not false positive?
  */
 public class FindDuplicateFileInSystem {
+    // only output when >=2 files share the same content
     public List<List<String>> findDuplicate(String[] paths) {
+        // assuming valid inputs otherwise vet and throw
         Map<String, List<String>> m = new HashMap<>();
-        for (String p : paths) {
-            String[] ss = p.split(" ");
-            String folder = ss[0];
+        for (String path : paths) {
+            String[] ss = path.split(" ");
+            String dir = ss[0];
             for (int i = 1; i < ss.length; i++) {
-                String fc = ss[i];
-                int contentstart = fc.indexOf("(");
-                String filename = fc.substring(0, contentstart);
-                String filecontent = fc.substring(contentstart + 1, fc.length() - 1);
-                String fullpath = folder + "/" + filename;
-                m.computeIfAbsent(filecontent, k -> new ArrayList<>()).add(fullpath);
+                String item = ss[i];
+                int contentStart = item.indexOf('(');
+                String fileName = item.substring(0, contentStart);
+                String fullName = dir + "/" + fileName;
+                String content = item.substring(contentStart + 1, item.length());
+                m.computeIfAbsent(content, k -> new ArrayList<>()).add(fullName);
             }
         }
         List<List<String>> r = new ArrayList<>();
-        for (String k : m.keySet()) {
-            if (m.get(k).size() > 1) {
-                r.add(m.get(k));
+        /* why we dont care about false positive in java hasmap? it checks hash equality AND equals too
+        this rules out hash collision AND two keys having the same hash but are actually different
+        // note in rolling hash we may only rely on a long hashcode hence we also need to compare there
+          if (e.hash == hash &&
+                        ((k = e.key) == key || (key != null && key.equals(k))))
+         */
+        for (String ck : m.keySet()) {
+            List<String> files = m.get(ck);
+            if (files.size() >= 2) {
+                r.add(files);
             }
         }
         return r;

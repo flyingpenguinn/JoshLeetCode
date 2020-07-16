@@ -30,13 +30,12 @@ board and word consists only of lowercase and uppercase English letters.
 
 public class WordSearch {
     // O(m*n*4^l) where<l is the length
-
-    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    public boolean exist(char[][] a, String w) {
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[0].length; j++) {
-                if (a[i][j] == w.charAt(0) && isWord(a, i, j, w, 0)) {
+    private int[][] dirs = {{-1,0}, {1,0}, {0, -1}, {0,1}};
+    public boolean exist(char[][] a, String word) {
+        // check null or validate error out if needed. word non empty
+        for(int i=0; i<a.length;i++){
+            for(int j=0; j<a[0].length;j++){
+                if(word.charAt(0) == a[i][j] && doExist(a, i, j, word, 0)){
                     return true;
                 }
             }
@@ -44,24 +43,26 @@ public class WordSearch {
         return false;
     }
 
-    private boolean isWord(char[][] a, int i, int j, String w, int k) {
-        // aij == w[k] checked beforehand already
-        if (k == w.length() - 1) {
+    // a ij matching k already
+    private boolean doExist(char[][] a, int i, int j, String word, int k){
+        if(k==word.length()-1){
             return true;
         }
         char original = a[i][j];
-        a[i][j] = '-';
-        for (int[] d : dirs) {
-            int ni = i + d[0];
-            int nj = j + d[1];
-            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] == w.charAt(k + 1)) {
-                if (isWord(a, ni, nj, w, k + 1)) {
-                    return true;
+        a[i][j]='-';
+        boolean good = false;
+        for(int[] d: dirs){
+            int ni = i+d[0];
+            int nj = j+d[1];
+            if(ni>=0 && ni<a.length && nj>=0 && nj<a[0].length && a[ni][nj] == word.charAt(k+1)){
+                if(doExist(a, ni, nj, word, k+1)){
+                    good = true;
+                    break;
                 }
             }
         }
         a[i][j] = original;
-        return false;
+        return good;
     }
 
 }

@@ -17,47 +17,39 @@ https://leetcode.com/problems/longest-palindromic-substring/
 import java.util.Arrays;
 
 public class LongestPalindromeSubstring {
-    // for each i check i as the center, or i, i+1 as center
-
-    // single char is always palindrome
-    int maxlen = 1;
-    int maxstart = 0;
-    int maxend = 0;
-
-
     public String longestPalindrome(String s) {
-        int n = s.length();
-        if (n == 0) {
+        if(s==null || s.isEmpty()){
             return "";
         }
-        for (int i = 0; i < n; i++) {
-            int j = i - 1;
-            int k = i + 1;
-            processjk(s, n, j, k);
-            j = i;
-            k = i + 1;
-            processjk(s, n, j, k);
-        }
-        return s.substring(maxstart, maxend + 1);
-    }
-
-    private void processjk(String s, int n, int j, int k) {
-
-        while (j >= 0 && k < n) {
-            if (s.charAt(j) == s.charAt(k)) {
+        int n = s.length();
+        int max = 0;
+        int maxstart = -1;
+        for(int i=0; i<n; i++){
+            int j = i;
+            int k = i;
+            while(j>=0 && k<n && s.charAt(j)==s.charAt(k)){
                 j--;
                 k++;
-            } else {
-                break;
+            }
+            // from j+1 to k-1 is the palin
+            int len = k-1-(j+1)+1;
+            if(len>max){
+                max = len;
+                maxstart = j+1;
+            }
+            j = i;  // then dont forget the even lengthed where i and i+1 are the same element
+            k = i+1;
+            while(j>=0 && k<n && s.charAt(j)==s.charAt(k)){
+                j--;
+                k++;
+            }
+            len = k-1-(j+1)+1;
+            if(len>max){
+                max = len;
+                maxstart = j+1;
             }
         }
-        // j+1...k-1 is the palindrome
-        int len = k - 1 - (j + 1) + 1;
-        if (len > maxlen) {
-            maxlen = len;
-            maxstart = j + 1;
-            maxend = k - 1;
-        }
+        return s.substring(maxstart, maxstart + max);
     }
 
     public static void main(String[] args) {

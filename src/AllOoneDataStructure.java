@@ -63,173 +63,135 @@ class AllOne {
     // we can maintain a sorted list in o1 time if it's a linked list and we only add/dec by 1
     // different from lfu cache: there is no remove there! so when we are evicting, the smallest is always freq = 1. not an optoin here
     // becaues we could jump from freq 4 to 1
-    class LNode {
-        int val;
-        LNode next;
-        LNode prev;
+    private class Node {
 
-        public LNode(int val) {
+        public Node(int val) {
             this.val = val;
         }
-    }
 
-    Map<String, Integer> m = new HashMap<>();
-    Map<Integer, Set<String>> cm = new HashMap<>();
-    Map<Integer, LNode> lm = new HashMap<>();
-    LNode head = null;
-    LNode tail = null;
+        private int val;
+        private Node next;
+        private Node prev;
+    }
 
     /**
      * Initialize your data structure here.
      */
     public AllOne() {
-
+        head.next = tail;
+        head.prev = tail;
+        tail.next = head;
+        tail.prev = head;
     }
+
+    private Node head = new Node(-1);     // head and tail dummy nodes
+    private Node tail = new Node(-1);
+
+    private Map<String, Integer> m = new HashMap<>();
+    private Map<Integer, Node> int2node = new HashMap<>();
+    private Map<Integer, Set<String>> int2string = new HashMap<>();
+
 
     /**
      * Inserts a new key <Key> with value 1. Or increments an existing key by 1.
      */
     public void inc(String key) {
-        updatemap(key, 1);
+        int ov = m.getOrDefault(key, 0);
+        int nv = ov + 1;
+        insertNewNode(ov, nv, true);
+        cleanupOld(ov, key);
+        m.put(key, nv);
+        int2string.computeIfAbsent(nv, k -> new HashSet<>()).add(key);
     }
-
-    private void updatemap(String key, int delta) {
-        int oc = m.getOrDefault(key, 0);
-        int nc = oc + delta;
-        if (nc > 0) {
-            m.put(key, nc);
-        } else {
-            m.remove(key);
-        }
-        Set<String> oset = cm.getOrDefault(oc, new HashSet<>());
-        oset.remove(key);
-        if (oset.isEmpty()) {
-            cm.remove(oc);
-        }
-        if (nc > 0) {
-            Set<String> nset = cm.getOrDefault(nc, new HashSet<>());
-            nset.add(key);
-            cm.put(nc, nset);
-        }
-        adjlist(oc, delta);
-    }
-
-    // on exist or not? on gone or not? nn new node or not?
-    private void adjlist(int oc, int delta) {
-        if (oc == 0) {
-            // on doesnt exist, either we are over reducing, or this is a new one node
-            if (delta < 0) {
-                return;
-            }
-            // nc must be 1 because oc = 0. we add new node nn
-            LNode one = lm.get(1);
-            if (one == null) {
-                one = new LNode(1);
-                lm.put(1, one);
-                one.next = head;
-                if (head != null) {
-                    head.prev = one;
-                }
-                head = one;
-                if (tail == null) {
-                    tail = one;
-                }
-            }
-            // or do nothing here if node one already exists
-        } else {
-            // on exists
-            int nc = oc + delta;
-            LNode on = lm.get(oc);
-            Set<String> oset = cm.get(oc);
-            if (oset == null || oset.isEmpty()) {
-                // but on needs to go
-                if (nc > 0) {
-                    // on gone, but nc is >0. need to removelist on, and insert nn if it doesnt exist
-                    LNode nn = lm.get(nc);
-                    if (nn == null) {
-                        // if nn is a new node we flip on to nn
-                        on.val = nc;
-                        lm.remove(oc);
-                        lm.put(nc, on);
-                        return;
-                    } else {
-                        // otherwise just removelist on. keep nn as existing node
-                        removelist(on);
-                        lm.remove(oc);
-                    }
-                } else {
-                    // nc == 0, just removelist on, no need to add nn. this happens when nc==0 and on==1
-                    removelist(on);
-                    lm.remove(oc);
-                }
-            } else {
-                // keep on, nn exist or not?
-                LNode nn = lm.get(nc);
-                if (nn != null || nc == 0) {
-                    // keep on, nn exists, do nothing
-                    return;
-                }
-                // keep on, add nn as new node
-                nn = new LNode(nc);
-                lm.put(nc, nn);
-                if (delta > 0) {
-                    LNode onext = on.next;
-                    on.next = nn;
-                    nn.prev = on;
-                    if (onext != null) {
-                        onext.prev = nn;
-                        nn.next = onext;
-                    }
-                    if (tail == on) {
-                        tail = nn;
-                    }
-                } else {
-                    LNode opre = on.prev;
-                    on.prev = nn;
-                    nn.next = on;
-                    if (opre != null) {
-                        opre.next = nn;
-                        nn.prev = opre;
-                    }
-                    if (head == on) {
-                        head = nn;
-                    }
-                }
-
-            }
-        }
-    }
-
-    private void removelist(LNode on) {
-        LNode op = on.prev;
-        LNode onext = on.next;
-        if (op != null) {
-            op.next = onext;
-        }
-        if (onext != null) {
-            onext.prev = op;
-        }
-        if (tail == on) {
-            tail = op;
-        }
-        if (head == on) {
-            head = onext;
-        }
-    }
-
+    /**
+     * Decrements an existing key by 1. If Key's value is 1, remove it from the data structure.
+     */
     public void dec(String key) {
-        updatemap(key, -1);
+        int ov = m.getOrDefault(key, 0);
+        if (ov == 0) {
+            return;
+        } else {
+            int nv = ov - 1;
+            if (nv == 0) {
+                m.remove(key);
+            } else {
+                m.put(key, nv);
+                int2string.computeIfAbsent(nv, k -> new HashSet<>()).add(key);
+                insertNewNode(ov, nv, false);
+            }
+            cleanupOld(ov, key);
+        }
     }
 
+    private void cleanupOld(int ov, String key) {
+        if (ov == 0) {
+            return;
+        }
+        Set<String> oldset = int2string.get(ov);
+        oldset.remove(key);
+        Node oldNode = int2node.get(ov);
+        if (oldset.isEmpty()) {
+            int2node.remove(ov);
+            removeNode(oldNode);
+        }
+    }
+
+    /**
+     * Returns one of the keys with maximal value.
+     */
     public String getMaxKey() {
-        return getnodestring(tail);
+        if (tail.prev == head) {
+            return "";
+        }
+        return int2string.get(tail.prev.val).iterator().next();
     }
 
-    String getnodestring(LNode node) {
-        return node == null ? "" : cm.get(node.val).iterator().next();
-    }
-
+    /**
+     * Returns one of the keys with Minimal value.
+     */
     public String getMinKey() {
-        return getnodestring(head);
+        if (tail.prev == head) {
+            return "";
+        }
+        return int2string.get(head.next.val).iterator().next();
+    }
+
+    private void insertNewNode(int ov, int nv, boolean after) {
+        Node oldNode = ov == 0 ? head : int2node.get(ov);
+        Node newNode = int2node.get(nv);
+        if (newNode == null) {
+            newNode = new Node(nv);
+            if (after) {
+                insertAfter(oldNode, newNode);
+            } else {
+                insertBefore(oldNode, newNode);
+            }
+            int2node.put(nv, newNode);
+        }
+    }
+
+    private void insertAfter(Node n1, Node n2) {
+        // insert n2 after n1
+        Node oldn1next = n1.next;
+        n1.next = n2;
+        n2.prev = n1;
+        n2.next = oldn1next;
+        oldn1next.prev = n2;
+    }
+
+    private void insertBefore(Node n1, Node n2) {
+        // n2 before n1
+        Node oldn1prev = n1.prev;
+        n2.prev = oldn1prev;
+        n2.next = n1;
+        n1.prev = n2;
+        oldn1prev.next = n2;
+    }
+
+    private void removeNode(Node n) {
+        Node prev = n.prev;
+        Node next = n.next;
+        prev.next = next;
+        next.prev = prev;
     }
 }

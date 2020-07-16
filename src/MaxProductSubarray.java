@@ -19,33 +19,26 @@ import static java.lang.Math.*;
 public class MaxProductSubarray {
     // max aend at ai is either max ending at ai-1 *ai,or min ending at ai-1*ai,or ai itself
     public int maxProduct(int[] a) {
-        if (a == null) {
-            return -1; // or throw
+        if (a == null || a.length == 0) {
+            return 0;
         }
-        int maxEnding = a[0];
-        int minEnding = a[0];
-        int max = a[0];
+        int maxhere = a[0];
+        int minhere = a[0];
+        int max = maxhere;
         for (int i = 1; i < a.length; i++) {
-            int newMaxEnding = max(maxEnding * a[i], minEnding * a[i], a[i]); // avoid maxending being overwritten- we need it later
-            minEnding = min(maxEnding * a[i], minEnding * a[i], a[i]);
-            maxEnding = newMaxEnding;
-            max = max(max, maxEnding);
+            if (maxhere == 0) {
+                maxhere = a[i];  // for later ones, we are better off starting here
+                minhere = a[i];
+            } else {
+                int curmin = Math.min(maxhere * a[i], Math.min(minhere * a[i], a[i]));
+                int curmax = Math.max(maxhere * a[i], Math.max(minhere * a[i], a[i]));
+                maxhere = curmax;
+                minhere = curmin;
+            }
+            max = Math.max(max, maxhere);
         }
         return max;
     }
-
-    private int max(int a, int b) {
-        return Math.max(a, b);
-    }
-
-    private int max(int a, int b, int c) {
-        return Math.max(a, Math.max(b, c));
-    }
-
-    private int min(int a, int b, int c) {
-        return Math.min(a, Math.min(b, c));
-    }
-
 
     public static void main(String[] args) {
         int[] nums = {2, 3, -2, 4, -8, -7, 2};

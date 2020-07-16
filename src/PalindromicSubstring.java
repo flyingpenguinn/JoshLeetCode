@@ -24,55 +24,23 @@ The input string length won't exceed 1000.
  */
 public class PalindromicSubstring {
     public int countSubstrings(String s) {
-        int n = s.length();
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
         int r = 0;
-        for (int i = 0; i < n; i++) {
-            r += palin(s, i, i);
-            r += palin(s, i, i + 1);
+        for (int i = 0; i < s.length(); i++) {
+            r += count(i, i, s);
+            r += count(i, i + 1, s);
         }
         return r;
     }
 
-    private int palin(String s, int i, int j) {
-        int n = s.length();
+    private int count(int start, int end, String s) {
         int r = 0;
-        while (i >= 0 && j < n) {
-            if (s.charAt(i--) != s.charAt(j++)) {
-                break;
-            } else {
-                r++;
-            }
-        }
-        return r;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new PalindromicSubstring().countSubstrings("aaa"));
-    }
-}
-
-class PalindromicSubstringDp {
-    // compare with subsequence...here if they are not equal, we = false. only true when eq and inner also eq
-    public int countSubstrings(String s) {
-        int n = s.length();
-        boolean[][] dp = new boolean[n][n];
-        int r = 0;
-        for (int len = 1; len <= n; len++) {
-            for (int i = 0; i + len - 1 < n; i++) {
-                int j = i + len - 1;
-                if (len == 1) {
-                    dp[i][j] = true;
-                    r++;
-                } else if (len == 2 && s.charAt(i) == s.charAt(j)) {
-                    dp[i][j] = true;
-                    r++;
-                } else {
-                    if (s.charAt(i) == s.charAt(j) && dp[i + 1][j - 1]) {
-                        dp[i][j] = true;
-                        r++;
-                    }
-                }
-            }
+        while (start >= 0 && end < s.length() && s.charAt(start) == s.charAt(end)) {
+            r++;
+            start--;
+            end++;
         }
         return r;
     }

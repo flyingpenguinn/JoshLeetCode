@@ -38,27 +38,27 @@ Can you solve it without using extra space?
  */
 public class LinkedListCycleII {
     // 2*(a+l-b) = a+l+l-b => a==b
-    public ListNode detectCycle(ListNode h) {
+    public ListNode detectCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return null;
+        }
+        ListNode slow = head.next; // slow move 1 step, fast move 2 steps first! so that they are not equal. we checked null above
+        ListNode fast = head.next.next;
+        while (fast != null && fast.next != null && fast != slow) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        if (fast == slow) {
+            slow = head;
+            while (fast != slow) {
 
-        // handle 0/1 nodes seperately
-        if (h == null || h.next == null) {
+                fast = fast.next;
+                slow = slow.next;
+            }
+            return fast;
+        } else {
             return null;
         }
-        ListNode f = h;
-        ListNode s = h;
-        do {
-            f = f.next.next;
-            s = s.next;
-        } while (f != null && f.next != null && f != s);
-        if (f != s) {
-            return null;
-        }
-        s = h;
-        while (f != s) {
-            f = f.next;
-            s = s.next;
-        }
-        return f;
     }
 
 }

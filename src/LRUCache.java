@@ -57,7 +57,7 @@ public class LRUCache {
         tail.pre = head;
     }
 
-    private void remove(Node n) {
+    private void removeNode(Node n) {
         Node pre = n.pre;
         Node next = n.next;
         pre.next = next;
@@ -69,7 +69,7 @@ public class LRUCache {
     private void removeLast() {
         Node last = tail.pre;
         m.remove(last.key);
-        remove(last);
+        removeNode(last);
     }
 
     private void addHead(Node n) {
@@ -81,7 +81,7 @@ public class LRUCache {
     }
 
     private void removeAndAddHead(Node n) {
-        remove(n);
+        removeNode(n);
         addHead(n);
     }
 

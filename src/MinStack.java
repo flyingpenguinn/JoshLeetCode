@@ -24,24 +24,28 @@ minStack.getMin();   --> Returns -2.
  */
 public class MinStack {
 
-    Deque<int[]> min = new ArrayDeque<>();
-    Deque<Integer> st = new ArrayDeque<>();
-
     /**
      * initialize your data structure here.
      */
+    Deque<Integer> st = new ArrayDeque<>();
+    Deque<int[]> min = new ArrayDeque<>();
+
     public MinStack() {
 
     }
 
     public void push(int x) {
-        st.push(x);
+        // min first then stack to capture the counter before the push, i.e. after the pop
         if (min.isEmpty() || min.peek()[0] > x) {
-            min.push(new int[]{x, st.size() - 1});
+            min.push(new int[]{x, st.size()});
         }
+        st.push(x);
     }
 
     public void pop() {
+        if (st.isEmpty()) {
+            return;
+        }
         int rt = st.pop();
         if (min.peek()[0] == rt && min.peek()[1] == st.size()) {
             min.pop();
@@ -49,10 +53,16 @@ public class MinStack {
     }
 
     public int top() {
+        if (st.isEmpty()) {
+            return -1;
+        }
         return st.peek();
     }
 
     public int getMin() {
+        if (min.isEmpty()) {
+            return -1;
+        }
         return min.peek()[0];
     }
 }

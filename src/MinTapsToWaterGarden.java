@@ -49,33 +49,38 @@ ranges.length == n + 1
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MinTapsToWaterGarden {
-    // interval coverage problem, similar to video stitching
-    // we first pick the longest interval starting at 0. get the end point. then find the longest whose start <= that end point, and extend it
+    // first we find all intervals whose start point <= curstart. then try to extend them as far as possible
+    // then next start is the end point of current round
+    // note here next round must be able to concat with current round, but last tap seems to be fine... dont need to go n+1
     public int minTaps(int n, int[] a) {
-        List<int[]> ins = new ArrayList<>();
-        for (int i = 0; i < n + 1; i++) {
-            ins.add(new int[]{i - a[i], i + a[i]});
+        int tapCount = n + 1;
+
+        int[][] taps = new int[tapCount][2];
+        for (int i = 0; i < tapCount; i++) {
+            taps[i][0] = i - a[i];
+            taps[i][1] = i + a[i];
         }
-        Collections.sort(ins, (x, y) -> x[0] - y[0]);
-        int pending = 0;
+        Arrays.sort(taps, (x, y) -> Integer.compare(x[0], y[0]));
         int i = 0;
-        int r = 0;
-        while (i < n + 1 && pending < n) {
-            if (ins.get(i)[0] > pending) {
+        int res = 0;
+        int curStart = 0;
+        while (i < tapCount && curStart < n) {
+            if (taps[i][0] > curStart) {
                 return -1;
             }
-            int max = -1;
-            while (i < n + 1 && ins.get(i)[0] <= pending) {
-                max = Math.max(max, ins.get(i)[1]);
+            res++;
+            int nextStart = -1;
+            while (i < tapCount && taps[i][0] <= curStart) {
+                nextStart = Math.max(nextStart, taps[i][1]);
                 i++;
             }
-            pending = max;
-            r++;
+            curStart = nextStart;
         }
-        return pending >= n ? r : -1;
+        return curStart >= n ? res : -1;
     }
 }

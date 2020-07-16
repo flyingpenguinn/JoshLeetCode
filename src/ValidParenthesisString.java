@@ -8,6 +8,8 @@ public class ValidParenthesisString {
             return true;
         }
         // only (, ), *
+
+        // how many possible lefts can we have: if the string is still POTENTIALLY valid
         int maxLeft = 0;
         int minLeft = 0;
         for (int i = 0; i < s.length(); i++) {
@@ -25,7 +27,7 @@ public class ValidParenthesisString {
             if (maxLeft < 0) {
                 return false;
             }
-            minLeft = Math.max(minLeft, 0);  // can't go below 0 at any time
+            minLeft = Math.max(minLeft, 0);  // in a valid parenthesis string left can't go below 0 at any time. so <0 is not a valid option
         }
         return minLeft == 0;
     }

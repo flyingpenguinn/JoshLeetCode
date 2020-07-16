@@ -16,27 +16,23 @@ For example, given n = 3, a solution set is:
 ]
  */
 public class GenerateParenthesis {
-    // two conditions: open left always >=0, and in the end left == right
-    List<String> r = new ArrayList<>();
-
+    // two conditions: open left always >=0 (which means right<=left at all times, and in the end left==n==right (cant have more lefts in the end)
     public List<String> generateParenthesis(int n) {
-        dog(0, 0, n, "");
+        List<String> r = new ArrayList<>();
+        dfs(0, 0, n, "", r);
         return r;
     }
 
-    void dog(int i, int ol, int n, String cur) {
-        if (ol < 0) {
-            // ol must be >=0 at any time
+    private void dfs(int left, int right, int n, String cur, List<String> r) {
+        if (left == n && right == n) {
+            r.add(cur);
             return;
         }
-        if (i == 2 * n) {
-            if (ol == 0) {
-                // in the end, balance is 0
-                r.add(cur);
-            }
-            return;
+        if (left < n) { // as long as left is not at the limit we can add for free
+            dfs(left + 1, right, n, cur + "(", r);
         }
-        dog(i + 1, ol + 1, n, cur + "(");
-        dog(i + 1, ol - 1, n, cur + ")");
+        if (right < left) { // as long as right count <= left count at all times...
+            dfs(left, right + 1, n, cur + ")", r);
+        }
     }
 }

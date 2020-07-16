@@ -83,28 +83,32 @@ public class FlattenMultiDoubleList {
         }
     }
 
-    private Node last = null;
-
+    // pure recursion no need to keep "last" node
     public Node flatten(Node head) {
-        dfs(head);
+        flattenGetTail(head);
         return head;
     }
 
-    private void dfs(Node head) {
+    private Node flattenGetTail(Node head) {
         if (head == null) {
-            return;
+            return null;
         }
-        if (last != null) {
-            last.next = head;
-            head.prev = last;
-        }
-        last = head;
-        Node headNext = head.next;  // protect the next node, otherwise it's going to be ruined by child
+        Node tail = head;
+        Node headNext = head.next;
         if (head.child != null) {
-            dfs(head.child);
-            head.child = null;
+            Node childHead = head.child;
+            Node childTail = flattenGetTail(childHead);
+            childHead.prev = head;
+            head.next = childHead;
+            head.child = null;  // set child to null to clear it up!
+            tail = childTail;
         }
-        dfs(headNext);
+        if (headNext != null) {
+            tail.next = headNext;
+            headNext.prev = tail;
+            tail = flattenGetTail(headNext);
+        }
+        return tail;
     }
 
     public static void main(String[] args) {

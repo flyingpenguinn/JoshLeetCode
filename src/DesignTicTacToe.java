@@ -62,55 +62,45 @@ public class DesignTicTacToe {
 }
 
 class TicTacToe {
-    int[][] rs;
-    int[][] cs;
-    // only need 2: only r+c==n-1 or r-c==0 are diagonal. throw away other values
-    int[] ds = new int[2];
-    int[] nds = new int[2];
-    int n;
+    // user 1 ==1, user 2==-1, in the end check if row==col== the only diag === the only rdiag == n or -n
+    private int[] rows;
+    private int[] cols;
+    private int diag = 0;
+    private int rdiag = 0;
+    private int n = 0;
 
     /**
      * Initialize your data structure here.
      */
     public TicTacToe(int n) {
+        rows = new int[n];
+        cols = new int[n];
         this.n = n;
-        for (int i = 0; i < 2; i++) {
-            rs = new int[n][2];
-            cs = new int[n][2];
-            ds = new int[2];
-            nds = new int[2];
-        }
     }
 
     /**
-     * Player {p} makes a move at ({r}, {col}).
+     * Player {player} makes a move at ({row}, {col}).
      *
-     * @param r The r of the board.
-     * @param c The column of the board.
-     * @param p The p, can be either 1 or 2.
+     * @param row    The row of the board.
+     * @param col    The column of the board.
+     * @param player The player, can be either 1 or 2.
      * @return The current winning condition, can be either:
      * 0: No one wins.
      * 1: Player 1 wins.
      * 2: Player 2 wins.
      */
-    public int move(int r, int c, int p) {
-        int i = p - 1;
-        rs[r][i]++;
-        cs[c][i]++;
-        if (rs[r][i] == n || cs[c][i] == n) {
-            return p;
+    public int move(int row, int col, int player) {
+        int toAdd = player == 1 ? 1 : -1;
+        rows[row] += toAdd;
+        cols[col] += toAdd;
+        if (row == col) {
+            diag += toAdd;
         }
-        if (r == c) {
-            ds[i]++;
+        if (row + col == n - 1) {
+            rdiag += toAdd;
         }
-        if (ds[i] == n) {
-            return p;
-        }
-        if (r + c == n - 1) {
-            nds[i]++;
-        }
-        if (nds[i] == n) {
-            return p;
+        if (Math.abs(rows[row]) == n || Math.abs(cols[col]) == n || Math.abs(diag) == n || Math.abs(rdiag) == n) {
+            return player;
         }
         return 0;
     }

@@ -32,86 +32,90 @@ Notes:
  */
 public class MakeLargeIsland {
     // union find, count each segment we see on a 0 only once
-    Map<Integer, Integer> pa = new HashMap<>();
-    Map<Integer, Integer> size = new HashMap<>();
+    private int code(int r, int c, int n) {
+        return r * n + c;
+    }
+
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public int largestIsland(int[][] a) {
-        int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+        if (a == null || a.length == 0 || a[0].length == 0) {
+            return 0;
+        }
         int m = a.length;
         int n = a[0].length;
+        int[] pa = new int[m * n];
+        int[] size = new int[m * n];
+        int max = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (a[i][j] == 1) {
-                    init(code(n, i, j));
-                    for (int k = 0; k < 2; k++) {
-                        int[] d = dirs[k];
-                        int ni = i + d[0];
-                        int nj = j + d[1];
-                        if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
-
-                            union(code(n, i, j), code(n, ni, nj));
-                        }
+                    int code = code(i, j, n);
+                    init(pa, size, code);
+                    int merged = 1;
+                    if (i - 1 >= 0 && a[i - 1][j] == 1) {
+                        merged = union(pa, size, code, code(i - 1, j, n));
                     }
+                    if (j - 1 >= 0 && a[i][j - 1] == 1) {
+                        merged = union(pa, size, code, code(i, j - 1, n));
+                    }
+                    max = Math.max(max, merged);
                 }
             }
         }
-        int max = 0;
-        for (int k : pa.keySet()) {
-            if (pa.get(k) == k) {
-                max = Math.max(max, size.get(k));
-            }
-        }
+
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (a[i][j] == 0) {
-                    int link = 1;
-                    Set<Integer> seen = new HashSet<>();
+                    Set<Integer> comps = new HashSet<>();
+                    // note we have to use a set here because the elements can belong to the same component
                     for (int[] d : dirs) {
                         int ni = i + d[0];
                         int nj = j + d[1];
                         if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
-                            int parent = find(code(n, ni, nj));
-                            if (!seen.contains(parent)) {
-                                link += size.get(parent);
-                                seen.add(parent);
-                            }
+                            comps.add(find(pa, code(ni, nj, n)));
+                            //NEVER EVER use pa array directly, always use find
                         }
                     }
-                    max = Math.max(max, link);
+                    int res = 1; // count in this turned 0 too!
+                    for (int k : comps) {
+                        res += size[k];
+                    }
+                    max = Math.max(max, res);
                 }
             }
         }
         return max;
     }
 
-    int code(int n, int i, int j) {
-        return n * i + j;
+    private void init(int[] pa, int[] size, int k) {
+        pa[k] = k;
+        size[k] = 1;
     }
 
-    void init(int code) {
-        pa.put(code, code);
-        size.put(code, 1);
+    // size of the new merged component
+    private int union(int[] pa, int[] size, int k1, int k2) {
+        int p1 = find(pa, k1);
+        int p2 = find(pa, k2);
+        if (p1 != p2) {
+            pa[p1] = p2;
+            size[p2] += size[p1];
+        }
+        return size[p2];
     }
 
-    int find(int code) {
-        int parent = pa.get(code);
-        if (parent == code) {
-            return code;
+    private int find(int[] pa, int k) {
+        int p = pa[k];
+        if (p == k) {
+            return p;
         } else {
-            int rt = find(parent);
-            pa.put(code, rt);
+            int rt = find(pa, p);
+            pa[k] = rt;
             return rt;
         }
     }
 
-    void union(int n1, int n2) {
-        int pra = find(n1);
-        int prb = find(n2);
-        if (pra != prb) {
-            int sizea = size.get(pra);
-            int sizeb = size.get(prb);
-            pa.put(pra, prb);
-            size.put(prb, sizeb + sizea);
-        }
+    public static void main(String[] args) {
+        System.out.println(new MakeLargeIsland().largestIsland(ArrayUtils.read("[[1,0,1],[0,0,0],[0,1,1]]")));
     }
 }

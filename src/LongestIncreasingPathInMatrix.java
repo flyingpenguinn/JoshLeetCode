@@ -35,46 +35,44 @@ public class LongestIncreasingPathInMatrix {
 longest(i,j) = longest increasing path from (i,j) to (k,l) + longest(k,l)
 where longest(i,j) is longest increasing path starting with (i,j).
      */
-    int[][] dp;
 
+    // dag, no circle!
     public int longestIncreasingPath(int[][] a) {
-        int m = a.length;
-        if (m == 0) {
+        if (a == null || a.length == 0 || a[0].length == 0) {
             return 0;
         }
+        int m = a.length;
         int n = a[0].length;
-        dp = new int[m][n];
+        int[][] dp = new int[m][n];
         int max = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                int cur = dp(a, i, j);
+                int cur = solve(a, i, j, dp);
                 max = Math.max(max, cur);
             }
         }
         return max;
     }
 
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    // longest increasing with i, j as start point
-    // no loop possible as it's strictly increasing
-    private int dp(int[][] a, int i, int j) {
+    private int solve(int[][] a, int i, int j, int[][] dp) {
+        int m = a.length;
+        int n = a[0].length;
         if (dp[i][j] != 0) {
             return dp[i][j];
         }
-        int m = a.length;
-        int n = a[0].length;
-        int max = 1;
+        int res = 1;
         for (int[] d : dirs) {
             int ni = i + d[0];
             int nj = j + d[1];
             if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] > a[i][j]) {
-                int cur = 1 + dp(a, ni, nj);
-                max = Math.max(cur, max);
+                int later = solve(a, ni, nj, dp);
+                res = Math.max(res, later + 1);
             }
         }
-        dp[i][j] = max;
-        return max;
+        dp[i][j] = res;
+        return res;
     }
 
     public static void main(String[] args) {

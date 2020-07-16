@@ -6,13 +6,15 @@ public class CitadelParser {
     // assuming valid
     private String parse(String s) {
         int i = 0;
+        int lenLen = 2;
         StringBuilder sb = new StringBuilder();
         while (i < s.length()) {
-            int count = Integer.valueOf(s.substring(i, i + 2));
-            i += 2;
-            String str = s.substring(i, i + count);
+            int lenEnd = i + lenLen;
+            int len = Integer.valueOf(s.substring(i, lenEnd));
+            int strEnd = lenEnd + len;
+            String str = s.substring(lenEnd, strEnd);
             sb.append(str);
-            i += count;
+            i = strEnd;
         }
         return sb.toString();
     }
@@ -21,40 +23,42 @@ public class CitadelParser {
         return c - '0';
     }
 
-    private String parseList(List<String> list) {
+    public String parseList(List<String> list) {
         // assuming valid, non null
         StringBuilder sb = new StringBuilder();
-        int nextStart = 0;
+        int rowStart = 0;
+        int i = 0;
         int pending = 0;
-        for (int k = 0; k < list.size(); k++) {
-            String s = list.get(k);
-            int i = nextStart;
-            nextStart = 0; // dont forget to clear up!
-            while (i < s.length() && pending > 0) {
-                sb.append(s.charAt(i++));
+        while (i < list.size()) {
+            int j = rowStart;
+            rowStart = 0;
+            String str = list.get(i);
+            while (j < str.length() && pending > 0) {
+                sb.append(str.charAt(j++));
                 pending--;
             }
-            while (i < s.length()) {
-                if (i == s.length() - 1) {
-                    pending = toInt(s.charAt(i)) * 10 + toInt(list.get(k + 1).charAt(0));
-                    nextStart = 1;
+            while (j < str.length()) {
+                if (j == str.length() - 1) {
+                    pending = toInt(str.charAt(j)) * 10 + toInt(list.get(i + 1).charAt(0));
+                    rowStart = 1;
                     break;
                 } else {
-                    pending = Integer.valueOf(s.substring(i, i + 2));
-                    i += 2;
-                    while (i < s.length() && pending > 0) {
-                        sb.append(s.charAt(i++));
+                    pending = Integer.valueOf(str.substring(j, j + 2));
+                    j += 2;
+                    while (j < str.length() && pending > 0) {
+                        sb.append(str.charAt(j++));
                         pending--;
                     }
                 }
             }
+            i++;
         }
         return sb.toString();
     }
 
 
     public static void main(String[] args) {
-        System.out.println(new CitadelParser().parse("02bc101234567890"));// bc...0
+        System.out.println(new CitadelParser().parse("02bc10123456789003578"));// bc...0
         System.out.println(new CitadelParser().parseList(List.of("0", "2bb01", "c")));// bbc
         System.out.println(new CitadelParser().parseList(List.of("02bc101234567890")));// bc...0
         System.out.println(new CitadelParser().parseList(List.of("02cc01b"))); //ccb
