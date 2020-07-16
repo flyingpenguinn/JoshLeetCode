@@ -42,43 +42,40 @@ rotate the input matrix in-place such that it becomes:
 ]
  */
 public class RotateImage {
-// reverse rows then transpose
-    /*anticlockwise rotate
-  first reverse left to right, then swap the symmetry*/
 
+    // transpose first then swap columns on each row
     public void rotate(int[][] a) {
-        reverserows(a);
 
         transpose(a);
+        swapColumns(a);
     }
 
-    void transpose(int[][] a) {
+    private void transpose(int[][] a) {
+        // because it's n by n, we can transpose in place... otherwise need to new one
         int n = a.length;
         for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
+            for (int j = i; j < n; j++) { // from i! otherwise... numbers are transposed back to origin...
                 swap(a, i, j, j, i);
             }
         }
     }
 
-    void reverserows(int[][] a) {
-        int i = 0;
-        int j = a.length - 1;
-        while (i < j) {
-            swap(a, i++, j--);
+    private void swapColumns(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        for (int i = 0; i < m; i++) {
+            int j = 0;
+            int k = n - 1;
+            while (j < k) {
+                swap(a, i, j++, i, k--);
+            }
         }
     }
 
-    void swap(int[][] a, int i, int j, int x, int y) {
+    private void swap(int[][] a, int i, int j, int s, int t) {
         int tmp = a[i][j];
-        a[i][j] = a[x][y];
-        a[x][y] = tmp;
-    }
-
-    void swap(int[][] a, int i, int j) {
-        int[] tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
+        a[i][j] = a[s][t];
+        a[s][t] = tmp;
     }
 }
 
