@@ -24,35 +24,40 @@ public class FractionToRecurringDecimal {
 
     // 1. use long for overflow
     // 2. take care of negative values
-    // 3. record all rems and when they show up again we know where the loop starts
-    public String fractionToDecimal(long numerator, long denominator) {
-        if (numerator < 0 && denominator > 0) {
-            return "-" + fractionToDecimal(-numerator, denominator);
+    // 3. record the As we've seen and if it reoccurs we konw where to put the (). note it's repeating As, not repeating quotient
+    // it's not quotient because 140
+    public String fractionToDecimal(long a, long b) {
+        if (a == 0) {
+            return "0";
         }
-        if (numerator > 0 && denominator < 0) {
-            return "-" + fractionToDecimal(numerator, -denominator);
-        }
-        Map<Long, Integer> map = new HashMap<>();
-        long intpart = numerator / denominator;
-        StringBuilder sb = new StringBuilder();
-        sb.append(intpart);
-        long rem = (numerator % denominator) * 10L;
-        if (rem == 0) {
-            return sb.toString();
+        if ((a < 0 && b > 0) || (a > 0 && b < 0)) {
+            return "-" + frac(Math.abs(a), Math.abs(b));
         } else {
-            sb.append(".");
-            while (rem != 0) {
-                int last = map.getOrDefault(rem, -1);
-                if (last != -1) {
-                    sb.insert(last, '(');
-                    sb.append(')');
-                    return sb.toString();
-                } else {
-                    map.put(rem, sb.length());
-                    sb.append(rem / denominator);
-                }
-                rem = (rem % denominator) * 10;
+            return frac(Math.abs(a), Math.abs(b));
+        }
+    }
+
+    private String frac(long a, long b) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(a / b);
+        a = a % b;
+        if (a == 0) {
+            return sb.toString();
+        }
+        sb.append(".");
+        Map<Long, Integer> im = new HashMap<>();
+        while (a != 0) {
+            a *= 10;
+            Integer pre = im.get(a);
+            if (pre != null) {
+                sb.insert(pre.intValue(), '(');
+                sb.append(')');
+                break;
+            } else {
+                sb.append(a / b);
+                im.put(a, sb.length() - 1);
             }
+            a = a % b;
         }
         return sb.toString();
     }
