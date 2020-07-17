@@ -19,33 +19,34 @@ Your algorithm's time complexity must be better than O(n log n), where n is the 
  */
 public class TopKFrequentElements {
     // the loop in the end is On
-    class Solution {
-        public int[] topKFrequent(int[] a, int k) {
-            // all valid, k elements unique
-            Map<Integer, Integer> f = new HashMap<>();
-            for (int i = 0; i < a.length; i++) {
-                f.put(a[i], f.getOrDefault(a[i], 0) + 1);
-            }
-            Map<Integer, Set<Integer>> f2num = new HashMap<>();
-            int maxFreq = 0;
-            for (int num : f.keySet()) {
-                int freq = f.get(num);
-                f2num.computeIfAbsent(freq, key -> new HashSet<>()).add(num);
-                maxFreq = Math.max(maxFreq, freq);
-            }
-            List<Integer> r = new ArrayList<>();
-            while (r.size() < k) {
-                Set<Integer> nums = f2num.get(maxFreq);
-                if (nums != null) {
-                    r.addAll(nums);
-                }
-                maxFreq--;
-            }
-            int[] res = new int[r.size()];
-            for (int i = 0; i < r.size(); i++) {
-                res[i] = r.get(i);
-            }
-            return res;
+    public int[] topKFrequent(int[] a, int k) {
+        if (a == null || a.length == 0 || k <= 0 || k > a.length) {
+            return new int[0];
         }
+        // assuming no tie/ambiguity for top k
+        int n = a.length;
+        Map<Integer, Integer> m = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            m.put(a[i], m.getOrDefault(a[i], 0) + 1);
+        }
+        Map<Integer, Set<Integer>> fm = new HashMap<>();
+        int maxFreq = 0;
+        for (int key : m.keySet()) {
+            int freq = m.get(key);
+            maxFreq = Math.max(maxFreq, freq);
+            fm.computeIfAbsent(freq, fk -> new HashSet<>()).add(key);
+        }
+        int[] r = new int[k];
+        int ri = 0;
+        for (int i = maxFreq; i >= 1 && ri < k; i--) {
+            Set<Integer> nums = fm.getOrDefault(i, new HashSet<>());
+            for (int num : nums) {
+                if (ri >= k) {
+                    break;  // shouldnt be here as there is no ambiguity
+                }
+                r[ri++] = num;
+            }
+        }
+        return r;
     }
 }
