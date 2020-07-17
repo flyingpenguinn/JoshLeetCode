@@ -1,8 +1,8 @@
-package crap;
+package job;
 
 import java.util.List;
 
-public class CitadelParser {
+public class CParser {
     // assuming valid
     private String parse(String s) {
         int i = 0;
@@ -58,13 +58,13 @@ public class CitadelParser {
 
 
     public static void main(String[] args) {
-        System.out.println(new CitadelParser().parse("02bc10123456789003578"));// bc...0
-        System.out.println(new CitadelParser().parseList(List.of("0", "2bb01", "c")));// bbc
-        System.out.println(new CitadelParser().parseList(List.of("02bc101234567890")));// bc...0
-        System.out.println(new CitadelParser().parseList(List.of("02cc01b"))); //ccb
+        System.out.println(new CParser().parse("02bc10123456789003578"));// bc...0
+        System.out.println(new CParser().parseList(List.of("0", "2bb01", "c")));// bbc
+        System.out.println(new CParser().parseList(List.of("02bc101234567890")));// bc...0
+        System.out.println(new CParser().parseList(List.of("02cc01b"))); //ccb
 
-        System.out.println(new CitadelParser().parseList(List.of("02", "bb01", "c")));//bbc
-        System.out.println(new CitadelParser().parseList(List.of("02c", "b03b", "bc")));//cbbbc
-        System.out.println(new CitadelParser().parseList(List.of("02b", "b02c", "c0", "1d")));//bbccd
+        System.out.println(new CParser().parseList(List.of("02", "bb01", "c")));//bbc
+        System.out.println(new CParser().parseList(List.of("02c", "b03b", "bc")));//cbbbc
+        System.out.println(new CParser().parseList(List.of("02b", "b02c", "c0", "1d")));//bbccd
     }
 }

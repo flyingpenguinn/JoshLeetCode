@@ -37,48 +37,37 @@ Explanation: The endWord "cog" is not in wordList, therefore no possible transfo
  */
 public class WordLadder {
 
-    // shortest path is usually not solved by DFS
-    Map<String, Set<String>> wm = new HashMap<>();
-    Map<String, Integer> steps = new HashMap<>(); // use this as seen
-
-    public int ladderLength(String bw, String ew, List<String> wordList) {
+    // shortest path is usually not solved by DFS, but should do bfs
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        // verify input throw if error
+        Set<String> set = new HashSet<>();
         for (String w : wordList) {
-            addwm(w);
+            set.add(w);
         }
         Deque<String> q = new ArrayDeque<>();
-        q.offer(bw);
-        steps.put(bw, 1);
+        q.offer(beginWord);
+        Map<String, Integer> m = new HashMap<>();
+        m.put(beginWord, 1);
         while (!q.isEmpty()) {
+            // when sth is in the queue its m is also populated already
             String top = q.poll();
-            int topstep = steps.get(top);
-            if (top.equals(ew)) {
-                return topstep;
+            int steps = m.get(top);
+            if (top.equals(endWord)) {
+                break;
             }
-            int nextstep = topstep + 1;
             for (int i = 0; i < top.length(); i++) {
-                StringBuilder sb = new StringBuilder(top);
-                sb.setCharAt(i, '_');
-                for (String next : wm.getOrDefault(sb.toString(), new HashSet<>())) {
-                    if (next.equals(top)) {
-                        continue;
-                    }
-                    Integer cur = steps.get(next);
-                    if (cur == null) { // never seen before
-                        steps.put(next, nextstep);
-                        q.offer(next);
+                for (char c = 'a'; c <= 'z'; c++) {
+                    StringBuilder sb = new StringBuilder(top);
+                    sb.setCharAt(i, c);
+                    String str = sb.toString();
+                    if (set.contains(str) && !m.containsKey(str)) {
+                        m.put(str, steps + 1);
+                        q.offer(str);
                     }
                 }
             }
         }
-        return 0;
-    }
-
-    private void addwm(String w) {
-        for (int i = 0; i < w.length(); i++) {
-            StringBuilder sb = new StringBuilder(w);
-            sb.setCharAt(i, '_');
-            wm.computeIfAbsent(sb.toString(), k -> new HashSet<>()).add(w);
-        }
+        return m.getOrDefault(endWord, 0);
     }
 
     public static void main(String[] args) {

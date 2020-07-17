@@ -1,8 +1,6 @@
 package job;
 
-import contest.Solution;
-
-public class CitadelInterview {
+public class CInterview {
     //q1
     public static int sumNumber(int n, int base) {
         // n>=base, base >0
@@ -91,7 +89,7 @@ public class CitadelInterview {
     }
 
     public static void test(int[][] g) {
-        System.out.println(new CitadelInterview().clusters(g));
+        System.out.println(new CInterview().clusters(g));
     }
 
     public static void main(String[] args) {
@@ -100,7 +98,7 @@ public class CitadelInterview {
         test(graph);
 
         int[][] a = {{100, 2, -3}, {-4, -5, 6}};
-        System.out.println(new CitadelInterview().solve(a));
+        System.out.println(new CInterview().solve(a));
     }
 
 
