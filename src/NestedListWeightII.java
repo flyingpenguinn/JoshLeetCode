@@ -22,10 +22,8 @@ Explanation: One 1 at depth 3, one 4 at depth 2, and one 6 at depth 1; 1*3 + 4*2
 public class NestedListWeightII {
     // 1x + 2y + 3z = (3 + 1) * (x + y + z) - (3x + 2y + z);
     // alternatively can use a map but this is more clever...
-
     public int depthSumInverse(List<NestedInteger> nestedList) {
         int[] res = dfs(nestedList, 1);
-        System.out.println(Arrays.toString(res));
         return (res[2] + 1) * res[1] - res[0];
     }
 
@@ -34,7 +32,7 @@ public class NestedListWeightII {
     private int[] dfs(List<NestedInteger> list, int d) {
         int weighted = 0;
         int flat = 0;
-        int maxd = d; // at this leel the height is at least d already
+        int maxd = d; // at this leel the height is at least d already- if this is a leaf
         for (NestedInteger nl : list) {
             if (nl.isInteger()) {
                 weighted += nl.getInteger() * d;
