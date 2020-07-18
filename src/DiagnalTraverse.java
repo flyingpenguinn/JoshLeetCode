@@ -37,34 +37,34 @@ public class DiagnalTraverse {
         }
         int m = a.length;
         int n = a[0].length;
-        int r = 0;
-        int c = 0;
-        int d = 1;
+        int i = 0;
+        int j = 0;
+        int[] r = new int[m * n];
         int ri = 0;
-        int[] res = new int[m * n];
-        while (ri < res.length) {
-
-            res[ri++] = a[r][c];
-            r -= d;
-            c += d;
-            // order matters! r==m and c==n must be before the <0 cases
-            if (r == m) {
-                c += 2;
-                r = m - 1;
-                d = -d;
-            } else if (c == n) {
-                r += 2;
-                c = n - 1;
-                d = -d;
-            } else if (c < 0) {
-                c = 0;
-                d = -d;
-            } else if (r < 0) {
-                r = 0;
-                d = -d;
+        int dir = 1;
+        while (ri < m * n) {
+            if (j == n) {
+                // must do right/bottom first due to diagonal handling is more like the right/bottom way
+                j--;
+                i += 2;
+                dir = -dir;
+            } else if (i == m) {
+                i--;
+                j += 2;
+                dir = -dir;
+            } else if (j == -1) {
+                j++;
+                dir = -dir;
+            } else if (i == -1) {
+                i++;
+                dir = -dir;
             }
+            r[ri++] = a[i][j];
+            i -= dir;
+            j += dir;
+
         }
-        return res;
+        return r;
     }
 
     public static void main(String[] args) {

@@ -31,46 +31,55 @@ You may assume that there are no duplicate edges in the input prerequisites.
  */
 
 public class CourseScheduleII {
-    // topo sort usually comes with circle detection!
-    int[] r;
-    int rp;
-    int[] v;
-    List<Integer>[] g;
-    boolean cyc = false;
+    public int[] findOrder(int n, int[][] edges) {
+        // validate input....
 
-    public int[] findOrder(int n, int[][] p) {
-        r = new int[n];
-        rp = n - 1;
-        g = new ArrayList[n];
+        Map<Integer, Set<Integer>> g = buildGraph(edges);
+        int[] st = new int[n];
+        List<Integer> topo = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            g[i] = new ArrayList<>();
-        }
-        for (int i = 0; i < p.length; i++) {
-            g[p[i][1]].add(p[i][0]);
-        }
-        v = new int[n];
-        for (int i = 0; i < n; i++) {
-            if (v[i] == 0) {
-                dfs(i);
+            if (st[i] == 0) {
+                boolean cycle = dfs(g, i, st, topo);
+                if (cycle) {
+                    return new int[0];
+                }
             }
         }
-        return cyc ? new int[0] : r;
 
+        int[] res = new int[n];
+        for (int i = n-1; i >=0; i--) {
+            res[i] = topo.get(n-1-i);
+        }
+        return res;
     }
 
-    void dfs(int i) {
-        v[i] = 1;
-        for (int j : g[i]) {
-            int vj = v[j];
-            if (vj == 0) {
-                dfs(j);
-            } else if (vj == 1) {
-                cyc = true;
-                return;
+    private Map<Integer, Set<Integer>> buildGraph(int[][] es) {
+        Map<Integer, Set<Integer>> g = new HashMap<>();
+        for (int[] e : es) {
+            int start = e[0];
+            int end = e[1];
+            g.computeIfAbsent(end, k -> new HashSet<>()).add(start);
+            // graph is given in reversed order so we will have to reverse here too
+        }
+        return g;
+    }
+
+    // return if we have circle or not here
+    private boolean dfs(Map<Integer, Set<Integer>> g, int i, int[] st, List<Integer> topo) {
+        st[i] = 1; // 1 means being visited
+        for (int next : g.getOrDefault(i, new HashSet<>())) {
+            if (st[next] == 1) {
+                return true;
+            } else if (st[next] == 0) {
+                boolean nextCycle = dfs(g, next, st, topo);
+                if (nextCycle) {
+                    return true;
+                }
             }
         }
-        v[i] = 2;
-        r[rp--] = i;
+        st[i] = 2;
+        topo.add(i);
+        return false;
     }
 
     public static void main(String[] args) {

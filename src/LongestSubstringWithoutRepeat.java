@@ -70,20 +70,23 @@ public class LongestSubstringWithoutRepeat {
 class LongestSubstringWithoutRepeatEeasier {
     // think from the point of every i, the substrings ending at i
     public int lengthOfLongestSubstring(String s) {
-        Map<Character, Integer> m = new HashMap<>();
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
         int start = 0;
+        Map<Character, Integer> last = new HashMap<>();
         int max = 0;
-        for(int i=0; i<s.length(); i++){
-            // start...i-1 good, now dealing with i
+        // invariant: start...i-1 no repeat
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            int pre = m.getOrDefault(c, -1);
-            if(pre+1>start){
-                start = pre+1;
+            Integer pre = last.get(c);
+            if (pre != null && pre + 1 > start) {
+                start = pre + 1;
             }
-            // start...i good
-            int len = i-start+1;
-            max = Math.max(max, len);
-            m.put(c, i);
+            // now start...i has no repeat
+            int cur = i - start + 1;
+            max = Math.max(max, cur);
+            last.put(c, i);
         }
         return max;
     }

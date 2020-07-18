@@ -1,28 +1,34 @@
 public class GoatLatin {
-    String vow = "aeiouAEIOU"; // caps too
-
-    public String toGoatLatin(String str) {
+    // trap is it could have caps letters too!
+    public String toGoatLatin(String s) {
+        // s non null len>=1
+        String[] ss = s.split(" ");
         StringBuilder sb = new StringBuilder();
-        StringBuilder as = new StringBuilder("a");
-
-        String[] ss = str.split(" ");
-        for (String s : ss) {
-            if (s.isEmpty()) {
-                continue;
+        StringBuilder as = new StringBuilder();
+        for (int i = 0; i < ss.length; i++) {
+            as.append('a');
+            StringBuilder converted = convert(ss[i], as);
+            if (i > 0) {
+                sb.append(" ");
             }
-            char head = s.charAt(0);
-            String cur = null;
-            if (vow.indexOf(head) != -1) {
-                cur = s + "ma" + as.toString();
-            } else {
-                cur = s.substring(1) + head + "ma" + as.toString();
-            }
-            String sp = sb.length() == 0 ? "" : " ";
-            sb.append(sp);
-            sb.append(cur);
-            as.append("a");
+            sb.append(converted);
         }
         return sb.toString();
+    }
 
+    private String vowels = "aeiouAEIOU";
+
+    private StringBuilder convert(String s, StringBuilder as) {
+        StringBuilder sb = new StringBuilder(s);
+        char first = s.charAt(0);
+        if (vowels.indexOf(first) != -1) {
+            sb.append("ma");
+        } else {
+            sb.deleteCharAt(0);
+            sb.append(first);
+            sb.append("ma");
+        }
+        sb.append(as);
+        return sb;
     }
 }

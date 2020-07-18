@@ -38,28 +38,28 @@ public class DiagonalTraverseII {
     // array may be uneven. use map to cache the lists.
     // can be used in diagonal traverse I too
     public int[] findDiagonalOrder(List<List<Integer>> a) {
-        int m = a.size();
-        if (m == 0) {
+        if(a==null || a.isEmpty()){
             return new int[0];
         }
-        Map<Integer, LinkedList<Integer>> map = new HashMap<>();
-        int maxsum = 0;
-        int items = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < a.get(i).size(); j++) {
-                int sum = i + j;
-                maxsum = Math.max(maxsum, sum);
-                map.computeIfAbsent(sum, k -> new LinkedList<>()).offerFirst(a.get(i).get(j));
-                items++;
+        Map<Integer,List<Integer>> m = new HashMap<>();
+        int maxDiag = 0;
+        int count = 0;
+        for(int i=0; i<a.size(); i++){
+            for(int j=0; j<a.get(i).size(); j++){
+                int diag = i+j;
+                count++;
+                maxDiag = Math.max(maxDiag, diag);
+                m.computeIfAbsent(diag, k-> new ArrayList<>()).add(a.get(i).get(j));
             }
         }
-        int[] r = new int[items];
+        int[] r = new int[count];
         int ri = 0;
-        for (int i = 0; i <= maxsum; i++) {
-            LinkedList<Integer> v = map.get(i);
-            Iterator<Integer> it = v.iterator();
-            while (it.hasNext()) {
-                r[ri++] = it.next();
+        for(int i=0; i<=maxDiag; i++){
+            List<Integer> list = m.get(i);
+            if(list != null){
+                for(int j = list.size()-1; j>=0; j--){
+                    r[ri++] = list.get(j);
+                }
             }
         }
         return r;

@@ -23,15 +23,18 @@ Note: The length of each dimension in the given grid does not exceed 50.
  */
 public class MaxAreaOfIsland {
     // biggest connected component in undirected graph
-    public int maxAreaOfIsland(int[][] a) {
-        int m = a.length;
-        int n = a[0].length;
+    public int maxAreaOfIsland(int[][] g) {
+        // validate input
+        if(g==null || g.length==0){
+            return 0;
+        }
+        int m = g.length;
+        int n = g[0].length;
         int max = 0;
-        for(int i=0;i<m;i++){
-            for(int j=0; j<n;j++){
-                if(a[i][j]==1){
-                    int cur = dfs(a, i, j);
-                    //  System.out.println(i+" "+j+" "+cur);
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                if(g[i][j]==1){
+                    int cur = dfs(g, i, j);
                     max = Math.max(max, cur);
                 }
             }
@@ -39,17 +42,18 @@ public class MaxAreaOfIsland {
         return max;
     }
 
-    int[][] dirs = {{1,0}, {-1, 0}, {0,1}, {0, -1}};
-    int dfs(int[][] a, int i, int j){
-        int m = a.length;
-        int n = a[0].length;
-        a[i][j]=2;
+    private int[][] dirs = {{-1,0}, {1,0}, {0, -1}, {0,1}};
+
+    private int dfs(int[][] g, int i, int j){
+        int m = g.length;
+        int n = g[0].length;
         int r = 1;
+        g[i][j]=2;
         for(int[] d: dirs){
             int ni = i+d[0];
             int nj = j+d[1];
-            if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj]==1){
-                r += dfs(a, ni, nj);
+            if(ni>=0 && ni<m && nj>=0 && nj<n && g[ni][nj] ==1){
+                r += dfs(g, ni, nj);
             }
         }
         return r;
