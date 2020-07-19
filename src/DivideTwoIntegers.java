@@ -25,40 +25,47 @@ public class DivideTwoIntegers {
     // a = x*b +y => a = x*(b+b) + y` and then transform the 2nd x to the 1st x
     // somewhat similar to binary lifting concept
     public int divide(int a, int b) {
-        // b non zero
-        if(a==0){
+        // b != 0
+        if (a == 0) {
             return 0;
         }
-        if(b==-1 && a==Integer.MIN_VALUE){
-            return Integer.MAX_VALUE;
+        if (b == -1 && a == Integer.MIN_VALUE) {
+            return Integer.MAX_VALUE; // only possible overflow
         }
-        int res= doDiv(a>0?-a:a, b>0?-b:b)[0];
-        if(a>0 && b<0 || a<0 && b>0){
-            res = -res;
+        if (a < 0 && b > 0) {
+            return -div(a, -b)[0];
         }
-        return res;
+        if (a > 0 && b < 0) {
+            return -div(-a, b)[0];
+        }
+        if (a > 0 && b > 0) {
+            return div(-a, -b)[0];
+        }
+        return div(a, b)[0];
     }
 
-    // a, b both neg
-    private int[] doDiv(int a, int b){
-        if(a==b){
-            return new int[]{1, 0};
-        }
-        if(a>b){
+    private int[] div(int a, int b) {
+        // a and b both <0 to avoid overflow
+        if (a > b) {
+            // -2 vs -3, return 0, -2
             return new int[]{0, a};
         }
-        if(b<Integer.MIN_VALUE-b){
-            // in case b+b overflows...
-            return new int[]{1, a-b};
+        if (a % b == 0) {
+            return new int[]{a / b, 0};
         }
-        int[] res = doDiv(a, b+b);
-        if(res[1]<=b){
-            res[1] = res[1]-b;
-            res[0] = res[0]+res[0]+1;
-        }else{
-            res[0] = res[0]+res[0];
+        if (b < Integer.MIN_VALUE - b) {
+            // -1028 vs -1000 and -1024 is the limit, return 1, -28
+            // note this can't be b+b<integer.min, because it will still overflow
+            return new int[]{1, a - b};
         }
-        return res;
+        int[] later = div(a, b + b);
+        int mod = later[1];
+        int quot = later[0];
+        if (mod < b) { // won't == b
+            return new int[]{quot + quot + 1, mod - b};
+        } else {
+            return new int[]{quot + quot, mod};
+        }
     }
 
     public static void main(String[] args) {
