@@ -17,18 +17,13 @@ Note: you can assume that no duplicate edges will appear in edges. Since all edg
 public class GraphValidTree {
     // acyclic,n-1 edges, connected, two of three can deduce the third
     // using union find. can also use dfs to check connected components
-    int[] p;
-    int[] sz;
-
+    private  int[] p;
     public boolean validTree(int n, int[][] es) {
         if (es.length != n - 1) {
             return false;
         }
         p = new int[n];
-        sz = new int[n];
         Arrays.fill(p, -1);
-        Arrays.fill(sz, 1);
-
         for (int[] e : es) {
             union(e[0], e[1]);
         }
@@ -48,13 +43,7 @@ public class GraphValidTree {
         int pi = find(i);
         int pj = find(j);
         if (pi != pj) {
-            if (sz[pi] < sz[pj]) {
-                p[pi] = pj;
-                sz[pj] += sz[pi];
-            } else {
-                p[pj] = pi;
-                sz[pi] += sz[pj];
-            }
+            p[pi] = pj;
         }
     }
 
@@ -68,43 +57,46 @@ public class GraphValidTree {
     }
 }
 
-//connected and no circle
-class GraphValidTreeCircleDetection {
-    boolean hascircle = false;
-    Set<Integer> v = new HashSet<>();
-    Map<Integer, Set<Integer>> map = new HashMap<>();
 
+class GraphValidTreeCircleDetection {
+    //connected and no circle
+    private Map<Integer, Set<Integer>> map = new HashMap<>();
 
     public boolean validTree(int n, int[][] edges) {
         for (int[] e : edges) {
-            Set<Integer> cur = map.getOrDefault(e[0], new HashSet<>());
-            cur.add(e[1]);
-            map.put(e[0], cur);
-            cur = map.getOrDefault(e[1], new HashSet<>());
-            cur.add(e[0]);
-            map.put(e[1], cur);
+            map.computeIfAbsent(e[0], k -> new HashSet<>()).add(e[1]);
+            map.computeIfAbsent(e[1], k -> new HashSet<>()).add(e[0]);
         }
-
-        dfs(0, -1);
-        return v.size() == n && !hascircle;
+        int[] st = new int[n];
+        boolean cycle = dfs(0, st, -1);
+        if (cycle) {
+            return false;
+        }
+        for (int i = 0; i < n; i++) {
+            if (st[i] == 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    void dfs(int s, int parent) {
-        if (hascircle) {
-            return;
-        }
-        //   System.out.println(s);
-        v.add(s);
-        for (int t : map.getOrDefault(s, new HashSet<>())) {
-            if (t == parent) {
-                // for non directional graph we must use next != parent to rule out back edge in circle detection
+    // return has cycle or not.
+    // note when we check cycle on undirected graph, we should avoid going back to the node that we started at
+    private boolean dfs(int i, int[] st, int parent) {
+        st[i] = 1;
+        for (int next : map.getOrDefault(i, new HashSet<>())) {
+            if (next == parent) {
                 continue;
+            } else if (st[next] == 1) {
+                return true;
+            } else if (st[next] == 0) {
+                boolean cycle = dfs(next, st, i);
+                if (cycle) {
+                    return true;
+                }
             }
-            if (v.contains(t)) {
-                hascircle = true;
-                return;
-            }
-            dfs(t, s);
         }
+        st[i] = 2;
+        return false;
     }
 }
