@@ -14,27 +14,28 @@ Explanation: Because there are two triplets which sums are less than 2:
 Follow up: Could you solve it in O(n2) runtime?
  */
 public class ThreeSumSmaller {
-    public int threeSumSmaller(int[] a, int target) {
+    // 0 <= i < j < k < n it just asks for 3 different numbers in the array instead of asking for any sequence there
+    public int threeSumSmaller(int[] a, int t) {
+        if (a == null || a.length == 0) {
+            return 0;
+        }
         Arrays.sort(a);
+        int i = 0;
         int n = a.length;
-        int r = 0;
-        for (int i = 0; i < n; i++) {
-            int t = target - a[i];
-            //i+1...n-1 sorted find num of two nums' sum <=t
+        int res = 0;
+        while (i < n) {
             int j = i + 1;
             int k = n - 1;
             while (j < k) {
-                int sum = a[j] + a[k];
-                if (sum < t) {
-                    // j...k k can be anyone in j+1...k so += k-j. note we fix j, so not (k-j)*(k-j-1)/2
-                    // System.out.println(i+","+j+","+k);
-                    r += k - j;
-                    j++;
-                } else {
+                if (a[i] + a[j] + a[k] >= t) {
                     k--;
+                } else {
+                    res += k - j;
+                    j++;
                 }
             }
+            i++;
         }
-        return r;
+        return res;
     }
 }

@@ -21,28 +21,19 @@ https://leetcode.com/problems/two-sum/
 
 // can't sort then ij because this asks for index!
 public class TwoSum {
-    public int[] twoSum(int[] nums, int target) {
-        if (nums == null || nums.length < 2) {
-            return null;
+    public int[] twoSum(int[] a, int t) {
+        if(a==null){
+            return new int[0];
         }
-        Map<Integer, Integer> map = new HashMap<>();
-        map.put(nums[0], 0);
-        for (int i = 1; i < nums.length; i++) {
-            int other = target - nums[i];
-            Integer otherIndex = map.get(other);
-            if (otherIndex != null) {
-                int[] r = new int[2];
-                r[0] = otherIndex;
-                r[1] = i;
-                return r;
+        Map<Integer,Integer> m = new HashMap<>();
+        for(int i=0; i<a.length;i++){
+            // up to i-1 not found
+            if(m.containsKey(t-a[i])){
+                return new int[]{m.get(t-a[i]), i};
             }
-            map.put(nums[i], i);
+            m.put(a[i], i);
         }
-        return null;
-    }
-
-    public static void main(String[] args) {
-
+        return new int[0];
     }
 }
 

@@ -13,35 +13,35 @@ The sum that is closest to the target is 2. (-1 + 2 + 1 = 2).
  */
 public class ThreeSumClosest {
     public int threeSumClosest(int[] a, int t) {
-        int n = a.length;
-        if (n < 3) {
-            throw new IllegalArgumentException();
+        if(a==null || a.length<3){
+            return -1;
         }
         Arrays.sort(a);
-
-        long min = Integer.MAX_VALUE;
-        long minnum = Integer.MAX_VALUE;
-        for (int i = 0; i < n; i++) {
-            int j = i + 1;
-            int k = n - 1;
-            while (j < k) {
-                long sum = a[i] + a[j] + a[k];
-                long diff = Math.abs(sum - t);
-                if (diff < min) {
-                    min = diff;
-                    minnum = sum;
+        // assuming int wont overflow
+        int i = 0;
+        int n= a.length;
+        int minDiff = Integer.MAX_VALUE;
+        int res = -1;
+        while(i<n){
+            int j = i+1;
+            int k = n-1;
+            while(j<k){
+                int sum = a[i]+a[j]+a[k];
+                if(sum==t){
+                    return t;
                 }
-                // cant use diff to compare
-                if (sum == t) {
-                    break;
-                } else if (sum > t) {
-                    k--;
-                } else {
+                if(Math.abs(sum-t) < minDiff){
+                    minDiff = Math.abs(sum-t);
+                    res = sum;
+                }
+                if (sum<t){
                     j++;
+                }else{
+                    k--;
                 }
             }
-
+            i++;
         }
-        return (int) minnum;
+        return res;
     }
 }

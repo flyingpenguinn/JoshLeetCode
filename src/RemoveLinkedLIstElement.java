@@ -14,15 +14,15 @@ public class RemoveLinkedLIstElement {
         ListNode dummy = new ListNode(-1);
         dummy.next = head;
         ListNode p = dummy;
-        ListNode q = head;
-        while (q != null) {
-            if (q.val != val) {
-                p.next = q;
+        // up to p good. now checking p.next
+        while(p.next != null){
+            if(p.next.val == val){
+                p.next = p.next.next;
+                // cant move p. we want to check the new pnn
+            }else{
                 p = p.next;
             }
-            q = q.next;
         }
-        p.next = null; // dont forget this to cut the last node off
         return dummy.next;
     }
 }

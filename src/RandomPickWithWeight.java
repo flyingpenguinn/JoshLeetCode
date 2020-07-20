@@ -29,26 +29,46 @@ The input is two lists: the subroutines called and their arguments. Solution's c
 public class RandomPickWithWeight {
     // each one bears their own weight
     class Solution {
-        int[] w;
+
+        private int[] sum;
+        private int all = 0;
 
         public Solution(int[] w) {
-            this.w = w;
-            for(int i=1; i<w.length;i++){
-                w[i]  = w[i-1]+w[i];
+            // w is not null, otherwise throw....
+            int n = w.length;
+            sum = new int[n];
+            sum[0] = 0;
+            all += w[0];
+            for (int i = 1; i < n; i++) {
+                // 1,3,5 => 0,1,4 pick from 9
+                sum[i] = sum[i - 1] + w[i - 1];
+                all += w[i];
             }
         }
 
-        Random rand = new Random();
+        private Random rand = new Random();
+
         public int pickIndex() {
-            int sum = w[w.length-1];
-            int num = rand.nextInt(sum)+1;
-            int slot = Arrays.binarySearch(w,num);
-            if(slot>=0){
-                return slot;
-            }else{
-                int insertion = -(slot+1);
-                return insertion;
+            int picked = rand.nextInt(all);
+            int pos = binarySearch(sum, picked);
+            return pos;
+        }
+
+        // either return the found index, or return the biggest that is smaller, return the index
+        private int binarySearch(int[] sum, int t) {
+            int l = 0;
+            int u = sum.length - 1;
+            while (l <= u) {
+                int mid = l + (u - l) / 2;
+                if (sum[mid] == t) {
+                    return mid;
+                } else if (sum[mid] < t) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
+                }
             }
+            return u;
         }
     }
 }
