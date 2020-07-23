@@ -31,41 +31,37 @@ p and q are different and both values will exist in the binary tree.
  */
 public class LowestCommonAncestorOfBinaryTree {
     // all values unique in tree. note we can handle the case where lca doesnt exist we return null
+
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-        return dfs(root, p, q)[0];
+        return lca(root, p, q)[0];
     }
 
-    // if lca, return lca+null
-    // otherwise, return null and either p or q found
-    private TreeNode[] dfs(TreeNode n, TreeNode p, TreeNode q){
-        if(n==null){
-            return new TreeNode[]{null, null};
+    // 0: the lca
+    // 1: p or q
+    private TreeNode[] lca(TreeNode n, TreeNode p, TreeNode q) {
+        if (n == null) {
+            return new TreeNode[2];
         }
-        TreeNode[] left = dfs(n.left, p, q);
-        if(left[0] != null){
-            return left;
+        TreeNode[] left = lca(n.left, p, q);
+        if (left[0] != null) {
+            return left;// found in left
         }
-        TreeNode[] right = dfs(n.right, p,q);
-        if(right[0] != null){
-            return right;
+        TreeNode[] right = lca(n.right, p, q);
+        if (right[0] != null) {
+            return right;// found in right
         }
-        if(left[1]!= null && right[1]!= null){
-            return new TreeNode[]{n, null};
-        } else if (left[1] != null || right[1] != null){
-            if(n==p || n==q){
-                return new TreeNode[]{n, null};
-            }else{
-                return new TreeNode[]{null, left[1]!= null? left[1]: right[1]};
-            }
-        } else{
-            if(n==p || n==q){
-                return new TreeNode[]{null,n};
-            }else{
-                return new TreeNode[]{null, null};
+        if (left[1] != null && right[1] != null) {
+            return new TreeNode[]{n, null};// found in current node
+        }
+        if (n == p || n == q) {
+            if (left[1] != null || right[1] != null) {
+                return new TreeNode[]{n, null}; // found in current node
+            } else {
+                return new TreeNode[]{null, n};
             }
         }
+        return left[1] == null ? right : left; // return whoever has p or q, or maybe both nulls
     }
-
 
     public static void main(String[] args) {
         LowestCommonAncestorOfBinaryTree lca = new LowestCommonAncestorOfBinaryTree();
@@ -77,16 +73,14 @@ class LcaSimpler {
     // return p or q or the lca. use the fact that lca must exist. so if ==q or ==q, just return....
     public TreeNode lowestCommonAncestor(TreeNode n, TreeNode p, TreeNode q) {
         if (n == null || n == p || n == q) {
+            // note it's the or here so we can return n immediately
             return n;
         }
         TreeNode left = lowestCommonAncestor(n.left, p, q);
         TreeNode right = lowestCommonAncestor(n.right, p, q);
         if (left != null && right != null) {
             return n;
-        } else if (left != null) {
-            return left;
-        } else {
-            return right;
         }
+        return left == null ? right : left;
     }
 }

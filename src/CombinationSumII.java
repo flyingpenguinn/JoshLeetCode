@@ -31,43 +31,37 @@ A solution set is:
  */
 public class CombinationSumII {
     // for each i pick 1,2,3...times
-    public List<List<Integer>> combinationSum2(int[] a, int t) {
-        Arrays.sort(a);
-        return doc(a, t, 0);
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        // check null error if so. target is positive
+        Arrays.sort(candidates);
+        List<List<Integer>> r = new ArrayList<>();
+        dfs(0, candidates, 0, target, r, new ArrayList<>());
+        return r;
     }
 
-    private List<List<Integer>> doc(int[] a, int t, int i) {
-        List<List<Integer>> r = new ArrayList<>();
-        if (i == a.length) {
-
-            if (t == 0) {
-                List<Integer> empty = new ArrayList<>();
-                r.add(empty);
+    private void dfs(int i, int[] candidates, int curNum, int target, List<List<Integer>> r, List<Integer> cur) {
+        if (i == candidates.length) {
+            if (curNum == target) {
+                r.add(new ArrayList<>(cur));
             }
-            return r;
+            return;
         }
-
         int j = i;
-        while (j < a.length && a[j] == a[i]) {
+        while (j < candidates.length && candidates[j] == candidates[i]) {
             j++;
         }
-        List<List<Integer>> without = doc(a, t, j);
-        r.addAll(without);
-        List<Integer> cur = new ArrayList<>();
-        // i...j-1
+        dfs(j, candidates, curNum, target, r, cur);
+        int oldSize = cur.size();
         for (int k = i; k < j; k++) {
-            cur.add(a[i]);
-            if (t >= a[i]) {
-                t -= a[i];
-                // 1,2,3...counts of i. jump to j
-                List<List<Integer>> with = doc(a, t, j);
-                for (List<Integer> w : with) {
-
-                    w.addAll(cur);
-                    r.add(w);
-                }
+            cur.add(candidates[k]);
+            curNum += candidates[k];
+            if (curNum > target) {
+                break;
             }
+            dfs(j, candidates, curNum, target, r, cur);
         }
-        return r;
+        while (cur.size() > oldSize) {
+            cur.remove(cur.size() - 1);
+        }
     }
 }

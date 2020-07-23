@@ -43,14 +43,10 @@ class NestedIterator implements Iterator<Integer> {
     private Deque<NestedInteger> st = new ArrayDeque<>();
 
     public NestedIterator(List<NestedInteger> nestedList) {
-        populate(nestedList);
-        dig();
-    }
-
-    private void populate(List<NestedInteger> nestedList) {
         for (int i = nestedList.size() - 1; i >= 0; i--) {
             st.push(nestedList.get(i));
         }
+        dig();
     }
 
     @Override
@@ -58,20 +54,22 @@ class NestedIterator implements Iterator<Integer> {
         if (!hasNext()) {
             return null;
         }
-        NestedInteger top = st.pop();
+        Integer rt = st.pop().getInteger(); // top must be an integer if has next
         dig();
-        return top.getInteger();
-    }
-
-    private void dig() {
-        while (!st.isEmpty() && !st.peek().isInteger()) {
-            NestedInteger ni = st.pop();
-            populate(ni.getList());
-        }
+        return rt;
     }
 
     @Override
     public boolean hasNext() {
         return !st.isEmpty();
+    }
+
+    private void dig() {
+        while (!st.isEmpty() && !st.peek().isInteger()) {
+            NestedInteger top = st.pop();
+            for (int i = top.getList().size() - 1; i >= 0; i--) {
+                st.push(top.getList().get(i));
+            }
+        }
     }
 }

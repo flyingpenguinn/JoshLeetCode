@@ -18,38 +18,34 @@ import java.util.Arrays;
 
 public class LongestPalindromeSubstring {
     public String longestPalindrome(String s) {
-        if(s==null || s.isEmpty()){
+        if (s == null || s.isEmpty()) {
             return "";
         }
-        int n = s.length();
-        int max = 0;
-        int maxstart = -1;
-        for(int i=0; i<n; i++){
-            int j = i;
-            int k = i;
-            while(j>=0 && k<n && s.charAt(j)==s.charAt(k)){
-                j--;
-                k++;
+        int[] r = {0, 0};
+        for (int i = 0; i < s.length(); i++) {
+            int[] cur = palin(s, i, i);
+            if (cur[1] - cur[0] > r[1] - r[0]) {
+                r = cur;
             }
-            // from j+1 to k-1 is the palin
-            int len = k-1-(j+1)+1;
-            if(len>max){
-                max = len;
-                maxstart = j+1;
-            }
-            j = i;  // then dont forget the even lengthed where i and i+1 are the same element
-            k = i+1;
-            while(j>=0 && k<n && s.charAt(j)==s.charAt(k)){
-                j--;
-                k++;
-            }
-            len = k-1-(j+1)+1;
-            if(len>max){
-                max = len;
-                maxstart = j+1;
+            cur = palin(s, i, i + 1);
+            if (cur[1] - cur[0] > r[1] - r[0]) {
+                r = cur;
             }
         }
-        return s.substring(maxstart, maxstart + max);
+        return s.substring(r[0], r[1] + 1);
+    }
+
+    private int[] palin(String s, int i, int j) {
+        // i must be valid pos in the string
+        while (i >= 0 && j < s.length()) {
+            if (s.charAt(i) != s.charAt(j)) {
+                break;
+            }
+            i--;
+            j++;
+        }
+        // i+1... j-1 is local longets palin
+        return new int[]{i + 1, j - 1};
     }
 
     public static void main(String[] args) {

@@ -24,28 +24,31 @@ Output: ["1->2->5", "1->3"]
 Explanation: All root-to-leaf paths are: 1->2->5, 1->3
  */
 public class BinaryTreePaths {
-    List<String> r = new ArrayList<>();
-
     public List<String> binaryTreePaths(TreeNode root) {
-        dob(root, new StringBuilder());
-        return r;
+        List<String> paths = new ArrayList<>();
+        if (root == null) {
+            return paths;
+        }
+        dfs(root, paths, new StringBuilder(""));
+        return paths;
     }
 
-    void dob(TreeNode n, StringBuilder cur) {
-        if (n == null) {
-            return;
+    // node non null
+    private void dfs(TreeNode node, List<String> paths, StringBuilder cur) {
+        int oldSize = cur.length();
+        if (cur.length() > 0) {
+            cur.append("->");
         }
-        int ol = cur.length();
-        String toadd = cur.length() == 0 ? "" + n.val : "->" + n.val;
-        cur.append(toadd);
-
-        if (n.left == null && n.right == null) {
-            r.add(cur.toString());
-        } else {
-            dob(n.left, cur);
-            dob(n.right, cur);
+        cur.append(node.val);
+        if (node.left == null && node.right == null) {
+            paths.add(cur.toString());
         }
-        cur.setLength(ol); //! set length
+        if (node.left != null) {
+            dfs(node.left, paths, cur);
+        }
+        if (node.right != null) {
+            dfs(node.right, paths, cur);
+        }
+        cur.setLength(oldSize); // ! good approach
     }
-
 }

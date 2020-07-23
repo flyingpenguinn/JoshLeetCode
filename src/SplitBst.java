@@ -38,6 +38,55 @@ The BST is always valid and each node's value is different.
  */
 public class SplitBst {
 
+    private TreeNode smhead = null;
+    private TreeNode bghead = null;
+
+    public TreeNode[] splitBST(TreeNode root, int v) {
+        dfs(root, v, null, null);
+        return new TreeNode[]{smhead, bghead};
+    }
+
+    private void dfs(TreeNode n, int v, TreeNode sm, TreeNode bg) {
+        if (n == null) {
+            return;
+        }
+        TreeNode left = n.left;
+        TreeNode right = n.right;
+        TreeNode lastsm = sm;
+        TreeNode lastbg = bg;
+        if (n.val <= v) {
+            if (sm != null) {
+                setChild(n, sm);
+            } else {
+                smhead = n;
+            }
+            lastsm = n;
+        } else {
+            if (bg != null) {
+                setChild(n, bg);
+            } else {
+                bghead = n;
+            }
+            lastbg = n;
+        }
+        // dont forget to set null
+        n.left = null;
+        n.right = null;
+        dfs(left, v, lastsm, lastbg);
+        dfs(right, v, lastsm, lastbg);
+    }
+
+    private void setChild(TreeNode n, TreeNode pa) {
+        if (n.val > pa.val) {
+            pa.right = n;
+        } else {
+            pa.left = n;
+        }
+    }
+}
+
+class SplitBstSimpler {
+
     // full recursion! return the pair to the upper level
     public TreeNode[] splitBST(TreeNode root, int v) {
         return dos(root, v);

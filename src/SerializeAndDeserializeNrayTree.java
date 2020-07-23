@@ -34,7 +34,8 @@ public class SerializeAndDeserializeNrayTree {
     // store on level order or pre order, but use node val: node children count, .... format, don't use other ways!
 
     public static void main(String[] args) {
-
+        CodecNrayTreeStack cts = new CodecNrayTreeStack();
+        System.out.println(cts.new Codec().deserialize("1,3,3,2,5,0,6,0,2,0,4,0"));
     }
 }
 
@@ -127,7 +128,6 @@ class CodecNrayTree {
 
 
 class CodecNrayTreeStack {
-    // for each node record the number of children then do dfs
     class Node {
         public int val;
         public List<Node> children;
@@ -145,63 +145,62 @@ class CodecNrayTreeStack {
         }
     }
 
-    final String Sep = ":";
-
-    // Encodes a tree to a single string.
-    public String serialize(Node root) {
-        if (root == null) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(root.val + Sep + root.children.size());
-        for (Node ch : root.children) {
-            String chs = serialize(ch);
+    class Codec {
+        // Encodes a tree to a single string.
+        public String serialize(Node root) {
+            if (root == null) {
+                return "#";
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(root.val);
             sb.append(",");
-            sb.append(chs);
-        }
-        return sb.toString();
-    }
-
-    class StackItem {
-        Node n;
-        int ch;
-
-        public StackItem(Node n, int ch) {
-            this.n = n;
-            this.ch = ch;
-        }
-    }
-
-    // Decodes your encoded data to tree.
-    public Node deserialize(String data) {
-        if (data.isEmpty()) {
-            return null;
-        }
-        String[] ss = data.split(",");
-        Deque<StackItem> stack = new ArrayDeque<>();
-        String[] roots = ss[0].split(Sep);
-        Node root = tonode(roots[0]);
-        stack.push(new StackItem(root, Integer.valueOf(roots[1])));
-        for (int i = 1; i < ss.length; i++) {
-            String[] cur = ss[i].split(Sep);
-            StackItem top = stack.peek();
-            Node curnode = tonode(cur[0]);
-            top.n.children.add(curnode);
-            if (top.n.children.size() == top.ch) {
-                stack.pop();
+            // assuming chilcren list always non null. so for leaves we will get 0
+            sb.append(root.children.size());
+            sb.append(",");
+            for (Node ch : root.children) {
+                String str = serialize(ch);
+                sb.append(str);
             }
-            int curcount = Integer.valueOf(cur[1]);
-            if (curcount > 0) {
-                stack.push(new StackItem(curnode, curcount));
+            return sb.toString();
+        }
+
+        class StackItem {
+            private Node node;
+            private int ccount;
+
+            public StackItem(Node node, int count) {
+                this.node = node;
+                this.ccount = count;
             }
         }
-        return root;
-    }
 
-    private Node tonode(String sss) {
-        Node n = new Node(Integer.valueOf(sss));
-        n.children = new ArrayList<>();
-        return n;
+        // Decodes your encoded data to tree.
+        public Node deserialize(String data) {
+            if ("#".equals(data)) {
+                return null;
+            }
+            String[] ss = data.split(",");
+            Node root = null;
+            Deque<StackItem> st = new ArrayDeque<>();
+            for (int i = 0; i < ss.length; i += 2) {
+                // st.peek either empty or is the last ele that is waiting for child
+                Node cur = new Node(Integer.valueOf(ss[i]), new ArrayList<>());
+                if (root == null) {
+                    root = cur;
+                }
+                int count = Integer.valueOf(ss[i + 1]);
+                if (!st.isEmpty()) {
+                    StackItem peek = st.peek();
+                    peek.node.children.add(cur);
+                }
+                st.push(new StackItem(cur, count));
+                while (!st.isEmpty()) {
+                    if (st.peek().ccount == st.peek().node.children.size()) {
+                        st.pop();
+                    }
+                }
+            }
+            return root;
+        }
     }
-
 }

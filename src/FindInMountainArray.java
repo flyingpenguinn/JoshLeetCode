@@ -43,63 +43,73 @@ interface MountainArray {
 }
 
 public class FindInMountainArray {
-    // cache a.get calls!
-    public int findInMountainArray(int t, MountainArray a) {
-        int n = a.length();
-        int peak = findpeak(a);
-        if (peak == -1) {
+    // cache ma.get calls, and make sure we vet the l in the end when finding
+    public int findInMountainArray(int t, MountainArray ma) {
+        if (ma == null || ma.length() <= 0) {
             return -1;
         }
-        int first = find(a, 0, peak, t, false);
-        if (first != -1) {
-            return first;
+        int n = ma.length();
+        int peakIndex = findPeak(0, n - 1, ma);
+        if (peakIndex == -1) {
+            return -1;
         }
-        int second = find(a, peak + 1, n - 1, t, true);
-        return second;
+        int index1 = findFirst(0, peakIndex, t, ma, true);
+        if (index1 != -1) {
+            return index1;
+        }
+        int index2 = findFirst(peakIndex + 1, n - 1, t, ma, false);
+        return index2;
     }
 
-    int findpeak(MountainArray a) {
-        int n = a.length();
-        int l = 0;
-        int u = n - 1;
-        // find mountain first
+    private int findPeak(int start, int end, MountainArray ma) {
+        int l = start;
+        int u = end;
+
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            int mv = a.get(mid);
-
-            if (mid - 1 >= 0 && mid + 1 < n && mv > a.get(mid - 1) && mv > a.get(mid + 1)) {
+            int midv = ma.get(mid);
+            if (mid == start || mid == end) {
                 return mid;
-            } else if (mid + 1 < n && mv < a.get(mid + 1)) {
+            }
+            int midm1 = ma.get(mid - 1);
+            int midp1 = ma.get(mid + 1);
+            if (midm1 < midv && midv > midp1) {
+                return mid;
+            } else if (midm1 < midv && midv < midp1) {
                 l = mid + 1;
-            } else if (mid - 1 >= 0 && mv < a.get(mid - 1)) {
-                u = mid - 1;
             } else {
-                break;
+                u = mid - 1;
             }
         }
         return -1;
     }
 
-    int find(MountainArray a, int l, int u, int t, boolean reverse) {
+    // prev < the next
+    private int findFirst(int start, int end, int t, MountainArray ma, boolean inc) {
+        int l = start;
+        int u = end;
+        int n = ma.length();
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            int mv = a.get(mid);
-            if (mv == t) {
-                return mid;
-            } else if (mv < t) {
-                if (reverse) {
+            int midv = ma.get(mid);
+            if (inc) {
+                if (midv >= t) {
                     u = mid - 1;
                 } else {
                     l = mid + 1;
                 }
             } else {
-                if (reverse) {
-                    l = mid + 1;
-                } else {
+                if (midv <= t) {
                     u = mid - 1;
+                } else {
+                    l = mid + 1;
                 }
             }
         }
-        return -1;
+        if (l >= 0 && l < n && ma.get(l) == t) {
+            return l;
+        } else {
+            return -1;
+        }
     }
 }

@@ -19,26 +19,28 @@ Input:  root = [5,1,5,5,5,null,5]
 Output: 4
  */
 public class CountUniqueSubtrees {
-    // force parent value down to check if syb agrees with it
-    int r = 0;
+    // recursive definition:
+    // if my left and right are both uni value and i== them then i'm unit value too (or left or right is null)
+    private int count = 0;
 
     public int countUnivalSubtrees(TreeNode root) {
-        dfs(root, null);
-        return r;
+        dfs(root);
+        return count;
     }
 
-    // whether subtree is univalue and all equal to pv
-    boolean dfs(TreeNode n, TreeNode p) {
+    // whether n's subtree is uni value
+    private boolean dfs(TreeNode n) {
         if (n == null) {
             return true;
         }
-
-        boolean lr = dfs(n.left, n);
-        boolean rr = dfs(n.right, n);
-        if (lr && rr) {
-            r++;
+        boolean left = dfs(n.left);
+        boolean right = dfs(n.right);
+        if (left && right && (n.left == null || n.val == n.left.val)
+                && (n.right == null || n.val == n.right.val)) {
+            count++;
+            return true;
         }
-        return p == null ? false : lr && rr && n.val == p.val;
+        return false;
     }
 
 }

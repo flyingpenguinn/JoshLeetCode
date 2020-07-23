@@ -133,51 +133,53 @@ class PerfectRectanglePointCount {
     the large rectangle area should be equal to the sum of small rectangles
 count of all the points should be even, and that of all the four corner points should be one
      */
-    public boolean isRectangleCover(int[][] a) {
+    private String toString(int a, int b) {
+        return a + "," + b;
+    }
 
-        int blx = Integer.MAX_VALUE;
-        int rtx = Integer.MIN_VALUE;
-        int bly = Integer.MAX_VALUE;
-        int rty = Integer.MIN_VALUE;
-        int sumarea = 0;
-        int n = a.length;
-        Map<String, Integer> points = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            blx = Math.min(blx, a[i][0]);
-            bly = Math.min(bly, a[i][1]);
-            rtx = Math.max(rtx, a[i][2]);
-            rty = Math.max(rty, a[i][3]);
-            sumarea += (a[i][3] - a[i][1]) * (a[i][2] - a[i][0]);
-            String p1 = a[i][0] + "," + a[i][1];
-            String p2 = a[i][0] + "," + a[i][3];
-            String p3 = a[i][2] + "," + a[i][3];
-            String p4 = a[i][2] + "," + a[i][1];
-            points.put(p1, points.getOrDefault(p1, 0) + 1);
-            points.put(p2, points.getOrDefault(p2, 0) + 1);
-            points.put(p3, points.getOrDefault(p3, 0) + 1);
-            points.put(p4, points.getOrDefault(p4, 0) + 1);
+    public boolean isRectangleCover(int[][] rects) {
+        Map<String, Integer> m = new HashMap<>();
+        int minx = Integer.MAX_VALUE;
+        int miny = Integer.MAX_VALUE;
+        int maxx = Integer.MIN_VALUE;
+        int maxy = Integer.MIN_VALUE;
+        int area = 0;
+        for (int[] rect : rects) {
+            String bottomLeft = toString(rect[0], rect[1]);
+            m.put(bottomLeft, m.getOrDefault(bottomLeft, 0) + 1);
+            String topRight = toString(rect[2], rect[3]);
+            m.put(topRight, m.getOrDefault(topRight, 0) + 1);
+            String bottomRight = toString(rect[2], rect[1]);
+            m.put(bottomRight, m.getOrDefault(bottomRight, 0) + 1);
+            String topLeft = toString(rect[0], rect[3]);
+            m.put(topLeft, m.getOrDefault(topLeft, 0) + 1);
+            area += (rect[2] - rect[0]) * (rect[3] - rect[1]);
+            minx = Math.min(rect[0], minx);
+            miny = Math.min(rect[1], miny);
+            maxx = Math.max(rect[2], maxx);
+            maxy = Math.max(rect[3], maxy);
         }
-        int area = (rty - bly) * (rtx - blx);
-        if (area != sumarea) {
+        if (area != (maxx - minx) * (maxy - miny)) {
             return false;
         }
-        Set<String> singles = new HashSet<>();
-        singles.add(blx + "," + bly);
-        singles.add(blx + "," + rty);
-        singles.add(rtx + "," + rty);
-        singles.add(rtx + "," + bly);
-        for (String k : points.keySet()) {
-            Integer count = points.get(k);
-            if (count % 2 != 0 && count > 1) {
-                return false;
-            }
-            if (count == 1) {
-                if (!singles.contains(k)) {
+        Set<String> corners = new HashSet<>();
+        corners.add(toString(minx, miny));
+        corners.add(toString(minx, maxy));
+        corners.add(toString(maxx, miny));
+        corners.add(toString(maxx, maxy));
+
+        for (String k : m.keySet()) {
+            if (corners.contains(k)) {
+                if (m.get(k) != 1) {
                     return false;
                 }
-                singles.remove(k);
+                corners.remove(k);
+            } else {
+                if (m.get(k) % 2 != 0) {
+                    return false;
+                }
             }
         }
-        return singles.isEmpty();
+        return corners.isEmpty();
     }
 }

@@ -3,39 +3,40 @@ import base.TreeNode;
 import java.util.*;
 
 public class BinaryTreeZigZagLevelOrderTraversal {
-    // cant change inqueue order
+    // cant change inqueue order can only change the seq of adding to the list: even if we add right first, next round we can't get
+    // left's left before right's left
     public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
-        List<List<Integer>> result = new ArrayList<>();
+        List<List<Integer>> r = new ArrayList<>();
         if (root == null) {
-            return result;
+            return r;
         }
         Deque<TreeNode> q = new ArrayDeque<>();
         q.offer(root);
-        LinkedList<Integer> curLevel = new LinkedList<>();
-        int level = 1;
-        boolean left = true;
+        int curlen = 1;
+        boolean reverse = false;
+        LinkedList<Integer> curlevel = new LinkedList<>();
         while (!q.isEmpty()) {
             TreeNode top = q.poll();
-            if (left) {
-                curLevel.addLast(top.val);
+            if (reverse) {
+                curlevel.addFirst(top.val);
             } else {
-                curLevel.addFirst(top.val);
+                curlevel.add(top.val);
             }
+            curlen--;
             if (top.left != null) {
                 q.offer(top.left);
             }
             if (top.right != null) {
                 q.offer(top.right);
             }
-            level--;
-            if (level == 0) {
-                result.add(curLevel);
-                curLevel = new LinkedList<>();
-                level = q.size();
-                left = !left;
+
+            if (curlen == 0) {
+                r.add(curlevel);
+                curlevel = new LinkedList<>();
+                curlen = q.size();
+                reverse = !reverse;
             }
         }
-
-        return result;
+        return r;
     }
 }

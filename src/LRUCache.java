@@ -28,12 +28,12 @@ LRUCache cache = new LRUCache( 2 );
         */
 
 public class LRUCache {
-    // use two dummy nodes head and tail so that the list is between head and tail. greatly easing the code for edge cases
-    private class Node {
-        private int key;
+
+    class Node {
+        private int key;  // we MUST record key as well for easier removal in remove tail
         private int val;
-        private Node pre = null;
-        private Node next = null;
+        private Node prev;
+        private Node next;
 
         public Node(int key, int val) {
             this.key = key;
@@ -41,86 +41,87 @@ public class LRUCache {
         }
     }
 
-    private Map<Integer, Node> m = new HashMap<>();
-    private Node head = new Node(-1, -1);
-    private Node tail = new Node(-1, -1);
     private int cap = 0;
+    private Map<Integer, Node> m = new HashMap<>();
 
     public LRUCache(int capacity) {
         if (capacity <= 0) {
-            throw new IllegalArgumentException("capacity must be >0");
+            throw new IllegalArgumentException();
         }
         this.cap = capacity;
-        head.pre = tail;
         head.next = tail;
+        head.prev = tail;
         tail.next = head;
-        tail.pre = head;
+        tail.prev = head;
     }
 
-    private void removeNode(Node n) {
-        Node pre = n.pre;
-        Node next = n.next;
-        pre.next = next;
-        next.pre = pre;
-        n.pre = null;
-        n.next = null;
-    }
-
-    private void removeLast() {
-        Node last = tail.pre;
-        m.remove(last.key);
-        removeNode(last);
-    }
-
-    private void addHead(Node n) {
-        Node hn = head.next;
-        n.next = hn;
-        n.pre = head;
-        hn.pre = n;
-        head.next = n;
-    }
-
-    private void removeAndAddHead(Node n) {
-        removeNode(n);
-        addHead(n);
-    }
+    private Node head = new Node(-1, -1);
+    private Node tail = new Node(-1, -1);
 
     public int get(int key) {
-        Node ext = m.get(key);
-        if (ext == null) {
+        Node v = m.get(key);
+        if (v == null) {
             return -1;
         }
-        removeAndAddHead(ext);
-        return ext.val;
+        removeAndAddHead(v);
+        return v.val;
     }
 
     public void put(int key, int value) {
-        Node ext = m.get(key);
-        if (ext != null) {
-            ext.val = value;
-            removeAndAddHead(ext);
+        Node v = m.get(key);
+        if (v != null) {
+            removeAndAddHead(v);
+            v.val = value;
             return;
         }
-        Node newNode = new Node(key, value);
-        addHead(newNode);
-        m.put(key, newNode);
+        v = new Node(key, value);
+        m.put(key, v);
+        addHead(v); // just addhead, not remove and addhead
         if (m.size() > cap) {
-            removeLast();
+            removeTail();
         }
     }
 
-    public static void main(String[] args) {
-        LRUCache cache = new LRUCache(2 /* capacity */);
+    private void removeAndAddHead(Node v) {
+        remove(v);
+        addHead(v);
+    }
 
-        cache.put(1, 1);
-        cache.put(2, 2);
-        cache.get(1);       // returns 1
-        cache.put(3, 3);    // evicts key 2
-        cache.get(2);       // returns -1 (not found)
-        cache.put(4, 4);    // evicts key 1
-        cache.get(1);       // returns -1 (not found)
-        cache.get(3);       // returns 3
-        cache.get(4);       // returns 4
+    private void remove(Node v) {
+        Node prev = v.prev;
+        Node next = v.next;
+        prev.next = next;
+        next.prev = prev;
+        v.prev = null;
+        v.next = null;
+    }
+
+    private void addHead(Node v) {
+        Node headNext = head.next;
+        head.next = v;
+        v.prev = head;
+        v.next = headNext;
+        headNext.prev = v;
+    }
+
+    public boolean isEmpty() {
+        return head.next == tail;
+    }
+
+    private void removeTail() {
+        if (isEmpty()) {
+            throw new IllegalStateException();
+        }
+        Node tailNode = tail.prev;
+        m.remove(tailNode.key);
+        remove(tailNode);
     }
 }
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache obj = new LRUCache(capacity);
+ * int param_1 = obj.get(key);
+ * obj.put(key,value);
+ */
 
