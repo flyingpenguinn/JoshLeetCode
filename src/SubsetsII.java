@@ -30,37 +30,31 @@ Then how many subsets are there if there are duplicate elements? We can treat du
 with each of them appearing (k1, k2, k3, ..., kn) times, the number of subset is (k1+1)(k2+1)...(kn+1).
  */
     public List<List<Integer>> subsetsWithDup(int[] a) {
+        List<List<Integer>> r = new ArrayList<>();
         Arrays.sort(a);
-        return dos(a, 0);
+        dfs(0, a, new ArrayList<>(), r);
+        return r;
     }
 
-    private List<List<Integer>> dos(int[] a, int i) {
-        List<List<Integer>> r = new ArrayList<>();
-        if (i == a.length) {
-            List<Integer> ri = new ArrayList<>();
-            r.add(ri);
-            return r;
+    private void dfs(int i, int[] a, List<Integer> cur, List<List<Integer>> r) {
+        int n = a.length;
+        if (i == n) {
+            r.add(new ArrayList<>(cur));
+            return;
         }
-        // skip all equal ones
         int j = i;
-        while (j < a.length && a[j] == a[i]) {
+        while (j < n && a[j] == a[i]) {
             j++;
         }
-        int count = j - i;
-        // either add 0 ai, 1 ai,... or k ai, k equals to the repetition
-        List<List<Integer>> later = dos(a, j);
-        List<Integer> curai = new ArrayList<>();
-        for (int k = 0; k <= count; k++) {
-            if (k > 0) {
-                curai.add(a[i]);
-            }
-            for (List<Integer> li : later) {
-                // ai can repeat count times in each subset
-                List<Integer> ri = new ArrayList<>(li);
-                ri.addAll(curai);
-                r.add(ri);
-            }
+        dfs(j, a, cur, r);
+        int oldSize = cur.size();
+        // i...j-1, j is different from i
+        for (int k = i; k < j; k++) {
+            cur.add(a[k]);
+            dfs(j, a, cur, r);
         }
-        return r;
+        while (cur.size() != oldSize) {
+            cur.remove(cur.size() - 1);
+        }
     }
 }
