@@ -37,81 +37,22 @@ The size of the BST will not exceed 50.
 The BST is always valid and each node's value is different.
  */
 public class SplitBst {
-
-    private TreeNode smhead = null;
-    private TreeNode bghead = null;
-
     public TreeNode[] splitBST(TreeNode root, int v) {
-        dfs(root, v, null, null);
-        return new TreeNode[]{smhead, bghead};
+        return dfs(root, v);
     }
 
-    private void dfs(TreeNode n, int v, TreeNode sm, TreeNode bg) {
-        if (n == null) {
-            return;
+    private TreeNode[] dfs(TreeNode n, int v){
+        if(n==null){
+            return new TreeNode[]{null,null};
         }
-        TreeNode left = n.left;
-        TreeNode right = n.right;
-        TreeNode lastsm = sm;
-        TreeNode lastbg = bg;
-        if (n.val <= v) {
-            if (sm != null) {
-                setChild(n, sm);
-            } else {
-                smhead = n;
-            }
-            lastsm = n;
-        } else {
-            if (bg != null) {
-                setChild(n, bg);
-            } else {
-                bghead = n;
-            }
-            lastbg = n;
-        }
-        // dont forget to set null
-        n.left = null;
-        n.right = null;
-        dfs(left, v, lastsm, lastbg);
-        dfs(right, v, lastsm, lastbg);
-    }
-
-    private void setChild(TreeNode n, TreeNode pa) {
-        if (n.val > pa.val) {
-            pa.right = n;
-        } else {
-            pa.left = n;
-        }
-    }
-}
-
-class SplitBstSimpler {
-
-    // full recursion! return the pair to the upper level
-    public TreeNode[] splitBST(TreeNode root, int v) {
-        return dos(root, v);
-    }
-
-    private TreeNode[] dos(TreeNode n, int v) {
-        TreeNode[] r = new TreeNode[2];
-        if (n == null) {
-            return r;
-        }
-        TreeNode[] left = dos(n.left, v);
-        TreeNode[] right = dos(n.right, v);
-        TreeNode sm = null;
-        TreeNode bg = null;
-        if (n.val <= v) {
-            // dont even need to think about left again as it's <= by default
+        TreeNode[] left = dfs(n.left, v);
+        TreeNode[] right = dfs(n.right,v);
+        if(n.val<=v){
             n.right = right[0];
-            // accept possible <- in the right
-            sm = n;
-            bg = right[1];
-        } else {
+            return new TreeNode[]{n, right[1]};
+        }else{
             n.left = left[1];
-            bg = n;
-            sm = left[0];
+            return new TreeNode[]{left[0], n};
         }
-        return new TreeNode[]{sm, bg};
     }
 }

@@ -2,29 +2,28 @@ import java.util.Arrays;
 
 public class CustomSortString {
 
-    // counting sort!
+    // counting sort! when the char set is limited, consider counting sort
     public String customSortString(String s, String t) {
-        int[] map = new int[s.length()];
-        for (int i = 0; i < s.length(); i++) {
-            map[i] = s.charAt(i) - 'a';
-        }
-        int[] count = new int[26];
+        // check non null otherwise error out, all lower case
+        int[] tm = new int[26];
         for (int i = 0; i < t.length(); i++) {
-            count[t.charAt(i) - 'a']++;
+            tm[t.charAt(i) - 'a']++;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
-            int times = count[map[i]];
-            for (int j = 0; j < times; j++) {
-                sb.append((char) ('a' + map[i]));
+            char sc = s.charAt(i);
+            int sind = sc - 'a';
+            while (tm[sind] > 0) {
+                sb.append(sc);
+                tm[sind]--;
             }
-            count[map[i]] = -1;
         }
-        // for those not in s
-        for (int i = 0; i < count.length; i++) {
-            int times = count[i];
-            for (int j = 0; j < times; j++) {
-                sb.append((char) ('a' + i));
+        // pick up remaining in t
+        for (char c = 'a'; c <= 'z'; c++) {
+            int cind = c - 'a';
+            while (tm[cind] > 0) {
+                sb.append(c);
+                tm[cind]--;
             }
         }
         return sb.toString();

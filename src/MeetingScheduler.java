@@ -25,30 +25,25 @@ Output: []
  */
 public class MeetingScheduler {
     public List<Integer> minAvailableDuration(int[][] slots1, int[][] slots2, int duration) {
-        List<Integer> r = new ArrayList<>();
-        Arrays.sort(slots1, (a, b) -> Integer.compare(a[0], b[0]));
-        Arrays.sort(slots2, (a, b) -> Integer.compare(a[0], b[0]));
+        // check null and duration non negative
+        Arrays.sort(slots1, (x, y) -> Integer.compare(x[0], y[0]));
+        Arrays.sort(slots2, (x, y) -> Integer.compare(x[0], y[0]));
         int i = 0;
         int j = 0;
         while (i < slots1.length && j < slots2.length) {
-            int[] s1 = slots1[i];
-            int[] s2 = slots2[j];
-            if (s1[0] < s2[1] || s2[0] < s1[1]) {
-                // trick to use for intersections
-                int start = Math.max(s1[0], s2[0]);
-                int end = Math.min(s1[1], s2[1]);
-                if (end - start >= duration) {
-                    r.add(start);
-                    r.add(start + duration);
-                    return r;
-                }
-            }
-            if (s1[0] < s2[0]) {
+            if (slots1[i][0] > slots2[j][1]) {
+                j++;
+            } else if (slots2[j][0] > slots1[i][1]) {
                 i++;
             } else {
-                j++;
+                int start = Math.max(slots1[i][0], slots2[j][0]);
+                int end = Math.min(slots1[i][1], slots2[j][1]);
+                if (end - start >= duration) {
+                    return List.of(start, start + duration);
+                }
+                i++;
             }
         }
-        return r;
+        return new ArrayList<>();
     }
 }

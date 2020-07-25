@@ -1,35 +1,22 @@
 import java.util.*;
 
 public class AllPathSourceToTarget {
-    Map<Integer, List<List<Integer>>> dp = new HashMap<>();
-
-    public List<List<Integer>> allPathsSourceTarget(int[][] graph) {
-        int n = graph.length;
-        return doFindAllPath(0, n - 1, graph);
+    public List<List<Integer>> allPathsSourceTarget(int[][] g) {
+        int n = g.length;
+        List<List<Integer>> r = new ArrayList<>();
+        dfs(0, n-1, n, new ArrayList<>(), r, g);
+        return r;
     }
 
-    private List<List<Integer>> doFindAllPath(int s, int t, int[][] graph) {
-        List<List<Integer>> result = new ArrayList<>();
-        if (s == t) {
-            List<Integer> end = new LinkedList<>();
-            end.add(t);
-            result.add(end);
-            return result;
-        }
-        if (dp.containsKey(s)) {
-            return dp.get(s);
-        }
-        int n = graph.length;
-        int[] connected = graph[s];
-        for (int other : connected) {
-            List<List<Integer>> later = doFindAllPath(other, t, graph);
-            for (List<Integer> p : later) {
-                List<Integer> nl = new LinkedList<>(p);
-                nl.add(0, s);
-                result.add(nl);
+    private void dfs(int i, int t, int n, List<Integer> cur, List<List<Integer>> r, int[][] g){
+        cur.add(i);
+        if(i==t){
+            r.add(new ArrayList<>(cur));
+        }else{
+            for(int j: g[i]){
+                dfs(j, t, n, cur, r, g);
             }
         }
-        dp.put(s, result);
-        return result;
+        cur.remove(cur.size()-1);
     }
 }

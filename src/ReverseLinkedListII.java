@@ -14,32 +14,30 @@ Output: 1->4->3->2->5->NULL
  */
 public class ReverseLinkedListII {
     public ListNode reverseBetween(ListNode head, int m, int n) {
-        ListNode dm = new ListNode(-1);
-        dm.next = head;
-        ListNode p = dm;
-        ListNode pt = null;
-        while (m > 0) {
-            if (m == 1) {
-                // remember prev tail
-                pt = p;
-            }
+        ListNode dummy = new ListNode(-1);
+        dummy.next = head;
+        ListNode pretail = dummy;
+        ListNode p = head;
+        while (m > 1) {
+            pretail = p;
             p = p.next;
             m--;
             n--;
         }
-        ListNode nt = p;
-        ListNode q = p.next;
+        // pretail is the tail of the first part. p is the first to be reversed
+        ListNode reverseLast = p;
+        ListNode pre = null;
         while (n > 0) {
-            ListNode qn = q.next;
-            q.next = p;
-            p = q;
-            q = qn;
+            ListNode pnext = p.next;
+            p.next = pre;
+            pre = p;
+            p = pnext;
             n--;
         }
-        // q is the next of last reverted node
-        nt.next = q;
-        pt.next = p;
-        return dm.next;
+        // pre is the head of the reversed. p is the head of the 3rd part
+        pretail.next = pre;
+        reverseLast.next = p;
+        return dummy.next;
     }
 
     public static void main(String[] args) {

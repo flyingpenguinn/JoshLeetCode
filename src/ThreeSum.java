@@ -94,3 +94,33 @@ class ThreeSumMapBased {
         return new ArrayList<>(r);
     }
 }
+
+class ThreeSumMapBased2 {
+    // TLE becaues it's n^3 in the worst case, but otherwise its avg complexity is around n^k/2
+    public List<List<Integer>> threeSum(int[] a) {
+        // check null etc
+        int n = a.length;
+        Set<List<Integer>> r = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            twoSum(a, i, r, -a[i]);
+        }
+        return new ArrayList<>(r);
+    }
+
+    private void twoSum(int[] a, int skip, Set<List<Integer>> r, int t) {
+        int n = a.length;
+        Map<Integer, List<Integer>> m = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            if (i == skip) {
+                continue;
+            }
+            List<Integer> pre = m.getOrDefault(t - a[i], new ArrayList<>());
+            for (int preItem : pre) {
+                List<Integer> list = Arrays.asList(a[skip], a[i], a[preItem]);
+                Collections.sort(list);
+                r.add(list);
+            }
+            m.computeIfAbsent(a[i], k -> new ArrayList<>()).add(i);
+        }
+    }
+}

@@ -40,33 +40,38 @@ public class TwoSumIvInputBst {
     public boolean findTarget(TreeNode root, int k) {
         Deque<TreeNode> st1 = new ArrayDeque<>();
         Deque<TreeNode> st2 = new ArrayDeque<>();
-        pushall(root, st1, true);
-        pushall(root, st2, false);
-        while (!st1.isEmpty() && !st2.isEmpty()) {
-            TreeNode v1 = st1.peek();
-            TreeNode v2 = st2.peek();
-            if (v1 == v2) {
-                break;
-            } else if (v1.val + v2.val == k) {
+        TreeNode n = root;
+        while (n != null) {
+            st1.push(n);
+            n = n.left;
+        }
+        n = root;
+        while (n != null) {
+            st2.push(n);
+            n = n.right;
+        }
+        // output of st1 is sorted, st2 is reverse sorted
+        while (!st1.isEmpty() && !st2.isEmpty() && st1.peek() != st2.peek()) {
+            int t1 = st1.peek().val;
+            int t2 = st2.peek().val;
+            if (t1 + t2 == k) {
                 return true;
-            } else if (v1.val + v2.val < k) {
-                st1.pop();
-                pushall(v1.right, st1, true);
+            } else if (t1 + t2 < k) {
+                TreeNode cur = st1.pop();
+                cur = cur.right;
+                while (cur != null) {
+                    st1.push(cur);
+                    cur = cur.left;
+                }
             } else {
-                st2.pop();
-                pushall(v2.left, st2, false);
+                TreeNode cur = st2.pop();
+                cur = cur.left;
+                while (cur != null) {
+                    st2.push(cur);
+                    cur = cur.right;
+                }
             }
-
         }
         return false;
-
     }
-
-    void pushall(TreeNode n, Deque<TreeNode> st, boolean isleft) {
-        while (n != null) {
-            st.push(n);
-            n = isleft ? n.left : n.right;
-        }
-    }
-
 }

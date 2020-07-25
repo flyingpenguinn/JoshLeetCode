@@ -39,99 +39,93 @@ Note:
 public class ThreeSumWithMultiplicity {
     // O(n+size*size)  in this one possible range of numbers is small
     // idea is to loop numbers themselves
-    int[] cnt;
 
-    public int threeSumMulti(int[] a, int t) {
-        int size = 101;
-        cnt = new int[size];
-        for (int ai : a) {
-            cnt[ai]++;
+    private long MOD = 1000000007;
+
+    public int threeSumMulti(int[] a, int target) {
+        int maxv = 100;
+        int[] count = new int[maxv + 1];
+        for (int i = 0; i < a.length; i++) {
+            count[a[i]]++;
         }
-        int n = a.length;
-        long r = 0;
-        for (int i = 0; i < size; i++) {
-            for (int j = i; j < size; j++) {
-                // in case target too large
-                int k = t - i - j;
-                // must enforce an order: i<=j<=k. otherwise we will double count the pairs
-                if (k < 0 || k >= size || k < j) {
+        long res = 0;
+        for (int i = 0; i <= maxv; i++) {
+            if (count[i] == 0) {
+                continue;
+            }
+            for (int j = i; j <= maxv; j++) {
+                if (count[j] == 0) {
                     continue;
                 }
-                if (i == j && i == k) {
-                    r += pick3(i);
-                } else if (i == j) {
-                    r += pick2(i) * cnt[k];
-                } else if (j == k) {
-                    r += pick2(j) * cnt[i];
-                } else {
-                    r += cnt[i] * cnt[j] * cnt[k];
+                int k = target - i - j;
+                if (k < j || k > maxv || count[k] == 0) {
+                    // must be within j and maxv just like j is within i and maxv
+                    continue;
                 }
+                // the values i<=j<=k
+                if (i == j && j == k) {
+                    res += 1L * count[i] * (count[i] - 1) * (count[i] - 2) / 6; // cn3
+                } else if (i == j) {
+                    res += 1L * count[k] * count[i] * (count[i] - 1) / 2;// cn2
+                } else if (j == k) {
+                    res += 1L * count[i] * count[j] * (count[j] - 1) / 2;//cn2
+                } else {
+                    res += 1L * count[i] * count[j] * count[k];
+                }
+                res %= MOD;
             }
         }
-        return (int) (r % 1000000007);
-    }
-
-    long pick3(int i) {
-        long ci = cnt[i];
-        if (ci < 3) {
-            return 0;
-        }
-        return ci * (ci - 1L) * (ci - 2) / 6;
-    }
-
-    long pick2(int i) {
-        long ci = cnt[i];
-        if (ci < 2) {
-            return 0;
-        }
-        return ci * (ci - 1L) / 2;
+        return (int) res;
     }
 }
 
 class ThreeSumWithMultiSol2 {
-    // like traditional 3 sum but a twist on counting. note it's just counting triples not reporting their position so we can sort
+    // like traditional 3 sum but a twist on counting.
+    // note it's just counting triples not reporting their position so we can sort
+    // also, note when ==, we dont really know how to move if we need to count the occurrences
+    long MOD = 1000000007;
 
-    private int MOD = 1000000007;
-
-    public int threeSumMulti(int[] a, int target) {
+    public int threeSumMulti(int[] a, int t) {
         Arrays.sort(a);
-        long r = 0;
-        for (int i = 0; i < a.length; i++) {
-            int ti = target - a[i];
+        int n = a.length;
+        int i = 0;
+        long res = 0;
+        while (i < n) {
             int j = i + 1;
-            int k = a.length - 1;
+            int k = n - 1;
             while (j < k) {
-                int sumjk = a[j] + a[k];
-                if (sumjk > ti) {
-                    k--;
-                } else if (sumjk < ti) {
-                    j++;
-
-                } else {
-                    // note this is different from 3sum smaller when == this is no longer sizej*sizek
+                int sum = a[i] + a[j] + a[k];
+                if (sum == t) {
                     if (a[j] == a[k]) {
-                        int gap = k - j + 1;
-                        int delta = gap * (gap - 1) / 2;
-                        r += delta;
-                        r %= MOD;
+                        int count = k - j + 1;
+                        res += count * (count - 1) / 2;
+                        res %= MOD;
                         break;
+                    } else {
+                        int m = j;
+                        while (j < k && a[m] == a[j]) {
+                            j++;
+                        }
+                        // j is at the pos where it doesnt equal old aj(am)
+                        int countj = j - m;
+                        m = k;
+                        while (k >= j && a[k] == a[m]) {
+                            k--;
+                        }
+                        // k>=j because j is at the counted pos +1. k can still step on it
+                        int countk = m - k;
+                        res += countj * countk;
+                        res %= MOD;
                     }
-                    int oj = j;
-                    while (a[j] == a[oj]) {
-                        j++;
-                    }
-                    int ok = k;
-                    // here j can == k because the j earlier is not sth we would land on
-                    while (a[k] == a[ok]) {
-                        k--;
-                    }
-                    int delta = (j - oj) * (ok - k);
-                    r += delta;
-                    r %= MOD;
+                } else if (sum < t) {
+                    j++;
+                } else {
+                    k--;
                 }
             }
+            i++;
         }
-        return (int) r;
+        return (int) res;
     }
 }
 

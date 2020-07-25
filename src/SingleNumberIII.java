@@ -18,30 +18,32 @@ Your algorithm should run in linear runtime complexity. Could you implement it u
 public class SingleNumberIII {
     // first find the different digit for the two number then split the numbers to two groups. for each group that number appears only once
     public int[] singleNumber(int[] a) {
-        int dj = -1;
-        for (int j = 0; j < 32; j++) {
-            int jc = 0;
-            for (int i = 0; i < a.length; i++) {
-                jc += (a[i] >> j) & 1;
-
+        // check null error out if needed
+        int n = a.length;
+        int[] bits = new int[32];
+        for(int i=0; i<n;i++){
+            for(int j=0; j<32; j++){
+                bits[j] ^= ((a[i]>>j) & 1);
             }
-            if (jc % 2 == 1) {
-                // two nums differ
-                dj = j;
+        }
+        int diff = -1;
+        for(int j=0; j<32; j++){
+            if(bits[j]!=0){
+                diff = j;
                 break;
             }
         }
-        int r1 = 0;
-        int r2 = 0;
-        for (int i = 0; i < a.length; i++) {
-            if (((a[i] >> dj) & 1) == 1) {
-                r1 ^= a[i];
-            } else {
-                r2 ^= a[i];
+        // diff is the bit that is differing between the two numbers
+        int num1 = 0;
+        int num2 = 0;
+        for(int i=0; i<n;i++){
+            if( ((a[i]>>diff) & 1)==1){
+                num1 ^= a[i];
+            }else{
+                num2 ^= a[i];
             }
         }
-
-        return new int[]{r1, r2};
+        return new int[]{num1, num2};
     }
 
     public static void main(String[] args) {
