@@ -22,18 +22,23 @@ public class FindMinimumInRoatedArray {
         int l = 0;
         int u = a.length - 1;
         while (l <= u) {
-            if (l == u || a[l] < a[u]) {
-                // == for single element
-                return a[l];
-            }
             int mid = l + (u - l) / 2;
-            if (a[mid] >= a[l]) {
-                l = mid + 1;
-            } else {
+            if (l == u) {
+                return a[mid];
+            } else if (a[l] > a[mid]) {
+                // mid in 2nd half
                 if (a[mid] < a[mid - 1]) {
                     return a[mid];
                 } else {
                     u = mid - 1;
+                }
+            } else {
+                // mid in first half
+                if (a[mid] <= a[u]) {
+                    // and there is no 2nd halfmid
+                    return a[l];
+                } else {
+                    l = mid + 1;
                 }
             }
         }

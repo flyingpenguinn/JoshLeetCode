@@ -68,11 +68,8 @@ public class FindInMountainArray {
         while (l <= u) {
             int mid = l + (u - l) / 2;
             int midv = ma.get(mid);
-            if (mid == start || mid == end) {
-                return mid;
-            }
-            int midm1 = ma.get(mid - 1);
-            int midp1 = ma.get(mid + 1);
+            int midm1 = mid == 0 ? Integer.MIN_VALUE : ma.get(mid - 1);
+            int midp1 = mid == end - 1 ? Integer.MIN_VALUE : ma.get(mid + 1);
             if (midm1 < midv && midv > midp1) {
                 return mid;
             } else if (midm1 < midv && midv < midp1) {

@@ -25,10 +25,9 @@ public class SingleElementInSortedArray {
         int u = a.length - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if ((mid == 0 || mid == a.length - 1)) {
-                // all others are excluded, must be them
-                return a[mid];
-            } else if (a[mid] != a[mid - 1] & a[mid] != a[mid + 1]) {
+            int m1 = mid == 0 ? Integer.MIN_VALUE : a[mid - 1];
+            int p1 = mid == a.length - 1 ? Integer.MIN_VALUE : a[mid + 1];
+            if (a[mid] != m1 & a[mid] != p1) {
                 return a[mid];
             } else {
                 int first = a[mid - 1] == a[mid] ? mid - 1 : mid;
