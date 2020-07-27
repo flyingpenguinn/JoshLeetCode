@@ -22,21 +22,19 @@ public class RemoveNthNodeFromEnd {
     public ListNode removeNthFromEnd(ListNode head, int n) {
         ListNode dummy = new ListNode(-1);
         dummy.next = head;
-        ListNode p = dummy;
-        while (n > 0) {
+        ListNode pre = dummy;
+        ListNode p = head;
+        while (n > 1) {
             p = p.next;
             n--;
         }
-        ListNode q = dummy;
         while (p.next != null) {
+            // move p to the end of the list
+            pre = pre.next;
             p = p.next;
-            q = q.next;
         }
-        ListNode qn = q.next;
-        if (qn != null) {
-            ListNode qnn = qn.next;
-            q.next = qnn;
-        }
+        ListNode togo = pre.next;
+        pre.next = togo.next;
         return dummy.next;
     }
 }

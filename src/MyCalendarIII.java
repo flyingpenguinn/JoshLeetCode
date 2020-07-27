@@ -49,7 +49,7 @@ public class MyCalendarIII {
 
 
 class MyCalendarThree {
-    TreeMap<Integer, Integer> m = new TreeMap<>();
+    private TreeMap<Integer, Integer> m = new TreeMap<>();
 
     public MyCalendarThree() {
 
@@ -60,8 +60,8 @@ class MyCalendarThree {
         m.put(end, m.getOrDefault(end, 0) - 1);
         int cur = 0;
         int max = 0;
-        for (int k : m.keySet()) {
-            cur += m.get(k);
+        for (int v : m.values()) {
+            cur += v;
             max = Math.max(max, cur);
         }
         return max;

@@ -16,11 +16,11 @@ public class ReverseLinkedList {
     public ListNode reverseList(ListNode head) {
         ListNode pre = null;
         ListNode p = head;
-        while (p != null) {
-            ListNode np = p.next;
+        while(p!= null){
+            ListNode pnext = p.next;
             p.next = pre;
             pre = p;
-            p = np;
+            p = pnext;
         }
         return pre;
     }

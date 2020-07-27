@@ -101,20 +101,29 @@ class FourSumMapBased {
 
 class FourSumKsumBased {
     // a generic solution for ksum, n^(k-1) complexity
+
     public List<List<Integer>> fourSum(int[] a, int t) {
-        Arrays.sort(a);
+        /// check null etc
+        return xsum(a, t, 4);
+    }
+
+    public List<List<Integer>> xsum(int[] a, int t, int k) {
         List<List<Integer>> r = new ArrayList<>();
-        ksum(a, 0, t, 4, r, new ArrayList<>());
+        Arrays.sort(a);
+        doXsum(a, t, 4, 0, new ArrayList<>(), r);
         return r;
     }
 
-    // a sorted , k>=2
-    private void ksum(int[] a, int start, int t, int k, List<List<Integer>> r, List<Integer> found) {
-        int n = a.length;
+    private void doXsum(int[] a, int t, int k, int start, List<Integer> used, List<List<Integer>> r) {
+        if (start == a.length) {
+            return;
+        }
+        if (k < 2) {
+            return;
+        }
         if (k == 2) {
-            // two sum no dupe allowed
             int i = start;
-            int j = n - 1;
+            int j = a.length - 1;
             while (i < j) {
                 while (i > start && i < j && a[i] == a[i - 1]) {
                     i++;
@@ -123,10 +132,10 @@ class FourSumKsumBased {
                     break;
                 }
                 if (a[i] + a[j] == t) {
-                    List<Integer> list = new ArrayList<>(found);
-                    list.add(a[i]);
-                    list.add(a[j]);
-                    r.add(list);
+                    List<Integer> cur = new ArrayList<>(used);
+                    cur.add(a[i]);
+                    cur.add(a[j]);
+                    r.add(cur);
                     i++;
                     j--;
                 } else if (a[i] + a[j] < t) {
@@ -136,17 +145,16 @@ class FourSumKsumBased {
                 }
             }
         } else {
-            for (int i = start; i < n; i++) {
-                while (i > start && i < n && a[i] == a[i - 1]) {
-                    i++;
-                }
-                if (i == n) {
-                    break;
-                }
-                found.add(a[i]);
-                ksum(a, i + 1, t - a[i], k - 1, r, found);
-                found.remove(found.size() - 1);
+            int next = start + 1;
+            while (next < a.length && a[next] == a[start]) {
+                next++;
             }
+            // we either dont pick start at all, or we only pick the first occurence of it at this spot and move on. note later ones
+            // do have a chance to be picked as k-1
+            doXsum(a, t, k, next, used, r);
+            used.add(a[start]);
+            doXsum(a, t - a[start], k - 1, start + 1, used, r);
+            used.remove(used.size() - 1);
         }
     }
 }

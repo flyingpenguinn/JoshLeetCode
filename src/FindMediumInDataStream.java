@@ -35,40 +35,36 @@ public class FindMediumInDataStream {
 }
 
 class MedianFinder {
-    // sm.size >= bg.size but no bigger than 1 to simplify logics
-    PriorityQueue<Integer> sm = new PriorityQueue<>(Collections.reverseOrder());
-    // big heap
-    PriorityQueue<Integer> bg = new PriorityQueue<>();
+    private PriorityQueue<Integer> small = new PriorityQueue<>(Collections.reverseOrder()); // big queue for smaller nums
+    private PriorityQueue<Integer> big = new PriorityQueue<>();
 
     public MedianFinder() {
 
     }
 
-    // invariant: all in bg>=sm,sm-bg size ==0 or 1
-    public void addNum(int n) {
-        if (sm.isEmpty()) {
-            sm.offer(n);
-        } else if (n > sm.peek()) {
-            bg.offer(n);
-        } else {
-            sm.offer(n);
+    public void addNum(int num) {
+        if(small.isEmpty()){
+            small.offer(num);
+        }else if (small.peek() >=num){
+            small.offer(num);
+        }else{
+            big.offer(num);
         }
-        if (bg.size() > sm.size()) {
-            sm.offer(bg.poll());
-        }
-        if (sm.size() - bg.size() > 1) {
-            bg.offer(sm.poll());
+        // small size == big.size or big.size+1
+        if(small.size()>big.size()+1){
+            big.offer(small.poll());
+        }if(big.size()>small.size()){
+            small.offer(big.poll());
         }
     }
 
     public double findMedian() {
-        if (sm.isEmpty()) {
-            return -1.0;
-        } else if (sm.size() == bg.size()) {
-            return (sm.peek() + bg.peek()) / 2.0;
-        } else {
-            return sm.peek();
+        if(small.isEmpty()){
+            throw new IllegalStateException();
+        }else if ((small.size()+big.size()) % 2==0){
+            return (small.peek() + big.peek())/2.0;
+        }else{
+            return small.peek();
         }
-
     }
 }

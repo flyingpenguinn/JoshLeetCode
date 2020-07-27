@@ -77,28 +77,26 @@ public class MaxiumSumCircularSubarray {
 // the folding case is sum - min subarray of the original one
 class MaximumSumCircularSubarrayOnePass {
     public int maxSubarraySumCircular(int[] a) {
-        int n = a.length;
+        if (a == null) {
+            return 0;
+        }
+        int maxe = 0;
+        int mine = 0;
         int max = Integer.MIN_VALUE;
         int min = Integer.MAX_VALUE;
-        int pmax = 0;
-        int pmin = 0;
-        int sum = 0;
+        int n = a.length;
+        int all = 0;
         for (int i = 0; i < n; i++) {
-            if (pmax >= 0) {
-                pmax += a[i];
-            } else {
-                pmax = a[i];
-            }
-            max = Math.max(max, pmax);
-            if (pmin <= 0) {
-                pmin += a[i];
-            } else {
-                pmin = a[i];
-            }
-            min = Math.min(min, pmin);
-            sum += a[i];
+            maxe = Math.max(maxe + a[i], a[i]);
+            mine = Math.min(mine + a[i], a[i]);
+            max = Math.max(max, maxe);
+            min = Math.min(min, mine);
+            all += a[i];
         }
-        // if pure negative then sum == min. otherwise max(max, sum-min is correct
-        return max < 0 ? max : Math.max(max, sum - min);
+        if (min == all) {
+            // all <0, the only edge case
+            return max;
+        }
+        return Math.max(max, all - min);
     }
 }

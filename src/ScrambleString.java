@@ -51,40 +51,54 @@ Input: s1 = "abcde", s2 = "caebd"
 Output: false
  */
 public class ScrambleString {
-    int[][][] dp;
-
     public boolean isScramble(String s1, String s2) {
-        if (s1.length() != s2.length()) {
+        if (s1 == null || s2 == null || s1.length() != s1.length()) {
             return false;
         }
+        if (s1.equals(s2)) {
+            return true;
+        }
         int n = s1.length();
-        dp = new int[n][n][n + 1];
-        return dos(s1, s2, 0, 0, s1.length());
+        Boolean[][][] dp = new Boolean[n][n][n + 1];
+        return doScramble(s1.toCharArray(), 0, s2.toCharArray(), 0, n, dp);
     }
 
-    boolean dos(String s1, String s2, int p1, int p2, int len) {
+    private boolean doScramble(char[] s1, int l1, char[] s2, int l2, int len, Boolean[][][] dp) {
+        if (len == 0) {
+            return true;
+        }
         if (len == 1) {
-            return s1.charAt(p1) == s2.charAt(p2);
+            return s1[l1] == s2[l2];
         }
-        if (dp[p1][p2][len] != 0) {
-            return dp[p1][p2][len] == 1;
+        if (dp[l1][l2][len] != null) {
+            return dp[l1][l2][len];
         }
 
-        for (int left = 1; left <= len - 1; left++) {
-            int right = len - left;
-            // xxyyy vs aabbb
-            if (dos(s1, s2, p1, p2, left) && dos(s1, s2, p1 + left, p2 + left, right)) {
-                dp[p1][p2][len] = 1;
-                return true;
-            }
-            // xxyyy vs bbbaa
-            if (dos(s1, s2, p1, p2 + right, left) && dos(s1, s2, p1 + left, p2, right)) {
-                dp[p1][p2][len] = 1;
-
+        int[] cm1 = new int[26];
+        int[] cm2 = new int[26];
+        for (int i = 1; i <= len; i++) {
+            cm1[s1[l1 + i - 1] - 'a']++;
+            cm2[s2[l2 + i - 1] - 'a']++;
+        }
+        // not having same charset, return false
+        if (!Arrays.equals(cm1, cm2)) {
+            dp[l1][l2][len] = false;
+            return false;
+        }
+        for (int left = 1; left < len; left++) {
+            if (doScramble(s1, l1, s2, l2, left, dp) && doScramble(s1, l1 + left, s2, l2 + left, len - left, dp)) {
+                dp[l1][l2][len] = true;
                 return true;
             }
         }
-        dp[p1][p2][len] = 2;
+        int u2 = l2 + len - 1;
+        for (int leftlen = 1; leftlen < len; leftlen++) {
+            if (doScramble(s1, l1, s2, u2 - leftlen + 1, leftlen, dp) && doScramble(s1, l1 + leftlen, s2, l2, len - leftlen, dp)) {
+                dp[l1][l2][len] = true;
+                return true;
+            }
+        }
+        dp[l1][l2][len] = false;
         return false;
     }
 

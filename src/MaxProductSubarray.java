@@ -19,23 +19,23 @@ import static java.lang.Math.*;
 public class MaxProductSubarray {
     // max aend at ai is either max ending at ai-1 *ai,or min ending at ai-1*ai,or ai itself
     public int maxProduct(int[] a) {
-        if (a == null || a.length == 0) {
-            return 0;
-        }
-        int maxhere = a[0];
-        int minhere = a[0];
-        int max = maxhere;
-        for (int i = 1; i < a.length; i++) {
-            if (maxhere == 0) {
-                maxhere = a[i];  // for later ones, we are better off starting here
-                minhere = a[i];
+        // check null etc
+        int n = a.length;
+        int maxe = a[0];
+        int mine = a[0];
+        int max = a[0];
+        for (int i = 1; i < n; i++) {
+            if (a[i - 1] == 0) {
+                maxe = a[i];
+                mine = a[i];
             } else {
-                int curmin = Math.min(maxhere * a[i], Math.min(minhere * a[i], a[i]));
-                int curmax = Math.max(maxhere * a[i], Math.max(minhere * a[i], a[i]));
-                maxhere = curmax;
-                minhere = curmin;
+                int n1 = maxe * a[i];
+                int n2 = mine * a[i];
+                maxe = Math.max(n1, Math.max(n2, a[i]));
+                // max subarray sum is actually 2 numbers maxed together
+                mine = Math.min(n1, Math.min(n2, a[i]));
             }
-            max = Math.max(max, maxhere);
+            max = Math.max(max, maxe);
         }
         return max;
     }

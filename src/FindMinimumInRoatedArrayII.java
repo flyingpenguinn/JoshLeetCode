@@ -22,30 +22,29 @@ This is a follow up problem to Find Minimum in Rotated Sorted Array.
 Would allow duplicates affect the run-time complexity? How and why?
  */
 public class FindMinimumInRoatedArrayII {
+    // al>amid to know which part we are in, then drill down on 2 cases each
     public int findMin(int[] a) {
         // check null etc
-        int n = a.length;
         int l = 0;
-        int u = n - 1;
+        int u = a.length - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (l == u) {
-                return a[mid];
-            } else if (a[l] == a[mid] && a[mid] == a[u]) {
-                // linear scan
+            if (a[mid] == a[l] && a[mid] == a[u]) {
+                // can't tell in this case
                 return min(a, l, u);
-            } else if (a[l] > a[mid]) {
-                // mid in 2nd half
+            }
+            if (a[l] > a[mid]) {
+                // 2nd half
                 if (a[mid] < a[mid - 1]) {
                     return a[mid];
                 } else {
                     u = mid - 1;
                 }
             } else {
-                // mid in first half
+                // first half
                 if (a[mid] <= a[u]) {
+                    // al <=amid <=au and one of the equals not holding so al<au for sure
                     return a[l];
-                    // no 2nd half
                 } else {
                     l = mid + 1;
                 }
@@ -54,11 +53,11 @@ public class FindMinimumInRoatedArrayII {
         return -1;
     }
 
-    private int min(int[] a, int start, int end) {
-        int min = Integer.MAX_VALUE;
-        for (int i = start; i <= end; i++) {
-            min = Math.min(min, a[i]);
+    private int min(int[] a, int l, int u) {
+        int res = a[l];
+        for (int i = l + 1; i <= u; i++) {
+            res = Math.min(res, a[i]);
         }
-        return min;
+        return res;
     }
 }

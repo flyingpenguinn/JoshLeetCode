@@ -14,23 +14,15 @@ Could you do it without any loop/recursion in O(1) runtime?
 public class AddDigits {
 
     // Digital_root#Congruence_formula
+    // number %9 == digit sum %9
     public int addDigits(int n) {
-        return 1 + (n - 1) % 9;
-    }
-
-    // better than this...
-    /*
-   public int addDigits(int n) {
-        while(n>=10){
-
-        int r=0;
-        while(n>0){
-            r+= n%10;
-            n/=10;
+        if (n == 0) {
+            return 0;
         }
-            n=r;
+        if (n % 9 == 0) {
+            // 9,18...
+            return 9;
         }
-        return n;
+        return n % 9;
     }
-     */
 }
