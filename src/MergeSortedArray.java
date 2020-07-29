@@ -27,9 +27,7 @@ public class MergeSortedArray {
                 a[ri--] = b[j--];
             }
         }
-        while (i >= 0) {
-            a[ri--] = a[i--];
-        }
+        // dont really need to copy a as they will just be happily there
         while (j >= 0) {
             a[ri--] = b[j--];
         }

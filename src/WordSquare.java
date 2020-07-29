@@ -62,38 +62,42 @@ The output consists of two word squares. The order of output does not matter (ju
  */
 public class WordSquare {
     // use a prefix map to prune!
-    List<List<String>> r = new ArrayList<>();
-    Map<String, List<String>> m = new HashMap<>();
-
-    public List<List<String>> wordSquares(String[] w) {
-        for (String wi : w) {
-            m.computeIfAbsent("", k -> new ArrayList<>()).add(wi);
-            for (int j = 0; j < wi.length(); j++) {
-                m.computeIfAbsent(wi.substring(0, j + 1), k -> new ArrayList<>()).add(wi);
+    public List<List<String>> wordSquares(String[] words) {
+        // words all with the same length
+        List<List<String>> r = new ArrayList<>();
+        if(words==null || words.length==0){
+            return r;
+        }
+        int n = words[0].length();
+        if(n==0){
+            return r;
+        }
+        Map<String, Set<String>> pm = new HashMap<>();
+        for(String w: words){
+            for(int i=0; i<=n; i++){
+                pm.computeIfAbsent(w.substring(0, i), k-> new HashSet<>()).add(w);
             }
         }
-        int len = w[0].length();
-        dow(0, len, new ArrayList<>());
+        dfs(0, n, pm,  new ArrayList<String>(), r);
         return r;
     }
 
-    private void dow(int i, int len, List<String> cur) {
-        if (i == len) {
+    private void dfs(int i, int n, Map<String, Set<String>> pm, List<String> cur, List<List<String>> r){
+        if(i==n){
             r.add(new ArrayList<>(cur));
             return;
         }
-        StringBuilder col = new StringBuilder();
-        for (int j = 0; j < cur.size(); j++) {
-            col.append(cur.get(j).charAt(i));
+        StringBuilder sb = new StringBuilder();
+        for(String cu: cur){
+            sb.append(cu.charAt(i));
         }
-        String cols = col.toString();
-        // cache the strings with given prefix so as to avoid iterating on the big set
-        for (String cand : m.getOrDefault(cols, new ArrayList<>())) {
+        String prefix = sb.toString();
+        Set<String> candidates = pm.getOrDefault(prefix, new HashSet<>());
+        for(String cand: candidates){
             cur.add(cand);
-            dow(i + 1, len, cur);
-            cur.remove(cur.size() - 1);
+            dfs(i+1, n, pm, cur, r);
+            cur.remove(cur.size()-1);
         }
-
     }
 
     public static void main(String[] args) {

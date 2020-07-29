@@ -6,48 +6,56 @@ import java.util.Deque;
 
 public class ReorderList {
     public void reorderList(ListNode head) {
-        // find middle, cut and reverse, then merge
         if (head == null || head.next == null) {
             return;
         }
-        ListNode fast = head;
-        ListNode slow = head;
-        while (fast != null && fast.next != null) {
-            fast = fast.next.next;
-            slow = slow.next;
+        ListNode p = head;
+        ListNode q = head;
+        while (p != null && p.next != null) {
+            p = p.next.next;
+            q = q.next;
         }
-        // this trick will land us on 3 when it's 5 nodes, or 4 when it's 6 nodes
-        ListNode tail2 = slow.next;
-        slow.next = null;
-        ListNode head2 = reverse(tail2);
-        ListNode mergeTail = head;
-        ListNode head1 = head.next;
-        int i = 1;
-        while (head1 != null && head2 != null) {
-            if (i % 2 == 0) {
-                mergeTail.next = head1;
-                head1 = head1.next;
-            } else {
-                mergeTail.next = head2;
-                head2 = head2.next;
-            }
-            mergeTail = mergeTail.next;
-            i++;
-        }
-        if (head1 != null) {
-            mergeTail.next = head1;
-        }
+        // q is at the breaking point, reverse from q.next
+        p = q.next;
+        q.next = null;
+        ListNode pre = reverse(p);
+        // now pre and head are two parts that needs to be merged
+        merge(head, pre);
     }
 
-    private ListNode reverse(ListNode head) {
+    protected ListNode reverse(ListNode p) {
         ListNode pre = null;
-        ListNode p = head;
         while (p != null) {
-            ListNode next = p.next;
+            ListNode pnext = p.next;
             p.next = pre;
             pre = p;
-            p = next;
+            p = pnext;
         }
         return pre;
+    }
+
+    private ListNode merge(ListNode head1, ListNode head2) {
+        ListNode dummy = new ListNode(-1);
+        int round = 0;
+        ListNode p = head1;
+        ListNode q = head2;
+        ListNode rp = dummy;
+        while (p != null && q != null) {
+            if (round == 0) {
+                rp.next = p;
+                p = p.next;
+            } else {
+                rp.next = q;
+                q = q.next;
+            }
+            rp = rp.next;
+            round ^= 1;
+        }
+        if (p != null) {
+            rp.next = p;
+        } else {
+            rp.next = q;
+        }
+        return dummy.next;
     }
 }

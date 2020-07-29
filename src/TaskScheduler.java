@@ -32,39 +32,49 @@ public class TaskScheduler {
     2. num++: must be num apart, means segment is num+1 in length
 
      */
-    public int leastInterval(char[] a, int num) {
-        num++; // ++ first: the segments are of num+1 in size
-        Map<Character, Integer> m = new HashMap<>();
-        for (int i = 0; i < a.length; i++) {
-            m.put(a[i], m.getOrDefault(a[i], 0) + 1);
+    public int leastInterval(char[] a, int interval) {
+        if(a==null){
+            return 0;
         }
-        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> Integer.compare(m.get(y), m.get(x)));
-        for (char k : m.keySet()) {
-            pq.offer(k);
+        Map<Character,Integer> m = new HashMap<>();
+        int n = a.length;
+        for(int i=0; i<n; i++){
+            update(m, a[i], 1);
         }
-        int r = 0;
-        while (!m.isEmpty()) {
+        int seg = interval+1;
+        PriorityQueue<Character> pq = new PriorityQueue<>((x,y) -> Integer.compare(m.get(y), m.get(x))); // big first
+        for(char ch: m.keySet()){
+            pq.offer(ch); // all chars freq high to low
+        }
+        int res = 0;
+        while(!m.isEmpty()){
+            int curseg = 0;
             List<Character> polled = new ArrayList<>();
-            int count = 0;
-            while (!pq.isEmpty() && count < num) {
-                Character c = pq.poll();
-                count++;
-                r++;
-                int ncount = m.get(c) - 1;
-                if (ncount != 0) {
-                    m.put(c, ncount);
-                    polled.add(c);
-                } else {
-                    m.remove(c);  // not putting 0 counts back
+            while(!pq.isEmpty() && curseg <seg){
+                Character top = pq.poll();
+                polled.add(top);
+                update(m, top, -1);
+                res++;
+                curseg++;
+            }
+            if(!m.isEmpty() && curseg<seg){
+                res += seg-curseg;
+            }
+            for(char pc: polled){
+                if(m.containsKey(pc)){
+                    pq.offer(pc); // will reorder based on new counts
                 }
             }
-            if (!m.isEmpty() && count < num) {
-                r += (num - count);   // mind the final segment that may not be as long as the whole segment
-            }
-            for (char c : polled) {
-                pq.offer(c);
-            }
         }
-        return r;
+        return res;
+    }
+
+    private void update(Map<Character,Integer> m, char k, int delta){
+        int nv = m.getOrDefault(k, 0)+delta;
+        if(nv<=0){
+            m.remove(k);
+        }else{
+            m.put(k, nv);
+        }
     }
 }

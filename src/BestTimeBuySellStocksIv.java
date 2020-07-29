@@ -39,11 +39,11 @@ public class BestTimeBuySellStocksIv {
             }
             return r;
         }
-        int[][] dp = new int[n][times + 1];
+        int[][] dp = new int[n + 1][times + 1];
         // dp[i][0]=0, dp[n-1][k] = 0, dp[n][k] = 0
         for (int k = 1; k <= times; k++) {
             int maxLater = a[n - 1]; // dp[n-1+1][] = 0
-            for (int i = n - 2; i >= 0; i--) {
+            for (int i = n - 1; i >= 0; i--) {
                 // note this is similar to what we did in stock II just adding k here
                 dp[i][k] = Math.max(dp[i + 1][k], maxLater - a[i]);
                 maxLater = Math.max(dp[i + 1][k - 1] + a[i], maxLater);

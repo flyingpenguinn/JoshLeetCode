@@ -16,9 +16,9 @@ If you have figured out the O(n) solution, try coding another solution using the
 public class MaximumSubarray {
     // kadane algo. can use this idea to expand to multiplication
     public int maxSubArray(int[] a) {
-        int maxe = 0;
-        int max = Integer.MIN_VALUE;
-        for (int i = 0; i < a.length; i++) {
+        int maxe = a[0];
+        int max = a[0];
+        for (int i = 1; i < a.length; i++) {
             maxe = Math.max(maxe + a[i], a[i]);
             max = Math.max(maxe, max);
         }
