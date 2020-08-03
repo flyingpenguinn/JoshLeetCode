@@ -28,62 +28,64 @@ Note: Do not use class member/global/static variables to store states. Your seri
  */
 public class SerializeAndDeserializeBinaryTree {
 
-    private class Codec {
-
-        // level order, null as #
-        public String serialize(TreeNode root) {
-            StringBuilder sb = new StringBuilder();
-            LinkedList<TreeNode> q = new LinkedList<>();
-            q.offer(root);
-            while (!q.isEmpty()) {
-                TreeNode top = q.poll();
-                sb.append(toString(top));
-                sb.append(",");
-                if (top != null) {
-                    q.offer(top.left);
-                    q.offer(top.right);
-                }
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        if (root == null) {
+            return toString(root);
+        }
+        StringBuilder sb = new StringBuilder();
+        LinkedList<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            TreeNode top = q.poll();
+            sb.append(toString(top));
+            sb.append(",");
+            if (top != null) {
+                q.offer(top.left);
+                q.offer(top.right);
             }
-            sb.deleteCharAt(sb.length() - 1);
-            return sb.toString();
         }
+        return sb.toString();
+    }
 
-        // dont push a null node to queue.
-        // use the fact that we alway show both children of a non null node to restore the tree using setleft flag
-        public TreeNode deserialize(String data) {
-            if (data.isEmpty()) {
-                return null;
+    private String toString(TreeNode n) {
+        return n == null ? NULL : String.valueOf(n.val);
+    }
+
+    private TreeNode fromString(String s) {
+        if (NULL.equals(s)) {
+            return null;
+        }
+        return new TreeNode(Integer.valueOf(s));
+    }
+
+    private String NULL = "#";
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if (NULL.equals(data)) {
+            return null;
+        }
+        String[] ss = data.split(",");
+        Deque<TreeNode> q = new ArrayDeque<>();
+        TreeNode root = fromString(ss[0]);
+        q.offerLast(root);
+        boolean setLeft = false;
+        for (int i = 1; i < ss.length; i++) {
+            String str = ss[i];
+            TreeNode node = fromString(str);
+            if (!setLeft) {
+                q.peekFirst().left = node;
+                setLeft = true;
+            } else {
+                q.pollFirst().right = node;
+                setLeft = false;
             }
-            String[] sd = data.split(",");
-            TreeNode root = toNode(sd[0]);
-            LinkedList<TreeNode> q = new LinkedList<>();
-            q.offer(root);
-            boolean setLeft = false;
-            for (int i = 1; i < sd.length; i++) {
-                String cur = sd[i];
-                TreeNode curNode = toNode(cur);
-                if (!setLeft) {
-                    q.peek().left = curNode;
-                    setLeft = true;
-                } else {
-                    q.poll().right = curNode;
-                    setLeft = false;
-                }
-                if (curNode != null) {
-                    q.offer(curNode);
-                }
+            if (node != null) {
+                q.offerLast(node);
             }
-            return root;
         }
-
-        private String toString(TreeNode n) {
-            return n == null ? "#" : String.valueOf(n.val);
-        }
-
-        private TreeNode toNode(String s) {
-            return "#".equals(s) ? null : new TreeNode(Integer.valueOf(s));
-        }
-
+        return root;
     }
 }
 

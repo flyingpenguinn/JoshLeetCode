@@ -64,58 +64,57 @@ interface BinaryMatrix {
 }
 
 public class LeftMostColWithAtleastOne {
-
-    // because each row columns are sorted and each row is sorted, we can do O(m+n) like finding a value in a sorted matrix
-    public int leftMostColumnWithOne(BinaryMatrix bm) {
-        // check null error out if needed
-        List<Integer> dim = bm.dimensions();
+    // note between rows, they are NOT sorted. but we can still trace the contour
+    public int leftMostColumnWithOne(BinaryMatrix binaryMatrix) {
+        List<Integer> dim = binaryMatrix.dimensions();
         int m = dim.get(0);
         int n = dim.get(1);
         int i = 0;
         int j = n - 1;
-        int lastcol = -1;
+        int lastj = n;
         while (j >= 0) {
-            while (i < m && bm.get(i, j) == 0) {
+            while (i < m && binaryMatrix.get(i, j) == 0) {
                 i++;
             }
             if (i == m) {
-                break; // no more 1 beyond this col, return the last good col (could be -1)
-            } else {
-                lastcol = j;
-                j--;
-                // don't move i here!
+                break;
             }
+            // i, j is 1. now move to the next column
+            lastj = Math.min(lastj, j);
+            j--;
         }
-        return lastcol;
+        return lastj == n ? -1 : lastj;
     }
 
 }
 
 
 class LeftMostColumnAtleastOneBinarySearch {
-    public int leftMostColumnWithOne(BinaryMatrix bm) {
-        List<Integer> dim = bm.dimensions();
+    // do a binary search on each row, m*logn
+    public int leftMostColumnWithOne(BinaryMatrix binaryMatrix) {
+        List<Integer> dim = binaryMatrix.dimensions();
         int m = dim.get(0);
         int n = dim.get(1);
+        int res = n;
+        for (int i = 0; i < m; i++) {
+            int col = binarySearch(binaryMatrix, i, n);
+            res = Math.min(res, col);
+        }
+        return res == n ? -1 : res;
+    }
+
+    // binary search row given column length
+    private int binarySearch(BinaryMatrix bm, int row, int n) {
         int l = 0;
         int u = n - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            boolean found = false;
-            for (int i = 0; i < m; i++) {
-                if (bm.get(i, mid) == 1) {
-                    found = true;
-                    break;
-                }
-
-            }
-            if (found) {
+            if (bm.get(row, mid) == 1) {
                 u = mid - 1;
             } else {
                 l = mid + 1;
             }
         }
-        // binary search when there is a possbility of nothing found, make sure we can handle it!
-        return l == n ? -1 : l;
+        return l; // return n if all zeros
     }
 }

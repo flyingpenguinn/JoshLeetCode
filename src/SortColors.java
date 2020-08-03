@@ -1,28 +1,24 @@
 public class SortColors {
 
-    /*  i is last 0,j is last 2.
-    between m and j is unknown
-    000i111m.....j2222
-    */
     public void sortColors(int[] a) {
         int i = -1;
-        int k = a.length;
         int j = 0;
+        int k = a.length;
         while (j < k) {
             if (a[j] == 0) {
                 swap(a, ++i, j);
                 j++;
-            } else if (a[j] == 1) {
-                j++;
+            } else if (a[j] == 2) {
+                swap(a, --k, j); // not moving j yet because k could be a 0
             } else {
-                // ==2
-                swap(a, --k, j);
-                // not moving j in case this is a 0 we need to switch it further
+                j++;
             }
         }
+        // either move j or k so must finish
+        // invariant: 0...i are all 0. k....n-1 are all 2. i+1...j-1 are all 1. j...k-1 are waiting to be checked
     }
 
-    void swap(int[] a, int i, int j) {
+    private void swap(int[] a, int i, int j) {
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;

@@ -22,38 +22,36 @@ import java.util.Arrays;
 
 public class MultiplyString {
 
-    public String multiply(String a, String b) {
-        // check null and error out if so
-        int[] r = new int[a.length() + b.length()];
-        for (int i = a.length() - 1; i >= 0; i--) {
-            for (int j = b.length() - 1; j >= 0; j--) {
-                int va = a.charAt(i) - '0';
-                int vb = b.charAt(j) - '0';
-                int multi = va * vb;
-                r[i + j + 1] += multi % 10;  // here must be +=
-                r[i + j] += multi / 10;
+    // traps:
+    // 1. += ! += ! +=
+    // use carry in add
+    // take care of starting 0s and resultant 0
+    public String multiply(String num1, String num2) {
+        int[] res = new int[num1.length() + num2.length()];
+        for (int i = num1.length() - 1; i >= 0; i--) {
+            for (int j = num2.length() - 1; j >= 0; j--) {
+                int v1 = num1.charAt(i) - '0';
+                int v2 = num2.charAt(j) - '0';
+                int multi = v1 * v2;
+                res[i + j + 1] += multi % 10;
+                res[i + j] += multi / 10;
             }
         }
         int carry = 0;
-        for (int i = r.length - 1; i >= 0; i--) {
-            int sum = r[i] + carry;
-            r[i] = sum % 10;
+        for (int i = res.length - 1; i >= 0; i--) {
+            int sum = res[i] + carry;
+            res[i] = sum % 10;
             carry = sum / 10;
         }
-        // drop leading zeros
         int i = 0;
-        while (i < r.length && r[i] == 0) {
+        while (i < res.length && res[i] == 0) {
             i++;
         }
-        // process 0 separately
-        if (i == r.length) {
-            return "0";
-        }
         StringBuilder sb = new StringBuilder();
-        while (i < r.length) {
-            sb.append(r[i++]);
+        while (i < res.length) {
+            sb.append(res[i++]);
         }
-        return sb.toString();
+        return sb.length() == 0 ? "0" : sb.toString();
     }
 
 

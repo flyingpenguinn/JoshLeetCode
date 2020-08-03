@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -69,6 +71,13 @@ public class RandomPickWithWeight {
                 }
             }
             return u;
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new RandomPickWithWeight().new Solution(ArrayUtils.read1d("1,3,5"));
+        for (int i = 0; i < 100; i++) {
+            System.out.println(sol.pickIndex());
         }
     }
 }

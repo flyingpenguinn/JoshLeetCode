@@ -10,8 +10,14 @@ Both num1 and num2 does not contain any leading zero.
 You must not use any built-in BigInteger library or convert the inputs to integer directly.
  */
 public class AddStrings {
+    /* traps:
+    1. while loop i-- j--
+    2. || in while loop
+    3. take care of carry
+     */
+
     public String addStrings(String a, String b) {
-        // check null. if so error out
+
         int i = a.length() - 1;
         int j = b.length() - 1;
         int carry = 0;

@@ -44,32 +44,24 @@ public class CheapestFlightWithinKStops {
     // almost raw bellman ford. the only gotcha is
     // we need a k to store previous rounds paths so that we avoid this case: s->i->j, s..i has k stop, and we accidentally update j based on dist[i]
     // we can further improve by using %2 trick since we only need k-1
-    int Max = 10000000;
+    private int Max = 10000000;
 
-    public int findCheapestPrice(int n, int[][] es, int s, int t, int nodes) {
-        int[][] dist = new int[n][nodes + 1];
+    public int findCheapestPrice(int n, int[][] edges, int u, int v, int k) {
+        // check not null, k>=0, u,v>=0 <n
+        int[][] dist = new int[n][k + 2]; // path could be of k+1, so in all k+2 paths, including 0
         for (int i = 0; i < n; i++) {
             Arrays.fill(dist[i], Max);
         }
-        // dist ij means from s to i, with j nodes on the path excluding start point
-        dist[s][0] = 0;
-        int min = Max;
-        // because j maens the nodes on the path excluding starting point but including end point, we are looking for nodes+1 rounds of relax
-        for (int k = 1; k <= nodes + 1; k++) {
-            for (int[] e : es) {
-                int i = e[0];
-                int j = e[1];
+        dist[u][0] = 0;
+        for (int i = 1; i <= k + 1; i++) {
+            for (int[] e : edges) {
+                int start = e[0];
+                int end = e[1];
                 int cost = e[2];
-                int newcost = dist[i][k - 1] + cost;
-                if (dist[j][k] > newcost) {
-                    dist[j][k] = newcost;
-                }
-                if (j == t) {
-                    min = Math.min(min, dist[j][k]);
-                }
+                dist[end][i] = Math.min(dist[end][i], Math.min(dist[end][i - 1], dist[start][i - 1] + cost));
             }
         }
-        return min >= Max ? -1 : min;
+        return dist[v][k + 1] >= Max ? -1 : dist[v][k + 1];
     }
 
     public static void main(String[] args) {

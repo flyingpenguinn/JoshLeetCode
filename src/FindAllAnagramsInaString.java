@@ -34,34 +34,34 @@ The substring with start index = 1 is "ba", which is an anagram of "ab".
 The substring with start index = 2 is "ab", which is an anagram of "ab".
  */
 public class FindAllAnagramsInaString {
+
+    // mind the possibility that s is smaller than p
     public List<Integer> findAnagrams(String s, String p) {
-        // check null and error if needed
+        // check null and assuming lower case only
         List<Integer> r = new ArrayList<>();
         if (s.length() < p.length()) {
             return r;
         }
-        int[] pset = new int[26];
-        int k = p.length();
-        for (int i = 0; i < k; i++) {
-            pset[toInt(p.charAt(i))]++;
+        int[] pm = new int[26];
+        for (int i = 0; i < p.length(); i++) {
+            pm[tocode(p.charAt(i))]++;
         }
-        int[] sset = new int[26];
-        for (int i = 0; i < k - 1; i++) {
-            sset[toInt(s.charAt(i))]++;
+        int[] sm = new int[26];
+        for (int i = 0; i < p.length() - 1 && i < s.length(); i++) {
+            sm[tocode(s.charAt(i))]++;
         }
-        for (int i = k - 1; i < s.length(); i++) {
-            sset[toInt(s.charAt(i))]++;
-            int head = i - k + 1;
-            if (Arrays.equals(sset, pset)) {
-                r.add((head));
+        for (int i = p.length() - 1; i < s.length(); i++) {
+            sm[tocode(s.charAt(i))]++;
+            int head = i - p.length() + 1;
+            if (Arrays.equals(sm, pm)) {
+                r.add(head);
             }
-            sset[toInt(s.charAt(head))]--;
+            sm[tocode(s.charAt(head))]--;
         }
         return r;
     }
 
-    int toInt(char c) {
+    private int tocode(char c) {
         return c - 'a';
     }
-
 }

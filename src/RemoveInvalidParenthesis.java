@@ -26,49 +26,54 @@ Output: [""]
 public class RemoveInvalidParenthesis {
     // only two ways for parenthesis to be invalid: l==0 when we have r or too many l in the end. use this to calc the counts we should have
     // then use dfs to pick or unpick the brackets
-    // note there could be duplicates, so we must use a set
+
+    // trap is there could be duplicates, so we must use a set
     public List<String> removeInvalidParentheses(String s) {
-        int n = s.length();
-        int openleft = 0;
-        int invalidright = 0;
-        for (int i = 0; i < n; i++) {
+        // check null etc
+
+        int badLeft = 0;
+        int badRight = 0;
+        for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '(') {
-                openleft++;
+                badLeft++;
             } else if (s.charAt(i) == ')') {
-                if (openleft == 0) {
-                    invalidright++;
+                if (badLeft == 0) {
+                    badRight++;
                 } else {
-                    openleft--;
+                    badLeft--;
                 }
             }
         }
-        int invalidleft = openleft;
         Set<String> r = new HashSet<>();
-        dfs(0, s, invalidleft, invalidright, 0, "", r);
+        dfs(0, s, 0, badLeft, badRight, "", r);
         return new ArrayList<>(r);
     }
 
-    private void dfs(int i, String s, int ln, int rn, int openleft, String cur, Set<String> r) {
-        if (openleft < 0 || ln < 0 || rn < 0) {
-            return;
-        }
+    // how many open l do we have
+    // how many l and r can we remove
+    private void dfs(int i, String s, int openl, int reml, int remr, String cur, Set<String> r) {
         int n = s.length();
         if (i == n) {
-            if (openleft == 0) {
-
+            if (openl == 0) { // over populated left
                 r.add(cur);
             }
             return;
         }
+        if (reml < 0 || remr < 0) { // over deleted
+            return;
+        }
+        if (openl < 0) { // over populated right
+            return;
+        }
         char c = s.charAt(i);
         if (c == '(') {
-            dfs(i + 1, s, ln, rn, openleft + 1, cur + "(", r); // keep
-            dfs(i + 1, s, ln - 1, rn, openleft, cur, r); // delete
-        } else if (c == ')') {
-            dfs(i + 1, s, ln, rn, openleft - 1, cur + ")", r); // keep
-            dfs(i + 1, s, ln, rn - 1, openleft, cur, r);// delete
+            dfs(i + 1, s, openl + 1, reml, remr, cur + c, r); // keep this (
+            dfs(i + 1, s, openl, reml - 1, remr, cur, r); // delete this (
+        } else if (s.charAt(i) == ')') {
+            dfs(i + 1, s, openl - 1, reml, remr, cur + c, r); // keep this )
+            dfs(i + 1, s, openl, reml, remr - 1, cur, r); // delete this )
         } else {
-            dfs(i + 1, s, ln, rn, openleft, cur + c, r);
+            dfs(i + 1, s, openl, reml, remr, cur + c, r);
         }
     }
 }

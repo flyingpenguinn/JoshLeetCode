@@ -25,20 +25,28 @@ Output: False
 Note: The input will be a non-empty word consisting of uppercase and lowercase latin letters.
  */
 public class DetectCapital {
+    //1. when we see cap, we must have never seen lower
+    //2. when we see lower, either never see cap, or cap is the first
     public boolean detectCapitalUse(String word) {
-        int n = word.length();
-        int cc = 0;
-        for (int i = 0; i < n; i++) {
-            if (Character.isUpperCase(word.charAt(i))) {
-                cc++;
+        if (word == null) {
+            return true;
+        }
+        int lastCap = -1;
+        int lastLower = -1;
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (lastLower >= 0) {
+                    return false;
+                }
+                lastCap = i;
+            } else {
+                if (lastCap > 0) {
+                    return false;
+                }
+                lastLower = i;
             }
         }
-        if (cc == n) {
-            return true;
-        }
-        if (cc == 0) {
-            return true;
-        }
-        return cc == 1 && Character.isUpperCase(word.charAt(0));
+        return true;
     }
 }

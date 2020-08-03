@@ -29,18 +29,24 @@ public class ContinuousSubarraySum {
     // note this is similar to LC#974, but there mod result can be of different sign, while here mod is of the same sign.
     // so we dont need to worry about complementing value like 3 and -2. but here k could be ==0
     public boolean checkSubarraySum(int[] a, int k) {
+        // can handle negative numbers this way
+        k = Math.abs(k);
+        // mod and the first index when that happens
         Map<Integer, Integer> m = new HashMap<>();
+        int preSum = 0;
         m.put(0, -1);
-        int n = a.length;
-        int sum = 0;
-        for (int i = 0; i < n; i++) {
-            sum += a[i];
-            int target = k == 0 ? sum : sum % k; // sum up to a multiple of 0 == sum up to 0 == find continuous sub-array sum ==0 size >=2
-            Integer pre = m.get(target);
-            if (pre != null && i - pre >= 2) {
+        for (int i = 0; i < a.length; i++) {
+            preSum += a[i];
+            int target = k == 0 ? preSum : preSum % k;
+            if (target < 0) {
+                // this will allow us handle negative numbers
+                target += k;
+            }
+            Integer preIndex = m.get(target);
+            if (preIndex != null && i - preIndex >= 2) { // i - pre >=2 because pre+1... i is the subarray
                 return true;
             }
-            m.putIfAbsent(target, i); // size at least 2, so we use put if absent to record the first occurrence
+            m.putIfAbsent(target, i); // don't overrun old ones
         }
         return false;
     }

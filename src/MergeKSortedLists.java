@@ -23,24 +23,24 @@ public class MergeKSortedLists {
 
     // O nlogk. note we dont really need to remember which index: just need to store pointer
     public ListNode mergeKLists(ListNode[] lists) {
-        // check null, error out if so
-        ListNode dummy = new ListNode(-1);
-        ListNode p = dummy;
-        // non null nodes compare by val small first
-        PriorityQueue<ListNode> pq = new PriorityQueue<>((x, y) -> Integer.compare(x.val, y.val));
-        for (int i = 0; i < lists.length; i++) {
-            if (lists[i] != null) {
-                pq.offer(lists[i]);
+        if(lists == null){
+            return null;
+        }
+        PriorityQueue<ListNode> pq = new PriorityQueue<>( (x,y) -> Integer.compare(x.val, y.val));
+        for(ListNode node: lists){
+            if(node != null){
+                pq.offer(node);
             }
         }
-        while (!pq.isEmpty()) {
-            ListNode top = pq.poll();
+        ListNode dummy = new ListNode(-1);
+        ListNode p = dummy;
+        while(!pq.isEmpty()){
+            ListNode top= pq.poll();
             p.next = top;
             p = p.next;
-            if (top.next != null) {
+            if(top.next != null){
                 pq.offer(top.next);
             }
-            top.next = null;
         }
         return dummy.next;
     }

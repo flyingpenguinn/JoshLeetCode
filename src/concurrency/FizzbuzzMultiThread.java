@@ -2,6 +2,7 @@ package concurrency;
 
 import java.util.concurrent.*;
 import java.util.function.IntConsumer;
+import java.util.function.Predicate;
 
 
 class FizzBuzz {
@@ -15,51 +16,35 @@ class FizzBuzz {
     // printFizz.run() outputs "fizz".
     public void fizz(Runnable printFizz) throws InterruptedException {
         synchronized (this) {
-            while (cur <= n) {
-                while (cur <= n && !(cur % 3 == 0 && cur % 5 != 0)) {
-                    wait();
-                }
-                if (cur > n) {
-                    break;
-                }
-                printFizz.run();
-                cur++;
-                notifyAll();
-            }
+            doWork(printFizz, cur -> cur % 3 == 0 && cur % 5 != 0);
         }
     }
 
     // printBuzz.run() outputs "buzz".
     public void buzz(Runnable printBuzz) throws InterruptedException {
         synchronized (this) {
-            while (cur <= n) {
-                while (cur <= n && !(cur % 5 == 0 && cur % 3 != 0)) {
-                    wait();
-                }
-                if (cur > n) {
-                    break;
-                }
-                printBuzz.run();
-                cur++;
-                notifyAll();
-            }
+            doWork(printBuzz, cur -> cur % 5 == 0 && cur % 3 != 0);
         }
     }
 
     // printFizzBuzz.run() outputs "fizzbuzz".
     public void fizzbuzz(Runnable printFizzBuzz) throws InterruptedException {
         synchronized (this) {
-            while (cur <= n) {
-                while (cur <= n && !(cur % 3 == 0 && cur % 5 == 0)) {
-                    wait();
-                }
-                if (cur > n) {
-                    break;
-                }
-                printFizzBuzz.run();
-                cur++;
-                notifyAll();
+            doWork(printFizzBuzz, cur -> cur % 3 == 0 && cur % 5 == 0);
+        }
+    }
+
+    protected void doWork(Runnable printFizzBuzz, Predicate<Integer> pred) throws InterruptedException {
+        while (cur <= n) {
+            while (cur <= n && !pred.test(cur)) {
+                wait();
             }
+            if (cur > n) {
+                break;
+            }
+            printFizzBuzz.run();
+            cur++;
+            notifyAll();
         }
     }
 

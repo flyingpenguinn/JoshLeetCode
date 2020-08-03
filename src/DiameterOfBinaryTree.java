@@ -17,23 +17,23 @@ Note: The length of path between two nodes is represented by the number of edges
  */
 public class DiameterOfBinaryTree {
     // compare this to #124 max path sum: there the longest path may not be the max path
-    int max = 0;
-
+    // diff: here the result for null is 0. we will never select "current node" as max, and note we return left+right as the max
+    // value thouugh we are counting nodes
     public int diameterOfBinaryTree(TreeNode root) {
-        dfs(root);
-        return max;
+
+        return dfs(root)[0];
     }
 
-    // longest to leaf path, node count
-    int dfs(TreeNode n) {
+    // max path under n subtree, and how max NODES from n to some leaf
+    // note in 0, the max path is about edges but 1 is the nodes count
+    private int[] dfs(TreeNode n) {
         if (n == null) {
-            return 0;
+            return new int[]{0, 0};
         }
-        int left = dfs(n.left);
-        int right = dfs(n.right);
-        int curpath = Math.max(left + 1, right + 1);
-        // want max edge count, so it's the sum of node counts
-        max = Math.max(max, left + right);
-        return curpath;
+        int[] left = dfs(n.left);
+        int[] right = dfs(n.right);
+        int maxPath = Math.max(left[1] + 1, right[1] + 1); // no need to compare with n/val
+        int maxCur = Math.max(left[0], Math.max(right[0], right[1] + left[1])); // no need to compare with maxpath
+        return new int[]{maxCur, maxPath};
     }
 }

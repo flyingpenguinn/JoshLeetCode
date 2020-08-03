@@ -18,35 +18,41 @@ Note:
 You may assume k is always valid, 1 ≤ k ≤ array's length.
  */
 public class KthLargestInArray {
-    // in average O(n) if we random everything well. can swap u with a middle random one
+    // in average O(n) if we random everything well.
     public int findKthLargest(int[] a, int k) {
-        int n = a.length;
-        k = n - k + 1;
-        // turn to find kth smallest
-        return dofind(a, 0, n - 1, k);
+        // assuming k valid
+        return find(a, 0, a.length - 1, a.length - k + 1);
     }
 
-    int dofind(int[] a, int l, int u, int t) {
+    private int find(int[] a, int l, int u, int k) {
         if (l == u) {
-            return a[l]; // t must be 1
+            // k must be 1 here
+            return a[l];
         }
         int pivot = partition(a, l, u);
-        int plen = pivot - l + 1;
-        if (plen == t) {
+        int leftLen = pivot - l + 1;
+        if (leftLen == k) {
             return a[pivot];
-        } else if (t < plen) {
-            return dofind(a, l, pivot - 1, t);
+        } else if (leftLen > k) {
+            return find(a, l, pivot - 1, k);
         } else {
-            // t>plen
-            return dofind(a, pivot + 1, u, t - plen);
+            return find(a, pivot + 1, u, k - leftLen);
         }
     }
 
-    int partition(int[] a, int l, int u) {
+    private Random rand = new Random();
+
+    private int partition(int[] a, int l, int u) {
+        // 0... i <=
+        // i+1...j-1 >
+        // j...onward under checking
+        int picked = rand.nextInt(u - l + 1) + l;
+        swap(a, picked, u);
+        int t = a[u];
         int i = l - 1;
         int j = l;
         while (j <= u) {
-            if (a[j] <= a[u]) {
+            if (a[j] <= t) {
                 swap(a, ++i, j);
             }
             j++;
@@ -54,7 +60,7 @@ public class KthLargestInArray {
         return i;
     }
 
-    void swap(int[] a, int i, int j) {
+    private void swap(int[] a, int i, int j) {
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
@@ -62,21 +68,22 @@ public class KthLargestInArray {
 }
 
 
-// nlog(MaxValue)
+// nlog(number gap)
 class KthLargestBinarySearchOnValue {
+    // to be the kth number, there must be k numbers <= it.
+    // note we can't do k-1 numbers < because there could be a bulk of equal numbers so we can never do </>
     public int findKthLargest(int[] a, int k) {
-        long min = Integer.MAX_VALUE;
-        long max = Integer.MIN_VALUE;
+        k = a.length - k + 1; // turn to find smaller numbers
+        long l = Integer.MAX_VALUE;
+        long u = Integer.MIN_VALUE;
         for (int ai : a) {
-            min = Math.min(min, ai);
-            max = Math.max(max, ai);
+            l = Math.min(l, ai);
+            u = Math.max(u, ai);
         }
-        long l = 0;
-        long u = max - min;
         while (l <= u) {
             long mid = l + (u - l) / 2;
-            int th = bth(a, mid, min);
-            if (th <= k - 1) {
+            int nonBigger = countNonBigger(a, mid);
+            if (nonBigger >= k) {
                 // must do mid-1 when == because we want to get the first
                 u = mid - 1;
             } else {
@@ -84,13 +91,13 @@ class KthLargestBinarySearchOnValue {
             }
         }
         // l the first bth<=k-1
-        return (int) (min + l);
+        return (int) l;
     }
 
-    int bth(int[] a, long m, long min) {
+    private int countNonBigger(int[] a, long mid) {
         int r = 0;
         for (int ai : a) {
-            if (ai > m + min) {
+            if (ai <= mid) {
                 r++;
             }
         }

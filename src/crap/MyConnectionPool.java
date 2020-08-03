@@ -89,7 +89,7 @@ class ConnectionPool {
         pool.clear();
     }
 
-    public synchronized int getUsedSize() {
+    public int getUsedSize() {
         return used.size();
 
     }

@@ -23,63 +23,70 @@ public class AddAndSearchWord {
 }
 
 class WordDictionary {
-    private class Trie{
-        char c;
-        Trie[] ch = new Trie[26];
-        boolean isWord = false;
 
+    // assuming only lower cases in add, and only lower +. in search
+    /** Initialize your data structure here. */
+    private class Trie{
+        private char c;
+        private boolean isWord = false;
+        private Trie[] children = new Trie[26];
         public Trie(char c){
             this.c = c;
         }
     }
 
-    private Trie root = new Trie('-');
-
-    /** Initialize your data structure here. */
     public WordDictionary() {
 
     }
 
+    private Trie root = new Trie('-');
+
     /** Adds a word into the data structure. */
-    public void addWord(String w) {
-        // check null, error out if so
-        Trie p = root;
-        for(int i=0; i<w.length(); i++){
-            char c = w.charAt(i);
-            int cind = c-'a';
-            Trie next = p.ch[cind];
-            if(next == null){
-                p.ch[cind] = next = new Trie(c);
+    public void addWord(String word) {
+        Trie cur = root;
+        for(int i=0; i<word.length(); i++){
+            char c = word.charAt(i);
+            int cind = toCode(c);
+            if(cur.children[cind] == null){
+                cur.children[cind] = new Trie(c);
             }
-            p = next;
+            cur = cur.children[cind];
         }
-        p.isWord = true;
+        cur.isWord = true;
     }
 
     /** Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter. */
-    public boolean search(String w) {
-        // check null, error out if so
-        return dfs(w, 0, root);
+    public boolean search(String word) {
+        return dfs(word, 0, root);
     }
 
-    private boolean dfs(String w, int i, Trie node){
-        if(i==w.length()){
+    // whether word from i.. till end is contained in this trie node
+    private boolean dfs(String word, int i, Trie node){
+        if(i==word.length()){
             return node.isWord;
         }
-        char c = w.charAt(i);
+        char c = word.charAt(i);
         if(c=='.'){
-            for(Trie next: node.ch){
-                if(next != null && dfs(w, i+1, next)){
+            for(Trie next: node.children){
+                if(next == null){
+                    continue;
+                }
+                boolean found = dfs(word, i+1, next);
+                if(found){
                     return true;
                 }
             }
             return false;
+        }else{
+            Trie next = node.children[toCode(word.charAt(i))];
+            if(next == null){
+                return false;
+            }
+            return dfs(word, i+1, next);
         }
-        int cind = c-'a';
-        Trie next = node.ch[cind];
-        if(next==null){
-            return false;
-        }
-        return dfs(w, i+1, next);
+    }
+
+    private int toCode(char c){
+        return c-'a';
     }
 }

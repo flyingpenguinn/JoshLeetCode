@@ -14,17 +14,18 @@ Could you solve it with constant space complexity? (The output array does not co
 public class ProductOfArrayExceptSelf {
     // use the result, not original array, for left/right purpose
     public int[] productExceptSelf(int[] a) {
+        // check null etc
         int n = a.length;
-        int[] r = new int[n];
-        r[n - 1] = a[n - 1];
+        int[] right = new int[n];
+        right[n - 1] = a[n - 1];
         for (int i = n - 2; i >= 0; i--) {
-            r[i] = r[i + 1] * a[i];
+            right[i] = right[i + 1] * a[i];
         }
         int left = 1;
         for (int i = 0; i < n; i++) {
-            r[i] = left * (i == n - 1 ? 1 : r[i + 1]);
-            left = left * a[i];
+            right[i] = left * (i == n - 1 ? 1 : right[i + 1]);
+            left *= a[i];
         }
-        return r;
+        return right;
     }
 }

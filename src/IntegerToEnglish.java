@@ -20,54 +20,63 @@ Input: 1234567891
 Output: "One Billion Two Hundred Thirty Four Million Five Hundred Sixty Seven Thousand Eight Hundred Ninety One"
  */
 public class IntegerToEnglish {
-    int[] bases = {1000_000_000, 1000_000, 1000};
-    String[] lion = {"Billion", "Million", "Thousand"};
-    String[] under20 = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
-    String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+    // 1. inners are strings too!
+    // 2. dont miss the space before base
+    private int[] bases = {1000_000_000, 1000_000, 1000, 1};
+    private String[] lion = {"Billion", "Million", "Thousand", ""};
+    private String[] under20 = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
+    // under20 up to 19
+    private String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+    // tens from twenty
 
-
-    public String numberToWords(int n) {
-        if (n == 0) {
+    public String numberToWords(int num) {
+        // num can't <0
+        if (num == 0) {
             return "Zero";
         }
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < lion.length; i++) {
-            if (n >= bases[i]) {
-                int level = n / bases[i];
-                String inner = convert(level);
-                add(sb, inner, lion[i]);
-                n -= bases[i] * level;
+        for (int bi = 0; bi < bases.length; bi++) {
+            int base = bases[bi];
+            int units = num / base;
+            if (units > 0) {
+                String inner = convert1000(units);
+                addResult(sb, lion[bi], inner);
             }
+            num = num % base;
         }
-        add(sb, convert(n), "");
         return sb.toString();
     }
 
-    // n>1 <=999
-    String convert(int n) {
+
+    private String convert1000(int num) {
+        // num<1000
         StringBuilder sb = new StringBuilder();
-        add(sb, under20[n / 100], "Hundred");
-        int stub = n % 100;
-        if (stub < 20) {
-            add(sb, under20[stub], "");
+        int hun = num / 100;
+        addResult(sb, "Hundred", under20[hun]); // hun<10
+        num = num % 100;
+        // num<100
+        if (num < 20) {
+            addResult(sb, "", under20[num]);
         } else {
-            add(sb, tens[stub / 10], "");
-            add(sb, under20[stub % 10], "");
+            int tenDigit = num / 10;
+            int singleDigit = num % 10;
+            addResult(sb, "", tens[tenDigit]);
+            addResult(sb, "", under20[singleDigit]);
         }
         return sb.toString();
     }
 
-    void add(StringBuilder sb, String str, String counter) {
-        if (str.isEmpty()) {
+    private void addResult(StringBuilder sb, String base, String num) {
+        if (num.isEmpty()) {
             return;
         }
         if (sb.length() > 0) {
             sb.append(" ");
         }
-        sb.append(str);
-        if(!counter.isEmpty()){
-            sb.append(" ");
-            sb.append(counter);
+        sb.append(num);
+        if (!base.isEmpty()) {
+            sb.append(" ");  // must add space here!
+            sb.append(base);
         }
     }
 

@@ -78,22 +78,19 @@ public class ReadNCharsGivenRead4 {
         if (n <= 0) {
             return 0;
         }
-        int bi = 0;
-        while (true) {
+        int pos = 0;
+        while (pos<n) {
             char[] buf4 = new char[4];
-            int r4 = read4(buf4);
-            if (r4 == 0) { // n too big
+            int read = read4(buf4);
+            if (read == 0) { // n too big
                 break;
             }
-            int i = 0;
-            while (bi < n && i < r4) {
-                buf[bi++] = buf4[i++];
-            }
-            if (bi == n) { // n too small
-                break;
+            int j = 0;
+            while (pos < n && j < read) {
+                buf[pos++] = buf4[j++];
             }
         }
-        return bi;
+        return pos;
     }
 
 
