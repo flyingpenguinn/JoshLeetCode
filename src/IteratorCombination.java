@@ -53,16 +53,12 @@ public class IteratorCombination {
             int n = cur.length;
             int cn = cs.length;
             for (int i = n - 1; i >= 0; i--) {
-                if (cur[i] + 1 < cn) {
-                    int pos = n - i - 1;
-                    int nums = cn - 1 - (cur[i] + 1);
-                    if (pos > nums) {
-                        // not enough numbers keep unwinding more previous i
-                        continue;
-                    }
+                int fromBack = n - 1 - i;
+                // cur[n-] has limit as cn-1
+                // cur[n-2] has limit as cn-2
+                if (cur[i] < cn - 1 - fromBack) {
                     cur[i]++;
-                    int j = i + 1;
-                    for (; j < n; j++) {
+                    for (int j = i + 1; j < n; j++) {
                         cur[j] = cur[j - 1] + 1;
                     }
                     return output(cur);
@@ -92,16 +88,10 @@ public class IteratorCombination {
     }
 
     public static void main(String[] args) {
-        CombinationIterator iterator = new CombinationIterator("chp", 1); // creates the iterator.
-        System.out.println(iterator.hasNext());
-        System.out.println(iterator.next());
-        System.out.println(iterator.hasNext());
-        System.out.println(iterator.next());
-        System.out.println(iterator.next());
-        System.out.println(iterator.hasNext());
-        System.out.println(iterator.hasNext());
-        System.out.println(iterator.hasNext());
-        System.out.println(iterator.hasNext());
+        CombinationIterator iterator = new CombinationIterator("chpqi", 3); // creates the iterator.
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
 
     }
 }
