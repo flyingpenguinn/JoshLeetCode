@@ -10,7 +10,7 @@ public class GuessMajorityInHiddenArray {
         // Returns the length of the array
         public int length();
     }
-
+    // figure out the layout of the first 4 then use that to deduce the later ones
     class Solution {
         public int guessMajority(ArrayReader reader) {
             int n = reader.length();
