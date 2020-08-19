@@ -37,31 +37,23 @@ public class FindLongestSubstringContainingVowelsEven {
 
     public int findTheLongestSubstring(String s) {
         int[] map = new int[64];
-        Arrays.fill(map, -1);
+        Arrays.fill(map, -2);
         int max = 0;
         int cur = 0;
+        map[0] = -1;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             int index = vow.indexOf(c);
             if (index != -1) {
                 vm[index]++;
-                if (vm[index] % 2 == 1) {
-                    // was 0 before
-                    cur |= (1 << offset(c));
-                } else {
-                    // was 1 before. now clear the bit up
-                    cur ^= (1 << offset(c));
-                }
+                // was 1 before. now clear the bit up
+                cur ^= (1 << offset(c));
             }
-            if (cur == 0) {
-                max = Math.max(max, i + 1);
+            int before = map[cur];
+            if (before != -2) {
+                max = Math.max(max, i - before);
             } else {
-                int before = map[cur];
-                if (before != -1) {
-                    max = Math.max(max, i - before);
-                } else {
-                    map[cur] = i;
-                }
+                map[cur] = i;
             }
         }
         return max;
