@@ -9,22 +9,21 @@ public class ReorderList {
         if (head == null || head.next == null) {
             return;
         }
-        ListNode p = head;
-        ListNode q = head;
-        while (p != null && p.next != null) {
-            p = p.next.next;
-            q = q.next;
+        ListNode fast = head;
+        ListNode slow = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
         }
-        // q is at the breaking point, reverse from q.next
-        p = q.next;
-        q.next = null;
-        ListNode pre = reverse(p);
-        // now pre and head are two parts that needs to be merged
-        merge(head, pre);
+        ListNode h2 = slow.next;
+        slow.next = null;
+        h2 = reverse(h2);
+        merge(head, h2);
     }
 
-    protected ListNode reverse(ListNode p) {
+    private ListNode reverse(ListNode head) {
         ListNode pre = null;
+        ListNode p = head;
         while (p != null) {
             ListNode pnext = p.next;
             p.next = pre;
@@ -34,28 +33,26 @@ public class ReorderList {
         return pre;
     }
 
-    private ListNode merge(ListNode head1, ListNode head2) {
+    private void merge(ListNode h1, ListNode h2) {
         ListNode dummy = new ListNode(-1);
-        int round = 0;
-        ListNode p = head1;
-        ListNode q = head2;
-        ListNode rp = dummy;
-        while (p != null && q != null) {
-            if (round == 0) {
-                rp.next = p;
-                p = p.next;
+        ListNode p = dummy;
+        boolean from1 = true;
+        while (h1 != null && h2 != null) {
+            if (from1) {
+                p.next = h1;
+                h1 = h1.next;
             } else {
-                rp.next = q;
-                q = q.next;
+                p.next = h2;
+                h2 = h2.next;
             }
-            rp = rp.next;
-            round ^= 1;
+            p = p.next;
+            from1 = !from1;
         }
-        if (p != null) {
-            rp.next = p;
-        } else {
-            rp.next = q;
+        if (h1 != null) {
+            p.next = h1;
         }
-        return dummy.next;
+        if (h2 != null) {
+            p.next = h2;
+        }
     }
 }
