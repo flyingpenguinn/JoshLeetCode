@@ -45,37 +45,53 @@ public class RandomPointNonOverlappingRect {
 
     // pick according to area proportionally. similar to random pick with weight but this is 2d
     static class Solution {
-
-        int[][] rects;
-        int[] areas;
-        int sum = 0;
+        private Random rand = new Random();
+        private int[][] rects;
+        // same trick as random pick with weight: sum[i] = sum[i-1]+area[i-1], then pick an area, find the eq or < index
+        private int[] sums;
+        private int allAreas = 0;
 
         public Solution(int[][] rects) {
             this.rects = rects;
-            int n = rects.length;
-            areas = new int[n];
-            for (int i = 0; i < n; i++) {
-                // note the area of a rectangle is diff+1*diff+1, not diff*diff
-                sum += (rects[i][2] - rects[i][0] + 1) * (rects[i][3] - rects[i][1] + 1);
-                areas[i] = sum;
+            sums = new int[rects.length];
+            allAreas = getArea(rects[0]);
+            // sum[0] alreays == 0
+            for (int i = 1; i < rects.length; i++) {
+                sums[i] = sums[i - 1] + getArea(rects[i - 1]);
+                allAreas += getArea(rects[i]);
             }
         }
 
-        Random rand = new Random();
+        private int getArea(int[] rect) {
+            return (rect[2] - rect[0] + 1) * (rect[3] - rect[1] + 1);
+        }
+
 
         public int[] pick() {
-            int ran = rand.nextInt(sum) + 1;
-            int n = areas.length;
-            // rect count <=100 so we can do linear scan as well
-            int slot = Arrays.binarySearch(areas, ran);
-            int i = slot >= 0 ? slot : -(slot + 1);
-            int xlen = rects[i][2] - rects[i][0] + 1;
-            int ylen = rects[i][3] - rects[i][1] + 1;
-            int randx = rand.nextInt(xlen);
-            int randy = rand.nextInt(ylen);
-            int rx = rects[i][0] + randx;
-            int ry = rects[i][1] + randy;
-            return new int[]{rx, ry};
+            // this is similar setting as random pick with weight
+            int picked = rand.nextInt(allAreas);
+            int found = binarySearch(sums, picked);
+            int[] rect = rects[found];
+            int randx = rect[0] + rand.nextInt(rect[2] - rect[0] + 1);
+            int randy = rect[1] + rand.nextInt(rect[3] - rect[1] + 1);
+            return new int[]{randx, randy};
+        }
+
+        // if eq find it otherwise find the biggest smaller
+        private int binarySearch(int[] a, int t) {
+            int l = 0;
+            int u = a.length - 1;
+            while (l <= u) {
+                int mid = l + (u - l) / 2;
+                if (a[mid] == t) {
+                    return mid;
+                } else if (a[mid] < t) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
+                }
+            }
+            return u;
         }
     }
 
