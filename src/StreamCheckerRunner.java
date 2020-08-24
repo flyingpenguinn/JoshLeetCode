@@ -90,3 +90,65 @@ public class StreamCheckerRunner {
         }
     }
 }
+
+class StreamChecker2 {
+    // we can also go prefix, but note the pending prefixes in a queue
+    // note in the worst case (aaaaa) it's still O(word length) per query
+    private class Trie {
+        private char c;
+        private Trie[] ch = new Trie[26];
+        private boolean isWord = false;
+
+        public Trie(char c) {
+            this.c = c;
+        }
+    }
+
+    private Trie root = new Trie('-');
+    private Deque<Trie> curs = new ArrayDeque<>();
+
+    private void insert(Trie node, String w) {
+        Trie cur = root;
+        for (int i = 0; i < w.length(); i++) {
+            char c = w.charAt(i);
+            int cind = c - 'a';
+            Trie next = cur.ch[cind];
+            if (next == null) {
+                next = cur.ch[cind] = new Trie(c);
+            }
+            cur = next;
+        }
+        cur.isWord = true;
+    }
+
+    public StreamChecker2(String[] words) {
+        for (String w : words) {
+            insert(root, w);
+        }
+    }
+
+    public boolean query(char letter) {
+        int lind = letter - 'a';
+        Deque<Trie> nexts = new ArrayDeque<>();
+        boolean rt = false;
+        while (!curs.isEmpty()) {
+            Trie cur = curs.poll();
+            Trie next = cur.ch[lind];
+            if (next != null) {
+                if (next.isWord) {
+                    rt = true;
+                }
+                nexts.offer(next);
+            }
+        }
+        if (root.ch[lind] != null) {
+            Trie next = root.ch[lind];
+            if (next.isWord) {
+                rt = true;
+            }
+            nexts.offer(next);
+        }
+        curs = nexts;
+        return rt;
+    }
+}
