@@ -1,46 +1,34 @@
 import java.util.Arrays;
 
 public class MinCostsForTickets {
-    int [] dp;
+    private int[] dp;
+
     public int mincostTickets(int[] days, int[] costs) {
-        dp = new int [days.length];
+        dp = new int[days.length];
         Arrays.fill(dp, -1);
-        return doMinCost(0,days, costs);
+        return domin(0, days, costs);
     }
 
-    int[] passes={1,7,30};
-
-    int doMinCost(int index, int[]days, int[] cost){
-
-        if(index== days.length){
+    private int domin(int i, int[] days, int[] costs) {
+        if (i == days.length) {
             return 0;
         }
-        if(dp[index] != -1){
-            return dp[index];
+        if (dp[i] != -1) {
+            return dp[i];
         }
-        int min= Integer.MAX_VALUE;
-
-        for(int i= 0; i<passes.length; i++){
-            int  p= passes[i];
-            int cur = cost[i];
-            int firstBigger = find(days, days[index]+p-1);
-            int later= firstBigger==-1 ? 0 : doMinCost(firstBigger, days, cost);
-            min = Math.min(min, cur+later);
+        int way0 = domin(i + 1, days, costs) + costs[0];
+        // can use binary search here too
+        int e1 = i;
+        while (e1 < days.length && days[e1] <= days[i] + 6) {
+            e1++;
         }
-        dp[index] = min;
-        return min;
-    }
-
-
-    // first that is strictly bigger
-    int find(int[] days, int t){
-        for(int i = 0; i < days.length; i++){
-            if (t < days[i]){
-                return i;
-            }
-
+        int way1 = domin(e1, days, costs) + costs[1];
+        int e2 = i;
+        while (e2 < days.length && days[e2] <= days[i] + 29) {
+            e2++;
         }
-        return -1;
-
+        int way2 = domin(e2, days, costs) + costs[2];
+        dp[i] = Math.min(way0, Math.min(way1, way2));
+        return dp[i];
     }
 }

@@ -52,47 +52,48 @@ public class BestPositionForServiceCenter {
     // note this is similar to 1d problem "best meeting place" but there we only need integers so we stop when we can't get better results on right/down
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    public double getMinDistSum(int[][] pos) {
-        // check null etc
-        int n = pos.length;
-        int sumx = 0;
-        int sumy = 0;
-        for (int i = 0; i < n; i++) {
-            sumx += pos[i][0];
-            sumy += pos[i][1];
+    public double getMinDistSum(int[][] a) {
+        int n = a.length;
+        double sx = 0;
+        double sy = 0;
+        for (int i = 0; i < a.length; i++) {
+            sx += a[i][0];
+            sy += a[i][1];
         }
-        double cx = sumx * 1.0 / n;
-        double cy = sumy * 1.0 / n;
-        double limit = 1e-5;
-        double walk = 100.0;
-        double csum = 0;
-        for (int i = 0; i < n; i++) {
-            csum += dist(cx, cy, pos[i][0], pos[i][1]);
-        }
+        double cx = sx / n;
+        double cy = sy / n;
+        double walk = 100;
+        double limit = 0.000001; // walk will be shrunk to this limit
         while (walk > limit) {
+            double csum = distsum(cx, cy, a);
             boolean found = false;
             for (int[] d : dirs) {
-                double ncx = cx + d[0] * walk;
-                double ncy = cy + d[1] * walk;
-                double nsum = 0;
-                for (int i = 0; i < n; i++) {
-                    nsum += dist(ncx, ncy, pos[i][0], pos[i][1]);
-                }
+                double nx = cx + walk * d[0];
+                double ny = cy + walk * d[1];
+                double nsum = distsum(nx, ny, a);
                 if (nsum < csum) {
-                    csum = nsum;
-                    cx = ncx;
-                    cy = ncy;
                     found = true;
+                    cx = nx;
+                    cy = ny;
+                    csum = nsum;
                 }
             }
             if (!found) {
-                walk /= 2.0;
+                walk /= 2;
             }
         }
-        return csum;
+        return distsum(cx, cy, a);
     }
 
     private double dist(double x1, double y1, double x2, double y2) {
         return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }
+
+    private double distsum(double cx, double cy, int[][] a) {
+        double csum = 0;
+        for (int i = 0; i < a.length; i++) {
+            csum += dist(cx, cy, a[i][0], a[i][1]);
+        }
+        return csum;
     }
 }
