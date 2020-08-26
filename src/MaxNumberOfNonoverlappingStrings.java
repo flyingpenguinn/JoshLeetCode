@@ -3,53 +3,61 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MaxNumberOfNonoverlappingStrings {
+    /*
+
+    1. find left and right of each char
+    2. if i > pending end we know we found a good pending string- the one ending at the "pendingend"
+    3. each time if we find a good pending we update pending end. in this way we can SPLIT a longer pending string to smaller ones
+
+     */
     public List<String> maxNumOfSubstrings(String s) {
-        int n = s.length();
-        int[] right = new int[26];
         int[] left = new int[26];
+        int[] right = new int[26];
         Arrays.fill(left, -1);
         Arrays.fill(right, -1);
-        for (int i = 0; i < n; i++) {
-            int cind = s.charAt(i) - 'a';
+        int n = s.length();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int cind = c - 'a';
             right[cind] = i;
             if (left[cind] == -1) {
                 left[cind] = i;
             }
         }
-        List<String> r = new ArrayList<>();
-        String pending = new String();
-        int lastright = n-1;
-        for (int i = 0; i < s.length(); i++) {
-            if (i > lastright) {
-                if (!pending.isEmpty()) {
-                    r.add(pending);
-                    pending = new String();
-                }
+        int pendingEnd = -1;
+        String pending = "";
+        List<String> res = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (i > pendingEnd && !pending.isEmpty()) {
+                res.add(pending);
+                pending = "";
             }
             char c = s.charAt(i);
             int cind = c - 'a';
             if (i == left[cind]) {
-                int newright = checkright(s, i, right[cind], right, left);
-                if (newright != -1) {
-                    lastright = newright;
-                    pending = s.substring(i, newright + 1);
+                int curRight = extendRight(i, right[cind], left, right, s);
+                if (curRight != -1) {
+                    pendingEnd = curRight;
+                    pending = s.substring(i, curRight + 1);
                 }
             }
         }
         if (!pending.isEmpty()) {
-            r.add(pending);
+            res.add(pending);
+            pending = "";
         }
-        return r;
+        return res;
     }
 
-    private int checkright(String s, int start, int end, int[] right, int[] left) {
+    private int extendRight(int start, int end, int[] left, int[] right, String s) {
+
         for (int i = start; i <= end; i++) {
             char c = s.charAt(i);
             int cind = c - 'a';
             if (left[cind] < start) {
                 return -1;
-            } else if (right[cind] > end) {
-                end = right[cind];
+            } else {
+                end = Math.max(end, right[cind]);
             }
         }
         return end;
