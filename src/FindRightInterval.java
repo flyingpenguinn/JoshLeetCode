@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -44,17 +45,34 @@ For [2,3], the interval [3,4] has minimum-"right" start point.
 NOTE: input types have been changed on April 15, 2019. Please reset to default code definition to get new method signature.
  */
 public class FindRightInterval {
-    public int[] findRightInterval(int[][] a) {
-        int n = a.length;
-        TreeMap<Integer, Integer> st = new TreeMap<>();
-        for (int i = n - 1; i >= 0; i--) {
-            st.put(a[i][0], i);
+    public int[] findRightInterval(int[][] indexes) {
+        int n = indexes.length;
+        int[][] a = new int[n][3];
+        for (int i = 0; i < a.length; i++) {
+            a[i][0] = indexes[i][0];
+            a[i][1] = indexes[i][1];
+            a[i][2] = i;
         }
+        Arrays.sort(a, (x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0]) : Integer.compare(x[2], y[2]));
         int[] r = new int[n];
         for (int i = 0; i < n; i++) {
-            Integer key = st.ceilingKey(a[i][1]);
-            r[i] = key == null ? -1 : st.get(key);
+            int index = binarySearch(a, a[i][1]);
+            r[a[i][2]] = index == n ? -1 : a[index][2];
         }
         return r;
+    }
+
+    private int binarySearch(int[][] a, int t) {
+        int l = 0;
+        int u = a.length - 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            if (a[mid][0] >= t) {
+                u = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return l;
     }
 }
