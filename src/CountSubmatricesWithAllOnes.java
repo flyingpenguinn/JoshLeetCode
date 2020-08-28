@@ -50,37 +50,37 @@ Constraints:
  */
 public class CountSubmatricesWithAllOnes {
     // Om^2*n. we convert to sth like 2d subarray problem
+    // find the one streaks in each i-j segment. each full column would contribute to k-start+1 matrices ending at that column
     // @todo investigate the on^2 stack solution
     public int numSubmat(int[][] a) {
         int m = a.length;
         int n = a[0].length;
         int[][] sum = new int[m][n];
         for (int j = 0; j < n; j++) {
-            int colsum = 0;
             for (int i = 0; i < m; i++) {
-                colsum += a[i][j];
-                sum[i][j] = colsum;
+                sum[i][j] = (i == 0 ? 0 : sum[i - 1][j]) + a[i][j];
             }
         }
-        int r = 0;
+        // looking at each column, how many matrices are ending with this column?
+        int res = 0;
         for (int i = 0; i < m; i++) {
             for (int j = i; j < m; j++) {
-                int target = j - i + 1;
-                int k = 0;
-                // find consecutive segments that add up to j-i+1. each such segment gives n*(n+1)/2 matrices
-                while (k < n) {
-                    while (k < n && (sum[j][k] - (i == 0 ? 0 : sum[i - 1][k]) != target)) {
-                        k++;
+                int start = -1; // the first full column in this streak
+                for (int k = 0; k < n; k++) {
+                    int cur = sum[j][k] - (i == 0 ? 0 : sum[i - 1][k]);
+                    if (cur == j - i + 1) {
+                        if (start == -1) {
+                            res++;
+                            start = k;
+                        } else {
+                            res += k - start + 1;
+                        }
+                    } else {
+                        start = -1;
                     }
-                    int count = 0;
-                    while (k < n && (sum[j][k] - (i == 0 ? 0 : sum[i - 1][k]) == target)) {
-                        count++;
-                        k++;
-                    }
-                    r += count * (count + 1) / 2;
                 }
             }
         }
-        return r;
+        return res;
     }
 }
