@@ -69,55 +69,40 @@ interface Robot {
 }
 
 public class RobotRoomCleaner {
+    // from the entrance dir we keep cleaning then move back, turn right and clean up the next direction
+    // gotcha is how to sync the robot with our dfs note when dfs returns robot needs to return to the old position at the same dir
+    private Set<String> seen = new HashSet<>();
+    private int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
     public void cleanRoom(Robot robot) {
-        Set<String> seen = new HashSet<>();
-        dfs(robot, 0, 0, 0, 1, seen);
+        dfs(0, 0, robot, 0);
     }
 
-    // i = x, j = y
-    private void dfs(Robot robot, int i, int j, int di, int dj, Set<String> seen) {
-        // keeping the old position
+    private void dfs(int i, int j, Robot rob, int dir) {
         seen.add(code(i, j));
-        robot.clean();
-        int ni = i + di;
-        int nj = j + dj;
-        visit(robot, seen, ni, nj, di, dj);
-        robot.turnLeft();
-        // 0,1-> -1,0.. -1,0-> 0,-1...0,-1... 1,0.... 1,0.... 0,1
-        int ndi = di == 0 ? -dj : 0;
-        int ndj = dj == 0 ? di : 0;
-        ni = i + ndi;
-        nj = j + ndj;
-        visit(robot, seen, ni, nj, ndi, ndj);
-        robot.turnRight();
-        robot.turnRight();
-        // the reverse of the above
-        ndi = di == 0 ? dj : 0;
-        ndj = dj == 0 ? -di : 0;
-        ni = i + ndi;
-        nj = j + ndj;
-        visit(robot, seen, ni, nj, ndi, ndj);
-        // return to incoming position, or visit "down" node
-        robot.turnRight();
-        // for the starting point there is no "coming back" so we visit the "down" node
-        if (i == 0 && j == 0 && !seen.contains(code(0, -1)) && robot.move()) {
-            dfs(robot, 0, -1, 0, -1, seen);
-        } else {
-            // and restore the direction
-            robot.move();
-            robot.turnLeft();
-            robot.turnLeft();
+        rob.clean();
+        for (int k = dir; k != dir + 4; k++) {
+            int modk = k % 4;
+            int ni = i + dirs[modk][0];
+            int nj = j + dirs[modk][1];
+            if (!seen.contains(code(ni, nj)) && rob.move()) {
+                // when rob moves to ni nj our call stack needs to be in sync
+                dfs(ni, nj, rob, modk);
+                // when the dfs returns we are back at i and j. here we need to reset
+                // the robot to be in sync with the current call stack
+                // after the dfs function robot is facing the original direction on ni nj, so we need to turn it back and move, then
+                // re-face the original dir i.e. ni nj
+                rob.turnRight();
+                rob.turnRight();
+                rob.move();
+                rob.turnRight();
+                rob.turnRight();
+            }
+            rob.turnRight();
         }
     }
 
-    private void visit(Robot robot, Set<String> seen, int ni, int nj, int ndi, int ndj) {
-        if (!seen.contains(code(ni, nj)) && robot.move()) {
-            dfs(robot, ni, nj, ndi, ndj, seen);
-        }
-    }
-
-    private String code(int r, int c) {
-        return r + "," + c;
+    private String code(int i, int j) {
+        return i + "," + j;
     }
 }

@@ -2,44 +2,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PancakeSorting {
+    // step 1: find the max value in this round
+    // step 2: flip it to the top
+    // step 3: flip it to the position it should be in
     public List<Integer> pancakeSort(int[] a) {
         int n = a.length;
         List<Integer> r = new ArrayList<>();
-        for (int cake = n; cake >= 1; cake--) {
-            // from biggest backward
-            for (int i = 0; i < n; i++) {
-                if (a[i] == cake) {
-                    if (i == cake - 1) {
-                        // already sorted
-                        break;
-                    } else {
-                        // need a flip, first flip the biggest to top then to the back
-                        if (i != 0) {
-                            flip(a, 0, i);
-                            r.add(i + 1);
-                        }
-                        if (cake - 1 != 0) {
-                            flip(a, 0, cake - 1);
-                            r.add(cake);
-                        }
-                    }
-                }
+        for (int k = n - 1; k >= 1; k--) {
+            int i = 0;
+            while (i < n && a[i] != k + 1) {
+                i++;
             }
+            if (i != 0) {
+                r.add(i + 1);
+                reverse(a, 0, i);
+            }
+            r.add(k + 1);
+            reverse(a, 0, k);
         }
         return r;
+
     }
 
-    private void flip(int[] a, int i, int j) {
-        // i to j flipped, inclusive
+    private void reverse(int[] a, int i, int j) {
         while (i < j) {
-            swap(a, i++, j--);
+            int tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
+            i++;
+            j--;
         }
-    }
-
-    private void swap(int[] a, int i, int j) {
-        int tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
     }
 
     public static void main(String[] args) {
