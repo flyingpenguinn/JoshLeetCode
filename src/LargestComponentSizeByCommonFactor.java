@@ -34,6 +34,7 @@ Note:
 1 <= A[i] <= 100000
  */
 public class LargestComponentSizeByCommonFactor {
+    // don't really need to deal with prime factors only: we can process every a[i] and skip the prime check i on j and other
     Map<Integer, Integer> pm = new HashMap<>();// prime factor to its representative
     Map<Integer, Integer> parent = new HashMap<>();
     Map<Integer, Integer> size = new HashMap<>();
