@@ -40,44 +40,47 @@ Another valid answer is [5,2,6,null,4,null,7].
     4   7
  */
 public class DeleteNodeInBst {
+    // find-> check right subtree, if null just use left -> otherwise check p.right.left-> finally get the leftest p.right.left subtree
     public TreeNode deleteNode(TreeNode root, int key) {
         TreeNode p = root;
         TreeNode pa = null;
         while (p != null && p.val != key) {
-            pa = p;
             if (p.val < key) {
+                pa = p;
                 p = p.right;
-            } else if (p.val > key) {
+            } else {
+                pa = p;
                 p = p.left;
             }
         }
-        if (p == null) {  // not found, return root
-            return root;
+        if (p == null) {
+            return root; // empty tree or nothing found
         }
-        if (p.right == null) { // empty right, parent link to left tree
+        if (p.right == null) {
+            // p.left could be null too but we don't care
             if (pa == null) {
-                return pa.left;
-            } else if (p == pa.left) {
+                return p.left;
+            } else if (pa.left == p) {
                 pa.left = p.left;
             } else {
                 pa.right = p.left;
             }
             return root;
-        } else { // has right, use "next val" to sub this node. delete "next val"
-            if (p.right.left == null) { // right has no left, directly connect its right
+        } else {
+            if (p.right.left == null) {
                 p.val = p.right.val;
                 p.right = p.right.right;
             } else {
-                TreeNode rp = p.right.left;
-                TreeNode prp = p.right;
-                while (rp.left != null) {
-                    prp = rp;
-                    rp = rp.left;
+                TreeNode pr = p.right;
+                TreeNode pd = p.right.left;
+                while (pd.left != null) {
+                    pr = pd;
+                    pd = pd.left;
                 }
-                p.val = rp.val; // rp has no left, so we connect its right to prp
-                prp.left = rp.right;
+                p.val = pd.val;
+                pr.left = pd.right;
             }
-            return root;
+            return root; // we are not deleting p at all we are just deleting its successor
         }
     }
 }
