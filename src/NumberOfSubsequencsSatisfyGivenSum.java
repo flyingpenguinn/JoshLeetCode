@@ -53,43 +53,52 @@ So we can sort the original A, and the result won't change.
 
 note if the resultant subsequence needs to satisfy some ordering condition, then we can't sort
      */
+    // subsequence, check if we can sort the array first!
     int Mod = 1000000007;
+    long[] dp; // to remember power 2 results
 
     public int numSubseq(int[] a, int t) {
-        // check null error out if so
-        // basically in each subseq we can sort it....
         Arrays.sort(a);
-
-        int low = 0;
-        int high = a.length - 1;
-        long r = 0;
-        while (low <= high) {
-            if (a[low] + a[high] <= t) {
-                int len = high - low;
-                // key here: 3,3,6: we have low at first 3 and high at 6. here 3,6 can have 1<<2 types of changes
-                long cur = modPower2(len);
-                r += cur;
-                r %= Mod;
-                low++;
+        dp = new long[a.length + 1];
+        Arrays.fill(dp, -1);
+        int l = 0;
+        int u = a.length - 1;
+        long res = 0;
+        while (l <= u) {
+            if (a[l] + a[u] > t) {
+                u--;
             } else {
-                high--;
+                res += pow2(u - l);
+                res %= Mod;
+                // 3,5,6, we can omit (5,6)'s subset, including making it 3 only
+                l++;
             }
         }
-        return (int) r;
+        return (int) res;
     }
 
-    private long modPower2(int len) {
-        if (len == 0) {
+    private long pow2(int n) {
+        if (n == 0) {
             return 1;
         }
-        if (len == 1) {
+        if (n == 1) {
             return 2;
         }
-        long halfp = modPower2(len / 2);
-        if (len % 2 == 0) {
-            return (halfp * halfp) % Mod;
-        } else {
-            return (halfp * halfp * 2) % Mod;
+        if (dp[n] != -1) {
+            return dp[n];
         }
+        long half = pow2(n / 2);
+        long rt = 0;
+        if (n % 2 == 0) {
+            rt = half * half;
+            rt %= Mod;
+        } else {
+            rt = half * half;
+            rt %= Mod;
+            rt *= 2;
+            rt %= Mod;
+        }
+        dp[n] = rt;
+        return rt;
     }
 }
