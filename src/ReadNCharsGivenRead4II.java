@@ -73,7 +73,7 @@ public class ReadNCharsGivenRead4II {
     // cache the ones we overread last time into a queue
     // cache the ones we overread last time into a queue
 
-    Deque<Character> cache = new ArrayDeque<>();
+    private Deque<Character> cache = new ArrayDeque<>();
 
     public int read(char[] buf, int n) {
         if (n <= 0) {

@@ -7,6 +7,15 @@ import java.util.*;
 
 public class Cobmi {
 
+    static void prob(int n) {
+        double res = 0;
+        for (int i = 0; i <= n; i++) {
+            res += Math.pow(5.0 / 6.0, i) * i;
+        }
+
+        System.out.println(res);
+    }
+
     static BigInteger factorial(int n) {
 
         BigInteger f = BigInteger.ONE;
@@ -411,11 +420,7 @@ public class Cobmi {
 
 
     public static void main(String[] args) {
-        double sum = 0.0;
-        for (int i = 1; i <= 100; i++) {
-            sum += 1.0 / ((2.0 * i + 1.0) * (2.0 * i + 1.0));
-        }
-        System.out.println(sum);
+        prob(1000000);
     }
 
     protected static int f2(int n) {

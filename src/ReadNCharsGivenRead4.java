@@ -75,9 +75,6 @@ public class ReadNCharsGivenRead4 {
 
     // handle both n too small (pos==n) or too large (read<4)
     public int read(char[] buf, int n) {
-        if (n <= 0) {
-            return 0;
-        }
         int pos = 0;
         while (pos<n) {
             char[] buf4 = new char[4];
