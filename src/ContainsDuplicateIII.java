@@ -20,33 +20,32 @@ Input: nums = [1,5,9,1,5,9], k = 2, t = 3
 Output: false
  */
 public class ContainsDuplicateIII {
-    public boolean containsNearbyAlmostDuplicate(int[] a, int k, long t) {
-        TreeMap<Long, Integer> tm = new TreeMap<>();
+    public boolean containsNearbyAlmostDuplicate(int[] a, int k, int t) {
         int n = a.length;
+        if (n < 2 || k < 0 || t < 0) {
+            return false;
+        }
+        TreeMap<Long, Integer> tm = new TreeMap<>();
         for (int i = 0; i < n; i++) {
-            // note can't use interval intersection here - 1,9,5: [1.9] intersects 2,6 but no number in the range
-            Long floor = tm.floorKey(a[i] + t);
-            if (floor != null && floor >= a[i] - t) {
-                return true;
-            }
-            Long ceil = tm.ceilingKey(a[i] - t);
-            if (ceil != null && ceil <= a[i] + t) {
+            Long v1 = tm.ceilingKey(0L + a[i] - t);
+            if (v1 != null && v1 <= (0L + a[i] + t)) {
                 return true;
             }
             update(tm, a[i], 1);
-            if (i - k >= 0) {
-                update(tm, a[i - k], -1);
+            int head = i - k; // not i-k+1! k diff
+            if (head >= 0) {
+                update(tm, a[head], -1);
             }
         }
         return false;
     }
 
-    void update(TreeMap<Long, Integer> tm, long k, int v) {
-        int nv = tm.getOrDefault(k, 0) + v;
-        if (nv == 0) {
-            tm.remove(k);
+    private void update(TreeMap<Long, Integer> m, long k, int delta) {
+        int nv = m.getOrDefault(k, 0) + delta;
+        if (nv <= 0) {
+            m.remove(k);
         } else {
-            tm.put(k, nv);
+            m.put(k, nv);
         }
     }
 }

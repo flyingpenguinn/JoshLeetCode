@@ -23,32 +23,32 @@ public class RepeatedSubstringPattern {
     // O(nsqrt(n) only check factor of n
     public boolean repeatedSubstringPattern(String s) {
         int n = s.length();
-        if (n == 0) {
-            return false;
-        }
         for (int len = n / 2; len >= 1; len--) {
-            if (n % len != 0) {
-                continue;
-            }
-            int j = len;
-            boolean bad = false;
-            while (j + len - 1 < n) {
-                for (int k = 0; k < len; k++) {
-                    if (s.charAt(k) != s.charAt(j + k)) {
+            if (n % len == 0) {
+                boolean bad = false;
+                for (int i = len; i < n; i += len) {
+                    // replace substring+equals with a method that checks if 2 strings are equal given starting points and len
+                    if (!eq(s, i, 0, len)) {
                         bad = true;
                         break;
                     }
                 }
-                if (bad) {
-                    break;
-                } else {
-                    j += len;
+                if (!bad) {
+                    return true;
                 }
-            }
-            if (!bad) {
-                return true;
             }
         }
         return false;
+    }
+
+    private boolean eq(String s, int i, int j, int len) {
+        int k = 0;
+        while (k < len) {
+            if (s.charAt(i + k) != s.charAt(j + k)) {
+                return false;
+            }
+            k++;
+        }
+        return true;
     }
 }

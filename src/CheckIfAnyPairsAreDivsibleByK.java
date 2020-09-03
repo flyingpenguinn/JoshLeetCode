@@ -45,36 +45,35 @@ n is even.
 1 <= k <= 10^5
  */
 public class CheckIfAnyPairsAreDivsibleByK {
-    // similar to #LC974, convert negative mod to positive ones
+    // similar to LC#974, convert negative mod to positive ones
     public boolean canArrange(int[] a, int k) {
-        // check null error out if so
-        // k >=1 hence we can safely mod
-        Map<Integer, Integer> modMap = new HashMap<>();
+        Map<Integer, Integer> m = new HashMap<>();
         for (int i = 0; i < a.length; i++) {
             int mod = a[i] % k;
-            // turn negative key to positive key!
-            // if -2, it can be used the same way as 1
             if (mod < 0) {
                 mod += k;
+                // -2, k=5, then 3
+                // -3, k=5, then 2. still would match each other.
+                // note -2 can match with either 2 or -3, and the latters are both mapped to 2
             }
-            modMap.put(mod, modMap.getOrDefault(mod, 0) + 1);
+            m.put(mod, m.getOrDefault(mod, 0) + 1);
         }
-        for (int key : modMap.keySet()) {
-            int count = modMap.get(key);
+        for (int key : m.keySet()) {
+            int count = m.get(key);
             if (key == 0) {
-                // 5 or 10 or others, would use the same bucket to pair
+                // 2 traps
+                // we need to single out mod==0 case because there is no valid other
+                // also can't simply return when count %2==0
                 if (count % 2 != 0) {
                     return false;
                 }
             } else {
-                int other = k - key;
-                int otherCount = modMap.getOrDefault(other, 0);
-                if (otherCount != count) {
+                int othercount = m.getOrDefault(k - key, 0);
+                if (count != othercount) {
                     return false;
                 }
             }
         }
-
         return true;
     }
 }

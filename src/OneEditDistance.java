@@ -31,32 +31,41 @@ public class OneEditDistance {
     public boolean isOneEditDistance(String s, String t) {
         int sn = s.length();
         int tn = t.length();
-        if (Math.abs(sn - tn) > 1) {
-            return false;
-        }
-        if (tn < sn) {
-            return isOneEditDistance(t, s);
-        }
-        // sn <=tn
-        int vio = 0;
         int i = 0;
         int j = 0;
-        while (i < sn && j < tn) {
-            if (s.charAt(i) != t.charAt(j)) {
-                if (++vio > 1) {
-                    return false;
-                }
-                //len diff==1 must remove one. replace wont help as there would be an extra char at the end...
-                if (sn < tn) {
+        boolean diff = false;
+        if (sn == tn + 1) {
+            return isOneEditDistance(t, s);
+        } else if (sn + 1 == tn) {
+            while (i < sn && j < tn) {
+                if (s.charAt(i) != t.charAt(j)) {
+                    if (diff) {
+                        return false;
+                    } else {
+                        diff = true;
+                        j++;
+                    }
+                } else {
+                    i++;
                     j++;
-                    continue;
                 }
             }
-            i++;
-            j++;
+            return true;
+        } else if (sn == tn) {
+            while (i < sn && j < tn) {
+                if (s.charAt(i) != t.charAt(j)) {
+                    if (diff) {
+                        return false;
+                    } else {
+                        diff = true;
+                    }
+                }
+                i++;
+                j++;
+            }
+            return diff; // note it must be exactly one distance away! so must return if it has diff here
+        } else {
+            return false;
         }
-        // diff of rem chars! these must go
-        vio += Math.abs((sn - i) - (tn - j));
-        return vio == 1;
     }
 }
