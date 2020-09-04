@@ -44,62 +44,68 @@ All pairs (fromi, toi) are distinct.
 public class FindCriticalAndPsuedoCriticalEdges {
     // crit edge is those if you + weight, mst increases
     // pseudo edge is those if you - weight, mst decreases
-    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] es) {
-        int mst = mst(n, es);
+    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] edges) {
+        pa = new int[n];
+        List<List<Integer>> res = new ArrayList<>();
         List<Integer> crit = new ArrayList<>();
-        List<Integer> psucrit = new ArrayList<>();
-        List<List<Integer>> r = new ArrayList<>();
-        for (int i = 0; i < es.length; i++) {
-            int[] e = es[i];
-            e[2] += 1;
-            int cur = mst(n, es);
-            if (cur > mst) {
+        List<Integer> pcrit = new ArrayList<>();
+        int mst = mst(n, edges);
+        for(int i=0; i<edges.length;i++){
+            int old = edges[i][2];
+            edges[i][2] = old+1;
+            int cur = mst(n, edges);
+            edges[i][2] = old;
+            if(cur>mst){
                 crit.add(i);
-                e[2] -= 1;
-            } else {
-                e[2] -= 2;
-                cur = mst(n, es);
-                if (cur < mst) {
-                    psucrit.add(i);
-                }
-                e[2] += 1;
+                continue;
             }
+            edges[i][2] = old-1;
+            cur = mst(n, edges);
+            edges[i][2] = old;
+            if(cur<mst){
+                pcrit.add(i);
+            }
+
         }
-        r.add(crit);
-        r.add(psucrit);
-        return r;
+        res.add(crit);
+        res.add(pcrit);
+        return res;
     }
 
-    private int mst(int n, int[][] oes) {
+    private int[] pa;
 
-        int[][] es = new int[oes.length][oes[0].length];
-        for (int i = 0; i < es.length; i++) {
-            es[i] = Arrays.copyOf(oes[i], oes[i].length);
+
+    private int mst(int n, int[][] edges){
+        int[][] es = new int[edges.length][3];
+        for(int i=0; i<edges.length;i++){
+            es[i][0] = edges[i][0];
+            es[i][1] = edges[i][1];
+            es[i][2] = edges[i][2];
         }
-        Arrays.sort(es, (x, y) -> Integer.compare(x[2], y[2]));
-        int[] p = new int[n];
-        for (int i = 0; i < n; i++) {
-            p[i] = i;
-        }
-        int r = 0;
-        for (int[] e : es) {
-            int p0 = find(p, e[0]);
-            int p1 = find(p, e[1]);
-            if (p0 != p1) {
-                p[p0] = p1;
-                r += e[2];
+        Arrays.sort(es, (x,y)-> Integer.compare(x[2], y[2]));
+        Arrays.fill(pa, -1);
+
+        int res = 0;
+        for(int[] e: es){
+            int v1 = e[0];
+            int v2 = e[1];
+            int p1 = find(pa, v1);
+            int p2 = find(pa, v2);
+            if(p1 != p2){
+                pa[p1] = p2;
+                res += e[2];
             }
         }
-        return r;
+
+        return res;
     }
 
-    private int find(int[] p, int i) {
-        if (p[i] == i) {
-            return i;
-        } else {
-            int rt = find(p, p[i]);
-            p[i] = rt;
-            return rt;
+    private int find(int[] pa, int v){
+        if(pa[v] == -1){
+            return v;
         }
+        int rt = find(pa, pa[v]);
+        pa[v] = rt;
+        return rt;
     }
 }
