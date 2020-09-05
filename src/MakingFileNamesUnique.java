@@ -1,5 +1,7 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /*
 LC#1487
@@ -54,31 +56,31 @@ names[i] consists of lower case English letters, digits and/or round brackets.
  */
 public class MakingFileNamesUnique {
     // this question made me only ACed only 2 in contest 194
-    //note we must
+    // note we must
     // 1. put count for file name itself
     // 2. put count for the original name too
     public String[] getFolderNames(String[] names) {
-        int n = names.length;
-        // where did we stand for this string last time
         Map<String, Integer> m = new HashMap<>();
-        String[] r = new String[n];
-        for (int i = 0; i < n; i++) {
-            if (!m.containsKey(names[i])) {
-                r[i] = names[i];
-            } else {
-                int j = m.getOrDefault(names[i], 0) + 1;
-                while (true) { // this while loop is run On at most because it iterates the whole array's addition at most
-                    String cand = names[i] + "(" + j + ")";
-                    if (!m.containsKey(cand)) {
-                        r[i] = cand;
-                        break;
-                    } else {
-                        j++;
-                    }
+        // last (i) for this file
+        Set<String> used = new HashSet<>();
+        String[] r = new String[names.length];
+        int ri = 0;
+        for (String s : names) {
+            if (used.contains(s)) {
+                int index = m.getOrDefault(s, 0) + 1;
+                // go until we can find a good index. note this while loop is AT MOST n times
+                // because indexes are what we put in before
+                while (used.contains(s + "(" + index + ")")) {
+                    index++;
                 }
-                m.put(names[i], j);// this is the key!
+                String cur = s + "(" + index + ")";
+                r[ri++] = cur;
+                m.put(s, index);
+                used.add(cur);
+            } else {
+                r[ri++] = s;
+                used.add(s);
             }
-            m.put(r[i], 0); // no matter what happens the new name we picked is unique at this point
         }
         return r;
     }
