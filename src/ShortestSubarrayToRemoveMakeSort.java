@@ -1,6 +1,9 @@
 import java.util.TreeMap;
 
 public class ShortestSubarrayToRemoveMakeSort {
+    // for each i, what if we delete from i+1 to some end point?
+    // if it's part of the end slope, nothing is needed
+    // otherwise we find the ceiling of it in the "end slope"
     public int findLengthOfShortestSubarray(int[] a) {
         int n = a.length;
         TreeMap<Integer, Integer> tm = new TreeMap<>();
@@ -22,7 +25,7 @@ public class ShortestSubarrayToRemoveMakeSort {
             Integer next = tm.ceilingKey(a[i]);
             int nindex = n;
             if (next != null) {
-                nindex = tm.get(next);
+                nindex = tm.getOrDefault(next, n);
             }
             // from i+1 to nindex-1 gone
             int cur = nindex - i - 1;
