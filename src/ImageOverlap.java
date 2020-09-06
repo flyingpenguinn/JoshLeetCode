@@ -30,50 +30,42 @@ Notes:
  */
 public class ImageOverlap {
 
-    // both this and below are On^4
+    // both this and below are On^4 in the worst case, but the 2nd one is better for sparse matrix
     public int largestOverlap(int[][] a, int[][] b) {
-        int n = a.length;
+        int m = a.length;
+        int n = a[0].length;
         int max = 0;
-        for (int i = -(n - 1); i < n; i++) {
-            for (int j = -(n - 1); j < n; j++) {
-                int ov = count(a, b, i, j);
-                //   System.out.println(i+" "+j+" "+ov);
-                max = Math.max(max, ov);
+        for (int rowMove = -m; rowMove <= m; rowMove++) {
+            for (int colMove = -n; colMove <= n; colMove++) {
+                int overlap = 0;
+                for (int i = 0; i < m; i++) {
+                    for (int j = 0; j < n; j++) {
+                        int row = i + rowMove;
+                        int col = j + colMove;
+                        int value = 0;
+                        if (row < m && row >= 0 && col < n && col >= 0) {
+                            value = a[row][col];
+                            if (value == b[i][j] && value == 1) {
+                                overlap++;
+                            }
+                        }
+                    }
+                }
+                max = Math.max(max, overlap);
             }
         }
         return max;
     }
-
-    int count(int[][] a, int[][] b, int rm, int cm) {
-        int n = a.length;
-        int r = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                // supplements with 0...
-                int ib = i + rm;
-                int jb = j + cm;
-                if (ib < 0 || ib >= n || jb < 0 || jb >= n) {
-                    continue;
-                }
-                if (a[i][j] == b[ib][jb] && a[i][j] == 1) {
-                    r++;
-                }
-            }
-        }
-        return r;
-    }
 }
 
 class ImageOverlapSparse {
-    // only pick out ones then group the moves
-    Set<int[]> as = new HashSet<>();
-    Set<int[]> bs = new HashSet<>();
-    int mask = 100;
-
+    // what are the asks from each "1"?
+    // only pick out ones then group the desired moves.
     public int largestOverlap(int[][] a, int[][] b) {
-        int n = a.length;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        Set<int[]> as = new HashSet<>();
+        Set<int[]> bs = new HashSet<>();
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
                 if (a[i][j] == 1) {
                     as.add(new int[]{i, j});
                 }
@@ -82,16 +74,16 @@ class ImageOverlapSparse {
                 }
             }
         }
-        Map<Integer, Integer> map = new HashMap<>();
+        Map<Integer, Integer> m = new HashMap<>();
         int max = 0;
         for (int[] ai : as) {
             for (int[] bi : bs) {
-                int row = bi[0] - ai[0];
-                int col = bi[1] - ai[1];
-                int move = row * mask + col;
-                int nc = map.getOrDefault(move, 0) + 1;
-                max = Math.max(max, nc);
-                map.put(move, nc);
+                int drow = bi[0] - ai[0];
+                int dcol = bi[1] - ai[1];
+                int code = drow * 100 + dcol;
+                int nv = m.getOrDefault(code, 0) + 1;
+                m.put(code, nv);
+                max = Math.max(max, nv);
             }
         }
         return max;
