@@ -31,27 +31,24 @@ You may assume pattern contains only lowercase letters, and str contains lowerca
  */
 public class WordPattern {
     // must be two maps to avoid double booking on one side
-    public boolean wordPattern(String p, String str) {
-        Map<String, Character> m1 = new HashMap<>();
-        Map<Character, String> m2 = new HashMap<>();
-        int n = p.length();
+    public boolean wordPattern(String pattern, String str) {
+        Map<Character, String> pm = new HashMap<>();
+        Map<String, Character> sm = new HashMap<>();
         String[] ss = str.split(" ");
-        if (ss.length != n) {
+        if (ss.length != pattern.length()) {
             return false;
         }
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < ss.length; i++) {
             String s = ss[i];
-            char c = p.charAt(i);
-            Character m1m = m1.get(s);
-            String m2m = m2.get(c);
-            if (m1m == null && m2m == null) {
-                m1.put(s, c);
-                m2.put(c, s);
-            } else if (m1m == null || m2m == null) {
-                return false;
-            } else if (!m2m.equals(s) || m1m != c) {
+            char p = pattern.charAt(i);
+            if (pm.containsKey(p) && !s.equals(pm.get(p))) {
                 return false;
             }
+            if (sm.containsKey(s) && p != sm.get(s)) {
+                return false;
+            }
+            pm.put(p, s);
+            sm.put(s, p);
         }
         return true;
     }
