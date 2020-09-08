@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,34 +24,33 @@ Output:
 
 public class Permutations {
 
-    // the same code can be used in permutations II.
-    // another way: get later permutations then insert current i in between each number (first and last included) in later results
-    List<List<Integer>> r = new ArrayList<>();
+    // using combination (st) to get permutations
+    // if we dp it, we can reduce to n^2*n^n because when we are at i facing next choice, we only care what's selected, not their sequence...
+    private List<List<Integer>> res = new ArrayList<>();
 
     public List<List<Integer>> permute(int[] a) {
-        Map<Integer, Integer> map = new HashMap<>();
-
-        for (int i : a) {
-            map.put(i, map.getOrDefault(i, 0) + 1);
-        }
-        dop(0, a.length, new ArrayList<>(), map);
-        return r;
+        dfs(a, 0, 0, new ArrayList<>());
+        return res;
     }
 
-    void dop(int i, int n, List<Integer> cur, Map<Integer, Integer> map) {
+    private void dfs(int[] a, int i, int st, List<Integer> cur) {
+        System.out.println(i + " " + st);
+        int n = a.length;
         if (i == n) {
-            r.add(new ArrayList<>(cur));
+            res.add(new ArrayList<>(cur));
             return;
         }
-        for (int rem : map.keySet()) {
-            if (map.get(rem) > 0) {
-                cur.add(rem);
-                map.put(rem, map.get(rem) - 1);
-                dop(i + 1, n, cur, map);
+        for (int j = 0; j < n; j++) {
+            if (((st >> j) & 1) == 0) {
+                int nst = st | (1 << j);
+                cur.add(a[j]);
+                dfs(a, i + 1, nst, cur);
                 cur.remove(cur.size() - 1);
-                map.put(rem, map.get(rem) + 1);
-
             }
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Permutations().permute(ArrayUtils.read1d("1,2,3")));
     }
 }

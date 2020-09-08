@@ -17,20 +17,20 @@ public class MovingAverageInDataStream {
     /**
      * Initialize your data structure here.
      */
-    int sum = 0;
-    Deque<Integer> q = new ArrayDeque<>();
-    int size = 0;
+    private Deque<Integer> q = new ArrayDeque<>();
+    private int size;
+    private double sum = 0.0;
 
     public MovingAverageInDataStream(int size) {
         this.size = size;
     }
 
     public double next(int val) {
-        q.offer(val);
         sum += val;
+        q.offer(val);
         if (q.size() > size) {
             sum -= q.poll();
         }
-        return sum * 1.0 / q.size();
+        return sum / q.size();
     }
 }

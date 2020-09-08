@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /*
 LC#1467
 Given 2n balls of k distinct colors. You will be given an integer array balls of size k where balls[i] is the number of balls of color i.
@@ -55,64 +58,71 @@ Answers within 10^-5 of the actual value will be accepted as correct.
  */
 public class ProbabilityOfTwoBoxesHavingSameDistinct {
     // not dp, but a backtrack question!
-    double res = 0.0;
+    // the key is to use combination to deduce the number of possible permutations! we don't need to enumerate all the perms
+    // enumerate on each balls[i] to see how many balls we should put in this catetory to box1
+    private double count = 0;
 
     public double getProbability(int[] a) {
-        int n = a.length;
-        int allballs = 0;
-        for (int i = 0; i < n; i++) {
-            allballs += a[i];
-        }
-        double permall = perm(a);
-        int[] sta = new int[n];
-        int[] stb = new int[n];
-        dog(0, sta, stb, 0, 0, a, allballs);
-        return res / permall;
-    }
-
-
-    // calcing probabolity, using double is enough
-    private double perm(int[] a) {
-        int sizea = 0;
+        int all = 0;
+        double repeat = 1;
         for (int i = 0; i < a.length; i++) {
-            sizea += a[i];
+            all += a[i];
+            repeat *= fact(a[i]);
         }
-        double permall = perm(sizea);
-        for (int i = 0; i < a.length; i++) {
-            permall /= perm(a[i]);
-        }
-        return permall;
+        dfs(all, a, 0, new HashMap<>(), new HashMap<>(), 0, 0);
+        double allperm = fact(all) / repeat;
+        return count / allperm;
     }
 
-    double perm(double n) {
-        return n == 0 ? 1.0 : perm(n - 1) * n;
+    private double perm(Map<Integer, Integer> m) {
+        double repeat = 1;
+        int all = 0;
+        for (int k : m.keySet()) {
+            all += m.get(k);
+            repeat *= fact(m.get(k));
+        }
+        return fact(all) / repeat;
     }
 
-    // at position i, the first set has st as status
-    private void dog(int i, int[] sta, int[] stb, int acolor, int bcolor, int[] a, int allballs) {
-        int n = a.length;
-        int sizea = 0;
-        for (int j = 0; j < n; j++) {
-            sizea += sta[j];
-        }
-        if (sizea > allballs / 2) {
+    private double fact(int n) {
+        return n == 0 ? 1.0 : n * fact(n - 1);
+    }
+
+    private void dfs(int all,
+                     int[] a,
+                     int i,
+                     Map<Integer, Integer> m1,
+                     Map<Integer, Integer> m2,
+                     int size1, int size2) {
+        if (size1 > all / 2 || size2 > all / 2) {
             return;
         }
+        int n = a.length;
         if (i == n) {
-            if (sizea != allballs / 2 || acolor != bcolor) {
-                return;
+            if (size1 == size2 && m1.size() == m2.size()) {
+                count += perm(m1) * perm(m2); // key! use combination to get permutation
             }
-            double perma = perm(sta);
-            double permb = perm(stb);
-            res += perma * permb;
             return;
         }
         for (int j = 0; j <= a[i]; j++) {
-            sta[i] = j;
-            stb[i] = a[i] - j;
-            dog(i + 1, sta, stb, j > 0 ? acolor + 1 : acolor, j < a[i] ? bcolor + 1 : bcolor, a, allballs);
-            sta[i] = 0;
-            stb[i] = 0;
+            update(m1, i, j);
+            update(m2, i, a[i] - j);
+            size1 += j;
+            size2 += (a[i] - j);
+            dfs(all, a, i + 1, m1, m2, size1, size2);
+            size2 -= (a[i] - j);
+            size1 -= j;
+            update(m2, i, j - a[i]);
+            update(m1, i, -j);
+        }
+    }
+
+    private void update(Map<Integer, Integer> m, int k, int delta) {
+        int nv = m.getOrDefault(k, 0) + delta;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
         }
     }
 }

@@ -28,17 +28,19 @@ import base.TreeNode;
 
 public class SumOfRootToLeafBinaryNumbers {
     public int sumRootToLeaf(TreeNode root) {
-        return dfs(root, 0);
+        return dosum(root, 0);
     }
 
-    int dfs(TreeNode n, int accu) {
+    private int dosum(TreeNode n, int sum) {
         if (n == null) {
+            // mind the pure zero
             return 0;
         }
-        int cur = (accu << 1) + n.val;
+        int cur = sum * 2 + n.val;
         if (n.left == null && n.right == null) {
             return cur;
+        } else {
+            return dosum(n.left, cur) + dosum(n.right, cur);
         }
-        return dfs(n.left, cur) + dfs(n.right, cur);
     }
 }

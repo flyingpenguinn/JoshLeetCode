@@ -22,30 +22,32 @@ Output:
 public class PermutationsII {
 
     // for each position check a map to loop in available elements
-    List<List<Integer>> r = new ArrayList<>();
-
+    private List<List<Integer>> res = new ArrayList<>();
     public List<List<Integer>> permuteUnique(int[] a) {
-        Map<Integer, Integer> map = new HashMap<>();
-        for (int i : a) {
-            map.put(i, map.getOrDefault(i, 0) + 1);
+        Map<Integer,Integer> m = new HashMap<>();
+        for(int i=0; i<a.length;i++){
+            m.put(a[i], m.getOrDefault(a[i], 0)+1);
         }
-        dop(0, a.length, new ArrayList<>(), map);
-        return r;
+        dfs(a, 0, m, new ArrayList<>());
+        return res;
     }
 
-    void dop(int i, int n, List<Integer> cur, Map<Integer, Integer> map) {
-        if (i == n) {
-            r.add(new ArrayList<>(cur));
+    // iterate each number at each position. the number is sth like
+    // first 1/second 1/2/3....this can also be used to solve permutation 1
+    private void dfs(int[] a, int i, Map<Integer, Integer> m, List<Integer> cur) {
+        if(i==a.length){
+            res.add(new ArrayList<>(cur));
             return;
         }
-        for (int rem : map.keySet()) {
-            if (map.get(rem) > 0) {
-                cur.add(rem);
-                map.put(rem, map.get(rem) - 1);
-                dop(i + 1, n, cur, map);
-                cur.remove(cur.size() - 1);
-                map.put(rem, map.get(rem) + 1);
+        for(int k: m.keySet()){
+            if(m.get(k)==0){
+                continue;
             }
+            cur.add(k);
+            m.put(k, m.getOrDefault(k, 0)-1);
+            dfs(a, i+1, m, cur);
+            m.put(k, m.getOrDefault(k, 0)+1);
+            cur.remove(cur.size()-1);
         }
     }
 
