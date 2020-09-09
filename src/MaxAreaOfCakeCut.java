@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,34 +42,21 @@ It is guaranteed that all elements in horizontalCuts are distinct.
 It is guaranteed that all elements in verticalCuts are distinct.
  */
 public class MaxAreaOfCakeCut {
-    int Mod = 1000000007;
+    public int maxArea(int h, int w, int[] hori, int[] verti) {
+        Arrays.sort(hori);
+        Arrays.sort(verti);
+        long maxh = getmax(hori, h);
+        long maxw = getmax(verti, w);
+        int res = (int) (maxh * maxw % 1000000007);
+        return res;
+    }
 
-    public int maxArea(int h, int w, int[] horizontalCuts, int[] verticalCuts) {
-        List<Integer> hs = new ArrayList<>();
-        hs.add(0);
-        for (int i = 0; i < horizontalCuts.length; i++) {
-            hs.add(horizontalCuts[i]);
+    private int getmax(int[] hori, int h){
+        int maxh = hori[0];
+        for(int i=1; i<hori.length; i++){
+            maxh = Math.max(maxh, hori[i] -  hori[i-1]);
         }
-        hs.add(h);
-        List<Integer> ws = new ArrayList<>();
-        ws.add(0);
-        for (int i = 0; i < verticalCuts.length; i++) {
-            ws.add(verticalCuts[i]);
-        }
-        ws.add(w);
-        Collections.sort(hs);
-        Collections.sort(ws);
-        int maxh = 0;
-        for (int i = 1; i < hs.size(); i++) {
-            int diff = hs.get(i) - hs.get(i - 1);
-            maxh = Math.max(maxh, diff);
-        }
-        int maxw = 0;
-        for (int i = 1; i < ws.size(); i++) {
-            int diff = ws.get(i) - ws.get(i - 1);
-            maxw = Math.max(maxw, diff);
-        }
-        long rt = 1L * maxh * maxw;
-        return (int) (rt % Mod);
+        maxh = Math.max(maxh, (h- hori[hori.length-1]));
+        return maxh;
     }
 }
