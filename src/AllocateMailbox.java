@@ -47,39 +47,28 @@ n == houses.length
 Array houses contain unique integers.
  */
 public class AllocateMailbox {
-    // optimal solution is to put mail boxes on each house, not in the middle! and for k==1, optimal solution is to put at the median
+    // optimal solution is to put mail boxes on each house, not in between! and for k==1, optimal solution is to put at the median
     // each time bite a "sphere of influence of some mailbox" off. and dp on the remaining. in that sphere, we put the mailbox at the median
     // then precalculate the median
     // note we can get rid of the influence of an earlier mailbox because we are biting sphere off
-    int Max = 10000000;
-    int[][] dp;
+    private Integer[][] dp;
 
-    public int minDistance(int[] a, int boxes) {
-        int n = a.length;
-        dp = new int[n + 1][boxes + 1];
-        for (int i = 0; i < dp.length; i++) {
-            Arrays.fill(dp[i], -1);
-        }
+    public int minDistance(int[] a, int k) {
         Arrays.sort(a);
-        int[][] dist = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = i; j < n; j++) {
-                int mid = i + (j - i) / 2;
-                // median gives the best
-                for (int l = i; l < mid; l++) {
-                    int curdist = a[mid] - a[i];
-                    dist[i][j] += curdist;
-                }
-                for (int l = mid + 1; l <= j; l++) {
-                    int curdist = a[j] - a[mid];
-                    dist[i][j] += curdist;
-                }
-            }
+        int n = a.length;
+        int[] sum = new int[n];
+        dp = new Integer[n][k + 1];
+        sum[0] = a[0];
+        for (int i = 1; i < n; i++) {
+            sum[i] = sum[i - 1] + a[i];
         }
-        return dom(a, 0, boxes, dist);
+        return domin(a, sum, 0, k);
     }
 
-    private int dom(int[] a, int i, int k, int[][] dist) {
+    private int Max = 10000000;
+
+    // cover houses from i with k boxes. previous houses are covered by earlier boxes
+    private int domin(int[] a, int[] sum, int i, int k) {
         int n = a.length;
         if (i == n) {
             return 0;
@@ -87,13 +76,21 @@ public class AllocateMailbox {
         if (k == 0) {
             return Max;
         }
-        if (dp[i][k] != -1) {
+        if (dp[i][k] != null) {
             return dp[i][k];
         }
         int min = Max;
         for (int j = i; j < n; j++) {
-            int later = dom(a, j + 1, k - 1, dist);
-            int cur = later + dist[i][j];
+            // the boundary of the mail box area is i...j
+            int mid = (i + j) / 2;
+            int n2 = j - mid;
+            int n1 = mid - i;
+            int p2 = sum[j] - sum[mid];
+            int p1 = mid == 0 ? 0 : (sum[mid - 1] - (i == 0 ? 0 : sum[i - 1]));
+            // a1-a2+a3-a2+a4-a2+a5-a2
+            // so we have j-mid bigger numbers, and mid-i smaller numbers.
+            // each smaller gives extra -a[mid] while bigger number gives +a[mid]
+            int cur = (n1 - n2) * a[mid] + (p2 - p1) + domin(a, sum, j + 1, k - 1);
             min = Math.min(min, cur);
         }
         dp[i][k] = min;

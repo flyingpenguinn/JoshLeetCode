@@ -24,27 +24,24 @@ Note: You may assume that the secret number and your friend's guess only contain
  */
 public class BullsAndCows {
     // totally exclude As when dealing with B
-    public String getHint(String s, String g) {
-        int n = s.length();
+    public String getHint(String s, String t) {
         int as = 0;
         int bs = 0;
-        int[] am = new int[10];
+        int n = s.length();
+        int[] sm = new int[10];
+        int[] tm = new int[10];
         for (int i = 0; i < n; i++) {
-            if (s.charAt(i) == g.charAt(i)) {
+            int sc = s.charAt(i) - '0';
+            int tc = t.charAt(i) - '0';
+            if (sc == tc) {
                 as++;
             } else {
-                am[s.charAt(i) - '0']++;
+                sm[sc]++;
+                tm[tc]++;
             }
         }
-        for (int i = 0; i < n; i++) {
-            if (s.charAt(i) == g.charAt(i)) {
-                // skip as
-                continue;
-            }
-            if (am[g.charAt(i) - '0'] > 0) {
-                am[g.charAt(i) - '0']--;
-                bs++;
-            }
+        for (int i = 0; i < 10; i++) {
+            bs += Math.min(sm[i], tm[i]);
         }
         return as + "A" + bs + "B";
     }
