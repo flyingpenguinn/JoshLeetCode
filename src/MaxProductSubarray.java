@@ -17,25 +17,22 @@ Explanation: The result cannot be 2, because [-2,-1] is not a subarray.
 import static java.lang.Math.*;
 
 public class MaxProductSubarray {
-    // max aend at ai is either max ending at ai-1 *ai,or min ending at ai-1*ai,or ai itself
+    // max end at ai is either max ending at ai-1 *ai,or min ending at ai-1*ai,or ai itself
     public int maxProduct(int[] a) {
-        // check null etc
+        int maxe = 1;
+        int mine = 1;
+        int max = Integer.MIN_VALUE;
         int n = a.length;
-        int maxe = a[0];
-        int mine = a[0];
-        int max = a[0];
-        for (int i = 1; i < n; i++) {
-            if (a[i - 1] == 0) {
-                maxe = a[i];
-                mine = a[i];
-            } else {
-                int n1 = maxe * a[i];
-                int n2 = mine * a[i];
-                maxe = Math.max(n1, Math.max(n2, a[i]));
-                // max subarray sum is actually 2 numbers maxed together
-                mine = Math.min(n1, Math.min(n2, a[i]));
-            }
+        for (int i = 0; i < n; i++) {
+            int oldmaxe = maxe; // must copy them out! otherwise maxe is polluted can't be used in mine
+            int oldmine = mine;
+            maxe = Math.max(oldmaxe * a[i], Math.max(oldmine * a[i], a[i]));
+            mine = Math.min(oldmaxe * a[i], Math.min(oldmine * a[i], a[i]));
             max = Math.max(max, maxe);
+            if (a[i] == 0) {
+                maxe = 1;
+                mine = 1;
+            }
         }
         return max;
     }

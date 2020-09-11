@@ -36,68 +36,33 @@ Constraints:
 -1000 <= nums1[i], nums2[i] <= 1000
  */
 public class MaxDotProductBetweenSubsequences {
-    // dpij means when we MUST pick one, the dot product. using 1...i and 1...j
-    // we can opt not to pick anything before ij
-    int Min = -10000000;
+    // can be extended to "at least pick k". when the picks < threadshold we return the min value
+    private int Min = Integer.MIN_VALUE;
+    private Integer[][][] dp;
 
-    public int maxDotProduct(int[] a, int[] b) {
-        int an = a.length;
-        int bn = b.length;
-        int[][] dp = new int[an + 1][bn + 1];
-        // given we muts pick, 0 yields Min because there is nothing to pair with
-        for (int i = 0; i <= an; i++) {
-            dp[i][0] = Min;
-        }
-        for (int j = 0; j <= bn; j++) {
-            dp[0][j] = Min;
-        }
-        for (int i = 1; i <= an; i++) {
-            for (int j = 1; j <= bn; j++) {
-                int nopick1 = dp[i - 1][j]; // we need i-1 or j-1 here because w are not picking so rely on them to pick
-                int nopick2 = dp[i][j - 1];
-                int cur = a[i - 1] * b[j - 1];// we can choose not to pick anything later because we picked here so no longer rely on them
-                int pick = Math.max(dp[i - 1][j - 1] + cur, cur);
-                dp[i][j] = Math.max(nopick1, Math.max(nopick2, pick));
-            }
-        }
-        return dp[an][bn];
+    public int maxDotProduct(int[] a1, int[] a2) {
+        dp = new Integer[a1.length][a2.length][2];
+        return domax(a1, a2, 0, 0, 0);
     }
-}
 
-class MaxDotProductExtension {
-    // what if it wants to pick "at least k pairs"?
-    // in the original problem when k == 0 it's 0 so an easy one.
-    int Min = -10000000;
-
-    public int maxDotProduct(int[] a, int[] b) {
-        int an = a.length;
-        int bn = b.length;
-        int picks = 1; // must do picks times
-        int[][][] dp = new int[an + 1][bn + 1][picks + 1];
-
-        // given we must pick >=picks items
-        for (int i = 0; i <= an; i++) {
-            for (int k = 1; k <= picks; k++) {
-                dp[i][0][k] = Min;
+    private int domax(int[] a1, int[] a2, int i, int j, int picked) {
+        if (i == a1.length || j == a2.length) {
+            if (picked == 1) {
+                return 0;
+            } else {
+                // rule out illegal situations...
+                return Min;
             }
         }
-        for (int j = 0; j <= bn; j++) {
-            for (int k = 1; k <= picks; k++) {
-                dp[0][j][k] = Min;
-            }
+        if (dp[i][j][picked] != null) {
+            return dp[i][j][picked];
         }
-        for (int i = 1; i <= an; i++) {
-            for (int j = 1; j <= bn; j++) {
-                for (int k = 1; k <= picks; k++) {
-                    int nopick1 = dp[i - 1][j][k];
-                    int nopick2 = dp[i][j - 1][k];
-                    // at least k times, so we have 2 choices: still pick k in i-1,j-1, or pick k-1 times there because we picked here
-                    int pick = Math.max(dp[i - 1][j - 1][k - 1], dp[i - 1][j - 1][k]) + a[i - 1] * b[j - 1];
-                    dp[i][j][k] = Math.max(nopick1, Math.max(nopick2, pick));
-                }
-            }
-        }
-        return dp[an][bn][1];
+        int way1 = a1[i] * a2[j] + domax(a1, a2, i + 1, j + 1, 1);
+        int way2 = domax(a1, a2, i, j + 1, picked);
+        int way3 = domax(a1, a2, i + 1, j, picked);
+        int rt = Math.max(way1, Math.max(way2, way3));
+        dp[i][j][picked] = rt;
+        return rt;
     }
 }
 
