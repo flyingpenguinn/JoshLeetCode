@@ -42,63 +42,70 @@ points[i].length == 2
  */
 public class MaxNumberOfDarts {
     // given 2 points and a radius can find at most 2 circles. then check each circle
-    public int numPoints(int[][] points, int r) {
-        List<double[]> centers = new ArrayList<>();
-        int n = points.length;
-        double[][] p = new double[n][2];
-        for (int i = 0; i < n; i++) {
-            p[i][0] = points[i][0];
-            p[i][1] = points[i][1];
+    // find all circles that pass two points, and check how many points are there in the circle defined by them
+    // if no such circle found, then at least we can cover 1 point
+    public int numPoints(int[][] intps, int r) {
+        int max = 1;
+        double[][] p = new double[intps.length][2];
+        for (int i = 0; i < p.length; i++) {
+            p[i][0] = intps[i][0];
+            p[i][1] = intps[i][1];
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == j) {
-                    continue;
-                }
-                List<double[]> cs = getCircles(points[i][0], points[i][1], points[j][0], points[j][1], r);
-                centers.addAll(cs);
-            }
-        }
-        int res = 1;
-        for (double[] c : centers) {
-            int cur = 0;
-            for (int i = 0; i < n; i++) {
-                if (within(c, p[i], r)) {
-                    cur++;
+        for (int i = 0; i < p.length; i++) {
+            for (int j = i + 1; j < p.length; j++) {
+                double[][] circ = findCircle(p[i], p[j], r);
+                for (int t = 0; t < circ.length; t++) {
+                    int cur = 0;
+                    for (int k = 0; k < p.length; k++) {
+                        if (inside(p[k], circ[t], r)) {
+                            cur++;
+                        }
+                    }
+                    max = Math.max(max, cur);
                 }
             }
-            res = Math.max(res, cur);
         }
-        return res;
+        return max;
     }
 
-    private boolean within(double[] c, double[] p, int r) {
-        double dx = c[0] - p[0];
-        double dy = c[1] - p[1];
-        double dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist <= r + 0.00001) {
-            // double <= trick
-            return true;
-        }
-        return false;
+    private double eps = 0.00001;
+    private double[] origin = {0, 0};
+
+    private boolean inside(double[] p, double[] circ, int r) {
+        return dist(p, circ) <= r + eps;
     }
 
+    private double dist(double[] p1, double[] p2) {
+        double dx = p1[0] - p2[0];
+        double dy = p1[1] - p2[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 
-    private List<double[]> getCircles(double x1, double y1, double x2, double y2, double r) {
-        double q = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-        double x3 = (x1 + x2) / 2.0;
-        double y3 = (y1 + y2) / 2.0;
-        double cx = Math.sqrt(r * r - (q / 2.0) * (q / 2.0)) * (y1 - y2) / q;
-        double rx1 = x3 + cx;
-        double cy = Math.sqrt(r * r - (q / 2.0) * (q / 2.0)) * (x2 - x1) / q;
-        double ry1 = y3 + cy;
-        double rx2 = x3 - cx;
-        double ry2 = y3 - cy;
-        double[] r1 = new double[]{rx1, ry1};
-        double[] r2 = new double[]{rx2, ry2};
-        List<double[]> res = new ArrayList<>();
-        res.add(r1);
-        res.add(r2);
+    private double[][] findCircle(double[] p1, double[] p2, double r) {
+        // two circle's x, y
+        double[] m = new double[]{(p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0};
+        double half = dist(p1, p2) / 2.0;
+        double len = Math.sqrt(r * r - half * half);
+        if (len == 0) {
+            // if len ==0, mid is the point we want. such as -2,0 and 2,0, 0,0 is the point
+            double[][] res = new double[1][2];
+            res[0] = m;
+            return res;
+        }
+        // otherwise, we find the vector that is perpendicular to the vector defined by the two points.
+        // then unit it, times the dist from center to mid point
+        double[][] res = new double[2][2];
+        double[] vector = {p2[0] - p1[0], p2[1] - p1[1]};
+        // note the perpendicular vector can go both ways
+        double[] pv = {1, -vector[0] / vector[1]};
+        double pvlen = dist(origin, pv);
+        pv[0] /= pvlen;
+        pv[1] /= pvlen;
+        res[0][0] = m[0] + pv[0] * len;
+        res[0][1] = m[1] + pv[1] * len;
+
+        res[1][0] = m[0] - pv[0] * len;
+        res[1][1] = m[1] - pv[1] * len;
         return res;
     }
 }

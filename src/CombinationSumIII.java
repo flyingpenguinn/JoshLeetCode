@@ -48,29 +48,25 @@ public class CombinationSumIII {
 
 class CombinationSumIIIpicknum {
     // or for each 1 to 9 pick/non pick
+    private List<List<Integer>> r = new ArrayList<>();
     public List<List<Integer>> combinationSum3(int k, int n) {
-        return dom(9, k, n);
+        dfs(1,n,k,new ArrayList<>());
+        return r;
     }
 
-    List<List<Integer>> dom(int i, int k, int n) {
-        List<List<Integer>> r = new ArrayList<>();
-        if (n == 0 && k == 0) {
-            r.add(new ArrayList<>());
-            return r;
+    private void dfs(int i, int n, int k, List<Integer> cur){
+        if(n<0 || k<0){
+            return;
         }
-        if (n == 0 || k == 0 || i == 0) {
-            return r;
-        }
-        List<List<Integer>> without = dom(i - 1, k, n);
-        r.addAll(without);
-        List<List<Integer>> with = new ArrayList<>();
-        if (n - i >= 0) {
-            with = dom(i - 1, k - 1, n - i);
-            for (List<Integer> wi : with) {
-                wi.add(i);
-                r.add(wi);
+        if(i==10){
+            if(n==0 && k==0){
+                r.add(new ArrayList<>(cur));
             }
+            return;
         }
-        return r;
+        dfs(i+1, n, k, cur);
+        cur.add(i);
+        dfs(i+1, n-i, k-1, cur);
+        cur.remove(cur.size()-1);
     }
 }
