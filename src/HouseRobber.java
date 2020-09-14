@@ -23,14 +23,14 @@ public class HouseRobber {
     // we just need i, i+1, i+2, so only 3 vars needed
     public int rob(int[] a) {
         int n = a.length;
-        int n2 = 0;
-        int n1 = 0;
+        int ap1 = 0;
+        int ap2 = 0;
         int max = 0;
         for (int i = n - 1; i >= 0; i--) {
-            int c = Math.max(n1, n2 + a[i]);
-            max = Math.max(max, c);
-            n2 = n1;
-            n1 = c;
+            int cur = Math.max(ap1, a[i] + ap2);
+            max = Math.max(max, cur);
+            ap2 = ap1;
+            ap1 = cur;
         }
         return max;
     }

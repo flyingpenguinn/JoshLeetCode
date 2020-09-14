@@ -56,31 +56,29 @@ queries[i][0] != queries[i][1]
 public class CourseScheduleIv {
 
     // floyd algo to get transitive closure, O(n3) for the whole graph
-    public List<Boolean> checkIfPrerequisite(int n, int[][] p, int[][] q) {
-        int Max = 10000000;
-        int[][] dist = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            Arrays.fill(dist[i], Max);
-        }
-        for (int[] pi : p) {
-            dist[pi[0]][pi[1]] = 1;
+    public List<Boolean> checkIfPrerequisite(int n, int[][] pres, int[][] qs) {
+        boolean[][] dp = new boolean[n][n];
+        for (int[] pre : pres) {
+            dp[pre[0]][pre[1]] = true;
         }
         for (int k = 0; k < n; k++) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
-                    dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                    if (!dp[i][j]) {
+                        dp[i][j] = dp[i][k] && dp[k][j];
+                    }
                 }
             }
         }
-        List<Boolean> r = new ArrayList<>();
-        for (int[] qi : q) {
-            if (dist[qi[0]][qi[1]] < Max) {
-                r.add(true);
+        List<Boolean> res = new ArrayList<>();
+        for (int[] q : qs) {
+            if (dp[q[0]][q[1]]) {
+                res.add(true);
             } else {
-                r.add(false);
+                res.add(false);
             }
         }
-        return r;
+        return res;
     }
 }
 
