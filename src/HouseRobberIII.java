@@ -36,31 +36,28 @@ Explanation: Maximum amount of money the thief can rob = 4 + 5 = 9.
  */
 public class HouseRobberIII {
     // classical problem: max independent set of the tree
-    Map<TreeNode, Integer> dp = new HashMap<>();
+    private Map<TreeNode, Integer> dp = new HashMap<>();
 
     public int rob(TreeNode root) {
-        return dor(root);
+        return dorob(root);
     }
 
-    int dor(TreeNode n) {
+    private int dorob(TreeNode n) {
         if (n == null) {
             return 0;
         }
-        Integer ch = dp.get(n);
-        if (ch != null) {
-            return ch;
+        if (dp.containsKey(n)) {
+            return dp.get(n);
         }
-        int wo = dor(n.left) + dor(n.right);
-        int with = n.val;
-        if (n.left != null) {
-            with += dor(n.left.left);
-            with += dor(n.left.right);
-        }
-        if (n.right != null) {
-            with += dor(n.right.left);
-            with += dor(n.right.right);
-        }
-        int rt = Math.max(wo, with);
+        int left = dorob(n.left);
+        int right = dorob(n.right);
+        int ll = n.left == null ? 0 : dorob(n.left.left);
+        int lr = n.left == null ? 0 : dorob(n.left.right);
+        int rl = n.right == null ? 0 : dorob(n.right.left);
+        int rr = n.right == null ? 0 : dorob(n.right.right);
+        int way1 = n.val + ll + lr + rl + rr;
+        int way2 = left + right;
+        int rt = Math.max(way1, way2);
         dp.put(n, rt);
         return rt;
     }
