@@ -24,30 +24,23 @@ Explanation: Rob house 1 (money = 1) and then rob house 3 (money = 3).
 public class HouseRobberII {
     // either rob last,so1...n-1
     // or dobt,so 0....n-2
+    // note the special case when length==1
     public int rob(int[] a) {
-        int n = a.length;
-        if (n == 0) {
-            return 0;
+        if (a.length == 1) {
+            return a[0];
         }
-        int l = a[n - 1];
-        int nl = 0;
-        int max = l;// l,not 0
-        // rob last
-        for (int i = n - 2; i >= 1; i--) {
-            int cur = Math.max(l, nl + a[i]);
-            max = Math.max(max, cur);
-            nl = l;
-            l = cur;
-        }
-        // dont rob last.can do the first
-        l = 0;
-        nl = 0;
-        for (int i = n - 2; i >= 0; i--) {
-            int cur = Math.max(l, nl + a[i]);
-            max = Math.max(max, cur);
-            nl = l;
-            l = cur;
+        return Math.max(dorob(a, 1, a.length - 1), dorob(a, 0, a.length - 2));
+    }
 
+    private int dorob(int[] a, int start, int end) {
+        int ap1 = 0;
+        int ap2 = 0;
+        int max = 0;
+        for (int i = end; i >= start; i--) {
+            int cur = Math.max(ap1, a[i] + ap2);
+            max = Math.max(max, cur);
+            ap2 = ap1;
+            ap1 = cur;
         }
         return max;
     }

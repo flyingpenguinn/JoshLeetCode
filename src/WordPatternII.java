@@ -26,52 +26,40 @@ You may assume both pattern and str contains only lowercase letters.
  */
 public class WordPatternII {
     // no need to dp: no overlapping subproboem...every time a got a different value...
-
     public boolean wordPatternMatch(String p, String s) {
-        String[] ms = new String[26];
-        return dow(0, 0, p, s, ms, new HashMap<>());
+        return dopattern(p, s, 0, 0, new HashMap<>(), new HashMap<>());
     }
 
-    boolean dow(int i, int j, String p, String s, String[] ms, Map<String, Character> mc) {
-        if (i == p.length() && j == s.length()) {
+    private boolean dopattern(String p, String s, int pi, int si, Map<Character, String> pm, Map<String, Character> sm) {
+        if (pi == p.length() && si == s.length()) {
             return true;
-        }
-        if (i == p.length() || j == s.length()) {
+        } else if (pi == p.length() || si == s.length()) {
             return false;
         }
-        if (p.length() - i > s.length() - j) {
-            // prune early
-            return false;
-        }
-        char c = p.charAt(i);
-        String mapped = ms[c - 'a'];
-        if (mapped == null) {
-            StringBuilder sb = new StringBuilder();
-            for (int k = j; k < s.length(); k++) {
-                sb.append(s.charAt(k));
-                String ns = sb.toString();
-                if (mc.get(ns) != null) {
-                    continue;
-                }
-                ms[c - 'a'] = ns;
-                mc.put(ns, c);
-                boolean later = dow(i + 1, k + 1, p, s, ms, mc);
-                ms[c - 'a'] = null;
-                mc.remove(ns);
-                if (later) {
-                    return true;
-                }
+        char c = p.charAt(pi);
+        String mappeds = pm.get(c);
+        if (mappeds != null) {
+            if (s.startsWith(mappeds, si)) {
+                return dopattern(p, s, pi + 1, si + mappeds.length(), pm, sm);
             }
-
-            return false;
-
         } else {
-            if (s.startsWith(mapped, j)) {
-                return dow(i + 1, j + mapped.length(), p, s, ms, mc);
-            } else {
-                return false;
+            StringBuilder sb = new StringBuilder();
+            for (int j = si; j < s.length(); j++) {
+                sb.append(s.charAt(j));
+                String str = sb.toString();
+                Character mappedp = sm.get(str);
+                if (mappedp == null) {
+                    pm.put(c, str);
+                    sm.put(str, c);
+                    if (dopattern(p, s, pi + 1, j + 1, pm, sm)) {
+                        return true;
+                    }
+                    pm.remove(c);
+                    sm.remove(str);
+                }
             }
         }
+        return false;
     }
 
 
