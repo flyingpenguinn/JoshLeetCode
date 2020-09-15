@@ -42,56 +42,54 @@ n == mat.length[i]
 1 <= mat[i][j] <= 5000
 mat[i] is a non decreasing array.
  */
-public class FindKthSmallestSumSortedRow {
+public class FindKthSmallestSumInMatrixSortedRow {
 
-    // divide and conquer on the 2-list solution based on LC#373
-    // note in 2 list solutoin, when we have i,j, we either i+1 or j+1
-    // when we extend from a 2-list solution to n-list, we should consider divide and conquer
-    // T(n) = 2*T(n/2)+klogk, so overall O(n) because k logk ~200
+    // we know how to merge 2 lists. merging n lists is just to merge 2 at a time then loop on this process until we only have one.
+    // can also merge n/2 first then merge the remaining 2 as the last step
+    // note k is small and every time we merge till we get k numbers and stop
     public int kthSmallest(int[][] a, int k) {
-        List<Integer> r = dok(a, 0, a.length - 1, k);
-        return r.get(k - 1);
-    }
-
-    private List<Integer> dok(int[][] a, int i, int j, int k) {
-        if (i == j) {
-            List<Integer> r = new ArrayList<>();
-            for (int p = 0; p < a[i].length; p++) {
-                r.add(a[i][p]);
+        List<List<Integer>> list = new ArrayList<>();
+        for (int i = 0; i < a.length; i++) {
+            List<Integer> li = new ArrayList<>();
+            for (int j = 0; j < a[i].length && j < k; j++) {
+                li.add(a[i][j]);
             }
-            return r;
+            list.add(li);
         }
-        int mid = i + (j - i) / 2;
-        List<Integer> l1 = dok(a, i, mid, k);
-        List<Integer> l2 = dok(a, mid + 1, j, k);
-        List<Integer> r = dotwolists(l1, l2, k);
-        Collections.sort(r);
-        return r;
+        while (list.size() > 1) {
+            List<List<Integer>> nlist = new ArrayList<>();
+            for (int i = 0; i < list.size(); i += 2) {
+                if (i + 1 < list.size()) {
+                    List<Integer> ri = merge(list.get(i), list.get(i + 1), k);
+                    nlist.add(ri);
+                } else {
+                    nlist.add(list.get(i));
+                }
+            }
+            list = nlist;
+        }
+        return list.get(0).get(k - 1);
     }
 
-    private List<Integer> dotwolists(List<Integer> a, List<Integer> b, int k) {
+    private List<Integer> merge(List<Integer> l1, List<Integer> l2, int k) {
+        // i1, i2, value
         PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
-        List<Integer> r = new ArrayList<>();
-        if (a.size() == 0 || b.size() == 0 || k == 0) {
-            return r;
-        }
-        pq.offer(new int[]{0, 0, a.get(0) + b.get(0)});
-        while (!pq.isEmpty()) {
+        List<Integer> res = new ArrayList<>();
+        pq.offer(new int[]{0, 0, l1.get(0) + l2.get(0)});
+        while (!pq.isEmpty() && k > 0) {
             int[] top = pq.poll();
-            int ai = top[0];
-            int bi = top[1];
-            r.add(top[2]);
-            if (r.size() == k) {
-                break;
+            res.add(top[2]);
+            int i = top[0];
+            int j = top[1];
+            if (j + 1 < l2.size()) {
+                pq.offer(new int[]{i, j + 1, l1.get(i) + l2.get(j + 1)});
             }
-            if (ai + 1 < a.size()) {
-                pq.offer(new int[]{ai + 1, bi, a.get(ai + 1) + b.get(bi)});
+            if (j == 0 && i + 1 < l1.size()) {
+                pq.offer(new int[]{i + 1, j, l1.get(i + 1) + l2.get(j)});
             }
-            if (ai == 0 && bi + 1 < b.size()) {
-                pq.offer(new int[]{ai, bi + 1, a.get(ai) + b.get(bi + 1)});
-            }
+            k--;
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {

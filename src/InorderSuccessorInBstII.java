@@ -65,24 +65,22 @@ public class InorderSuccessorInBstII {
         public Node parent;
     }
 
-    public Node inorderSuccessor(Node n) {
-        if (n == null) {
+    public Node inorderSuccessor(Node node) {
+        if(node==null){
             return null;
         }
-        if (n.right != null) {
-            Node p = n.right;
-            while (p.left != null) {
-                p = p.left;
+        else if(node.right != null){
+            node = node.right;
+            while(node.left!=null){
+                node = node.left;
             }
-            return p;
-        } else {
-            Node p = n.parent;
-            while (p != null && p.right == n) {
-                n = p;
-                p = p.parent;
+            return node;
+        }else{
+            while(node.parent != null && node == node.parent.right){
+                node = node.parent;
             }
-            return p;
+            //either parent == null or node is its left
+            return node.parent;
         }
-
     }
 }
