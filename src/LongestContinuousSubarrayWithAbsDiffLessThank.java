@@ -38,16 +38,15 @@ public class LongestContinuousSubarrayWithAbsDiffLessThank {
     // we can do this because once it's no longer good, all afterward is no good. this is similar in nature as at most k different chars
     public int longestSubarray(int[] a, int limit) {
         int n = a.length;
-        TreeMap<Integer, Integer> tm = new TreeMap<>();
-        int r = 0;
-        int low = 0;
+        int max = 1;
         int high = 0;
+        int low = 0;
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
         update(tm, a[0], 1);
         while (true) {
-            Integer min = tm.firstKey();
-            Integer max = tm.lastKey();
-            if (min != null && max != null && max - min <= limit) {
-                r = Math.max(high - low + 1, r);
+            int diff = tm.lastKey() - tm.firstKey(); // length at least 1 because limit>=0 so we dont need null check here
+            if (diff <= limit) {
+                max = Math.max(max, high - low + 1);
                 high++;
                 if (high == n) {
                     break;
@@ -58,15 +57,15 @@ public class LongestContinuousSubarrayWithAbsDiffLessThank {
                 low++;
             }
         }
-        return r;
+        return max;
     }
 
-    void update(TreeMap<Integer, Integer> tm, int t, int d) {
-        int nv = tm.getOrDefault(t, 0) + d;
+    private void update(TreeMap<Integer, Integer> tm, int key, int delta) {
+        int nv = tm.getOrDefault(key, 0) + delta;
         if (nv <= 0) {
-            tm.remove(t);
+            tm.remove(key);
         } else {
-            tm.put(t, nv);
+            tm.put(key, nv);
         }
     }
 }
