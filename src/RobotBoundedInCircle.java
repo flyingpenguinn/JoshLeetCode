@@ -1,86 +1,31 @@
 public class RobotBoundedInCircle {
-
-    // if on origin or not facing north it's gonna return
-    int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    // if after traversing, we are back to origin, then bounded
+    // otherwise as long as not facing up we are good.
+    // can be proved by showing that if faces right/left, then after 4 rounds it will go back. if facing down then  will end in 2 rounds
+    private int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
     public boolean isRobotBounded(String ins) {
-        int px = 0;
-        int py = 0;
-        int d = 0;
-
-        int L = ins.length();
-        int i = 0;
-
-        while (i < L) {
-
-            //    System.out.println(code)
-            char c = ins.charAt(i);
-            i++;
-            if (c == 'L') {
-                d = (d - 1 + 4) % 4;
-            } else if (c == 'R') {
-                d = (d + 1) % 4;
+        int n = ins.length();
+        int x = 0;
+        int y = 0;
+        int dir = 3;
+        for (int i = 0; i < n; i++) {
+            char c = ins.charAt(i % n);
+            if (c == 'G') {
+                x += dirs[dir][0];
+                y += dirs[dir][1];
+            } else if (c == 'L') {
+                dir = (dir + 1) % 4;
             } else {
-                px = px + dirs[d][0];
-                py = py + dirs[d][1];
+                dir = (dir + 3) % 4;
             }
         }
-
-        if (px == 0 && py == 0) {
+        if (x == 0 && y == 0) {
             return true;
         }
-        if (d != 0) {
+        if (dir != 3) {
             return true;
         }
         return false;
-    }
-}
-
-// it must form a circlr in 4*L
-// in 5*L if it doesnt have a circle it will break through
-class RobotBoundedInCircleMyWay {
-    int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
-    public boolean isRobotBounded(String ins) {
-        int px = 0;
-        int py = 0;
-        int d = 0;
-        int step = 0;
-        int L = ins.length() * 4;
-        int L2 = L + ins.length();
-        int i = 0;
-        int xmax = -1000;
-        int ymax = -1000;
-        int xmin = 1000;
-        int ymin = 1000;
-        while (step < L2) {
-            if (i == ins.length()) {
-                i = 0;
-            }
-            String code = px + "," + py;
-            //    System.out.println(code);
-            step++;
-            if (step < L) {
-                xmax = Math.max(px, xmax);
-                ymax = Math.max(py, ymax);
-                xmin = Math.min(px, xmin);
-                ymin = Math.min(py, ymin);
-            } else {
-                if (px > xmax || px < xmin | py > ymax || py < ymin) {
-                    return false;
-                }
-            }
-            char c = ins.charAt(i);
-            i = (i + 1) % ins.length();
-            if (c == 'L') {
-                d = (d - 1 + 4) % 4;
-            } else if (c == 'R') {
-                d = (d + 1) % 4;
-            } else {
-                px = px + dirs[d][0];
-                py = py + dirs[d][1];
-            }
-        }
-        return true;
     }
 }

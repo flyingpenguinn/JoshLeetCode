@@ -44,21 +44,25 @@ Constraints:
 1 <= k <= cardPoints.length
  */
 public class MaxPointsFromCards {
-    // we can only get points from two ends, so the part we dont pick forms a subarray...
+    // we can only get points from two ends, so the part we dont pick forms a subarray of size k
+    // note the trap when n==k there is no subarray so need some special treatment
     public int maxScore(int[] a, int k) {
         int n = a.length;
-        int[] sum = new int[n];
+        int sum = 0;
+        int psum = 0;
         int min = Integer.MAX_VALUE;
-        int allsum = 0;
         for (int i = 0; i < n; i++) {
-            allsum += a[i];
-            sum[i] = i == 0 ? a[i] : sum[i - 1] + a[i];
-            int pre = i - (n - k);
-            if (pre >= -1) {
-                int diff = sum[i] - (pre == -1 ? 0 : sum[pre]);
-                min = Math.min(diff, min);
+            sum += a[i];
+            psum += a[i];
+            int head = i - (n - k) + 1;
+            if (head >= 0 && n > k) { //!
+                min = Math.min(min, psum);
+                psum -= a[head];
             }
         }
-        return allsum - min;
+        if (n <= k) {
+            return sum;
+        }
+        return sum - min;
     }
 }
