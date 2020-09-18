@@ -52,38 +52,39 @@ Constraints:
 public class StoneGameIII {
     // given a status, calculate the biggest gap this user can achieve. from opponent, the later gap is -later to current user
     // almost the same as "predict winner"
-    int[] dp;
-
     public String stoneGameIII(int[] a) {
-        dp = new int[a.length];
-        Arrays.fill(dp, -1);
-        int rt = dos(a, 0);
-        if (rt > 0) {
+        int n = a.length;
+        dp = new Integer[n + 1];
+        int res = dogame(a, 0);
+        if (res > 0) {
             return "Alice";
-        } else if (rt < 0) {
+        } else if (res < 0) {
             return "Bob";
         } else {
             return "Tie";
         }
     }
 
+    private Integer[] dp;
 
-    private int dos(int[] a, int i) {
-        if (i == a.length) {
+    // max stone diff i can get from opponent starting i
+    private int dogame(int[] a, int i) {
+        int n = a.length;
+        if (i == n) {
             return 0;
         }
-        if (dp[i] != -1) {
+        if (dp[i] != null) {
             return dp[i];
         }
-        int max = Integer.MIN_VALUE;
-        int accu = 0;
-        for (int j = i; j < i + 3 && j < a.length; j++) {
-            accu += a[j];
-            int later = dos(a, j + 1);
-            int cur = -later + accu;
-            max = Math.max(max, cur);
+        int stones = 0;
+        int res = Integer.MIN_VALUE;
+        for (int j = i; j <= i + 2 && j < n; j++) {
+            stones += a[j];
+            // dogame returns p2-p1. now we want p1-p2
+            int cur = stones - dogame(a, j + 1);
+            res = Math.max(res, cur);
         }
-        dp[i] = max;
-        return max;
+        dp[i] = res;
+        return res;
     }
 }

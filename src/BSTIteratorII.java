@@ -59,7 +59,6 @@ class BstIteratorIIList {
         private Deque<TreeNode> nst = new ArrayDeque<>();
         private List<TreeNode> list = new ArrayList<>();
         private int nextIndex = -1;
-
         // nextIndex is the cur element tht we are standing on
         // nextIndex- 1 is the prev value; next+1 is the next value, if exists, in the list
         // if nextIndex+1 is too big we expand the list by adding the top of the stack to it and move nextIndex
@@ -71,12 +70,16 @@ class BstIteratorIIList {
             }
         }
 
+        private boolean inRange(int i) {
+            return i >= 0 && i < list.size();
+        }
+
         public BSTIterator(TreeNode root) {
             pushLeft(root);
         }
 
         public boolean hasNext() {
-            if (nextIndex + 1 >= 0 && nextIndex + 1 < list.size()) {
+            if (inRange(nextIndex + 1)) {
                 return true;
             }
             return !nst.isEmpty();
@@ -84,7 +87,7 @@ class BstIteratorIIList {
 
         public int next() {
             int rt = 0;
-            if (nextIndex + 1 >= 0 && nextIndex + 1 < list.size()) {
+            if (inRange(nextIndex + 1)) {
                 rt = list.get(nextIndex + 1).val;
             } else {
                 // if cur node is the last we will have to expand
@@ -98,7 +101,7 @@ class BstIteratorIIList {
         }
 
         public boolean hasPrev() {
-            return nextIndex - 1 >= 0 && nextIndex - 1 < list.size();
+            return inRange(nextIndex - 1);
         }
 
         public int prev() {
