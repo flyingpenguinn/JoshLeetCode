@@ -45,130 +45,48 @@ Note:
  */
 public class UniquePathsIII {
 
-    // o(r*c*2^rc) number of hamilton cycles
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    Map<Long, Integer>[][] dp;
+    // number of hamilton cycles... worst case O(3^n) n is the number of walkable cells. the bound of 20 is very misleading!
+    private int res = 0;
 
     public int uniquePathsIII(int[][] a) {
         int m = a.length;
         int n = a[0].length;
-        dp = new HashMap[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                dp[i][j] = new HashMap<>();
-            }
-        }
-        int[] start = {0, 0};
-        long all = 0;
+        int[] start = null;
+        int nonob = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (a[i][j] == 1) {
-                    start[0] = i;
-                    start[1] = j;
+                    start = new int[]{i, j};
                 }
                 if (a[i][j] != -1) {
-                    int code = code(i, j, a);
-                    all |= (1L << code);
+                    nonob++;
                 }
             }
         }
-        int scode = code(start[0], start[1], a);
-        return dop(start[0], start[1], (1L << scode), a, all);
+        dfs(start[0], start[1], a, nonob);
+        return res;
     }
 
-    private int dop(int i, int j, long st, int[][] a, long all) {
-        int m = a.length;
-        int n = a[0].length;
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
+    private void dfs(int i, int j, int[][] a, int rem) {
         if (a[i][j] == 2) {
-            return st == all ? 1 : 0;
-        }
-        Map<Long, Integer> cm = dp[i][j];
-        Integer ch = cm.get(st);
-        if (ch != null) {
-            return ch;
-        }
-        int r = 0;
-        for (int[] d : dirs) {
-            int ni = i + d[0];
-            int nj = j + d[1];
-            if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] != -1) {
-                int ncode = code(ni, nj, a);
-                if (((st >> ncode) & 1) != 1) {
-                    long nst = (st | (1L << ncode));
-                    int cur = dop(ni, nj, nst, a, all);
-                    r += cur;
-                }
-            }
-        }
-        dp[i][j].put(st, r);
-        return r;
-    }
-
-    int code(int i, int j, int[][] a) {
-        return i * a[0].length + j;
-    }
-
-    public static void main(String[] args) {
-        //int[][] grid = ArrayUtils.read("[[1,0,0,0],[0,0,0,0],[0,0,0,2]]");
-        int[][] grid = ArrayUtils.read("[[1,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,2]]");
-        System.out.println(new UniquePathsIIIDfs().uniquePathsIII(grid));
-    }
-}
-
-class UniquePathsIIIDfs {
-    // no dp, just dfs, 4^r*c but surprisingly fast...
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    public int uniquePathsIII(int[][] a) {
-        int m = a.length;
-        int n = a[0].length;
-        int[] start = {0, 0};
-        int[] end = {0, 0};
-        int all = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 1) {
-                    start[0] = i;
-                    start[1] = j;
-                }
-                if (a[i][j] == 2) {
-                    end[0] = i;
-                    end[1] = j;
-                }
-                if (a[i][j] != -1) {
-                    all++;
-                }
-            }
-        }
-        dop(start[0], start[1], end[0], end[1], all, a);
-        return r;
-    }
-
-    int r = 0;
-
-    private void dop(int i, int j, int er, int ec, int rem, int[][] a) {
-        int m = a.length;
-        int n = a[0].length;
-        rem--;
-        if (i == er && j == ec) {
-            if (rem == 0) {
-                r++;
+            if (rem == 1) { // ==1 because at this moment we haven't deducted it yet for the last position
+                res++;
             }
             return;
         }
         int old = a[i][j];
-        a[i][j] = -2;
+        a[i][j] = -1;
+        rem--;
         for (int[] d : dirs) {
             int ni = i + d[0];
             int nj = j + d[1];
-            if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] >= 0) {
-                dop(ni, nj, er, ec, rem, a);
+            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] != -1) {
+                dfs(ni, nj, a, rem);
             }
         }
         a[i][j] = old;
     }
-
 
 }
