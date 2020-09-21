@@ -35,73 +35,62 @@ All strings consist of lowercase English letters.
 public class FindAllGoodStrings {
     // dp + kmp
     // have to use kmp because if we get a mismatch with evil we need kmp to "slide" to the next evil position to match with
-    private int Mod = 1000000007;
-    int[][][][] dp;
-    int[] nexts;
+    private Integer[][][][] dp;
+    private int mod = 1000000007;
 
     public int findGoodStrings(int n, String s1, String s2, String evil) {
-        dp = new int[s1.length() + 1][evil.length() + 1][2][2];
-        nexts = nexts(evil);
-        for (int i = 0; i < dp.length; i++) {
-            for (int j = 0; j < dp[i].length; j++) {
-                for (int k = 0; k < dp[i][j].length; k++) {
-                    Arrays.fill(dp[i][j][k], -1);
-                }
-            }
-        }
-        return dof(0, 0, 1, 1, n, s1, s2, evil);
+        dp = new Integer[n][2][2][evil.length()];
+        int[] nexts = nexts(evil);
+
+        return dof(n, s1, s2, 0, false, false, evil, 0, nexts);
     }
 
-    private int dof(int i, int j, int eq1, int eq2, int n, String s1, String s2, String evil) {
+    private int dof(int n, String s1, String s2, int i, boolean fs1, boolean fs2, String evil, int j, int[] nexts) {
         if (j == evil.length()) {
             return 0;
         }
         if (i == n) {
             return 1;
         }
-        if (dp[i][j][eq1][eq2] != -1L) {
-            return dp[i][j][eq1][eq2];
+        int f1 = fs1 ? 1 : 0;
+        int f2 = fs2 ? 1 : 0;
+        if (dp[i][f1][f2][j] != null) {
+            return dp[i][f1][f2][j];
         }
-        long r = 0L;
-        for (int k = 0; k < 26; k++) {
-            char c = (char) (k + 'a');
-            int nj = j;
-            // if 0..j in evial doesnt match what we have, there could be 0...p where p<j and match with current string
-            // we use kmp to "slide" into that p position
-            while (nj > 0 && evil.charAt(nj) != c) {
-                nj = nexts[nj - 1];
+        long res = 0;
+        for (char c = 'a'; c <= 'z'; c++) {
+            boolean nfs1 = fs1;
+            boolean nfs2 = fs2;
+            int pj = j;
+            int nj = 0;
+            // for example sdka vs ss. the 2nd s can match to 0, so next time we start from 1. so nj will =1
+            // if it's ssd vs sss, then we should start from ssd vs ss[x], next to match is this x against d, so nj would be =2
+            while (pj > 0 && c != evil.charAt(pj)) {
+                pj = nexts[pj - 1];
             }
-            nj = evil.charAt(nj) == c ? nj + 1 : nj;
-            if (eq1 == 0 && eq2 == 0) {
-                // >1 but <2, any can go
-                r += dof(i + 1, nj, 0, 0, n, s1, s2, evil);
-                r %= Mod;
-            } else if (eq1 == 1 && eq2 == 1) {
-                // ==1 and ==2. we may be able to change eq1 and eq2 but must folow the rule for 1 and 2
-                if (c >= s1.charAt(i) && c <= s2.charAt(i)) {
-                    int neq1 = c > s1.charAt(i) ? 0 : 1;
-                    int neq2 = c < s2.charAt(i) ? 0 : 1;
-                    r += dof(i + 1, nj, neq1, neq2, n, s1, s2, evil);
-                    r %= Mod;
-                }
-            } else if (eq1 == 1 && eq2 == 0) {
-                // ==1, but <2
-                if (c >= s1.charAt(i)) {
-                    int neq1 = c > s1.charAt(i) ? 0 : 1;
-                    r += dof(i + 1, nj, neq1, 0, n, s1, s2, evil);
-                    r %= Mod;
-                }
+            if (c == evil.charAt(pj)) {
+                nj = pj + 1;
+            }
+            boolean bad = false;
+            if (fs1 && fs2) {
+                // do nothing
+            } else if (fs1 && c <= s2.charAt(i)) {
+                nfs2 = c < s2.charAt(i);
+            } else if (fs2 && c >= s1.charAt(i)) {
+                nfs1 = c > s1.charAt(i);
+            } else if (c >= s1.charAt(i) && c <= s2.charAt(i)) {
+                nfs2 = c < s2.charAt(i);
+                nfs1 = c > s1.charAt(i);
             } else {
-                // >1 but ==2
-                if (c <= s2.charAt(i)) {
-                    int neq2 = c < s2.charAt(i) ? 0 : 1;
-                    r += dof(i + 1, nj, 0, neq2, n, s1, s2, evil);
-                    r %= Mod;
-                }
+                bad = true;
+            }
+            if (!bad) {
+                res += dof(n, s1, s2, i + 1, nfs1, nfs2, evil, nj, nexts);
+                res %= mod;
             }
         }
-        dp[i][j][eq1][eq2] = (int) (r % Mod);
-        return dp[i][j][eq1][eq2];
+        dp[i][f1][f2][j] = (int) res;
+        return dp[i][f1][f2][j];
     }
 
     // kmp next array
