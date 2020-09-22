@@ -67,52 +67,42 @@ class MajorityElementIIGeneralized {
     // generalized way, take away k different values each time and majority must be among the ones left
     // note we wait for k different numbers to be there hence the check on <k then put
     // O(n) because we can't hide a vote more than once. we do the map operation only n/k times each costing k
-    class Solution {
-        // generalized solution for k majority elements....
-        public List<Integer> majorityElement(int[] a) {
-            int n = a.length;
-            List<Integer> r = new ArrayList<>();
-            if (a == null || n == 0) {
-                return r;
-            }
-            Map<Integer, Integer> m = new HashMap<>();
-            int k = 3;  // k must >=2. k means we look for elements > n/k
-            // Ok in complexity... for k==3 it's O(3)
-            // if requires >n/k,  wont be more than k-1 elements
-            for (int i = 0; i < n; i++) {
-                if (m.size() < k - 1) {
-                    m.put(a[i], m.getOrDefault(a[i], 0) + 1);
-                } else if (m.containsKey(a[i])) {
-                    m.put(a[i], m.get(a[i]) + 1);
-                } else {
-                    List<Integer> toRemove = new ArrayList<>();
-                    for (int key : m.keySet()) {
-                        int ncount = m.get(key) - 1;
-                        if (ncount == 0) {
-                            toRemove.add(key);
-                        } else {
-                            m.put(key, ncount);
-                        }
-                    }
-                    for (int key : toRemove) {
-                        m.remove(key);
-                    }
+    public List<Integer> majorityElement(int[] a) {
+        int k = 2;
+        Map<Integer, Integer> m = new HashMap<>();
+        for (int i = 0; i < a.length; i++) {
+            if (m.containsKey(a[i])) {
+                update(m, a[i], 1);
+            } else if (m.size() < k) {
+                update(m, a[i], 1);
+            } else {
+                Set<Integer> set = new HashSet<>(m.keySet());
+                for (int key : set) {
+                    update(m, key, -1);
                 }
             }
-            for (int key : m.keySet()) {
-                m.put(key, 0);
-            }
-            for (int i = 0; i < n; i++) {
-                if (m.containsKey(a[i])) {
-                    m.put(a[i], m.get(a[i]) + 1);
+        }
+        List<Integer> res = new ArrayList<>();
+        for (int key : m.keySet()) {
+            int count = 0;
+            for (int i = 0; i < a.length; i++) {
+                if (a[i] == key) {
+                    count++;
                 }
             }
-            for (int key : m.keySet()) {
-                if (m.get(key) > n / 3) {
-                    r.add(key);
-                }
+            if (count > a.length / 3) {
+                res.add(key);
             }
-            return r;
+        }
+        return res;
+    }
+
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
         }
     }
 }

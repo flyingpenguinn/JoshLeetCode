@@ -52,37 +52,28 @@ public class InsertIntoSortedCircularList {
     }
 
     // either find a good place, or insert after max- for biggest or smallest
-    public Node insert(Node head, int val) {
-        Node node = new Node(val);
-        if(head == null){
-            node.next = node;
-            return node;
-        }else{
-            Node p = head.next;
-            Node pre = head;
-            int max = head.val;
-            Node maxNode = head;
-            while(p!= head){
-                if(p.val>=max){ // find the last max node
-                    max = p.val;
-                    maxNode = p;
-                }
-                if(pre.val <= val && p.val >=val){
-                    break;
-                }
-                pre=p;
-                p = p.next;
-            }
-            // note here we are covering head.pre val head situation too!
-            if(pre.val <=val && p.val >=val){
-                pre.next = node;
-                node.next = p;
-            }else {
-                Node oldNext = maxNode.next;
-                maxNode.next = node;
-                node.next = oldNext;
-            }
+    public Node insert(Node head, int insertVal) {
+        Node p = head;
+        Node maxNode = head;
+        Node cur = new Node(insertVal);
+        if (head == null) {
+            cur.next = cur;
+            return cur;
         }
+        do {
+            if (p.val <= insertVal && p.next.val >= insertVal) {
+                cur.next = p.next;
+                p.next = cur;
+                return head;
+            }
+            if (p.val >= maxNode.val) {
+                // >=, last max node
+                maxNode = p;
+            }
+            p = p.next;
+        } while (p != head);
+        cur.next = maxNode.next;
+        maxNode.next = cur;
         return head;
     }
 }
