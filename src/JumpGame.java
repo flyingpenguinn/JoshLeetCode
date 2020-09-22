@@ -20,51 +20,19 @@ Explanation: You will always arrive at index 3 no matter what. Its maximum
  */
 
 public class JumpGame {
-    // the only thing matters is the min can index. as long as we can reach there it's good
+    // think of each interval as [i, i+a[i]] question is then whether they can cover 0... n-1
     public boolean canJump(int[] a) {
-        int n = a.length;
-        int mincan = n - 1;
-        for (int i = n - 2; i >= 0; i--) {
-            int dest = a[i] + i;
-            // only need to know mincan
-            if (dest >= mincan) {
-                mincan = i;
+        int end = a[0];
+        for (int i = 1; i<a.length;i++) {
+            if(i>end){
+                return false;
+            }else{
+                end = Math.max(end, i+a[i]);
             }
-        }
-        return mincan == 0;
-    }
-
-
-    public static void main(String[] args) {
-        int[] nums = {2, 3, 1, 1, 4};
-        System.out.println(new JumpGame().canJump(nums));
-    }
-}
-
-class JumpGameDp {
-
-    private int[] dp = null;
-
-    public boolean canJump(int[] nums) {
-        dp = new int[nums.length];
-        return doCanJump(nums, 0);
-    }
-
-    private boolean doCanJump(int[] nums, int i) {
-        if (i >= nums.length - 1) {
-            return true;
-        }
-        if (dp[i] != 0) {
-            return dp[i] == 1;
-        }
-        for (int j = nums[i]; j >= 1; j--) {
-            boolean can = doCanJump(nums, i + j);
-            if (can) {
-                dp[i] = 1;
+            if(end >= a.length-1){
                 return true;
             }
         }
-        dp[i] = 2;
-        return false;
+        return end >= a.length-1;
     }
 }
