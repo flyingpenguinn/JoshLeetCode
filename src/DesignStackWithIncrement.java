@@ -49,40 +49,37 @@ At most 1000 calls will be made to each method of increment, push and pop each s
 public class DesignStackWithIncrement {
     static class CustomStack {
         // cache the additions. when we go pass n, transfer the value to n-1 and delete n
-        Map<Integer, Integer> m = new HashMap<>();
-        Deque<Integer> st = new ArrayDeque<>();
-        int size = 0;
+        private Deque<Integer> st = new ArrayDeque<>();
+        private Map<Integer, Integer> addmap = new HashMap<>();
+        private int size = 0;
 
         public CustomStack(int maxSize) {
             this.size = maxSize;
         }
 
         public void push(int x) {
-            if (st.size() == size) {
-                return;
+            if (st.size() < size) {
+                st.push(x);
             }
-            st.push(x);
         }
 
         public int pop() {
             if (st.isEmpty()) {
                 return -1;
             }
+            int added = 0;
             int cursize = st.size();
-            int add = 0;
-            if (m.containsKey(cursize)) {
-                add += m.get(cursize);
-                if (cursize - 1 > 0) {
-                    m.put(cursize - 1, m.getOrDefault(cursize - 1, 0) + m.get(cursize));
-                }
-                m.remove(cursize);
+            if (addmap.containsKey(cursize)) {
+                added += addmap.get(cursize);
+                addmap.remove(cursize); // if we go pass cursize, we've spent the additions, can't count them again
             }
-            return st.pop() + add;
+            addmap.put(cursize - 1, addmap.getOrDefault(cursize - 1, 0) + added);
+            return st.pop() + added;
         }
 
         public void increment(int k, int val) {
-            int rk = Math.min(k, st.size());
-            m.put(rk, m.getOrDefault(rk, 0) + val);
+            int mink = Math.min(k, st.size()); // if we overshoot, should tether back to the stack size because we only add those currently in stack...
+            addmap.put(mink, addmap.getOrDefault(mink, 0) + val);
         }
     }
 
