@@ -47,30 +47,31 @@ slices.length % 3 == 0
 public class PizzaSlices {
     // convert to pick k non adjacent numbers to make a sum max
     // note we can't pick 0 and n-1 at the same time just like house robber II
-    // we can also sort out the trouble by ejecting the samllest element and rest of the numbers dont form a cycle
-    int[][][] dp;
-
-    public int maxSizeSlices(int[] slices) {
-        int n = slices.length;
-        dp = new int[n + 1][n / 3 + 1][2];
-        return Math.max(dom(0, n / 3, slices, 1), dom(1, n / 3, slices, 0));
+    // so this is house robber with only n/3 chances problem and the houses are on a circle
+    public int maxSizeSlices(int[] a) {
+        int n = a.length;
+        return Math.max(rob(a, 0, n - 1, n / 3), rob(a, 1, n, n / 3));
     }
 
-    int Min = -1000000000;
+    private int rob(int[] a, int start, int end, int k) {
+        Integer[][] dp = new Integer[a.length][k + 1];
+        return dorob(a, start, end, k, dp);
+    }
 
-    private int dom(int i, int k, int[] slices, int endoffset) {
-        if (i >= slices.length - endoffset) {
-            return k == 0 ? 0 : Min;
+    private int dorob(int[] a, int i, int end, int k, Integer[][] dp) {
+        int n = a.length;
+        if (k < 0) {
+            return Integer.MIN_VALUE;
         }
-        if (k == 0) {
-            return 0;
+        if (i >= end) {
+            return k == 0 ? 0 : Integer.MIN_VALUE;
         }
-        if (dp[i][k][endoffset] != 0) {
-            return dp[i][k][endoffset];
+        if (dp[i][k] != null) {
+            return dp[i][k];
         }
-        int way1 = dom(i + 1, k, slices, endoffset);
-        int way2 = dom(i + 2, k - 1, slices, endoffset) + slices[i];
-        dp[i][k][endoffset] = Math.max(way1, way2);
-        return dp[i][k][endoffset];
+        int rob = a[i] + dorob(a, i + 2, end, k - 1, dp);
+        int skip = dorob(a, i + 1, end, k, dp);
+        dp[i][k] = Math.max(rob, skip);
+        return dp[i][k];
     }
 }
