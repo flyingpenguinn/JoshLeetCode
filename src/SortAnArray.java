@@ -25,9 +25,9 @@ Constraints:
  */
 public class SortAnArray {
     // quick sort. in average Onlogn time and Olgn space (recursions)
-    public List<Integer> sortArray(int[] a) {
+    public int[] sortArray(int[] a) {
         quicksort(a, 0, a.length - 1);
-        return toList(a);
+        return a;
     }
 
     private void quicksort(int[] a, int l, int u) {
@@ -71,30 +71,21 @@ public class SortAnArray {
         a[i] = a[j];
         a[j] = tmp;
     }
-
-
-    private List<Integer> toList(int[] a) {
-        List<Integer> r = new ArrayList<>();
-        for (int ai : a) {
-            r.add(ai);
-        }
-        return r;
-    }
 }
 
 class SortAnArrayHeapSort {
     // Onlgn time and O(1) space
-    public List<Integer> sortArray(int[] a) {
+    public int[] sortArray(int[] a) {
         int n = a.length;
         int last = n - 1;
-        for (int i = (n - 1) / 2; i >= 0; i--) {
+        for (int i = (last - 1) / 2; i >= 0; i--) {
             siftdown(a, i, last);
         }
         for (int i = 0; i < n; i++) {
             swap(a, 0, last--);
             siftdown(a, 0, last);
         }
-        return toList(a);
+        return a;
     }
 
 
@@ -125,22 +116,13 @@ class SortAnArrayHeapSort {
         a[i] = a[j];
         a[j] = tmp;
     }
-
-
-    private List<Integer> toList(int[] a) {
-        List<Integer> r = new ArrayList<>();
-        for (int ai : a) {
-            r.add(ai);
-        }
-        return r;
-    }
 }
 
 class SortAnArrayMergeSort {
     // Onlgn time and space complexity
-    public List<Integer> sortArray(int[] a) {
+    public int[] sortArray(int[] a) {
         mergesort(a, 0, a.length - 1);
-        return toList(a);
+        return a;
     }
 
     private void mergesort(int[] a, int l, int u) {
@@ -171,13 +153,5 @@ class SortAnArrayMergeSort {
         for (int i = l; i <= u; i++) {
             a[i] = tmp[i - l];
         }
-    }
-
-    private List<Integer> toList(int[] a) {
-        List<Integer> r = new ArrayList<>();
-        for (int ai : a) {
-            r.add(ai);
-        }
-        return r;
     }
 }
