@@ -23,7 +23,7 @@ public class BuildBinaryExpressionTreeGivenInfix {
         }
     }
 
-    // almost the same as basical calculator II we just push nodes here rather than numbers
+    // almost the same as basic calculator III we just push nodes here into stacks rather than numbers
     public Node expTree(String s) {
         Deque<Node> nodes = new ArrayDeque<>();
         Deque<Character> op = new ArrayDeque<>();
@@ -34,7 +34,7 @@ public class BuildBinaryExpressionTreeGivenInfix {
             } else if (c == '(') {
                 op.push(c);
             } else if (c == ')') {
-                collapseUntil(nodes, op, '(');
+                collapseUntilLeftParen(nodes, op);
             } else {
                 collapse(nodes, op, c);
             }
@@ -56,8 +56,8 @@ public class BuildBinaryExpressionTreeGivenInfix {
         return true;
     }
 
-    private void collapseUntil(Deque<Node> nodes, Deque<Character> op, char until) {
-        while (op.peek() != until) {
+    private void collapseUntilLeftParen(Deque<Node> nodes, Deque<Character> op) {
+        while (op.peek() != '(') {
             doCollapse(nodes, op);
         }
         op.pop(); // pop up the left bracket
@@ -81,7 +81,7 @@ public class BuildBinaryExpressionTreeGivenInfix {
         Node n1 = nodes.pop();
         Node n2 = nodes.pop();
         Node cur = new Node(op.pop());
-        cur.left = n2;
+        cur.left = n2; // n1== right operand is at the top hence n2 is left tree
         cur.right = n1;
         nodes.push(cur);
     }

@@ -56,16 +56,16 @@ public class BSTIteratorII {
 
 class BstIteratorIIList {
     class BSTIterator {
-        private Deque<TreeNode> nst = new ArrayDeque<>();
+        private Deque<TreeNode> stack = new ArrayDeque<>();
         private List<TreeNode> list = new ArrayList<>();
-        private int nextIndex = -1;
-        // nextIndex is the cur element tht we are standing on
-        // nextIndex- 1 is the prev value; next+1 is the next value, if exists, in the list
-        // if nextIndex+1 is too big we expand the list by adding the top of the stack to it and move nextIndex
+        private int curIndex = -1;
+        // curIndex is the cur element tht we are standing on
+        // curIndex- 1 is the prev value; curIndex+1 is the next value, if exists, in the list
+        // if curIndex+1 is too big we expand the list by adding the top of the stack to it and move nextIndex
 
         private void pushLeft(TreeNode p) {
             while (p != null) {
-                nst.push(p);
+                stack.push(p);
                 p = p.left;
             }
         }
@@ -79,33 +79,33 @@ class BstIteratorIIList {
         }
 
         public boolean hasNext() {
-            if (inRange(nextIndex + 1)) {
+            if (inRange(curIndex + 1)) {
                 return true;
             }
-            return !nst.isEmpty();
+            return !stack.isEmpty();
         }
 
         public int next() {
             int rt = 0;
-            if (inRange(nextIndex + 1)) {
-                rt = list.get(nextIndex + 1).val;
+            if (inRange(curIndex + 1)) {
+                rt = list.get(curIndex + 1).val;
             } else {
                 // if cur node is the last we will have to expand
-                TreeNode next = nst.pop();
+                TreeNode next = stack.pop();
                 pushLeft(next.right);
                 list.add(next);
                 rt = next.val;
             }
-            nextIndex++;
+            curIndex++;
             return rt;
         }
 
         public boolean hasPrev() {
-            return inRange(nextIndex - 1);
+            return inRange(curIndex - 1);
         }
 
         public int prev() {
-            return list.get(--nextIndex).val;
+            return list.get(--curIndex).val;
         }
     }
 }
