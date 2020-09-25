@@ -53,28 +53,32 @@ events[i].length == 2
 1 <= events[i][0] <= events[i][1] <= 10^5
  */
 public class MaxNumberOfEventsToAttend {
-    // iterate on d, always select the event that ends the earliest
+    // on each day, we attend the event with the least end date
+    // while we work on day, we "enable" more events. this makes this problem similar to max performance of team problem
     public int maxEvents(int[][] a) {
+        int max = 0;
+        for (int i = 0; i < a.length; i++) {
+            max = Math.max(max, a[i][1]);
+        }
         Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        // pq are end points of eligible events. small items first
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        int res = 0;
         int j = 0;
-        int r = 0;
-        // this pq contains events that intersect with d
-        PriorityQueue<int[]> dq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
-        for (int i = 1; i <= 100000; i++) {
-            // events too early are skipped
-            while (!dq.isEmpty() && dq.peek()[1] < i) {
-                dq.poll();
+        for (int i = 1; i <= max; i++) {
+            while (!pq.isEmpty() && pq.peek() < i) {
+                pq.poll();
             }
-            // events that are good are enlisted
-            while (j < a.length && a[j][0] <= i && a[j][1] >= i) {
-                dq.offer(a[j++]);
+            while (j < a.length && a[j][0] == i) {
+                pq.offer(a[j++][1]);
             }
-            if (!dq.isEmpty()) {
-                r++;  // if we have events to visit
-                dq.poll();
-                // we attended, now this one can go away. note we attend the event that CLOSES the first. this id different from visit sequence
+            if (!pq.isEmpty()) {
+                res++;
+                pq.poll(); // earlier end date comes out
+            } else if (j == a.length) {
+                break; // early break if q is empty and no more items to add...
             }
         }
-        return r;
+        return res;
     }
 }
