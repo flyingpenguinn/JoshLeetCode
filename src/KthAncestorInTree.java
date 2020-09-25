@@ -40,96 +40,41 @@ There will be at most 5*10^4 queries.
 
  */
 public class KthAncestorInTree {
-    // sparse table concept
-    // @TODO can be simplified
+    // similar to Tarjan sparse table rmq algo: nlgn to initalize, lgn to look up
     class TreeAncestor {
-        class Node {
-            List<Node> children = new ArrayList<>();
-            int val;
+        private int[][] dep;
 
-            public Node(int val) {
-                this.val = val;
-            }
-        }
-
-        int n = 0;
-        int[] pa = null;
-        List<Integer>[] paths; // 1, 2, 4, 8,16...
-        int[] depth = new int[n];
-        Node[] nodes;
-        Node root;
-
-        public TreeAncestor(int n, int[] pa) {
-            this.n = n;
-            this.pa = pa;
-            paths = new ArrayList[n];
-            depth = new int[n];
-
-            nodes = new Node[n];
+        public TreeAncestor(int n, int[] parent) {
+            dep = new int[n][17];
             for (int i = 0; i < n; i++) {
-                int parent = pa[i];
-                if (nodes[i] == null) {
-                    nodes[i] = new Node(i);
-                }
-                if (parent == -1) {
-                    root = nodes[i];
-                }
-                if (parent >= 0) {
-                    if (nodes[parent] == null) {
-                        nodes[parent] = new Node(parent);
+                dep[i][0] = parent[i];
+            }
+            for (int d = 1; d <= 16; d++) {
+                for (int i = 0; i < n; i++) {
+                    int ans = dep[i][d - 1];
+                    if (ans == -1) {
+                        dep[i][d] = -1;
+                    } else {
+                        dep[i][d] = dep[ans][d - 1];
                     }
-                    nodes[parent].children.add(nodes[i]);
-
                 }
             }
-            dfs(root, new ArrayList<>(), 0);
         }
 
-        int count = 0;
-
-        private void dfs(Node node, ArrayList<Integer> path, int d) {
-            if (node == null) {
-                return;
-            }
-            depth[node.val] = d;
-            path.add(node.val);
-            for (Node ch : node.children) {
-                dfs(ch, path, d + 1);
-            }
-            List<Integer> p = new ArrayList<>();
-            for (int i = 1; i < path.size(); i *= 2) {
-                // n-2, n-3, n-5...
-                p.add(path.get(path.size() - 1 - i));
-            }
-            paths[node.val] = p;
-            path.remove(path.size() - 1);
-        }
-
-
-        public int getKthAncestor(int n, int k) {
-            int dep = depth[n];
-            if (k > dep) {
+        public int getKthAncestor(int node, int k) {
+            if (node == -1) {
                 return -1;
             }
-
-            List<Integer> cp = paths[n];
-            int delta = 1;
-            int i = 0;
-            while (k > delta && i < cp.size()) {
-                delta *= 2;
-                i++;
+            if (k == 1) {
+                return dep[node][0];
             }
-            if (i == cp.size()) {
-                int remk = k - delta / 2;
-                return getKthAncestor(cp.get(cp.size() - 1), remk);
+            int d = 0;
+            while ((1 << d) < k) {
+                d++;
             }
-            if (k == delta) {
-                return cp.get(i);
-            }
-            delta /= 2;
-            i--;
-            int remk = k - delta;
-            return getKthAncestor(cp.get(i), remk);
+            int lower = d - 1;
+            int half = dep[node][lower];
+            return getKthAncestor(half, k - (1 << lower));
         }
     }
 }
