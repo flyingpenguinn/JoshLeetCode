@@ -32,25 +32,24 @@ You may assume the numbers in the Teemo's attacking time series and his poisonin
  */
 public class TeemoAttacking {
     // similar to merge interval
-    public int findPoisonedDuration(int[] t, int d) {
-        int n = t.length;
-        if (n == 0) {
+    public int findPoisonedDuration(int[] a, int d) {
+        if(a.length==0){
             return 0;
         }
-        int curstart = -1;
-        int curend = -1;
-        int r = 0;
-        for (int i = 0; i <= n; i++) {
-            if (i < n && t[i] < curend) {
-                curend = Math.max(curend, t[i] + d);
-            } else {
-                r += curend - curstart;
-                if (i < n) {
-                    curstart = t[i];
-                    curend = t[i] + d;
-                }
+        int start = a[0];
+        int end = a[0]+d-1;
+        int res = 0;
+        for(int i=1; i<a.length;i++){
+            // each interval ai...ai+d
+            if(a[i]>end){
+                res += end-start+1;
+                start = a[i];
+                end = a[i]+d-1;
+            }else{
+                end = Math.max(a[i]+d-1, end);
             }
         }
-        return r;
+        res += end-start+1;
+        return res;
     }
 }

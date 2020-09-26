@@ -42,40 +42,40 @@ There will be at most 10000 operations considering both recordTweet and getTweet
  */
 public class TweetCountsPerFreq {
     // use buckets to simplify the projection!
-    static class TweetCounts {
-        Map<String, TreeMap<Integer, Integer>> map = new HashMap<>();
+    // can use a treemap to accelarate the start/end lookup
+    private static class TweetCounts {
+        private Map<String, List<Integer>> m = new HashMap<>();
 
         public TweetCounts() {
-            map = new HashMap<>();
+
         }
 
-        public void recordTweet(String tweetName, int time) {
-            TreeMap<Integer, Integer> tm = map.getOrDefault(tweetName, new TreeMap<>());
-            tm.put(time, tm.getOrDefault(time, 0) + 1);
-            map.put(tweetName, tm);
+        public void recordTweet(String tw, int time) {
+            m.computeIfAbsent(tw, k -> new ArrayList<>()).add(time);
         }
 
-        public List<Integer> getTweetCountsPerFrequency(String freq, String tweetName, int startTime, int endTime) {
-            TreeMap<Integer, Integer> tm = map.getOrDefault(tweetName, new TreeMap<>());
-            int delta = 0;
-            if (freq.equals("minute")) {
-                delta = 60;
-            } else if (freq.equals("hour")) {
-                delta = 3600;
-            } else {
-                delta = 3600 * 24;
+        public List<Integer> getTweetCountsPerFrequency(String freqstr, String tw, int s, int e) {
+            int freq = 60;
+            if ("day".equals(freqstr)) {
+                freq = 3600 * 24;
+            } else if ("hour".equals(freqstr)) {
+                freq = 3600;
             }
-            List<Integer> r = new ArrayList<>();
-            int i = 0;
-            int[] buckets = new int[(endTime - startTime) / delta + 1];
-            for (int k : tm.subMap(startTime, true, endTime, true).keySet()) {
-                int index = (k - startTime) / delta;
-                buckets[index] += tm.get(k);
+            List<Integer> times = m.getOrDefault(tw, new ArrayList<>());
+            Map<Integer, Integer> tm = new HashMap<>();
+            for (int i = 0; i < times.size(); i++) {
+                int v = times.get(i);
+                if (v >= s && v <= e) {
+                    int slot = (v - s) / freq;
+                    tm.put(slot, tm.getOrDefault(slot, 0) + 1);
+                }
             }
-            for (int b : buckets) {
-                r.add(b);
+            List<Integer> list = new ArrayList<>();
+            int endslot = (e - s) / freq;
+            for (int i = 0; i <= endslot; i++) {
+                list.add(tm.getOrDefault(i, 0));
             }
-            return r;
+            return list;
         }
     }
 

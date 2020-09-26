@@ -34,26 +34,26 @@ public class CourseScheduleIII {
     // can't just pick the earliest end course: later ones maybe shorter. counter example: [10,11], [9,12],[8,17]. but we can swap 8,17 and 10,11
     // so have to sort by end time then swap longer periods out when we hit a snag like below. it's a variation of the standard max number interval selection problem that we apply swapping
     public int scheduleCourse(int[][] a) {
-        // serve the ones that will close earlier, just like the classical interval problem
-        Arrays.sort(a, (x, y) -> x[1] != y[1] ? Integer.compare(x[1], y[1]) : Integer.compare(x[0], y[0]));
-        int n = a.length;
-        int time = 1;
-        // longer ones first. we can swap out previous longer ones for this one, if this one is shorter. since it's shorter we can shorten the "time" hence allowing more courses
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(y[0], x[0]));
-        for (int i = 0; i < n; i++) {
-            if (time + a[i][0] - 1 <= a[i][1]) {
+        Arrays.sort(a, (x,y)-> Integer.compare(x[1], y[1]));
+        PriorityQueue<int[]> pq = new PriorityQueue<>(((x,y)-> Integer.compare(y[0],x[0])));
+        int time = 0;
+        int res = 0;
+        for(int i=0; i<a.length;i++){
+            if(time + a[i][0]<= a[i][1]){
+                time += a[i][0];
                 pq.offer(a[i]);
-                time += a[i][0] - 1;
-            } else if (!pq.isEmpty()) {
-                int[] top = pq.peek(); // not poll!
-                if (top[0] < a[i][0]) {
+                res++;
+            }else if(!pq.isEmpty()){
+                int[] top = pq.peek();
+                if(top[0]>=a[i][0]){
                     pq.poll();
                     pq.offer(a[i]);
-                    time -= top[0] - a[i][0];
-                }
+                    time -= top[0]-a[i][0];
+                }// otherwise unsavable throw away
+
             }
         }
-        return pq.size();
+        return res;
     }
 
     public static void main(String[] args) throws IOException {
