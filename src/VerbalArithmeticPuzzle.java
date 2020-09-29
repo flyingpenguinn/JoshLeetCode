@@ -53,183 +53,56 @@ Number of different characters used on the expression is at most 10.
  */
 public class VerbalArithmeticPuzzle {
     // it's all about estimating the complexity and having the dfs body small enough
-    boolean found = false;
+    // because we can't use duplicated numbers, the complexity is 10! not 10^10
+    // we then also want to make the leaf level check simple enough to be strictly O(1)
+    // note the clever usage of "addition" to note the contributions of each char to avoid iterating the strings later
+    private void preprocess(String w, Set<Character> chars, boolean[] first, int[] additions, int sign) {
+        int add = 1;
+        for (int i = w.length() - 1; i >= 0; i--) {
+            char c = w.charAt(i);
+            chars.add(c);
+            additions[c - 'A'] += add * sign;
+            add *= 10;
+        }
+        first[w.charAt(0) - 'A'] = true;
+    }
 
     public boolean isSolvable(String[] words, String result) {
-        Set<Character> nonzeros = new HashSet<>();
-        Set<Character> allchars = new HashSet<>();
-        Map<Character, Integer> basemap = new HashMap<>();
-        for (int i = 0; i < words.length; i++) {
-            processWord(words[i], nonzeros, allchars, basemap, 1);
-        }
-        processWord(result, nonzeros, allchars, basemap, -1);
-        boolean[] used = new boolean[10];
-        boolean[] nonzeroarray = new boolean[26];
-        for (char c : nonzeros) {
-            nonzeroarray[c - 'A'] = true;
-        }
-        char[] allchar = new char[allchars.size()];
-        int rp = 0;
-        for (char c : allchars) {
-            allchar[rp++] = c;
-        }
-        int[] basearray = new int[26];
-        for (char c : basemap.keySet()) {
-            basearray[c - 'A'] = basemap.get(c);
-        }
-        dfs(used, nonzeroarray, basearray, 0, allchar, 0);
-        //    System.out.println(count + " size==" + allchars.size());
-        return found;
-    }
-
-    int count = 0;
-
-    // although in worst case it's p10 = 362xxxx, optimizing this matters because even a const level upgrade means a lot
-    // note the beautiful way of handling bases!
-    private void dfs(boolean[] used, boolean[] nonzeroarray, int[] basearray, int sum, char[] all, int i) {
-        //    System.out.println(mapping);
-        count++;
-        if (found) {
-            return;
-        }
-        if (i == all.length) {
-            if (sum == 0) {
-                found = true;
-            }
-            return;
-        }
-        int start = nonzeroarray[all[i] - 'A'] ? 1 : 0;
-        for (int v = start; v <= 9; v++) {
-            if (used[v]) {
-                continue;
-            }
-            used[v] = true;
-            int base = basearray[all[i] - 'A'];
-            dfs(used, nonzeroarray, basearray, sum - v * base, all, i + 1);
-            if (found) {
-                return;
-            }
-            used[v] = false;
-        }
-    }
-
-    private void processWord(String str, Set<Character> nonzeros, Set<Character> all, Map<Character, Integer> basemap, int mult) {
-        int base = 1;
-        for (int j = str.length() - 1; j >= 1; j--) {
-            char ci = str.charAt(j);
-            basemap.put(ci, basemap.getOrDefault(ci, 0) + mult * base);
-            all.add(ci);
-            base *= 10;
-        }
-        char c0 = str.charAt(0);
-        basemap.put(c0, basemap.getOrDefault(c0, 0) + mult * base);
-        nonzeros.add(c0);
-        all.add(c0);
-    }
-
-    public static void main(String[] args) throws Exception {
-        VerbalArithmeticPuzzle sol = new VerbalArithmeticPuzzle();
-        String[] strs = {"SEND", "MORE"};
-        System.out.println(sol.isSolvable(strs, "MONEY"));
-    }
-}
-
-
-class VerbalArithmeticPuzzleMoreNaive {
-    // even without pruning zero starts early and not using the base trick, we can still pass OJ as lon gas we are not looping on 26 chars. iterating
-    // on all from i-0 to n is critical
-    boolean found = false;
-
-    public boolean isSolvable(String[] words, String result) {
-        Set<Character> nonzeros = new HashSet<>();
-        Set<Character> allchars = new HashSet<>();
-        for (int i = 0; i < words.length; i++) {
-            processWord(words[i], allchars);
-        }
-        processWord(result, allchars);
-        boolean[] used = new boolean[10];
-        boolean[] nonzeroarray = new boolean[26];
-        for (char c : nonzeros) {
-            nonzeroarray[c - 'A'] = true;
-        }
-        char[] allchar = new char[allchars.size()];
-        int[] mapping = new int[26];
-        int rp = 0;
-        for (char c : allchars) {
-            allchar[rp++] = c;
-            mapping[c - 'A'] = -1;
-        }
-        count = new int[allchar.length + 1];
-        dfs(used, mapping, allchar, 0, words, result);
-
-        System.out.println(Arrays.toString(count) + " size==" + allchars.size());
-        return found;
-    }
-
-    int[] count;
-
-    // although in worst case it's p10 = 362xxxx, optimizing this matters because even a const level upgrade means a lot
-    // note the beautiful way of handling bases!
-    private void dfs(boolean[] used, int[] mapping, char[] all, int i, String[] words, String result) {
-        //    System.out.println(mapping);
-        count[i]++;
-        if (found) {
-            return;
-        }
-        if (i == all.length) {
-            if (good(mapping, words, result)) {
-                found = true;
-            }
-            return;
-        }
-        for (int v = 0; v <= 9; v++) {
-            if (used[v]) {
-                continue;
-            }
-            used[v] = true;
-            mapping[all[i] - 'A'] = v;
-            dfs(used, mapping, all, i + 1, words, result);
-            if (found) {
-                return;
-            }
-            mapping[all[i] - 'A'] = -1;
-            used[v] = false;
-
-        }
-    }
-
-    private boolean good(int[] mapping, String[] words, String result) {
-        int rn = ton(result, mapping);
-        if (rn == -1) {
-            return false;
-        }
-        int adder = 0;
+        Set<Character> chars = new HashSet<>();
+        boolean[] first = new boolean[26];
+        int[] additions = new int[26];
         for (String w : words) {
-            int wn = ton(w, mapping);
-            if (wn == -1) {
-                return false;
-            }
-            adder += wn;
+            preprocess(w, chars, first, additions, 1);
         }
-        return rn == adder;
+        preprocess(result, chars, first, additions, -1);
+        char[] ca = new char[chars.size()]; //a,b,c in an array
+        int cai = 0;
+        for (char c : chars) {
+            ca[cai++] = c;
+        }
+        boolean[] used = new boolean[10];
+        return dfs(0, ca, first, used, additions, 0);
     }
 
-    private int ton(String w, int[] mapping) {
-        int r = 0;
-        for (int i = 0; i < w.length(); i++) {
-            int v = mapping[w.charAt(i) - 'A'];
-            if (i == 0 && v == 0) {
-                return -1;
+    private boolean dfs(int i, char[] ca, boolean[] first, boolean[] used, int[] additions, int balance) {
+        if (i == ca.length) {
+            return balance == 0;
+        }
+        int cint = ca[i] - 'A';
+        int start = first[cint] ? 1 : 0;
+        for (int j = start; j <= 9; j++) {
+            if (used[j]) {
+                continue;
             }
-            r = r * 10 + v;
+            balance += additions[cint] * j;
+            used[j] = true;
+            boolean good = dfs(i + 1, ca, first, used, additions, balance);
+            if (good) {
+                return true;
+            }
+            used[j] = false;
+            balance -= additions[cint] * j;
         }
-        return r;
-    }
-
-    private void processWord(String str, Set<Character> all) {
-        for (int j = str.length() - 1; j >= 0; j--) {
-            char ci = str.charAt(j);
-            all.add(ci);
-        }
+        return false;
     }
 }

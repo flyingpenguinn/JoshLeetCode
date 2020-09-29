@@ -47,44 +47,37 @@ public class WordBreak {
 
 class WordBreakAnotherDp {
     // using memoization, O(sn*min(sn,len of word)^2).  if we use a trie we can reduce to Osn^2
-    int[] dp;
-
-    public boolean wordBreak(String s, List<String> list) {
-        Set<String> dict = new HashSet<>();
-        int maxlen = 0;
-        for (String l : list) {
-            dict.add(l);
-            maxlen = Math.max(maxlen, l.length());
+    public boolean wordBreak(String s, List<String> wordDict) {
+        Set<String> wset = new HashSet<>();
+        int n = 0;
+        for(String wi: wordDict){
+            wset.add(wi);
+            n = Math.max(n, wi.length());
         }
-        if (s.isEmpty()) {
-            return list.contains(s);
-        }
-        dp = new int[s.length()];
-        return dobreak(0, s, dict, maxlen) == 1;
+        n = Math.min(n, s.length());
+        Boolean[] dp = new Boolean[s.length()];
+        return doword(0, n,s, wset, dp);
     }
 
-    int dobreak(int i, String s, Set<String> dict, int maxlen) {
-        if (i == s.length()) {
-            return 1;
+    private boolean doword(int i, int n, String s, Set<String> wset, Boolean[] dp){
+        if(i==s.length()){
+            return true;
         }
-        if (dp[i] != 0) {
+        if(dp[i] != null){
             return dp[i];
         }
-        StringBuilder sb = new StringBuilder();
-        for (int j = i; j < s.length(); j++) {
-            // j is the end point of the segment
-            sb.append(s.charAt(j));
-            if (dict.contains(sb.toString())) {
-                if (dobreak(j + 1, s, dict, maxlen) == 1) {
-                    return 1;
+        StringBuilder cur = new StringBuilder();
+        for(int j=i; j<s.length() && j<i+n;j++){
+            cur.append(s.charAt(j));
+            if(wset.contains(cur.toString())){
+                if(doword(j+1, n, s, wset, dp)){
+                    dp[i] = true;
+                    return true;
                 }
             }
-            if (sb.length() == maxlen) {
-                break;
-            }
         }
-        dp[i] = 2;
-        return 2;
+        dp[i] = false;
+        return false;
     }
 }
 

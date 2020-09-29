@@ -61,42 +61,42 @@ Explanation:
 The output consists of two word squares. The order of output does not matter (just the order of words in each word square matters).
  */
 public class WordSquare {
-    // use a prefix map to prune!
+    // use a prefix map to prune! 1000 looks a lot but we wont hit 1000^5 because words are randomly chosen
+    private List<List<String>> res = new ArrayList<>();
+
     public List<List<String>> wordSquares(String[] words) {
-        // words all with the same length
-        List<List<String>> r = new ArrayList<>();
-        if(words==null || words.length==0){
-            return r;
-        }
+        Map<String, Set<String>> m = new HashMap<>();
         int n = words[0].length();
-        if(n==0){
-            return r;
-        }
-        Map<String, Set<String>> pm = new HashMap<>();
-        for(String w: words){
-            for(int i=0; i<=n; i++){
-                pm.computeIfAbsent(w.substring(0, i), k-> new HashSet<>()).add(w);
+        for (String w : words) {
+            for (int len = 0; len <= n; len++) {
+                m.computeIfAbsent(w.substring(0, len), k -> new HashSet<>()).add(w);
             }
         }
-        dfs(0, n, pm,  new ArrayList<String>(), r);
-        return r;
+        dfs(0, n, m, "", new ArrayList<>());
+        return res;
     }
 
-    private void dfs(int i, int n, Map<String, Set<String>> pm, List<String> cur, List<List<String>> r){
-        if(i==n){
-            r.add(new ArrayList<>(cur));
+    private void dfs(int i, int n, Map<String, Set<String>> m, String req, List<String> cur) {
+        if (i == n) {
+            res.add(new ArrayList<>(cur));
             return;
         }
-        StringBuilder sb = new StringBuilder();
-        for(String cu: cur){
-            sb.append(cu.charAt(i));
+        StringBuilder nreq = new StringBuilder();
+        if (i + 1 < n) {
+            for (String ci : cur) {
+                nreq.append(ci.charAt(i + 1));
+            }
         }
-        String prefix = sb.toString();
-        Set<String> candidates = pm.getOrDefault(prefix, new HashSet<>());
-        for(String cand: candidates){
-            cur.add(cand);
-            dfs(i+1, n, pm, cur, r);
-            cur.remove(cur.size()-1);
+        for (String s : m.getOrDefault(req, new HashSet<>())) {
+            cur.add(s);
+            if (i + 1 < n) {
+                nreq.append(s.charAt(i + 1));
+            }
+            dfs(i + 1, n, m, nreq.toString(), cur);
+            cur.remove(cur.size() - 1);
+            if (i + 1 < n) {
+                nreq.deleteCharAt(nreq.length() - 1);
+            }
         }
     }
 
