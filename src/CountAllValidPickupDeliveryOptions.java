@@ -31,56 +31,50 @@ Constraints:
 1 <= n <= 500
  */
 public class CountAllValidPickupDeliveryOptions {
-    // note the tricky n-1 when we reduce open pairs
-    long[][] dp;
-    long Mod = 1000000007;
+    private Long[][] dp;
 
     public int countOrders(int n) {
-        dp = new long[n + 1][n + 1];
-        return (int) doc(n, n);
+        dp = new Long[2 * n][n + 1];
+        return (int) doc(0, n, n);
     }
 
-    // remaining p, remaining d, remaining open pairs. remaining open pairs is incorporated in rp and rd
-    private long doc(int rp, int rd) {
-        if (rp == 0 && rd == 0) {
-            return 1L;
-        }
-        if (rp == 0) {
-            long rt = rd * doc(rp, rd - 1);
-            dp[rp][rd] = rt % Mod;
-            return dp[rp][rd];
-        }
-
-        if (rp > rd) {
-            return 0;
-        }
-        if (dp[rp][rd] != 0) {
-            return dp[rp][rd];
-        }
-        long dop = rp * doc(rp - 1, rd);
-        // if we have 3 reaming ds and 1 remaining p, we can only pick from the 3-1 = 2 ds, not rd
-        long dod = (rd - rp) * doc(rp, rd - 1);
-        long rt = dop + dod;
-        dp[rp][rd] = rt % Mod;
-        return rt % Mod;
-    }
-}
-
-class CountAllValidPickupDeliveryOptionsMth {
-    // O(n) or even O(1) way
-    long Mod = 1000000007;
-
-    // from n-1 pairs to n pairs, pn have 2*n-1 possibilities, and dn will have 2n-1+2n-2+...1 possibilities = 2n*(2n-1)/2 = n*(2n-1)
-    public int countOrders(int n) {
-        return (int) doc(n);
-    }
-
-    private long doc(int n) {
-        if (n == 1) {
+    // ith pick, and remaining pickups
+    private long doc(int i, int remp, long n) {
+        if (i == 2 * n) {
             return 1;
         }
-        long r = n * (2 * n - 1) * doc(n - 1);
-        r %= Mod;
-        return r;
+        long allrem = 2 * n - i;
+        long remd = allrem - remp;
+        if (remp < 0 || remd < 0) {
+            return 0;
+        }
+        if (dp[i][remp] != null) {
+            return dp[i][remp];
+        }
+        long didp = n - remp;
+        long didd = n - remd;
+        long dop = remp * doc(i + 1, remp - 1, n);
+        // we can deliver on all didps but didd is already done so only do didp-didd
+        long dod = (didp - didd) * doc(i + 1, remp, n);
+        long rt = dop + dod;
+        rt %= mod;
+        dp[i][remp] = rt;
+        return rt;
+    }
+
+    private int mod = 1000000007;
+}
+
+class CountAllValidPickupDeliveryOptionsOneLiner {
+    // O(n)
+    // when n-1 is done and we are faced with n, pickup has 2*n-1 slots to insert
+    // for each of these choices, delivery has 1,2,3...2n-1 places to insert
+    // [P2] P1 [P2] D1 [P2]
+    // [P2] X P1 X D1 X ==> 3 choices for d2
+    // P1  D1 [P2] X ==> 1 choice for d2
+    // so in all, 1,2,3...2n-1 choices for n th order
+    // so f(n) = n*(2*n-1)*f(n-1)
+    public int countOrders(int n) {
+        return (int) (n == 1 ? 1 : (1L * n * (2 * n - 1) * countOrders(n - 1)) % 1000000007);
     }
 }

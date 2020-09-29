@@ -40,47 +40,64 @@ Another valid answer is [5,2,6,null,4,null,7].
     4   7
  */
 public class DeleteNodeInBst {
-    // find-> check right subtree, if null just use left -> otherwise check p.right.left-> finally get the leftest p.right.left subtree
+    // two cases:
+    // 1. at leats one child is null: simple case
+    // 2: both children are not null, then swap with the sucessor
     public TreeNode deleteNode(TreeNode root, int key) {
-        TreeNode p = root;
-        TreeNode pa = null;
-        while (p != null && p.val != key) {
-            if (p.val < key) {
-                pa = p;
-                p = p.right;
-            } else {
-                pa = p;
-                p = p.left;
-            }
-        }
-        if (p == null) {
-            return root; // empty tree or nothing found
-        }
-        if (p.right == null) {
-            // p.left could be null too but we don't care
-            if (pa == null) {
-                return p.left;
-            } else if (pa.left == p) {
-                pa.left = p.left;
-            } else {
-                pa.right = p.left;
-            }
+        TreeNode dummy = new TreeNode(Integer.MAX_VALUE);
+        dummy.left = root;
+        TreeNode[] nodes = find(dummy, key);
+        TreeNode n = nodes[0];
+        TreeNode p = nodes[1];
+        if(n==null){
             return root;
-        } else {
-            if (p.right.left == null) {
-                p.val = p.right.val;
-                p.right = p.right.right;
-            } else {
-                TreeNode pr = p.right;
-                TreeNode pd = p.right.left;
-                while (pd.left != null) {
-                    pr = pd;
-                    pd = pd.left;
-                }
-                p.val = pd.val;
-                pr.left = pd.right;
-            }
-            return root; // we are not deleting p at all we are just deleting its successor
         }
+        if(n.left == null || n.right == null){
+            simpleDelete(n, p);
+        }else{
+            complexDelete(n);
+        }
+        return dummy.left;
+    }
+
+    private TreeNode[] find(TreeNode root, int key){
+        TreeNode[] res = new TreeNode[2];
+        TreeNode rn = root.left;
+        TreeNode p = root;
+        while(rn!= null){
+            if(rn.val == key){
+                res[0] = rn;
+                res[1] = p;
+                break;
+            }else if (rn.val <key){
+                p = rn;
+                rn = rn.right;
+            }else{
+                p = rn;
+                rn = rn.left;
+            }
+        }
+        return res;
+    }
+
+    private void simpleDelete(TreeNode n, TreeNode p){
+        // one child is null. covers leaf as well.
+        TreeNode later = n.left == null? n.right: n.left;
+        if(n==p.left){
+            p.left = later;
+        }else{
+            p.right = later;
+        }
+    }
+
+    private void complexDelete(TreeNode n){
+        TreeNode dn = n.right;
+        TreeNode p = n;
+        while(dn.left != null){
+            p = dn;
+            dn = dn.left;
+        }
+        n.val = dn.val;
+        simpleDelete(dn, p);
     }
 }
