@@ -25,23 +25,19 @@ public class FirstMissingPositive {
     // use original array as hashmap...
     // put a[i] to the place it should be
     public int firstMissingPositive(int[] a) {
-        int i = 0;
-        while (i < a.length) {
-            int index = a[i] - 1;
-            if (index >= 0 && index < a.length && a[index] != index + 1) {
-                swap(a, i, index);
-            } else {
-                i++;
+        // 1->0,  2->1....
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            while (a[i] - 1 >= 0 && a[i] - 1 < n && a[i] != a[a[i] - 1]) {
+                swap(a, i, a[i] - 1);
             }
         }
-        for (i = 0; i < a.length; i++) {
-            // first invalid pos
-            if (a[i] != i + 1) {
+        for (int i = 0; i < n; i++) {
+            if (a[i] - 1 != i) {
                 return i + 1;
             }
         }
-        //otherwise the one after max
-        return a.length + 1;
+        return n + 1;
     }
 
     private void swap(int[] a, int i, int j) {

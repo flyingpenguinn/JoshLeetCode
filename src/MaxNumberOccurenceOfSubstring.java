@@ -1,5 +1,7 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /*
 LC#1297
@@ -41,38 +43,83 @@ public class MaxNumberOccurenceOfSubstring {
 
     // never need to consider maxsize, just minsize is enough because we want the max occur substring...
     public int maxFreq(String s, int maxLetters, int minSize, int maxSize) {
+        int len = minSize;
         int n = s.length();
-        Map<String, Integer> map = new HashMap<>();
         int max = 0;
+        Map<String, Integer> m = new HashMap<>();
+        for (int i = 0; i + len - 1 < n; i++) {
+            String stub = s.substring(i, i + len);
+            if (count(stub) <= maxLetters) {
+                int nv = m.getOrDefault(stub, 0) + 1;
+                max = Math.max(max, nv);
+                m.put(stub, nv);
+            }
+        }
+        return max;
+    }
 
-        for (int i = 0; i + minSize - 1 < n; i++) {
-            int end = i + minSize - 1;
-            String str = s.substring(i, end + 1);
-            int letters = countletter(str);
-            if (letters <= maxLetters) {
-                int nc = map.getOrDefault(str, 0) + 1;
-                max = Math.max(max, nc);
-                map.put(str, nc);
+    private int count(String s) {
+        Set<Character> set = new HashSet<>();
+        for (int i = 0; i < s.length(); i++) {
+            set.add(s.charAt(i));
+        }
+        return set.size();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new MaxNumberOccurenceOfSubstring().maxFreq("aababcaab", 2, 3, 4));
+    }
+}
+
+class MaxNumberOccurrenceRollingHash {
+    private int mod = 1000000007;
+
+    public int maxFreq(String s, int maxLetters, int minSize, int maxSize) {
+        int n = s.length();
+        Map<Long, Integer> m = new HashMap<>();
+        int max = 0;
+        int len = minSize;
+        Map<Integer, Integer> cm = new HashMap<>();
+        long hash = 0;
+        long minusbase = 1;
+        for (int i = 0; i < n; i++) {
+            int c = toint(s.charAt(i));
+            update(cm, c, 1);
+            hash = hash * 26 + c;
+            // System.out.println(i+" "+hash);
+            hash %= mod;
+            if (i - len + 1 >= 0) {
+                int nv = m.getOrDefault(hash, 0) + 1;
+                if (cm.size() <= maxLetters) {
+                    max = Math.max(max, nv);
+                }
+                m.put(hash, nv);
+                int hc = toint(s.charAt(i - len + 1));
+                hash -= minusbase * hc;
+                hash %= mod;
+                if (hash < 0) {
+                    hash += mod;
+                }
+                update(cm, hc, -1);
+            } else {
+                minusbase *= 26;
+                minusbase %= mod;
             }
         }
 
         return max;
     }
 
-    private int countletter(String str) {
-        boolean[] count = new boolean[26];
-        int uniq = 0;
-        for (int i = 0; i < str.length(); i++) {
-            boolean oc = count[str.charAt(i) - 'a'];
-            if (!oc) {
-                uniq++;
-            }
-            count[str.charAt(i) - 'a'] = true;
+    private void update(Map<Integer, Integer> m, int k, int delta) {
+        int nv = m.getOrDefault(k, 0) + delta;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
         }
-        return uniq;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new MaxNumberOccurenceOfSubstring().maxFreq("aababcaab", 2, 3, 4));
+    private int toint(char c) {
+        return c - 'a' + 1;
     }
 }
