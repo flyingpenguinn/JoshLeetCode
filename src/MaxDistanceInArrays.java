@@ -25,3 +25,42 @@ public class MaxDistanceInArrays {
         System.out.println(new MaxDistanceInArrays().maxDistance(l));
     }
 }
+
+class MaxDistanceInArraysEasierUnderstanding {
+    // can also use a treemap
+    public int maxDistance(List<List<Integer>> a) {
+        int max = Integer.MIN_VALUE;
+        int max2 = Integer.MIN_VALUE;
+        int maxcount = 0;
+        int max2count = 0;
+        for (int i = 0; i < a.size(); i++) {
+            List<Integer> list = a.get(i);
+            int curmax = list.get(list.size() - 1);
+            if (curmax > max) {
+                max2 = max;
+                max2count = maxcount;
+                max = curmax;
+                maxcount = 1;
+            } else if (curmax == max) {
+                maxcount++;
+            } else if (curmax > max2) {
+                max2 = curmax;
+                max2count = 1;
+            } else {
+                max2count++;
+            }
+        }
+        int res = 0;
+        for (int i = 0; i < a.size(); i++) {
+            List<Integer> list = a.get(i);
+            int curmin = list.get(0);
+            int curmax = list.get(list.size() - 1);
+            if (curmax == max && maxcount == 1) {
+                res = Math.max(max2 - curmin, res);
+            } else {
+                res = Math.max(max - curmin, res);
+            }
+        }
+        return res;
+    }
+}
