@@ -37,50 +37,45 @@ n == mat[i].length
 public class MaxSideLenSquareIWthSumLess {
     // because it's all positive we can binary search the side length
     public int maxSideLength(int[][] a, int t) {
-        int rows = a.length;
-        int cols = a[0].length;
-        int[][] sum = new int[rows][cols];
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (i == 0 && j == 0) {
-                    sum[i][j] = a[i][j];
-                } else if (j == 0) {
-                    sum[i][j] = sum[i - 1][j] + a[i][j];
-                } else if (i == 0) {
-                    sum[i][j] = sum[i][j - 1] + a[i][j];
-                } else {
-                    sum[i][j] = sum[i][j - 1] + sum[i - 1][j] - sum[i - 1][j - 1] + a[i][j];
-                }
-            }
-        }
-        int max = 0;
-        for (int i = rows - 1; i >= 0; i--) {
-            for (int j = cols - 1; j >= 0; j--) {
-                int maxlen = Math.min(i + 1, j + 1);
-                int l = max + 1;
-                int u = maxlen;
-                while (l <= u) {
-                    int mid = l + (u - l) / 2;
-                    if (good(t, sum, i, j, mid)) {
-                        l = mid + 1;
-                    } else {
-                        u = mid - 1;
-                    }
-                }
-                max = Math.max(max, u);
+        int m = a.length;
+        int n = a[0].length;
+        int[][] sum = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                sum[i][j] = (i == 0 ? 0 : sum[i - 1][j]) + (j == 0 ? 0 : sum[i][j - 1]) - ((i == 0 || j == 0) ? 0 : sum[i - 1][j - 1]) + a[i][j];
             }
         }
 
-        return max;
+        int u = Math.min(m, n);
+        int l = 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            if (good(sum, mid, t)) {
+
+                l = mid + 1;
+            } else {
+                u = mid - 1;
+            }
+        }
+        return u;
     }
 
-    private boolean good(int t, int[][] sum, int i, int j, int k) {
-        int left = j - k < 0 ? 0 : sum[i][j - k];
-        int up = i - k < 0 ? 0 : sum[i - k][j];
-        int topleft = i - k < 0 || j - k < 0 ? 0 : sum[i - k][j - k];
-        int cur = sum[i][j] - left - up + topleft;
-        return cur <= t;
+    private boolean good(int[][] sum, int l, int t) {
+        int m = sum.length;
+        int n = sum[0].length;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                int si = i - l + 1;
+                int sj = j - l + 1;
+                if (si >= 0 && sj >= 0) {
+                    int rsum = sum[i][j] - (si == 0 ? 0 : sum[si - 1][j]) - (sj == 0 ? 0 : sum[i][sj - 1]) + ((si == 0 || sj == 0) ? 0 : sum[si - 1][sj - 1]);
+                    if (rsum <= t) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static void main(String[] args) {
