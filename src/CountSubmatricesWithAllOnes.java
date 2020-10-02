@@ -49,6 +49,7 @@ Constraints:
 0 <= mat[i][j] <= 1
  */
 public class CountSubmatricesWithAllOnes {
+    // note this is submatrice, not square. can be rectangular
     // Om^2*n. we convert to sth like 2d subarray problem
     // find the one streaks in each i-j segment. each full column would contribute to k-start+1 matrices ending at that column
     // @todo investigate the on^2 stack solution

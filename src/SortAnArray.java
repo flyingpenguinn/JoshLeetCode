@@ -155,3 +155,43 @@ class SortAnArrayMergeSort {
         }
     }
 }
+
+class SortAnArrayRadixSort {
+    // note w eneed to handle neg values...
+    private int limit = 100000;
+
+    public int[] sortArray(int[] a) {
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i < a.length; i++) {
+            min = Math.min(min, a[i]);
+        }
+        for (int base = 1; base <= limit; base *= 10) {
+            a = countingSort(a, base, min);
+        }
+        return a;
+    }
+
+    private int mod = 10;
+
+    private int[] countingSort(int[] a, int base, int min) {
+        int[] pos = new int[mod];
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            int key = ((a[i] - min) / base) % mod;
+            pos[key]++;
+        }
+        // mit way, how many are smaller than i is stored in pos[i]. rem is how many numbers are still pending
+        int rem = n;
+        for (int i = mod - 1; i >= 0; i--) {
+            pos[i] = rem - pos[i];
+            rem = pos[i];
+        }
+        int[] res = new int[n];
+        for (int i = 0; i < n; i++) {
+            int key = ((a[i] - min) / base) % 10;
+            res[pos[key]] = a[i];
+            pos[key]++;
+        }
+        return res;
+    }
+}

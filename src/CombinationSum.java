@@ -33,24 +33,25 @@ A solution set is:
  */
 public class CombinationSum {
     // pick or no pick. note we stood on the position i when we pick to allow picking multiple times
-    public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        // check null, all numbers >0. otherwise error out
-        List<List<Integer>> r = new ArrayList<>();
-        dfs(0, candidates, 0, target, r, new ArrayList<>());
-        return r;
+    private List<List<Integer>> res = new ArrayList<>();
+
+    public List<List<Integer>> combinationSum(int[] a, int t) {
+        dfs(0, a, t, new ArrayList<>());
+        return res;
     }
 
-    private void dfs(int i, int[] candidates, int curNum, int target, List<List<Integer>> r, List<Integer> cur) {
-        if (i == candidates.length) {
-            if (curNum == target) {
-                r.add(new ArrayList<>(cur));
+    private void dfs(int i, int[] a, int rem, List<Integer> cur) {
+        // invariant: rem>=0
+        if (i == a.length) {
+            if (rem == 0) {
+                res.add(new ArrayList<>(cur));
             }
             return;
         }
-        dfs(i + 1, candidates, curNum, target, r, cur); // no pick
-        if (curNum < target) {
-            cur.add(candidates[i]);
-            dfs(i, candidates, curNum + candidates[i], target, r, cur); // stay on i to pick more same element
+        dfs(i + 1, a, rem, cur);
+        if (rem >= a[i]) {
+            cur.add(a[i]);
+            dfs(i, a, rem - a[i], cur);
             cur.remove(cur.size() - 1);
         }
     }

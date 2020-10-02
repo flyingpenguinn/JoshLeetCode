@@ -31,36 +31,35 @@ A solution set is:
  */
 public class CombinationSumII {
     // for each i pick 1,2,3...times
-    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
-        // check null error if so. target is positive
-        Arrays.sort(candidates);
-        List<List<Integer>> r = new ArrayList<>();
-        dfs(0, candidates, 0, target, r, new ArrayList<>());
-        return r;
+    private List<List<Integer>> res = new ArrayList<>();
+
+    public List<List<Integer>> combinationSum2(int[] a, int t) {
+        Arrays.sort(a);
+        dfs(0, a, t, new ArrayList<>());
+        return res;
     }
 
-    private void dfs(int i, int[] candidates, int curNum, int target, List<List<Integer>> r, List<Integer> cur) {
-        if (i == candidates.length) {
-            if (curNum == target) {
-                r.add(new ArrayList<>(cur));
+    private void dfs(int i, int[] a, int rem, List<Integer> cur) {
+        // rem>=0. we pick 0, 1, 2...k of a[i]s where k is count of a[i] in one try
+        if (i == a.length) {
+            if (rem == 0) {
+                res.add(new ArrayList<>(cur));
             }
             return;
         }
         int j = i;
-        while (j < candidates.length && candidates[j] == candidates[i]) {
+        while (j < a.length && a[j] == a[i]) {
             j++;
         }
-        dfs(j, candidates, curNum, target, r, cur);
-        int oldSize = cur.size();
-        for (int k = i; k < j; k++) {
-            cur.add(candidates[k]);
-            curNum += candidates[k];
-            if (curNum > target) {
-                break;
-            }
-            dfs(j, candidates, curNum, target, r, cur);
+        dfs(j, a, rem, cur);
+        int oldsize = cur.size();
+        while (i < j && rem - a[i] >= 0) {
+            rem -= a[i];
+            cur.add(a[i]);
+            dfs(j, a, rem, cur);
+            i++;
         }
-        while (cur.size() > oldSize) {
+        while (cur.size() > oldsize) {
             cur.remove(cur.size() - 1);
         }
     }
