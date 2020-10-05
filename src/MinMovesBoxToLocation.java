@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /*
 LC#1263
@@ -68,116 +65,100 @@ grid contains only characters '.', '#',  'S' , 'T', or 'B'.
 There is only one character 'S', 'B' and 'T' in the grid.
  */
 public class MinMovesBoxToLocation {
-
     // bfs the box, then for human use dfs to check if can reach the dedicated side...
-    // player's positions should also be in the state...
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    // player's positions should also be in the state...we may push box from one direction, then walk over, and then go from the other direction
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private int[][] opps = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    public int minPushBox(char[][] g) {
-        int rows = g.length;
-        int cols = g[0].length;
-        int boxrow = -1;
-        int boxcol = -1;
-        int targetrow = -1;
-        int targetcol = -1;
-        int prow = -1;
-        int pcol = -1;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (g[i][j] == 'B') {
-                    boxrow = i;
-                    boxcol = j;
-                    g[i][j] = '.';
-                } else if (g[i][j] == 'T') {
-                    targetrow = i;
-                    targetcol = j;
-                    g[i][j] = '.';
-                } else if (g[i][j] == 'S') {
-                    prow = i;
-                    pcol = j;
-                    g[i][j] = '.';
+    public int minPushBox(char[][] a) {
+// status: box r, box c, human r, human c,  steps, direction. note direction is used to make sure we can visit a cell from all 4 possible directions
+        int[] player = find(a, 'S');
+        int[] box = find(a, 'B');
+        if (player == null || box == null) {
+            return -1;
+        }
+        int[] status = new int[]{box[0], box[1], player[0], player[1], 0, 4};
+        return bfs(a, status);
+    }
+
+    private int[] find(char[][] a, char t) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                if (a[i][j] == t) {
+                    return new int[]{i, j};
                 }
             }
         }
-        int r = bfs(g, boxrow, boxcol, prow, pcol, targetrow, targetcol);
-        return r;
+        return null;
     }
 
-    private int bfs(char[][] g, int si, int sj, int pi, int pj, int ti, int tj) {
-        int rows = g.length;
-        int cols = g[0].length;
-        Queue<int[]> q = new ArrayDeque<>();
-        q.offer(new int[]{si, sj, pi, pj, 0});
-        Set<Integer> seen = new HashSet<>();
-        seen.add(encode(g, si, sj, pi, pj));
-        while (!q.isEmpty()) {
-            int[] top = q.poll();
-            int br = top[0];
-            int bc = top[1];
-            int pr = top[2];
-            int pc = top[3];
+    private int[] add(int[] p, int[] q) {
+        return new int[]{p[0] + q[0], p[1] + q[1]};
+    }
 
-            if (br == ti && bc == tj) {
-                return top[4];
-            }
-            for (int[] d : dirs) {
-                int nbr = br + d[0];
-                int nbc = bc + d[1];
-                if (inrange(nbr, nbc, g)) {
-                    int pnr = br - (nbr - br);
-                    int pnc = bc - (nbc - bc);
-                    if (inrange(pnr, pnc, g) && connected(g, pr, pc, pnr, pnc, br, bc)) {
-                        int ncode = encode(g, nbr, nbc, br, bc);
-                        if (!seen.contains(ncode)) {
-                            seen.add(ncode);
-                            q.offer(new int[]{nbr, nbc, br, bc, top[4] + 1});
-                        }
-                    }
-                }
-            }
+    // s must be valid t may not be
+    private boolean goable(char[][] a, int[] box, int[] s, int[] t) {
+        if (!walkable(a, t[0], t[1])) {
+            return false;
         }
-        return -1;
-    }
-
-    boolean[][] visited;
-
-    private boolean connected(char[][] g, int pi, int pj, int pni, int pnj, int br, int bc) {
-        int rows = g.length;
-        int cols = g[0].length;
-        g[br][bc] = '#';
-        visited = new boolean[rows][cols];
-        boolean rt = dodfs(g, pi, pj, pni, pnj);
-        g[br][bc] = '.';
+        if (s[0] == t[0] && s[1] == t[1]) {
+            return true;
+        }
+        boolean[][] v = new boolean[a.length][a[0].length];
+        boolean rt = dfs(a, box, s, t, v);
         return rt;
     }
 
-    private boolean dodfs(char[][] g, int pi, int pj, int pni, int pnj) {
-        if (pi == pni && pj == pnj) {
+    // human walk
+    private boolean dfs(char[][] a, int[] box, int[] s, int[] t, boolean[][] v) {
+        v[s[0]][s[1]] = true;
+        if (s[0] == t[0] && s[1] == t[1]) {
             return true;
         }
-        visited[pi][pj] = true;
         for (int[] d : dirs) {
-            int ni = pi + d[0];
-            int nj = pj + d[1];
-            if (inrange(ni, nj, g) && !visited[ni][nj]) {
-                boolean rt = dodfs(g, ni, nj, pni, pnj);
-                if (rt) {
-                    return true;
-                }
+            int ns0 = s[0] + d[0];
+            int ns1 = s[1] + d[1];
+            int[] np = new int[]{ns0, ns1};
+            if (walkable(a, ns0, ns1) && !Arrays.equals(np, box) && !v[ns0][ns1] && dfs(a, box, new int[]{ns0, ns1}, t, v)) {
+                return true;
+
             }
         }
         return false;
     }
 
-    int encode(char[][] g, int bi, int bj, int pi, int pj) {
-        int rows = g.length;
-        int cols = g[0].length;
-        return bi * rows * rows * rows + bj * rows * rows + pi * rows + pj;
+    // not checking box location
+    private boolean walkable(char[][] a, int i, int j) {
+        boolean rt = i >= 0 && i < a.length && j >= 0 && j < a[0].length && a[i][j] != '#';
+        return rt;
     }
 
-    boolean inrange(int i, int j, char[][] g) {
-        int rows = g.length;
-        int cols = g[0].length;
-        return i >= 0 && i < rows && j >= 0 && j < cols && g[i][j] != '#';
+    private int bfs(char[][] a, int[] st) {
+        Deque<int[]> q = new ArrayDeque<>();
+        q.offer(st);
+        boolean[][][] v = new boolean[a.length][a[0].length][5];
+        v[st[0]][st[1]][st[5]] = true;
+        while (!q.isEmpty()) {
+            int[] top = q.poll();
+            int step = top[4];
+            if (a[top[0]][top[1]] == 'T') {
+                return step;
+            }
+            int[] box = new int[]{top[0], top[1]};
+            int[] pt = new int[]{top[2], top[3]};
+            for (int j = 0; j < 4; j++) {
+                int[] pushbox = add(box, opps[j]);
+                if (!goable(a, box, pt, pushbox)) {
+                    continue;
+                }
+                int[] nbox = add(box, dirs[j]);
+                int[] npt = new int[]{box[0], box[1]};
+                if (walkable(a, nbox[0], nbox[1]) && !v[nbox[0]][nbox[1]][j]) {
+                    v[nbox[0]][nbox[1]][j] = true;
+                    q.offer(new int[]{nbox[0], nbox[1], npt[0], npt[1], step + 1});
+                }
+            }
+        }
+        return -1;
     }
 }

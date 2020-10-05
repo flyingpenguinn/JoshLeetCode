@@ -32,16 +32,16 @@ Note:
 public class ComplementOfBase10Integer {
     // bitwise flipping or use 1111 to subtract
     public int bitwiseComplement(int n) {
-        // 0 is corner case as it starts with 0
         if (n == 0) {
             return 1;
         }
         int r = 0;
-        for (int i = 0; i < 32; i++) {
-            if ((1 << i) > n) {
-                return (1 << i) - 1 - n; // or use ^
+        for (int i = 0; i < 32 && (1 << i) <= n; i++) {
+            int bit = (n >> i) & 1;
+            if (bit == 0) {
+                r |= (1 << i);
             }
         }
-        return -1;
+        return r;
     }
 }
