@@ -1,30 +1,46 @@
 import base.TreeNode;
 
 public class InsertIntoBst {
-
     public TreeNode insertIntoBST(TreeNode root, int val) {
-        if (root == null) {
-            return new TreeNode(val);
-
+        TreeNode nn = new TreeNode(val);
+        TreeNode p = root;
+        TreeNode pp = null;
+        while (p != null) {
+            pp = p;
+            if (p.val < val) {
+                p = p.right;
+            } else {
+                p = p.left;
+            }
         }
-        doInsert(root, val);
-        return root;
+        if (pp == null) {
+            return nn;
+        } else {
+            if (pp.val < val) {
+                pp.right = nn;
+            } else {
+                pp.left = nn;
+            }
+            return root;
+        }
+    }
+}
 
+class InsertIntoBstRecursion {
+    public TreeNode insertIntoBST(TreeNode root, int val) {
+        return doInsert(root, val);
     }
 
-    private void doInsert(TreeNode node, int val) {
-        if (node.val < val) {
-            if (node.right == null) {
-                node.right = new TreeNode(val);
-            } else {
-                doInsert(node.right, val);
-            }
+    private TreeNode doInsert(TreeNode node, int val) {
+        if (node == null) {
+            return new TreeNode(val);
         } else {
-            if (node.left == null) {
-                node.left = new TreeNode(val);
+            if (node.val < val) {
+                node.right = doInsert(node.right, val);
             } else {
-                doInsert(node.left, val);
+                node.left = doInsert(node.left, val);
             }
+            return node;
         }
     }
 }

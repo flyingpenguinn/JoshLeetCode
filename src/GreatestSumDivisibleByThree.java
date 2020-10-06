@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /*
 LC#1262
@@ -41,40 +42,58 @@ Constraints:
 public class GreatestSumDivisibleByThree {
 
     // think from the point of minusing from sum, dont try to create from the lists!
-    int Max = 10000000;
-
+    // if mod ==1, -mod 1, or - 2* mod2
+    // if mod ==2, -mod2, or - 2*mod1
     public int maxSumDivThree(int[] a) {
         int sum = 0;
-        int m11 = Max;
-        int m12 = Max;
-        int m21 = Max;
-        int m22 = Max;
-        for (int ai : a) {
-            sum += ai;
-            int mod = ai % 3;
-            if (mod == 1) {
-                if (ai < m11) {
-                    m12 = m11;
-                    m11 = ai;
-                } else if (ai < m12) {
-                    m12 = ai;
-                }
-            } else if (mod == 2) {
-                if (ai < m21) {
-                    m22 = m21;
-                    m21 = ai;
-                } else if (ai < m22) {
-                    m22 = ai;
+        for (int i = 0; i < a.length; i++) {
+            sum += a[i];
+        }
+        if (sum % 3 == 0) {
+            return sum;
+        }
+        int max = 0;
+        List<Integer> minl1 = null;
+        List<Integer> minl2 = null;
+        if (sum % 3 == 1) {
+            minl1 = find(a, 1, 1);
+            minl2 = find(a, 2, 2);
+        } else {
+            minl2 = find(a, 2, 1);
+            minl1 = find(a, 1, 2);
+        }
+        if (minl1 != null) {
+            max = Math.max(max, num(sum, minl1));
+        }
+        if (minl2 != null) {
+            max = Math.max(max, num(sum, minl2));
+        }
+        return max;
+    }
+
+    private List<Integer> find(int[] a, int t, int n) {
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] % 3 == t) {
+                pq.offer(a[i]);
+                if (pq.size() > n) {
+                    pq.poll();
                 }
             }
         }
-        int mod = sum % 3;
-        if (mod == 0) {
-            return sum;
-        } else if (mod == 1) {
-            return Math.max(sum - m11, sum - m21 - m22);
+        if (pq.size() < n) {
+            return null;
         } else {
-            return Math.max(sum - m21, sum - m11 - m12);
+            List<Integer> list = new ArrayList<>(pq);
+            return list;
         }
+    }
+
+    // n- the list of numbers
+    private int num(int n, List<Integer> list) {
+        for (int i = 0; i < list.size(); i++) {
+            n -= list.get(i);
+        }
+        return n;
     }
 }
