@@ -8,141 +8,91 @@ import java.util.*;
 
 public class SortItemsByGroupRespectingDependencies {
     // hierarchical topo sorting. as long as group1  has one item -> group 2, the whole group 1 must appear before group2
-    Set<Integer>[] itemDep;
-    Map<Integer, Set<Integer>> groupdep;
-    int[] itemToGroup;
-    Map<Integer, Set<Integer>> groupToItem = new HashMap<>();
-
-    int[] v; // for item dfs
-    int[] sortedItems;
-    int itemp;
-
-    Map<Integer, Integer> groupStatus = new HashMap<>(); // for group dfs
-
-    LinkedList<Integer> sortedGroups = new LinkedList<>();
-
-    private boolean invalid = false;
+    // make -1 groups extra standalone single member groups
+    // topo sort groups first then within each group sort the items in the same manner
+    // beware of empty groups and empty items, stil need to include them!
+    private Map<Integer, Set<Integer>> gg = new HashMap<>();
+    private Map<Integer, Map<Integer, Set<Integer>>> ig = new HashMap<>();
 
     public int[] sortItems(int n, int m, int[] group, List<List<Integer>> beforeItems) {
-        long start = System.currentTimeMillis();
-        groupdep = new HashMap<>();
-        itemToGroup = new int[n];
-        sortedItems = new int[n];
-        itemp= n-1;
-        v = new int[n];
-
-        int extragroupToItem = n + 1;
-        for (int i = 0; i < group.length; i++) {
-            int groupnum = group[i];
-            if (groupnum == -1) {
-                // -1 ones form their own group
-                groupnum = extragroupToItem++;
-            }
-            Set<Integer> cur = groupToItem.getOrDefault(groupnum, new HashSet<>());
-            cur.add(i);
-            groupToItem.put(groupnum, cur);
-            itemToGroup[i] = groupnum;
-            groupdep.put(groupnum, new HashSet<>());
-        }
-        itemDep = new HashSet[n];
+        int gindex = m;
         for (int i = 0; i < n; i++) {
-            itemDep[i] = new HashSet<>();
+            if (group[i] == -1) {
+                group[i] = gindex++;
+            }
+            gg.put(group[i], new HashSet<>());
         }
-        for (int i = 0; i < beforeItems.size(); i++) {
-            for (int b : beforeItems.get(i)) {
-                // b=> i
-                itemDep[b].add(i);
-                int gb = itemToGroup[b];
-                int gi = itemToGroup[i];
-                if (gb != gi) {
-                    // avoid self group
-                    Set<Integer> curgdep = groupdep.getOrDefault(gb, new HashSet<>());
-                    curgdep.add(gi);
-                    groupdep.put(gb, curgdep);
+        for (int i = 0; i < n; i++) {
+            List<Integer> blist = beforeItems.get(i);
+            Map<Integer, Set<Integer>> items = ig.get(group[i]);
+            if (items == null) {
+                items = new HashMap<>();
+                ig.put(group[i], items);
+            }
+            Set<Integer> iset = new HashSet<>();
+            for (int b : blist) {
+                if (group[b] == group[i]) {
+                    iset.add(b);
+                }
+                if (group[b] != group[i]) {
+                    gg.computeIfAbsent(group[i], k -> new HashSet<>()).add(group[b]);
+                }
+            }
+            items.put(i, iset);
+        }
+        List<Integer> gtopo = topo(gg);
+        if (gtopo == null) {
+            return new int[0];
+        }
+        List<Integer> res = new ArrayList<>();
+        for (int g : gtopo) {
+            List<Integer> itopo = topo(ig.get(g));
+            if (itopo == null) {
+                return new int[0];
+            }
+            res.addAll(itopo);
+        }
+        return toarray(res);
+    }
+
+    private int[] toarray(List<Integer> list) {
+        int[] res = new int[list.size()];
+        for (int i = 0; i < res.length; i++) {
+            res[i] = list.get(i);
+        }
+        return res;
+    }
+
+    private List<Integer> topo(Map<Integer, Set<Integer>> g) {
+        Map<Integer, Integer> st = new HashMap<>();
+        List<Integer> res = new ArrayList<>();
+        for (int k : g.keySet()) {
+            if (!st.containsKey(k)) {
+                boolean good = dfs(g, k, st, res);
+                if (!good) {
+                    return null;
                 }
             }
         }
-
-        long prep = System.currentTimeMillis();
-  //      System.out.println(prep-start);
-        if (topoGroup()) {
-            return new int[0];
-        }
-        long toppogrpup = System.currentTimeMillis();
-    //    System.out.println(toppogrpup-prep);
-        if (topoInGroup()) {
-            return new int[0];
-        }
-        long toppoingrpup = System.currentTimeMillis();
-      //  System.out.println(toppoingrpup-toppogrpup);
-
-        return sortedItems;
+        return res;
     }
 
-    private boolean topoGroup() {
-
-        for (int g : groupdep.keySet()) {
-            dfsGroup(g);
-            if (invalid) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void dfsGroup(int g) {
-        groupStatus.put(g, 1);
-        for (int ng : groupdep.getOrDefault(g, new HashSet<>())) {
-            Integer curstatus = groupStatus.get(ng);
-            if (curstatus == null) {
-                dfsGroup(ng);
-            } else if (curstatus == 1) {
-                invalid = true;
-                return;
-            }
-        }
-        groupStatus.put(g, 2);
-        sortedGroups.addFirst(g);
-    }
-
-
-    // return if it's invalid
-    private boolean topoInGroup() {
-
-        for (int gi = sortedGroups.size() - 1; gi >= 0; gi--) {
-            int g = sortedGroups.get(gi);
-            for (int i : groupToItem.get(g)) {
-                if (v[i] == 0) {
-                    dfs(i);
-                    if (invalid) {
-                        return true;
-                    }
+    private boolean dfs(Map<Integer, Set<Integer>> g, int i, Map<Integer, Integer> st, List<Integer> res) {
+        st.put(i, 1);
+        for (int next : g.getOrDefault(i, new HashSet<>())) {
+            int nst = st.getOrDefault(next, 0);
+            if (nst == 1) {
+                return false;
+            } else if (nst == 0) {
+                boolean later = dfs(g, next, st, res);
+                if (!later) {
+                    return false;
                 }
             }
         }
-        return false;
-    }
-
-    private void dfs(int i) {
-        v[i] = 1;
-        Set<Integer> direct = itemDep[i];
-        Set<Integer> groupItem = groupToItem.getOrDefault(itemToGroup[i], new HashSet<>());
-        for (int di : direct) {
-            if (!groupItem.contains(di)) {
-                // only visit my own group
-                continue;
-            }
-            if (v[di] == 0) {
-                dfs(di);
-            } else if (v[di] == 1) {
-                invalid = true;
-                return;
-            } else {
-                // we have visited this in another group so just skip
-            }
-        }
-        v[i] = 2;
-        sortedItems[itemp--]= i;
+        st.put(i, 2);
+        res.add(i);
+        return true;
     }
 
 
@@ -158,8 +108,8 @@ public class SortItemsByGroupRespectingDependencies {
 
         */
 
-        System.out.println(Arrays.toString(new SortItemsByGroupRespectingDependencies().sortItems(8,2, ArrayUtils.read1d("[-1,-1,1,0,0,1,0,-1]"), ArrayUtils.readAsListUneven("[[],[6],[5],[6],[3,6],[],[],[]]"))));
-        System.out.println(Arrays.toString(new SortItemsByGroupRespectingDependencies().sortItems(8,2, ArrayUtils.read1d("[-1,-1,1,0,0,1,0,-1]"), ArrayUtils.readAsListUneven("[[],[6],[5],[6],[3],[],[4],[]]"))));
+        System.out.println(Arrays.toString(new SortItemsByGroupRespectingDependencies().sortItems(8, 2, ArrayUtils.read1d("[-1,-1,1,0,0,1,0,-1]"), ArrayUtils.readAsListUneven("[[],[6],[5],[6],[3,6],[],[],[]]"))));
+        System.out.println(Arrays.toString(new SortItemsByGroupRespectingDependencies().sortItems(8, 2, ArrayUtils.read1d("[-1,-1,1,0,0,1,0,-1]"), ArrayUtils.readAsListUneven("[[],[6],[5],[6],[3],[],[4],[]]"))));
         System.out.println(Arrays.toString(new SortItemsByGroupRespectingDependencies().sortItems(5, 5, ArrayUtils.read1d("[2,0,-1,3,0]"), ArrayUtils.readAsListUneven("[[2,1,3],[2,4],[],[],[]]"))));
 
     }
