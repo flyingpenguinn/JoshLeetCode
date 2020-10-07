@@ -30,15 +30,11 @@ public class AirplaneSeatAssignment {
     /*
     Let f(n) be the probability that the n-th passenger will get his own seat.
 If the 1st passenger get the 1st seat, then everyone will get their own seats, so the n-th passenger gets his own seat with probability: 1/n
-otherwise if he picks ith person's then that person can't sit on i. if he sits on 1, then no more swapping. otherwise keep going. so this is turned to f(n-1)
-i is within 2...n-1 so overall n-2 numbers to pick from
+otherwise if he picks ith person's then that person can't sit on i. if that victim sits on 1, then no more swapping. otherwise keep going. so this is turned to f(n-1)
+i is within 2...n-1 so overall n-2 numbers to pick from n choices by the victim of passenger 1.
 hence f(n) = 1/n+(n-2)/n*f(n-1)  f(1)=1
      */
     public double nthPersonGetsNthSeat(int n) {
-        double r = 1;
-        for (int i = 2; i <= n; i++) {
-            r = 1.0 / i + (i - 2.0) / i * r;
-        }
-        return r;
+        return n == 1 ? 1 : 1.0 / n + (n - 2) * 1.0 / n * nthPersonGetsNthSeat(n - 1);
     }
 }

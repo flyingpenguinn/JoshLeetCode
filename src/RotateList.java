@@ -23,31 +23,43 @@ rotate 3 steps to the right: 0->1->2->NULL
 rotate 4 steps to the right: 2->0->1->NULL
  */
 public class RotateList {
+    // check null! check null! check null!
+    // use fast/slow to locate new tail and old tail
     public ListNode rotateRight(ListNode head, int k) {
         if (head == null) {
+            return null;
+        }
+        int len = getlen(head);
+        k %= len;
+        if (k == 0) {
             return head;
         }
-        int len = 0;
-        ListNode p = head;
-        ListNode tail = null;
-        while (p != null) {
-            len++;
-            tail = p;
-            p = p.next;
+        ListNode dummy = new ListNode(-1);
+        dummy.next = head;
+        ListNode fast = dummy;
+        while (k > 0) {
+            fast = fast.next;
+            k--;
         }
-        if (k % len == 0) {
-            return head;
+        ListNode slow = dummy;
+        while (fast.next != null) {
+            slow = slow.next;
+            fast = fast.next;
         }
-        int rt = len - k % len;
-        p = head;
-        while (rt > 1) {
-            p = p.next;
-            rt--;
+        ListNode nh = slow.next;
+        dummy.next = nh;
+        fast.next = head;
+        slow.next = null;
+        return dummy.next;
+    }
+
+    private int getlen(ListNode head) {
+        int res = 0;
+        while (head != null) {
+            res++;
+            head = head.next;
         }
-        ListNode nh = p.next;
-        p.next = null;
-        tail.next = head;
-        return nh;
+        return res;
     }
 
     public static void main(String[] args) {
