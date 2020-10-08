@@ -21,26 +21,25 @@ Output: 4
 public class CountUniqueSubtrees {
     // recursive definition:
     // if my left and right are both uni value and i== them then i'm unit value too (or left or right is null)
-    private int count = 0;
+    private int res = 0;
 
     public int countUnivalSubtrees(TreeNode root) {
         dfs(root);
-        return count;
+        return res;
     }
 
-    // whether n's subtree is uni value
-    private boolean dfs(TreeNode n) {
-        if (n == null) {
+    private boolean dfs(TreeNode root) {
+        if (root == null) {
             return true;
         }
-        boolean left = dfs(n.left);
-        boolean right = dfs(n.right);
-        if (left && right && (n.left == null || n.val == n.left.val)
-                && (n.right == null || n.val == n.right.val)) {
-            count++;
+        boolean lr = dfs(root.left);
+        boolean rr = dfs(root.right);
+        if (lr && rr && (root.left == null || root.left.val == root.val) && (root.right == null || root.right.val == root.val)) {
+            res++;
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
 }

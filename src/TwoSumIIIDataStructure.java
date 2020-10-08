@@ -24,7 +24,7 @@ public class TwoSumIIIDataStructure {
     /**
      * Initialize your data structure here.
      */
-    Map<Integer, Integer> map = new HashMap<>();
+    private Map<Integer, Integer> map = new HashMap<>();
 
     public TwoSumIIIDataStructure() {
 
