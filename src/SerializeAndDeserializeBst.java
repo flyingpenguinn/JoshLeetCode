@@ -3,24 +3,30 @@ import base.TreeNode;
 import java.util.*;
 
 public class SerializeAndDeserializeBst {
-    // the way it deserializes uses lower/upper bound elegantly!
+    // the way it deserializes uses bst property nicely, and the space complexity is O(lgn) better than O(n) for a general binary tree
     public class Codec {
+
 
         // Encodes a tree to a single string.
         public String serialize(TreeNode root) {
-            StringBuilder sb = new StringBuilder();
-            dfs(root, sb);
-            return sb.toString();
+            if (root == null) {
+                return "";
+            }
+            return dfs(root);
         }
 
-        private void dfs(TreeNode root, StringBuilder sb) {
-            if (root == null) {
-                return;
-            }
-            sb.append(root.val);
+        private String dfs(TreeNode n) {
+            String str = String.valueOf(n.val);
+            StringBuilder sb = new StringBuilder();
+            sb.append(str);
             sb.append(",");
-            dfs(root.left, sb);
-            dfs(root.right, sb);
+            if (n.left != null) {
+                sb.append(dfs(n.left));
+            }
+            if (n.right != null) {
+                sb.append(dfs(n.right));
+            }
+            return sb.toString();
         }
 
         // Decodes your encoded data to tree.
@@ -28,30 +34,27 @@ public class SerializeAndDeserializeBst {
             if (data.isEmpty()) {
                 return null;
             }
+            // keep possible nodes that is waiting for left to be populated in the stack
+            Deque<TreeNode> st = new ArrayDeque<>();
             String[] ss = data.split(",");
-            Deque<Integer> dq = new ArrayDeque<>();
-            for (int i = 0; i < ss.length; i++) {
-                dq.offerLast(Integer.valueOf(ss[i]));
+            //    System.out.println(data+Arrays.toString(ss));
+            TreeNode root = new TreeNode(Integer.valueOf(ss[0]));
+            st.push(root);
+            for (int i = 1; i < ss.length; i++) {
+                TreeNode cur = new TreeNode(Integer.valueOf(ss[i]));
+                if (cur.val <= st.peek().val) {
+                    st.peek().left = cur;
+                } else {
+                    TreeNode pcur = null;
+                    // any popped up nodes we are done with it so no use of keeping them
+                    // note the while we want the highest node to be cur's parent
+                    while (!st.isEmpty() && st.peek().val <= cur.val) {
+                        pcur = st.pop();
+                    }
+                    pcur.right = cur;
+                }
+                st.push(cur);
             }
-            return dos(dq, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        }
-
-        // <= on the left, > on the right
-        private TreeNode dos(Deque<Integer> dq, int lower, int higher) {
-            if (dq.isEmpty()) {
-                return null;
-            }
-            int rv = Integer.valueOf(dq.peekFirst());
-            // not belong here, should go to the other subtree
-            if (rv < lower || rv > higher) {
-                return null;
-            }
-            TreeNode root = new TreeNode(rv);
-            dq.pollFirst();
-            TreeNode left = dos(dq, lower, rv);
-            TreeNode right = dos(dq, rv + 1, higher);
-            root.left = left;
-            root.right = right;
             return root;
         }
     }
