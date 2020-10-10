@@ -47,3 +47,25 @@ public class NonOverlappingIntervals {
         return r;
     }
 }
+
+class NonOverlappingIntervalsSortStart {
+    // we can also sort start and find out the min end
+    public int eraseOverlapIntervals(int[][] a) {
+        int n = a.length;
+        if (n == 0) {
+            return 0;
+        }
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        int end = a[0][1];
+        int res = 1;
+        for (int i = 1; i < n; i++) {
+            if (a[i][0] >= end) {
+                res++;
+                end = a[i][1];
+            } else {
+                end = Math.min(end, a[i][1]);
+            }
+        }
+        return n - res;
+    }
+}

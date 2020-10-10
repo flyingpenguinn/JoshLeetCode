@@ -19,12 +19,13 @@ One way is to shoot one arrow for example at x = 6 (bursting the balloons [2,8] 
  */
 public class MinArrowToBurstBallon {
     // typical pick least point to cover intervals! sort by end
+    // can also sort start and find the smallest min like #435
     public int findMinArrowShots(int[][] a) {
         // check null error out if needed
         if (a.length == 0) {
             return 0;
         }
-        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]) );
+        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
         int end = a[0][1];
         int r = 1;
         for (int i = 1; i < a.length; i++) {
