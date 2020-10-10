@@ -33,45 +33,68 @@ Constraints:
 1 <= m <= 13
  */
 
-// cheating on n,m<=13...
-//TODO: do it in a non cheating way
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public class TileRectangleFewestSquare {
-    int[][] dp;
+    // use sweeping line to store current heights of cols
+    // typical sweeping line dp to fill out rectangles
+    private Map<Long, Integer> dp = new HashMap<>();
 
     public int tilingRectangle(int n, int m) {
-        int max = Math.max(n, m);
-        dp = new int[max + 1][max + 1];
-        int rt = dp(n, m);
-        return rt;
+        if (m == n) {
+            return 1;
+        }
+        if (m < n) {
+            int tmp = n;
+            n = m;
+            m = tmp;
+        }
+        return dfs(m, n, new int[n]);
     }
 
-    private int dp(int n, int m) {
-        if (dp[n][m] != 0) {
-            return dp[n][m];
-        } else if (n == 11 && m == 13) {
-            return 6;
-        } else if (n > m) {
-            return dp(m, n);
-        } else if (m == n) {
-            return 1;
-        } else {
-            int min = Integer.MAX_VALUE;
-            for (int i = 1; i <= n; i++) {
-                if (n % i == 0) {
-                    int cur = n / i + dp(n, m - i);
-                    min = Math.min(min, cur);
-                }
+    private int dfs(int m, int n, int[] st) {
+        // m rows, n cols, m>n
+        long status = 0;
+        int mh = m;
+        int ms = -1;
+        int base = n + 1;
+        for (int i = 0; i < n; i++) {
+            status = status * base + st[i];
+            if (st[i] < mh) {
+                mh = st[i];
+                ms = i;
             }
-            for (int i = 1; i <= n - 1; i++) {
-                if (m % i == 0) {
-                    int cur = m / i + dp(m, n - i);
-                    min = Math.min(min, cur);
-                }
-            }
-            dp[n][m] = min;
-            return min;
         }
+        if (mh == m) { // all full
+            return 0;
+        }
+        if (dp.containsKey(status)) {
+            return dp.get(status);
+        }
+        int min = Integer.MAX_VALUE;
+        int me = ms;
+        int maxfit = m - mh;
+        while (me < n && st[me] == st[ms] && me - ms + 1 <= maxfit) {
+            me++;
+        }
+        // ms...me-1 can place stuff
+        for (int j = ms; j < me; j++) {
+            // we fill from minstart to j
+            int[] nst = Arrays.copyOf(st, n);
+            int edge = j - ms + 1;
+            for (int k = ms; k <= j; k++) {
+                nst[k] += edge;
+            }
+            int cur = dfs(m, n, nst) + 1;
+            min = Math.min(min, cur);
+        }
+        dp.put(status, min);
+        return min;
     }
+
 
     public static void main(String[] args) {
         System.out.println(new TileRectangleFewestSquare().tilingRectangle(9, 7));

@@ -47,35 +47,3 @@ public class NonOverlappingIntervals {
         return r;
     }
 }
-
-class NonOverlappingIntervalsDp{
-    // O(n2) no better than the one above
-    int[] dp;
-    public int eraseOverlapIntervals(int[][] a) {
-        Arrays.sort(a, (x,y)-> Integer.compare(x[0], y[0]));
-        dp = new int[a.length];
-        Arrays.fill(dp,-1);
-        return doe(a, 0);
-    }
-
-    int doe(int[][] a, int i){
-        int n = a.length;
-        if(i==n){
-            return 0;
-        }
-        if(dp[i]!= -1){
-            return dp[i];
-        }
-        int j = i+1;
-        int k = 0;
-        while(j<n && a[j][0]<a[i][1]){
-            j++;
-            k++;
-        }
-        int keep = k+doe(a, j);
-        int nok = 1+doe(a,i+1);
-        int rt = Math.min(keep, nok);
-        dp[i] = rt;
-        return rt;
-    }
-}
