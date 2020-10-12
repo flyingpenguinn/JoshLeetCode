@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /*
 LC#859
 Given two strings A and B of lowercase letters, return true if and only if we can swap two letters in A so that the result equals B.
@@ -33,46 +36,33 @@ Note:
 A and B consist only of lowercase letters.
  */
 public class BuddyString {
+
+    // mind the special logic when they are equal!
     public boolean buddyStrings(String a, String b) {
-        int an = a.length();
-        int bn = b.length();
-        if (an != bn) {
+        if(a.length() != b.length()){
             return false;
         }
-        if (a.equals(b)) {
-            return hasdupe(a);
-        }
-        int d1 = -1;
-        int d2 = -1;
-        for (int i = 0; i < an; i++) {
-            if (a.charAt(i) != b.charAt(i)) {
-                if (d1 > 0 && d2 > 0) {
+        List<Integer> diffs = new ArrayList<>();
+        for(int i=0; i<a.length(); i++){
+            if(a.charAt(i) != b.charAt(i)){
+                diffs.add(i);
+                if(diffs.size()>2){
                     return false;
                 }
-                if (d1 < 0) {
-                    d1 = i;
-                } else {
-                    d2 = i;
+            }
+        }
+        if(diffs.isEmpty()){
+            boolean[] seen = new boolean[26];
+            for(int i=0; i<a.length(); i++){
+                if(seen[a.charAt(i)-'a']){
+                    return true;
                 }
+                seen[a.charAt(i)-'a'] = true;
             }
-        }
-        if (d1 < 0 || d2 < 0) {
             return false;
+        }else{
+            return diffs.size()==2 && a.charAt(diffs.get(1)) == b.charAt(diffs.get(0)) && a.charAt(diffs.get(0)) == b.charAt(diffs.get(1));
         }
-        if (a.charAt(d1) != b.charAt(d2) || a.charAt(d2) != b.charAt(d1)) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean hasdupe(String a) {
-        int[] c = new int[26];
-        for (int i = 0; i < a.length(); i++) {
-            if (c[a.charAt(i) - 'a']++ > 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.TreeMap;
 
 /*
 LC#1425
@@ -36,44 +37,57 @@ public class ConstrainedSubsetSum {
     // then use deque to optimize, like we did in sliding window max
     public int constrainedSubsetSum(int[] a, int k) {
         int n = a.length;
-        int[] dp = new int[n + 1]; // note dp here means we CHOOSE i
+        int[] dp = new int[n]; // max profit in picking
         dp[n - 1] = a[n - 1];
-        int max = Integer.MIN_VALUE;
         Deque<Integer> dq = new ArrayDeque<>();
-        dq.offerLast(n - 1);
+        dq.offerLast(dp[n - 1]);
+        int max = dp[n - 1];
         for (int i = n - 2; i >= 0; i--) {
-            while (dq.peekLast() - i > k) {
-                dq.pollLast();
-            }
-            int cur = a[i] + dp[dq.peekLast()];
-            dp[i] = Math.max(cur, a[i]); // note we can choose not to select anything later
-            while (!dq.isEmpty() && dp[dq.peekFirst()] <= dp[i]) {
+            // can opt not to pick
+            int maxlater = Math.max(0, dq.peekFirst());
+            dp[i] = a[i] + maxlater;
+            max = Math.max(max, dp[i]);
+            if (dq.size() >= k) {
                 dq.pollFirst();
             }
-            dq.offerFirst(i);
-            max = Math.max(max, dp[i]);
+            while (!dq.isEmpty() && dq.peekLast() <= dp[i]) {
+                dq.pollLast();
+            }
+            dq.offer(dp[i]);
+
         }
         return max;
     }
 }
 
-class ConstrainedSubsetSumDirectDp {
-    // TLE, but the dp idea is correct
-    int MIN = -10000000;
-
+class ConstrainedSubsetSumTreeMap {
+    // could use a treemap to help max picking without using sliding window solution
     public int constrainedSubsetSum(int[] a, int k) {
         int n = a.length;
-        int[] dp = new int[n + 1];
+        int[] dp = new int[n]; // max profit in picking
         dp[n - 1] = a[n - 1];
-        int max = Integer.MIN_VALUE;
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        update(tm, a[n - 1], 1);
+        int max = dp[n - 1];
         for (int i = n - 2; i >= 0; i--) {
-            int cur = a[i];
-            for (int j = i + 1; j < n && j - i <= k; j++) {
-                cur = Math.max(cur, a[i] + dp[j]);
-            }
-            dp[i] = cur;
+            // can opt not to pick
+            int maxlater = Math.max(0, tm.lastKey());
+            dp[i] = a[i] + maxlater;
             max = Math.max(max, dp[i]);
+            update(tm, dp[i], 1);
+            if (i + k < n) {
+                update(tm, dp[i + k], -1);
+            }
         }
         return max;
+    }
+
+    private void update(TreeMap<Integer, Integer> tm, int k, int delta) {
+        int nv = tm.getOrDefault(k, 0) + delta;
+        if (nv <= 0) {
+            tm.remove(k);
+        } else {
+            tm.put(k, nv);
+        }
     }
 }

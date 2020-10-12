@@ -1,5 +1,7 @@
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
 LC#316
@@ -18,30 +20,30 @@ public class RemoveDuplicateLetters {
     // pop bigger out of stack if there are more later
     // if already in stack ignore. left ones always better
     public String removeDuplicateLetters(String s) {
-        char[] cs = s.toCharArray();
         int n = s.length();
-        int[] m = new int[26];
-        int[] cnt = new int[26];
+        int[] pos = new int[26];
         for (int i = 0; i < n; i++) {
-            m[cs[i] - 'a']++;
+            int cind = s.charAt(i) - 'a';
+            pos[cind] = i;
         }
-        Deque<Character> st = new ArrayDeque<>();
+        Deque<Integer> st = new ArrayDeque<>();
+        Set<Integer> seen = new HashSet<>();
         for (int i = 0; i < n; i++) {
-            if (cnt[cs[i] - 'a'] == 0) {
-                while (!st.isEmpty() && st.peek() > cs[i] && m[st.peek() - 'a'] > 0) {
-                    cnt[st.pop() - 'a']--;
-                }
-                st.push(cs[i]);
-                cnt[cs[i] - 'a']++;
+            int cind = s.charAt(i) - 'a';
+            if (seen.contains(cind)) {
+                continue;
             }
-            m[cs[i] - 'a']--;
-
+            while (!st.isEmpty() && st.peek() > cind && pos[st.peek()] > i) {
+                seen.remove(st.pop());
+            }
+            st.push(cind);
+            seen.add(cind);
         }
-        StringBuilder sb = new StringBuilder();
+        StringBuilder res = new StringBuilder();
         while (!st.isEmpty()) {
-            sb.append(st.pop());
+            res.append((char) ('a' + st.pop()));
         }
-        return sb.reverse().toString();
+        return res.reverse().toString();
     }
 
     public static void main(String[] args) {
