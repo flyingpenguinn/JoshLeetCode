@@ -15,51 +15,58 @@ Output: -1->0->3->4->5
  */
 public class SortList {
     // merge sort
-    ListNode nh = new ListNode(-1);
+    private ListNode dummy = new ListNode(-1);
 
     public ListNode sortList(ListNode head) {
-        return dom(head);
-    }
-
-    private ListNode dom(ListNode head) {
-        if (head == null || head.next == null) {
+        int len = getlen(head);
+        if(len<=1){
             return head;
         }
-        // fast = head.next then fast 2 steps, slow one step. this is the way to split the list to halves
-        ListNode fast = head.next;
-        ListNode slow = head;
-        while (fast != null && fast.next != null) {
-            fast = fast.next.next;
-            slow = slow.next;
-        }
-        ListNode sn = slow.next;
-        slow.next = null;
-        ListNode l1 = dom(head);
-        ListNode l2 = dom(sn);
-        return merge(l1, l2);
+        return mergeSort(head, len);
     }
 
-    private ListNode merge(ListNode l1, ListNode l2) {
-        ListNode pn = nh;
-        while (l1 != null && l2 != null) {
-            if (l1.val < l2.val) {
-                pn.next = l1;
-                l1 = l1.next;
-                pn = pn.next;
-            } else {
-                pn.next = l2;
-                l2 = l2.next;
-                pn = pn.next;
+    private int getlen(ListNode p){
+        int res = 0;
+        while(p != null){
+            res++;
+            p = p.next;
+        }
+        return res;
+    }
+
+    private ListNode mergeSort(ListNode p1, int len){
+        if(len<=1){
+            return p1;
+        }
+        int mid = len/2-1;
+        ListNode p = p1;
+        while(mid>0){
+            p = p.next;
+            mid--;
+        }
+        ListNode p2 = p.next;
+        p.next  = null;
+        ListNode sp1 = mergeSort(p1, len/2);
+        ListNode sp2 = mergeSort(p2, len-len/2);
+        p = dummy;
+        while(sp1!= null && sp2 != null){
+            if(sp1.val < sp2.val){
+                p.next = sp1;
+                sp1 = sp1.next;
+            }else{
+                p.next = sp2;
+                sp2 = sp2.next;
             }
+            p = p.next;
         }
-        if (l1 != null) {
-            pn.next = l1;
+        if(sp1 != null){
+            p.next= sp1;
         }
-        if (l2 != null) {
-            pn.next = l2;
+        if(sp2 != null){
+            p.next = sp2;
         }
-        ListNode rt = nh.next;
-        nh.next = null;
+        ListNode rt = dummy.next;
+        dummy.next = null;
         return rt;
     }
 }

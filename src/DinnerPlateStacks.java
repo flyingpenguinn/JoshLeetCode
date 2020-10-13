@@ -88,56 +88,49 @@ public class DinnerPlateStacks {
 
 class DinnerPlates {
 
-    private TreeSet<Integer> notempty = new TreeSet<>();
-    private TreeSet<Integer> notfull = new TreeSet<>();
-    private List<Deque<Integer>> plates = new ArrayList<>();
-    int cap = 0;
-
+    private List<Deque<Integer>> dqs= new ArrayList<>();
+    private TreeSet<Integer> nf = new TreeSet<>();
+    private TreeSet<Integer> ne = new TreeSet<>();
+    private int cap = 0;
     public DinnerPlates(int capacity) {
-        this.cap = capacity;
+        cap = capacity;
     }
 
     public void push(int val) {
-        int topush = notfull.isEmpty()? plates.size(): notfull.first();
-        Deque<Integer> st = new ArrayDeque<>();
-        if(topush==plates.size()){
-            st = new ArrayDeque<>();
-            plates.add(st);
+        int index = -1;
+        if(nf.isEmpty()){
+            Deque<Integer> dq = new ArrayDeque<>();
+            dqs.add(dq);
+            index = dqs.size()-1;
+            nf.add(index);  // any new stack is not full to start with. we may take that away later...
         }else{
-            st = plates.get(topush);
+            index = nf.first();
         }
-        st.push(val);
-        notempty.add(topush);
-        if(st.size()<cap){
-            // can't miss this, for the sake of adding when it becomes avail first
-            notfull.add(topush);
-        }else{
-            notfull.remove(topush);
+        dqs.get(index).push(val);
+        if(dqs.get(index).size() == cap){
+            nf.remove(index);
         }
-
+        ne.add(index);
+        // System.out.println(dqs);
     }
 
     public int pop() {
-        if(notempty.isEmpty()){
+        if(ne.isEmpty()){
             return -1;
         }
-        return popAtStack(notempty.last());
+        int max = ne.last();
+        return popAtStack(max);
     }
 
     public int popAtStack(int index) {
-
-        if(index >= plates.size()){
+        if(index>= dqs.size() || dqs.get(index).isEmpty()){
             return -1;
         }
-        Deque<Integer> st = plates.get(index);
-        if(st.isEmpty()){
-            return -1;
+        int rt = dqs.get(index).pop();
+        if(dqs.get(index).isEmpty()){
+            ne.remove(index);
         }
-        int rt = st.pop();
-        notfull.add(index);
-        if(st.isEmpty()){
-            notempty.remove(index);
-        }
+        nf.add(index);
         return rt;
     }
 }
