@@ -7,63 +7,62 @@ public class OnlineMajorityElement {
         // using segment tree and binary search. binary search can check if an element is majority or not in logn time
         // not calculating real frequency here. the counter is just the voting algo "survived count"
 // we are not negating every "non majority" element yet so if this number can survive it's the best candidate. otherwise there is no majority at all
+        // segment trees are complete trees, so we use array representation!
         class Node {
-            int l;
-            int r;
-            int[] mc; // majority and counter
-            Node left;
-            Node right;
+            private int m;
+            private int c;// majority and counter
 
-            public Node(int l, int r, int[] mc) {
-                this.l = l;
-                this.r = r;
-                this.mc = mc;
+            public Node(int m, int c) {
+                this.m = m;
+                this.c = c;
             }
         }
 
-        private Node root = null;
+        private Node[] seg;
+        private int size = 0;
         private Map<Integer, List<Integer>> indices = new HashMap<>();
 
         public MajorityChecker(int[] a) {
-            for (int i = 0; i < a.length; i++) {
+            size = a.length;
+            for (int i = 0; i < size; i++) {
                 indices.computeIfAbsent(a[i], k -> new ArrayList<>()).add(i);
             }
-            root = build(a, 0, a.length - 1);
+            int treeLevel = (int) (Math.ceil(Math.log(size) / Math.log(2)) + 1);
+            // java has no log2...
+            seg = new Node[1 << treeLevel];
+            build(0, a, 0, size - 1);
         }
 
-        private int[] merge(int[] left, int[] right) {
-            if (left[0] == right[0]) {
-                return new int[]{left[0], left[1] + right[1]};
-            } else if (left[1] > right[1]) {
-                return new int[]{left[0], left[1] - right[1]};
+        private Node merge(Node left, Node right) {
+            if (left.m == right.m) {
+                return new Node(left.m, left.c + right.c);
+            } else if (left.c > right.c) {
+                return new Node(left.m, left.c - right.c);
             } else {
-                return new int[]{right[0], right[1] - left[1]};
+                return new Node(right.m, right.c - left.c);
             }
         }
 
-        private Node build(int[] a, int l, int r) {
+        private void build(int i, int[] a, int l, int r) {
             if (l == r) {
-                return new Node(l, r, new int[]{a[l], 1});
+                seg[i] = new Node(a[l], 1);
+                return;
             }
-            int len = r - l + 1;
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
             int mid = l + (r - l) / 2;
-            Node left = build(a, l, mid);
-            Node right = build(a, mid + 1, r);
-            Node cur = new Node(l, r, new int[]{0, 0});
-            cur.mc = merge(left.mc, right.mc);
-            cur.left = left;
-            cur.right = right;
-            //  System.out.println(cur.l+" "+cur.r+" "+cur.m+" "+cur.c);
-            return cur;
+            build(left, a, l, mid);
+            build(right, a, mid + 1, r);
+            Node cur = merge(seg[left], seg[right]);
+            seg[i] = cur;
         }
 
         public int query(int l, int r, int t) {
-            int[] res = dfs(root, l, r);
-            if (res[1] > 0) {
-                int cand = res[0];
+            Node res = query(0, 0, size - 1, l, r);
+            if (res.c > 0) {
+                int cand = res.m;
                 //   System.out.println("cands..."+l+" "+r+" "+cand);
                 List<Integer> ls = indices.get(cand);
-
                 int set1 = biceil(ls, l);
                 int set2 = bifloor(ls, r);
                 //   System.out.println("ls..."+ls+" "+set1+" "+set2);
@@ -74,22 +73,25 @@ public class OnlineMajorityElement {
             return -1;
         }
 
-        private int[] dfs(Node n, int l, int r) {
-            // System.out.println(n.l+" "+n.r+" "+l+" "+r);
-            // n.l <=l, n.r >=r at all times
-            if (n.l == l && n.r == r) {
-                return n.mc;
+        private Node query(int i, int l, int r, int tl, int tr) {
+            // System.out.println(l+" "+r+" "+tl+" "+tr);
+            // l,r is what this node at seg[i] stands for. tl, tr are the targets
+            Node n = seg[i];
+            if (tl <= l && tr >= r) { // when the query can fully cover this range, return
+                return n;
             } else {
-                int mid = n.left.r;
-                if (l >= mid + 1) {
-                    return dfs(n.right, l, r);
-                } else if (r <= mid) {
-                    return dfs(n.left, l, r);
+                int mid = l + (r - l) / 2;
+                int left = 2 * i + 1;
+                int right = 2 * i + 2;
+                if (tl >= mid + 1) {
+                    return query(right, mid + 1, r, tl, tr);
+                } else if (tr <= mid) {
+                    return query(left, l, mid, tl, tr);
                 }
                 // l<=mid, r>=mid+1
-                int[] left = dfs(n.left, l, mid);
-                int[] right = dfs(n.right, mid + 1, r);
-                return merge(left, right);
+                Node leftres = query(left, l, mid, tl, tr);
+                Node rightres = query(right, mid + 1, r, tl, tr);
+                return merge(leftres, rightres);
             }
         }
 
