@@ -39,76 +39,68 @@ Constraints:
 text consist of lowercase English characters only.
  */
 public class SwapForLongestRepeatedChar {
-    // find max window where there are two chars at most one has count>1, and can be covered outside the window
-    // not the corner cases handled in "good" method
-    public int maxRepOpt1(String s) {
-        int[] m= new int[26];
-        int n= s.length();
-        char[] cs= s.toCharArray();
-        for(int i=0;i<n;i++){
-            m[cs[i]-'a']++;
+    // find max window where max char happens all the time, or gap-1 time and we can find a good swap target outside current window
+    public int maxRepOpt1(String text) {
+        char[] a = text.toCharArray();
+        int n = a.length;
+        int[][] chars = new int[26][2];
+        for (int i = 0; i < 26; i++) {
+            chars[i][0] = n + 1;
+            chars[i][1] = -1;
         }
-        int high=-1;
-        int low=0;
-        int[] cm= new int[26];
-        int max= 1;
-        while(true){
-            if(good(cm,m)){
-                max= Math.max(max,high-low+1);
+        for (int i = 0; i < n; i++) {
+            int cind = a[i] - 'a';
+            chars[cind][0] = Math.min(chars[cind][0], i);
+            chars[cind][1] = Math.max(chars[cind][1], i);
+        }
+        Map<Integer, Integer> m = new HashMap<>();
+        int low = 0;
+        int high = -1;
+        int res = 0;
+        while (true) {
+            int gap = high - low + 1;
+            int mc = maxcount(m);
+            if (mc == gap || ((mc == gap - 1) && canswap(m, gap - 1, low, high, chars))) {
+                res = Math.max(res, gap);
                 high++;
-                if(high==n){
+                if (high == n) {
                     break;
                 }
-                cm[cs[high]-'a']++;
-            }else{
-                cm[cs[low]-'a']--;
+                int cind = a[high] - 'a';
+                update(m, cind, 1);
+            } else {
+                update(m, a[low] - 'a', -1);
                 low++;
             }
         }
+        return res;
+    }
+
+    private int maxcount(Map<Integer, Integer> m) {
+        int max = 0;
+        for (int v : m.values()) {
+            max = Math.max(max, v);
+        }
         return max;
     }
-    int Max=1000000;
 
-    boolean good(int[] cm, int[] m){
-        // at most one nz one is >1
-        int min=Max;
-        int max=0;
-        int mini=-1;
-        int maxi=-1;
-        int nz=0;
-        for(int i=0;i<26;i++){
-            if(cm[i]>0){
-                nz++;
-                if(cm[i]<min){
-                    min= cm[i];
-                    mini= i;
-                }
-                if(cm[i]>max){
-                    max= cm[i];
-                    maxi=i;
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
+        }
+    }
+
+    private boolean canswap(Map<Integer, Integer> m, int v, int low, int high, int[][] chars) {
+        for (int k : m.keySet()) {
+            if (m.get(k) == v) {
+                if (chars[k][0] < low || chars[k][1] > high) {
+                    return true;
                 }
             }
         }
-        if(nz>=3){
-            return false;
-        }
-        else if(nz<=1){
-            return true;
-            // empty or already good
-        }else{
-
-            if(min>1){
-                return false;
-            }
-            if(max>1 && m[maxi] == cm[maxi]){
-                // no spare ones to swap into
-                return false;
-            }
-            if(max==1 && m[mini]==cm[mini] && m[maxi] == cm[maxi]){
-                // min=max=1 can pick either
-                return false;
-            }
-            return true;
-        }
+        return false;
     }
 }

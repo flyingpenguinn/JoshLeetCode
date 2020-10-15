@@ -25,7 +25,7 @@ Could you do it in-place with O(1) extra space?
 public class RotateArray {
     public void rotate(int[] a, int k) {
         int n = a.length;
-        k = k % n;
+        k %= n;
         if (k == 0) {
             return;
         }
@@ -34,13 +34,62 @@ public class RotateArray {
         reverse(a, 0, n - 1);
     }
 
-    void reverse(int[] a, int i, int j) {
+    private void reverse(int[] a, int i, int j) {
         while (i < j) {
             swap(a, i++, j--);
         }
     }
 
-    void swap(int[] a, int i, int j) {
+    private void swap(int[] a, int i, int j) {
+        int tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+    }
+}
+
+class RotateArraySwapBased {
+    // put numbers to correct place one swap a time
+    // we must put n numbers to correct place so done is counting from 0 to n, no need to maintain a done array
+    public void rotate(int[] a, int k) {
+        int n = a.length;
+        k %= n;
+        if (k == 0) {
+            return;
+        }
+        int done = 0;
+        for (int i = 0; i < n; i++) {
+
+            int ci = i;
+            while (true) {
+                int mi = map(ci, n, k);
+                if (mi == i) {
+                    done++;
+                    break;
+                }
+                swap(a, i, mi);
+                done++;
+                if (done == n) {
+                    break;
+                }
+                ci = mi;
+            }
+            if (done == n) {
+                break;
+            }
+        }
+    }
+
+    // 0--> k, 1--> k+1... n-k+1... n-1
+    // n-k--->0, n-k+1--->1... n-1-->k-1
+    private int map(int i, int n, int k) {
+        if (i < n - k) {
+            return i + k;
+        } else {
+            return i - (n - k);
+        }
+    }
+
+    private void swap(int[] a, int i, int j) {
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
