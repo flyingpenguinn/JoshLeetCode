@@ -1,21 +1,18 @@
 import java.util.Arrays;
 
 public class CoinChange {
+    // "shua biao fa"
     int Max = 10000000;
+
     public int coinChange(int[] a, int t) {
         int n = a.length;
         int[] dp = new int[t + 1];
-        for (int j = 1; j <= t; j++) {
-            dp[j] = Max;
-        }
+        Arrays.fill(dp, Max);
+        dp[0] = 0;
         // dp[0]==0
-        // note we cannot reverse i and j here. in rolling array we must keep the rolled in the inner loop
-        for (int i = n - 1; i >= 0; i--) {
-            for (int j = 1; j <= t; j++) {
-                if (j - a[i] >= 0) {
-                    int wt = 1 + dp[j - a[i]];
-                    dp[j] = Math.min(dp[j], wt);
-                }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j + a[i] <= t; j++) {
+                dp[j + a[i]] = Math.min(dp[j + a[i]], dp[j] + 1);
             }
         }
         return dp[t] >= Max ? -1 : dp[t];
@@ -35,7 +32,6 @@ class CoinChange2DBottomUp {
         // we can reverse i and j here no harm
         for (int j = 1; j <= t; j++) {
             for (int i = n - 1; i >= 0; i--) {
-
                 dp[i][j] = dp[i + 1][j];
                 if (j - a[i] >= 0) {
                     int wt = 1 + dp[i][j - a[i]];

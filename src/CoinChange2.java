@@ -36,21 +36,18 @@ the number of coins is less than 500
 the answer is guaranteed to fit into signed 32-bit integer
  */
 public class CoinChange2 {
-    // just need one array dp amount because we only depend on i+1 or i-1's amount.rolling array
-    // 2d rolling array. the dimension that we have array on must be in the inner most loop.
+    // "shua biao fa"
+    int Max = 10000000;
+
     public int change(int t, int[] a) {
         int n = a.length;
         int[] dp = new int[t + 1];
+        Arrays.fill(dp, 0);
         dp[0] = 1;
-        for (int i = n - 1; i >= 0; i--) {
-          for (int j = 0; j <= t; j++) {
-
-                int nopick = dp[j];
-                int pick = 0;
-                if (j >= a[i]) {
-                    pick = dp[j - a[i]];
-                }
-                dp[j] = nopick + pick;
+        // dp[0]==0
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j + a[i] <= t; j++) {
+                dp[j + a[i]] += dp[j];
             }
         }
         return dp[t];
