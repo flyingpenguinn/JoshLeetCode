@@ -22,7 +22,37 @@ Given target = 5, return true.
 Given target = 20, return false.
  */
 public class SearchSorted2DMatrixII {
+    // O(m+n)
+    // upper right is the "special one" that all on the same row are smaller,
+    // all on the col are bigger. so we can throw one row or col effectively
+    public boolean searchMatrix(int[][] a, int t) {
+        int m = a.length;
+        if(m==0){
+            return false;
+        }
+        int n = a[0].length;
 
+        int i = 0;
+        int j = n-1;
+        while(j>=0 && i<m){
+            while(i<m && a[i][j]<t){
+                i++;
+            }
+            if(i<m && a[i][j]==t){
+                return true;
+            }
+            j--;
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = ArrayUtils.read("[[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]]");
+        System.out.println(new SearchSorted2DMatrixII().searchMatrix(matrix, 6));
+    }
+}
+
+class SearchSortedMatrixLinear {
     // each search throws away 1/4 of the matrix
     public boolean searchMatrix(int[][] matrix, int target) {
         if (matrix.length == 0 || matrix[0].length == 0) {
@@ -48,36 +78,5 @@ public class SearchSorted2DMatrixII {
             // throw away upper left
             return doBinary(matrix, midr + 1, j, r, c, target) || doBinary(matrix, i, midc + 1, midr, c, target);
         }
-    }
-
-    public static void main(String[] args) {
-        int[][] matrix = ArrayUtils.read("[[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]]");
-        System.out.println(new SearchSorted2DMatrixII().searchMatrix(matrix, 6));
-    }
-}
-
-class SearchSortedMatrixLinear {
-
-    // O(m+n)
-    // upper left is the "special one" that all on the same row are smaller,
-    // all on the col are bigger. so we can throw one row or col effectively
-    public boolean searchMatrix(int[][] a, int t) {
-        int m = a.length;
-        if (m == 0) {
-            return false;
-        }
-        int n = a[0].length;
-        int ci = 0;
-        int cj = n - 1;
-        while (ci < m && cj >= 0) {
-            if (a[ci][cj] == t) {
-                return true;
-            } else if (a[ci][cj] > t) {
-                cj--;
-            } else {
-                ci++;
-            }
-        }
-        return false;
     }
 }

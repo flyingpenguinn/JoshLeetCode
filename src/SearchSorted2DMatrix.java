@@ -32,22 +32,25 @@ public class SearchSorted2DMatrix {
     // logm + logn, better than O(m+n) solutions...
     public boolean searchMatrix(int[][] a, int t) {
         int m = a.length;
-        if (m == 0 || a[0].length == 0) {
+        if(m==0){
             return false;
         }
-        int[] rows = new int[m];
-        for (int i = 0; i < m; i++) {
-            rows[i] = a[i][0];
+        int n = a[0].length;
+
+        int l = 0;
+        int u = m*n-1;
+        while(l<=u){
+            int mid = l+(u-l)/2;
+            int mi = mid/n;
+            int mj = mid%n;
+            if(a[mi][mj]==t){
+                return true;
+            }else if(a[mi][mj]<t){
+                l = mid+1;
+            }else{
+                u = mid-1;
+            }
         }
-        int row = Arrays.binarySearch(rows, t);
-        if (row >= 0) {
-            return true;
-        }
-        //  System.out.println(row);
-        int ins = -row - 2;
-        if (ins < 0) {
-            return false;
-        }
-        return Arrays.binarySearch(a[ins], t) >= 0;
+        return false;
     }
 }
