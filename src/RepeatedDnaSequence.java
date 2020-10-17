@@ -15,28 +15,28 @@ Output: ["AAAAACCCCC", "CCCCCAAAAA"]
 public class RepeatedDnaSequence {
     // a watered down version of repeated substring problem...
     // use rolling hash as we did in repeated substring problem
+
     public List<String> findRepeatedDnaSequences(String s) {
         Map<Long, Integer> seen = new HashMap<>();
         List<String> r = new ArrayList<>();
         int len = 10;
-        int chars = 4;
+        int base = 5;
         long hash = 0;
-        long base = 1;
+        long msb = 1;
         // in rolling hash we enumerate the end points
         for (int i = 0; i < s.length(); i++) {
-            hash = hash * chars + getCode(s.charAt(i));
-            if (i - len + 1 >= 0) {
-                int j = i + len - 1;
+            hash = hash * base + getCode(s.charAt(i));
+            int head = i - len + 1;
+            if (head >= 0) {
                 int nc = seen.getOrDefault(hash, 0) + 1;
                 if (nc == 2) {
-                    r.add(s.substring(i, j + 1));
+                    r.add(s.substring(head, i + 1));
                 }
                 seen.put(hash, nc);
-                hash -= base * getCode(s.charAt(i - len + 1));
+                hash -= msb * getCode(s.charAt(head));
             } else {
-                base *= chars;
+                msb *= base;
             }
-
         }
         return r;
     }
