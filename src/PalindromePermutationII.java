@@ -15,44 +15,69 @@ Output: []
  */
 public class PalindromePermutationII {
     // note even for odd chars we can -2 them unless there is only one
-    List<String> r = new ArrayList<>();
-
     public List<String> generatePalindromes(String s) {
-        int[] c = new int[255];
-        for (int i = 0; i < s.length(); i++) {
-            c[s.charAt(i)]++;
+        Map<Character, Integer> m = new HashMap<>();
+        int n = s.length();
+        for(int i=0; i<n; i++){
+            char c = s.charAt(i);
+            m.put(c, m.getOrDefault(c,0)+1);
         }
-        int odd = 0;
-        char oc = '*';
-        for (int i = 0; i < c.length; i++) {
-            if (c[i] % 2 == 1) {
-                odd++;
-                oc = (char) i;
-                if (odd >= 2) {
-                    return r;
+        Character odd = null;
+        List<String> res = new ArrayList<>();
+        boolean removeOdd = false;
+        for(char k: m.keySet()){
+            int v = m.get(k);
+            if(v % 2==1){
+                if(odd!= null){
+                    return res;
+                }else{
+                    odd = k;
+                    if(v>1){
+                        m.put(k, (v-1)/2);
+                    }else{
+                        removeOdd = true;
+                    }
                 }
+            }else{
+                // even part take half
+                m.put(k, v/2);
             }
         }
-        dog(c, s.length(), "", "", oc);
-        return r;
+        // the odd char is not simply one char: we need to make the even part of it join the rest as well if it's >1. if it's ==1, we should remove it
+        if(removeOdd){
+            m.remove(odd);
+        }
+        dfs(m, odd, res, "");
+        return res;
     }
 
-    void dog(int[] c, int n, String cur, String rev, char oc) {
-        if (n == 1) {
-            r.add(cur + oc + rev);
-            return;
-        }
-        if (n == 0) {
-            r.add(cur + rev);
-            return;
-        }
-        for (int i = 0; i < c.length; i++) {
-            if (c[i] >= 2) {
-                c[i] -= 2;
-                dog(c, n - 2, cur + (char) i, (char) i + rev, oc);
-                c[i] += 2;
+    private void dfs(Map<Character,Integer> m, Character odd, List<String> res, String cur){
+        if(m.isEmpty()){
+            if(odd==null){
+                res.add(cur+reverse(cur));
+            }else{
+                res.add(cur+odd+reverse(cur));
             }
         }
+        Set<Character> set = new HashSet<>(m.keySet());
+        for(char k: set){
+            update(m, k, -1);
+            dfs(m, odd, res, cur+k);
+            update(m, k, 1);
+        }
+    }
+
+    private void update(Map<Character,Integer> m, char k, int d){
+        int nv = m.getOrDefault(k, 0)+d;
+        if(nv<=0){
+            m.remove(k);
+        }else{
+            m.put(k, nv);
+        }
+    }
+
+    private String reverse(String s){
+        return new StringBuilder(s).reverse().toString();
     }
 
     public static void main(String[] args) {
