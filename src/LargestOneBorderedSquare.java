@@ -25,26 +25,29 @@ grid[i][j] is 0 or 1
 public class LargestOneBorderedSquare {
 
     // enumerate right end of the square. keep left and up counts and try to work out the best length of the edges
-    public int largest1BorderedSquare(int[][] g) {
-        int rows = g.length;
-        int cols = g[0].length;
-        int[][] left = new int[rows][cols];
-        int[][] up = new int[rows][cols];
+    public int largest1BorderedSquare(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int[][] rows = new int[m][n];
+        int[][] cols = new int[m][n];
         int max = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (g[i][j] == 0) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == 0) {
                     continue;
                 }
-                // whether ij is the right corner
-                left[i][j] = (j == 0 ? 0 : left[i][j - 1]) + 1;
-                up[i][j] = (i == 0 ? 0 : up[i - 1][j]) + 1;
-                int len = Math.min(left[i][j], up[i][j]);
-                // need to try out every possible len
-                for (int cl = len; cl >= 1; cl--) {
-                    // "111"=> len==3 => i-2
-                    if (up[i][j - cl + 1] >= cl && left[i - cl + 1][j] >= cl) {
-                        max = Math.max(max, cl * cl);
+                rows[i][j] = i == 0 ? 1 : rows[i - 1][j] + 1;
+                cols[i][j] = j == 0 ? 1 : cols[i][j - 1] + 1;
+                for (int k = Math.min(rows[i][j], cols[i][j]); k >= 1; k--) {
+                    int toprow = i - k + 1;
+                    int leftcol = j - k + 1;
+                    int ones1 = rows[i][j] - (toprow == 0 ? 0 : rows[toprow - 1][j]);
+                    int ones2 = cols[i][j] - (leftcol == 0 ? 0 : cols[i][leftcol - 1]);
+                    int ones3 = rows[i][leftcol] - (toprow == 0 ? 0 : rows[toprow - 1][leftcol]);
+                    int ones4 = cols[toprow][j] - (leftcol == 0 ? 0 : cols[toprow][leftcol - 1]);
+
+                    if (ones1 == k && ones2 == k && ones3 == k && ones4 == k) {
+                        max = Math.max(max, k * k);
                         break;
                     }
                 }
