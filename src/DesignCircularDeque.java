@@ -46,7 +46,7 @@ class MyCircularDeque {
 // 3. make sure you move size!!!
 
     private int[] q;
-    private int head = 0;// where to put the head element
+    private int head = -1;// where to put the head element
     private int tail = 0;// where to put the tail element
     private int size = 0;
     private int cap = 0;

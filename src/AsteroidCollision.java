@@ -43,28 +43,26 @@ public class AsteroidCollision {
     public int[] asteroidCollision(int[] a) {
         Deque<Integer> st = new ArrayDeque<>();
         for (int i = 0; i < a.length; i++) {
-            boolean spent = false;
-            while (!st.isEmpty() && st.peek() > 0 && a[i] < 0) {
-                int v = st.peek() + a[i];
-                if (v > 0) {
-                    spent = true;
-                    break;
-                } else if (v < 0) {
-                    st.pop();
-                } else {
-                    st.pop();
-                    spent = true;
-                    break;
-                }
+            int abs = Math.abs(a[i]);
+            while (!st.isEmpty() && clash(st.peek(), a[i]) && Math.abs(st.peek()) < abs) {
+                st.pop();
             }
-            if (!spent) {
+            if (st.isEmpty() || !clash(st.peek(), a[i])) {
                 st.push(a[i]);
+            } else if (Math.abs(st.peek()) == abs) {
+                st.pop();
             }
+            // if > do nothing i.e. throwing a[i] away
         }
-        int[] r = new int[st.size()];
-        for (int i = r.length - 1; i >= 0; i--) {
-            r[i] = st.pop();
+        int[] res = new int[st.size()];
+        int ri = st.size() - 1;
+        while (!st.isEmpty()) {
+            res[ri--] = st.pop();
         }
-        return r;
+        return res;
+    }
+
+    private boolean clash(int a, int b) {
+        return a > 0 && b < 0;
     }
 }
