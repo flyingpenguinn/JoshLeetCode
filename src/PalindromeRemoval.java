@@ -70,38 +70,35 @@ public class PalindromeRemoval {
 
 class PalindromicRemovalAnotherDp {
     // alternative dp similar to remove boxes. only diff is we dont need p here
-    int[][] dp;
+    Integer[][] dp;
 
     public int minimumMoves(int[] a) {
         int n = a.length;
-        dp = new int[n + 1][n + 1];
-        return dor(a, 0, n - 1);
-    }
-    //i...qxxxj
-    int dor(int[] a, int i, int j) {
-        if (i > j) {
+        if (n == 0) {
             return 0;
         }
-        if (i == j) {
+        dp = new Integer[n][n];
+        return domin(a, 0, a.length - 1);
+    }
+
+    private int domin(int[] a, int l, int u) {
+        // invariant: we came from a non empty subarray from above so return 1 when empty means we found the "root" of a palindrome
+        if (l >= u) {
             return 1;
         }
-        if (dp[i][j] != 0) {
-            return dp[i][j];
+        if (dp[l][u] != null) {
+            return dp[l][u];
         }
-        int n = a.length;
-        int min = dor(a, i, j - 1) + 1;
-        int q = j - 1;
-        while (q >= i) {
-            //i...qkkkj
-            if (a[q] == a[j]) {
-                int qj = Math.max(1, dor(a, q + 1, j - 1));// at least 1
-                int cur = dor(a, i, q - 1) + qj;
-                // i,q and p..j together
+        int min = Integer.MAX_VALUE;
+        for (int j = u; j >= l; j--) {
+            if (a[j] == a[u]) {
+                int left = l > j - 1 ? 0 : domin(a, l, j - 1); // need to check here because we don't know if left side is "naturally empty"
+                int right = domin(a, j + 1, u - 1); // dont need the if check on the right because it's definitely not empty
+                int cur = left + right;
                 min = Math.min(min, cur);
             }
-            q--;
         }
-        dp[i][j] = min;
+        dp[l][u] = min;
         return min;
     }
 

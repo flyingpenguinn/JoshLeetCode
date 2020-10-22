@@ -11,26 +11,25 @@ public class SearchInSortedArrayUnknownLength {
         }
     }
 
-    public int search(ArrayReader reader, int target) {
-        long u = 1;
-        // u could be beyond range, or just >=target
-        while (reader.get((int) u) < target) {
-            u = u << 1;
+    public int search(ArrayReader reader, int t) {
+        int u = 1;
+        // search t so that we will get l = u/2 better than starting from 0
+        while (reader.get(u) < t) {
+            u <<= 1;
         }
-        long l = u / 2;
+        int l = u / 2;
+        u = Math.min(u, 10000);
         while (l <= u) {
-            long mid = (int) (l + (u - l) / 2);
-            if (reader.get((int) mid) >= target) {
-                u = mid - 1;
-            } else {
+            int mid = l + (u - l) / 2;
+            int found = reader.get(mid);
+            if (found == t) {
+                return mid;
+            } else if (found < t) {
                 l = mid + 1;
+            } else {
+                u = mid - 1;
             }
         }
-        // l is the first == or bigger need another check
-        if (reader.get((int) l) == target) {
-            return (int) l;
-        } else {
-            return -1;
-        }
+        return -1;
     }
 }

@@ -20,23 +20,19 @@ Given binary tree [3,9,20,null,null,15,7],
 return its minimum depth = 2.
  */
 public class MinDepthOfBinaryTree {
+    // for min depth if one of left/right is empty we go for the other one
     public int minDepth(TreeNode root) {
         if (root == null) {
             return 0;
         }
-        return dom(root);
-    }
-
-    int dom(TreeNode root) {
         if (root.left == null && root.right == null) {
             return 1;
+        } else if (root.left == null) {
+            return minDepth(root.right) + 1;
+        } else if (root.right == null) {
+            return minDepth(root.left) + 1;
+        } else {
+            return Math.min(minDepth(root.left), minDepth(root.right)) + 1;
         }
-        if (root.left == null) {
-            return dom(root.right) + 1;
-        }
-        if (root.right == null) {
-            return dom(root.left) + 1;
-        }
-        return Math.min(dom(root.left), dom(root.right)) + 1;
     }
 }
