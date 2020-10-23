@@ -45,6 +45,8 @@ Constraints:
  */
 public class MaxProfitJobSchedule {
     // dp[i] means max profit from i as starting point, may or may not pick i
+    // because multiple intervals can start at the same point, can't use treeset. but we can binary search to land on the first that is >= end
+    // we dont need to worry about picking which one there...we will examin the possibility of no pick anyway
     int[] dp;
 
     public int jobScheduling(int[] startTime, int[] endTime, int[] profit) {
@@ -55,7 +57,6 @@ public class MaxProfitJobSchedule {
             jobs[i][1] = endTime[i];
             jobs[i][2] = profit[i];
         }
-        // sort by start
         Arrays.sort(jobs, (x, y) -> Integer.compare(x[0], y[0]));
         dp = new int[n];
         Arrays.fill(dp, -1);
