@@ -40,36 +40,22 @@ Constraints:
 1 <= num_people <= 1000
  */
 public class DistributeCoinsToPeople {
+    // O(n)
     public int[] distributeCandies(int c, int n) {
-        int st = (int) Math.sqrt(2 * c); // find the n*(n+1)<=2c. in this way st >=n <=n+1
-        if (st * (st + 1) > 2 * c) { // in case st == n+1 we minus here
-            st--;
-        }
-        int t = (st / n);
-        int j = (st) % n; // fully done at st so at st+1 we will do t-1 turns. but st+1 is not the index so we -1
-
-        int[] r = new int[n];
-        int rem = c - st * (st + 1) / 2;
+        int allrounds = (int) ((Math.sqrt(1.0 + 8.0 * c) - 1) / 2.0);
+        int round = allrounds / n; // how many rounds where everyone gets a candy
+        int mod = allrounds % n; // 0..mod-1 will get an extra round
+        int rem = c - allrounds * (allrounds + 1) / 2; // mod will get the remaining
+        int[] res = new int[n];
         for (int i = 0; i < n; i++) {
-            if (i < j) {
-                r[i] = getCandy(n, t, i);
-
-            } else {
-                r[i] = getCandy(n, t - 1, i);
-                if (i == j) {
-                    r[i] += rem;
-                }
+            int cr = i < mod ? round + 1 : round;
+            if (cr > 0) {
+                // for each item it's arithmatic sequence with a1 = i+1 and d = n
+                res[i] = cr * (i + 1) + cr * (cr - 1) * n / 2; // n*a1+n(n-1)*d/2.
             }
-
         }
-        return r;
-    }
-
-    private int getCandy(int n, int t, int i) {
-        //for i==0 1, 1,1 ... t+1 1s
-        // 0n, 1n 2n...t*n, so t+1 ns
-        int r = (t + 1) * (i + 1) + (t + 1) * t * n / 2;
-        return r;
+        res[mod] += rem;
+        return res;
     }
 
     public static void main(String[] args) {
@@ -84,6 +70,7 @@ public class DistributeCoinsToPeople {
 }
 
 class DistributeCandiesSimulation {
+    // O(sqrt(c))
     public int[] distributeCandies(int c, int n) {
         int[] r = new int[n];
         int i = 0;
@@ -93,7 +80,6 @@ class DistributeCandiesSimulation {
             i = (i + 1) % n;
             c -= give;
             give++;
-
         }
         return r;
     }
