@@ -35,29 +35,28 @@ tokens.length <= 1000
 0 <= P < 10000
  */
 public class BagOfTokens {
-    // get max power from big tokens, spend min power for points from min tokens. be wise in spending points
+    // get max power from big tokens, spend min power for points from min tokens. be wise in spending points. get the max possible otu of it
     public int bagOfTokensScore(int[] a, int p) {
         Arrays.sort(a);
-        int power = p;
-        int point = 0;
-        int maxp = 0;
         int i = 0;
         int j = a.length - 1;
+        int score = 0;
+        int maxscore = 0;
         while (i <= j) {
-            if (power < a[i]) {
-                if (point == 0) {
-                    break;
-                }
-                power += a[j--];
-                point--;
-
+            if (p >= a[i]) {
+                p -= a[i];
+                i++;
+                score++;
+            } else if (score == 0) {
+                break;
             } else {
-                power -= a[i++];
-                point++;
+                p += a[j];
+                j--;
+                score--;
             }
-            maxp = Math.max(maxp, point);
+            maxscore = Math.max(maxscore, score);
         }
-        return maxp;
+        return maxscore;
     }
 
     public static void main(String[] args) {

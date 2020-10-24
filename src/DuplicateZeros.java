@@ -30,30 +30,38 @@ Note:
 0 <= arr[i] <= 9
  */
 public class DuplicateZeros {
-    // we can also use a[i] to indicate delta of i then reverse traverse
-    // gist is we know where to put non zero a[i] if we know how many zeros are there when we get to i.
-    // if zero>0 we set sth after i so reverse traverse
+
+    // start from the back once we know what the last element is- could be a single zero
     public void duplicateZeros(int[] a) {
         int n = a.length;
-        int zeros = 0;
-        for (int i = 0; i < n; i++) {
-            if (a[i] == 0) {
-                zeros++;
-            }
-        }
-        for (int i = n - 1; i >= 0; i--) {
-            if (a[i] == 0) {
-                zeros--;
+        int len = 0;
+        int i = 0;
+        for (; i < n; i++) {
+            if (a[i] != 0) {
+                len++;
             } else {
-                if (i + zeros < n) {
-                    a[i + zeros] = a[i];
-                }
-                if (zeros > 0) {
-                    a[i] = 0;
-                }
+                len += 2;
+            }
+            if (len >= n) {
+                break;
             }
         }
-        System.out.println(Arrays.toString(a));
+        int j = n - 1;
+        for (; i >= 0; i--) {
+            if (a[i] == 0) {
+                a[j] = 0;
+                j--;
+                if (len <= n) {
+                    // in case only one 0 fits at the end
+                    a[j] = 0;
+                    j--;
+                }
+                len -= 2;
+            } else {
+                a[j] = a[i];
+                j--;
+            }
+        }
     }
 
     public static void main(String[] args) {
