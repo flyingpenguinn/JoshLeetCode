@@ -60,7 +60,7 @@ public class DivideTwoIntegers {
         int[] later = div(a, b+b);
         int mod = later[1];
         int quot = later[0];
-        if(mod <=b){ 
+        if(mod <=b){
             return new int[]{quot+quot+1, mod-b};
         }else{
             return new int[]{quot+quot, mod};

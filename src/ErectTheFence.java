@@ -1,7 +1,12 @@
+import base.ArrayUtils;
+
 import java.util.*;
 
 
 public class ErectTheFence {
+    // gift wrapping algo
+    // cross product >0 means bc on ba's right, so use c instead of a
+    // handling colinear by trying to extend to the farthest and incluce all points on the line
     class Point {
         int x;
         int y;
@@ -22,7 +27,6 @@ public class ErectTheFence {
 
         @Override
         public int hashCode() {
-
             return Objects.hash(x, y);
         }
     }
@@ -47,7 +51,9 @@ public class ErectTheFence {
             Point next = new Point(points[0][0], points[0][1]);
             int nextIndex = 0;
             for (int i = 1; i < points.length; i++) {
-                if (i == curIndex) continue;
+                if (i == curIndex) {
+                    continue;
+                }
                 Point pi = new Point(points[i][0], points[i][1]);
                 int cross = crossProductLength(cur, pi, next);
                 if (nextIndex == curIndex || cross > 0 ||
@@ -57,16 +63,7 @@ public class ErectTheFence {
                     nextIndex = i;
                 }
             }
-            // Handle collinear points
-            for (int i = 0; i < points.length; i++) {
-                if (i == curIndex) continue;
-                Point pi = new Point(points[i][0], points[i][1]);
-                int cross = crossProductLength(cur, pi, next);
-                if (cross == 0) {
-                    result.add(pi);
-                }
-            }
-
+            result.add(next);
             cur = next;
             curIndex = nextIndex;
 
@@ -94,5 +91,9 @@ public class ErectTheFence {
 
     private int distance(Point p1, Point p2) {
         return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new ErectTheFence().outerTrees(ArrayUtils.read("[[1,1],[2,2],[2,0],[2,4],[3,3],[4,2]]")));
     }
 }
