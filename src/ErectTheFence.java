@@ -5,7 +5,7 @@ import java.util.*;
 
 public class ErectTheFence {
     // gift wrapping algo
-    // cross product >0 means bc on ba's right, so use c instead of a
+    // cross product >0 means ac on ab's left, so use c instead of b
     // handling colinear by trying to extend to the farthest and incluce all points on the line
     class Point {
         int x;
@@ -55,7 +55,7 @@ public class ErectTheFence {
                     continue;
                 }
                 Point pi = new Point(points[i][0], points[i][1]);
-                int cross = crossProductLength(cur, pi, next);
+                int cross = crossProductLength(cur, next, pi);
                 if (nextIndex == curIndex || cross > 0 ||
                         // Handle collinear points
                         (cross == 0 && distance(pi, cur) > distance(next, cur))) {
@@ -63,7 +63,15 @@ public class ErectTheFence {
                     nextIndex = i;
                 }
             }
-            result.add(next);
+            // Handle collinear points
+            for (int i = 0; i < points.length; i++) {
+                if (i == curIndex) continue;
+                Point pi = new Point(points[i][0], points[i][1]);
+                int cross = crossProductLength(cur, pi, next);
+                if (cross == 0) {
+                    result.add(pi);
+                }
+            }
             cur = next;
             curIndex = nextIndex;
 
@@ -80,13 +88,13 @@ public class ErectTheFence {
 
     private int crossProductLength(Point A, Point B, Point C) {
         // Get the vectors' coordinates.
-        int BAx = A.x - B.x;
-        int BAy = A.y - B.y;
-        int BCx = C.x - B.x;
-        int BCy = C.y - B.y;
+        int ABx = B.x - A.x;
+        int ABy = B.y - A.y;
+        int ACx = C.x - A.x;
+        int ACy = C.y - A.y;
 
         // Calculate the Z coordinate of the cross product.
-        return (BAx * BCy - BAy * BCx);
+        return (ABx * ACy - ABy * ACx);
     }
 
     private int distance(Point p1, Point p2) {
@@ -94,6 +102,6 @@ public class ErectTheFence {
     }
 
     public static void main(String[] args) {
-        System.out.println(new ErectTheFence().outerTrees(ArrayUtils.read("[[1,1],[2,2],[2,0],[2,4],[3,3],[4,2]]")));
+        System.out.println(new ErectTheFence().outerTrees(ArrayUtils.read("[[1,1],[0,0], [0,1], [1,0]]")));
     }
 }
