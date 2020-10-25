@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /*
 LC#1514
@@ -47,18 +44,18 @@ a != b
 There is at most one edge between every two nodes.
  */
 public class PathWithMaxProbability {
-    // bellman ford.... it doesnt rely on greedy nature
-    // note we can also turn to shortest path by taking sum of log1/p for each edge
+    // bellman ford spfa... note turning longest path to shortest by doing 1/p and multplying them up. can also take logo of 1/p and run regular ones
     public double maxProbability(int n, int[][] edges, double[] prob, int start, int end) {
         // check null etc
         Map<Integer, Map<Integer, Double>> g = new HashMap<>();
         for (int i = 0; i < edges.length; i++) {
             int es = edges[i][0];
             int ee = edges[i][1];
-            g.computeIfAbsent(es, key -> new HashMap<>()).put(ee, prob[i]);
-            g.computeIfAbsent(ee, key -> new HashMap<>()).put(es, prob[i]);
+            g.computeIfAbsent(es, key -> new HashMap<>()).put(ee, 1.0 / prob[i]);
+            g.computeIfAbsent(ee, key -> new HashMap<>()).put(es, 1.0 / prob[i]);
         }
         double[] dist = new double[n];
+        Arrays.fill(dist, Long.MAX_VALUE);
         dist[start] = 1.0;
         Deque<Integer> q = new ArrayDeque<>();
         boolean[] inq = new boolean[n];
@@ -70,7 +67,7 @@ public class PathWithMaxProbability {
             Map<Integer, Double> cg = g.getOrDefault(top, new HashMap<>());
             for (int next : cg.keySet()) {
                 double newdist = dist[top] * cg.get(next);
-                if (dist[next] < newdist) {
+                if (dist[next] > newdist) {
                     dist[next] = newdist;
                     if (!inq[next]) {
                         q.offer(next);
@@ -79,6 +76,6 @@ public class PathWithMaxProbability {
                 }
             }
         }
-        return dist[end];
+        return dist[end] >= Long.MAX_VALUE ? 0 : 1 / dist[end];
     }
 }

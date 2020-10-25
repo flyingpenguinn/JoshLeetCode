@@ -1,7 +1,8 @@
 import java.util.*;
 
 public class RankTransformOfMatrix {
-
+    // topo sort of the values in dag
+    // here value means union find roots that we can get after merging same values in col/row
     class Node {
         private int i;
         private int j;
@@ -13,6 +14,8 @@ public class RankTransformOfMatrix {
             return prank(pcur);
         }
 
+        // if we just need the rank in topo sort, then we can use this rather than a list and dfs
+        // longest path in a dag
         private int prank(Node pcur) {
             if (pcur.rankdp != -1) {
                 return pcur.rankdp;
@@ -98,6 +101,7 @@ public class RankTransformOfMatrix {
         Node pn2 = find(n2);
         if (pn1 != pn2) {
             pn2.parent = pn1;
+            // caveat: is this really O(1)?
             pn1.prevs.addAll(pn2.prevs);
         }
     }

@@ -1,4 +1,8 @@
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
 public class PathWithMinEffort {
+    // similar to swim in rising wather, binary search or dijkstra
     public int minimumEffortPath(int[][] a) {
         int min = Integer.MAX_VALUE;
         int max = -1;
@@ -49,5 +53,44 @@ public class PathWithMinEffort {
             }
         }
         return false;
+    }
+}
+
+class PathWithMinEffortDijkstra {
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int minimumEffortPath(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        PriorityQueue<int[]> q = new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0]));// d, i, j
+        q.offer(new int[]{0, 0, 0});
+        int[][] dist = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            Arrays.fill(dist[i], Integer.MAX_VALUE);
+        }
+        dist[0][0] = 0;
+        boolean[][] done = new boolean[m][n];
+        while (!q.isEmpty()) {
+            int[] top = q.poll();
+            int i = top[1];
+            int j = top[2];
+            if (done[i][j]) {
+                continue;
+            }
+            if (i == m - 1 && j == n - 1) {
+                break;
+            }
+            done[i][j] = true;
+            for (int[] d : dirs) {
+                int ni = i + d[0];
+                int nj = j + d[1];
+                int ndist = 0;
+                if (ni >= 0 && ni < m && nj >= 0 && nj < n && dist[ni][nj] > (ndist = Math.max(top[0], Math.abs(a[ni][nj] - a[i][j])))) {
+                    dist[ni][nj] = ndist;
+                    q.offer(new int[]{ndist, ni, nj});
+                }
+            }
+        }
+        return dist[m - 1][n - 1];
     }
 }
