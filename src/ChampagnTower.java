@@ -1,40 +1,22 @@
 public class ChampagnTower {
-    class St {
-        double hold;
-        double ex;
-
-        public St(double h, double e) {
-            hold = h;
-            ex = e;
-        }
-    }
-
-    St[][] dp;
-
+    // can become 1d dp because we only rely on i-1
     public double champagneTower(int p, int r, int c) {
-        dp = new St[r + 1][c + 1];
-        return dodp(p, r, c).hold;
-    }
-
-    St dodp(int p, int r, int c) {
-        // as if 2 neg row flows all and 0 catch their excess
-        if (r < 0) {
-            return new St(0.0, p);
+        double[][] dp = new double[r + 1][r + 1];
+        for (int i = 0; i <= r; i++) {
+            for (int j = 0; j <= c; j++) {
+                if (i == 0) {
+                    dp[i][j] = p;
+                } else if (j == 0) {
+                    dp[i][j] = dp[i - 1][j] <= 1 ? 0 : (dp[i - 1][j] - 1) / 2.0;
+                } else if (j == i) {
+                    dp[i][j] = dp[i - 1][j - 1] <= 1 ? 0 : (dp[i - 1][j - 1] - 1) / 2.0;
+                } else {
+                    double left = dp[i - 1][j - 1] <= 1 ? 0 : (dp[i - 1][j - 1] - 1) / 2.0;
+                    double right = dp[i - 1][j] <= 1 ? 0 : (dp[i - 1][j] - 1) / 2.0;
+                    dp[i][j] = left + right;
+                }
+            }
         }
-        if (c < 0 || c > r) {
-            return new St(0.0, 0.0);
-        }
-
-        if (dp[r][c] != null) {
-            return dp[r][c];
-        }
-        St s1 = dodp(p, r - 1, c - 1);
-        St s2 = dodp(p, r - 1, c);
-        double got = (s1.ex + s2.ex) / 2.0;
-        // System.out.println(r+" "+c+" "+ s1.ex+ " "+s2.ex);
-        St res = new St(Math.min(1.0, got), Math.max(got - 1.0, 0));
-        dp[r][c] = res;
-        return res;
-
+        return dp[r][c] <= 1.0 ? dp[r][c] : 1.0;
     }
 }

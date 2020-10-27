@@ -34,7 +34,6 @@ public class LongestDuplicateSubstring {
         while (l <= u) {
             int mid = l + (u - l) / 2;
             int res = good(s, mid);
-
             if (res >= 0) {
                 lastgood = res;
                 l = mid + 1;
@@ -62,7 +61,6 @@ public class LongestDuplicateSubstring {
             base %= HashMod;
         }
         for (int i = len - 1; i < s.length(); i++) {
-
             hash = hash * prime + (s.charAt(i) - 'a');
             hash %= HashMod;
             if (seen.contains(hash)) {

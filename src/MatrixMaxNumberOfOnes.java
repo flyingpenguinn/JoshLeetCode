@@ -37,26 +37,26 @@ Constraints:
 public class MatrixMaxNumberOfOnes {
     // analyze the positions in the first m*m matrix.
     // every 1 here can have other 1s "independent from" its position. we want max numbers of such 1s from the first square
-    public int maximumNumberOfOnes(int w, int h, int m, int max) {
-        h--;// normalize to 0...n-1
-        w--;
-        int cur=0;
-        List<Integer> ml= new ArrayList<>();
-        for(int i=0;i<m;i++){
-            for(int j=0;j<m;j++){
-                int rs= (h-i)/m+1;
-                int cs= (w-j)/m+1;
-                // each row gives cs, there are rs rows
-                int sc= (rs)*(cs);
-                ml.add(sc);
+    // use the first sl*sl as a template to "influence" other such squares
+    public int maximumNumberOfOnes(int w, int h, int sl, int maxOnes) {
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> y[0] - x[0]);
+        // count, i, j
+        for (int i = 0; i < sl; i++) {
+            for (int j = 0; j < sl; j++) {
+                int xcount = (int) Math.ceil((w - i + 0.0) / sl);
+                // 1s in similar positions as this one in other sl*sl that is not overlapping with the current one
+                int ycount = (int) Math.ceil((h - j + 0.0) / sl);
+                int count = xcount * ycount;
+                pq.offer(new int[]{count, i, j});
             }
         }
-        Collections.sort(ml,Collections.reverseOrder());
-        int r=0;
-        for(int i=0;i<max;i++){
-            r += ml.get(i);
+        int res = 0;
+        while (!pq.isEmpty() && maxOnes > 0) {
+            int[] top = pq.poll();
+            res += top[0];
+            maxOnes--;
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {

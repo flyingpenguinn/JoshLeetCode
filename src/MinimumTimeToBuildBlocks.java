@@ -61,37 +61,34 @@ public class MinimumTimeToBuildBlocks {
 }
 
 class MinTimeToBuildBlocksDp {
-    int[][] dp;
-    public int minBuildTime(int[] b, int split) {
-        Arrays.sort(b);
-        int n=b.length;
-        dp= new int[n][n*2];
-        return dom(b,split,n-1,1);
+    private Integer[][] dp;
+    public int minBuildTime(int[] a, int c) {
+        Arrays.sort(a);
+        int n = a.length;
+        dp= new Integer[n+1][n+1];
+        return domin(a, n-1, 1, c);
     }
-    int Max= 1000000000;
 
-    int dom(int[] b, int c,int i, int w){
+    private int Max = 100000000;
 
-        int n=b.length;
-        if(i==-1){
-            return 0;
+    private int domin(int[] a, int i, int w, int c){
+
+        if(w>=i+1){
+            // for quick calc and to avoid overflow the dp boundary
+            return a[i];
         }
-        if(w<=0){
+        if(w==0){
             return Max;
         }
-        if(dp[i][w]!=0){
+        if(dp[i][w]!= null){
             return dp[i][w];
         }
-        int r1= Math.max(b[i],dom(b,c,i-1,w-1));
-
-        int r2= Max;
-        if(i-w>=0){
-            r2= dom(b,c,i,2*w)+c;
-        }
-        int rt= Math.min(r1,r2);
-        dp[i][w]=rt;
-        //  System.out.println(i+" "+w+" "+dp[i][w]);
-
+        // only do one work, in case we want to split w-1 later
+        int dowork = Math.max(a[i], domin(a, i-1, w-1, c));
+        // we'd rather split all to get the best outcome
+        int split = domin(a, i, w*2, c)+c;
+        int rt= Math.min(dowork, split);
+        dp[i][w] = rt;
         return rt;
     }
 }
