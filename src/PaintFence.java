@@ -25,16 +25,16 @@ Explanation: Take c1 as color 1, c2 as color 2. All possible ways are:
    6         c2     c2     c1
  */
 public class PaintFence {
-    // top down
-    int[][] dp;
-    int eqn = 3;
+    // top down.
+    // note we dont really need to remember what the previous paint was- we just know same or not same
+    private int[][] dp;
 
     public int numWays(int n, int k) {
         if (n == 0 || k == 0) {
             return 0;
         }
 
-        dp = new int[n][eqn];
+        dp = new int[n][k + 1];
         return don(0, 0, n, k);
     }
 
@@ -55,28 +55,5 @@ public class PaintFence {
         int rt = we + wne;
         dp[i][eq] = rt;
         return rt;
-    }
-}
-
-class PaintFenceO1space {
-    public int numWays(int n, int k) {
-        if (n == 0 || k == 0) {
-            return 0;
-        }
-        // using rolling array. how many ways to make i...n valid with k consecutive colors.
-        // note the diff from top down: here i is part of the k colors painted. while in top down we painted till i-1
-        int[] dp = new int[3];
-        dp[0] = 1;
-        dp[1] = 0;
-        dp[2] = 0;
-        for (int i = n - 1; i >= 0; i--) {
-            int n0 = dp[0];
-            int n1 = dp[1];
-            int n2 = dp[2];
-            dp[1] = (k - 1) * n2 + (k - 1) * n1 + k * dp[0];
-            dp[2] = n1;
-            dp[0] = 0;
-        }
-        return dp[1] + dp[2];
     }
 }
