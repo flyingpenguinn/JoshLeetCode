@@ -57,3 +57,28 @@ public class PaintFence {
         return rt;
     }
 }
+
+class PaintFenceO1Space {
+    // direct translation of above top down code. note we dont need special treatment of dp[0][0] it naturally fits into the recursion
+    // but we do need to process n=0 or k=0 separately otherwise it becomes 1
+    public int numWays(int n, int k) {
+        if (n == 0 || k == 0) {
+            return 0;
+        }
+        int[][] dp = new int[2][3];
+        for (int j = 0; j < 3; j++) {
+            dp[n % 2][j] = 1;
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = 0; j <= 2; j++) {
+                int same = 0;
+                if (j + 1 <= 2) {
+                    same = dp[(i + 1) % 2][j + 1];
+                }
+                int notsame = (k - 1) * dp[(i + 1) % 2][1];
+                dp[i % 2][j] = same + notsame;
+            }
+        }
+        return dp[0][0];
+    }
+}
