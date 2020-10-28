@@ -18,24 +18,23 @@ Explanation: 2,3,4 form a continuous range; 8,9 form a continuous range.
  */
 public class SummaryRanges228 {
     public List<String> summaryRanges(int[] a) {
-        // start is 0 or when we deviate
+        List<String> res = new ArrayList<>();
         int n = a.length;
-        List<String> r = new ArrayList<>();
-        int si = 0;
-        for (int i = 1; i <= n; i++) {
-            if (i == n || a[i] > a[i - 1] + 1) {
-                r.add(rang(a, si, i - 1));
-                si = i;
+        if (n == 0) {
+            return res;
+        }
+        int s = a[0];
+        for (int i = 1; i < n; i++) {
+            if (a[i] != a[i - 1] + 1) {
+                res.add(make(s, a[i - 1]));
+                s = a[i];
             }
         }
-        return r;
+        res.add(make(s, a[n - 1])); // don't miss out the last interval
+        return res;
     }
 
-    String rang(int[] a, int i, int j) {
-        if (i == j) {
-            return a[i] + "";
-        } else {
-            return a[i] + "->" + a[j];
-        }
+    private String make(int s, int e) {
+        return s == e ? String.valueOf(s) : s + "->" + e;
     }
 }

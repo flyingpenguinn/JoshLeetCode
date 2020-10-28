@@ -35,49 +35,52 @@ pipes[i][0] != pipes[i][1]
  */
 public class OptimizeWaterDistributionInVillage {
 
-    // mst, could be many of them. water must come from well, so assign node 0 to be a well
-    public int minCostToSupplyWater(int n, int[] w, int[][] pp) {
-        List<int[]> edges = new ArrayList<>();
-        for (int i = 1; i <= n; i++) {
-            edges.add(new int[]{0, i, w[i - 1]});
+    // make 0-i an edge too, thus becoming an MST problem
+    public int minCostToSupplyWater(int n, int[] wells, int[][] es) {
+        List<int[]> ses = new ArrayList<>();
+        for(int[] e: es){
+            ses.add(e);
         }
-        for (int i = 0; i < pp.length; i++) {
-            edges.add(pp[i]);
+        for(int i=0; i< wells.length; i++){
+            ses.add(new int[]{0, i+1, wells[i]});
         }
-        // kruskal, sort edges first
-        Collections.sort(edges, (a, b) -> Integer.compare(a[2], b[2]));
-        int[] pa = new int[n + 1];
+        Collections.sort(ses, (x,y) -> Integer.compare(x[2], y[2]));
+        int[] pa = new int[n+1];
+        int[] size = new int[n+1];
         Arrays.fill(pa, -1);
-        int r = 0;
-        for (int[] pi : edges) {
-            int i = pi[0];
-            int j = pi[1];
-            int edge = pi[2];
-            boolean rt = union(i, j, pa);
-            if (rt) {
-                r += edge;
+        Arrays.fill(size, 1);
+        int res = 0;
+        for(int i=0; i<ses.size();i++){
+            int[] top = ses.get(i);
+            if(union(pa, size, top[0], top[1])){
+                res += top[2];
             }
         }
-        return r;
+        return res;
     }
 
-    // i=1...n
-    int find(int i, int[] pa) {
-        if (pa[i] == -1) {
+    private int find(int[] pa, int i){
+        if(pa[i] == -1){
             return i;
         }
-        int r = find(pa[i], pa);
-        pa[i] = r;
-        return r;
+        int ri = find(pa, pa[i]);
+        pa[i] = ri;
+        return ri;
     }
 
-    boolean union(int i, int j, int[] pa) {
-        int pi = find(i, pa);
-        int pj = find(j, pa);
-        if (pi == pj) {
+    private boolean union(int[] pa, int[] size, int i, int j){
+        int ri = find(pa, i);
+        int rj = find(pa, j);
+        if(ri==rj){
             return false;
         }
-        pa[pi] = pj;// note must be pi == pj
+        if(size[ri] < size[rj]){
+            pa[ri] = rj;
+            size[rj] += size[ri];
+        }else{
+            pa[rj] = ri;
+            size[ri] += size[rj];
+        }
         return true;
     }
 }
