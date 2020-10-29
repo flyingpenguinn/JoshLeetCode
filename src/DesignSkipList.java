@@ -48,152 +48,141 @@ At most 50000 calls will be made to search, add, and erase.
  */
 public class DesignSkipList {
 
-    public static void main(String[] args) {
-        Skiplist skiplist = new Skiplist();
-        for (int i = 0; i < 100; i++) {
-            skiplist.add(i);
-        }
-    }
-}
+    class Skiplist {
+        private Random rand = new Random();
+        int size = 0;
 
+        class ListNode {
+            int val;
+            ArrayList<ListNode> nexts = new ArrayList<>();
 
-class Skiplist {
-    private Random rand = new Random();
-    int size = 0;
+            public ListNode(int val) {
+                this.val = val;
+            }
 
-    class ListNode {
-        int val;
-        ArrayList<ListNode> nexts = new ArrayList<>();
-
-        public ListNode(int val) {
-            this.val = val;
-        }
-    }
-
-
-    ListNode head = new ListNode(-1);
-
-    public Skiplist() {
-        // first row empty
-        head.nexts.add(null);
-    }
-
-    public boolean search(int target) {
-        List<ListNode> points = findInsertionPoints(target);
-        ListNode firstrow = getNext(points.get(0), 0);
-        if (firstrow != null && firstrow.val == target) {
-            return true;
-        }
-        return false;
-    }
-
-    private ListNode getNext(ListNode node, int level) {
-        if (node == null) {
-            return null;
-        }
-        if (node.nexts.size() <= level) {
-            return null;
-        }
-        return node.nexts.get(level);
-    }
-
-    public void add(int num) {
-
-        List<ListNode> points = findInsertionPoints(num);
-        ListNode newelem = new ListNode(num);
-        int n = points.size();
-        for (int i = 0; i < n; i++) {
-            ListNode prev = points.get(i);
-            ListNode next = getNext(prev, i);
-
-            addToList(i, newelem, prev);
-            addToList(i, next, newelem);
-            int coin = rand.nextInt(2);
-            if (coin == 1) {
-                break;
+            public String toString() {
+                return val + "";
             }
         }
-        ListNode firstLastRow = head.nexts.get(n - 1);
-        ListNode secondLastRow = getNext(firstLastRow, n - 1);
-        if (firstLastRow != null && secondLastRow != null) {
-            int coin = rand.nextInt(2);
-            ListNode toadd = coin == 0 ? firstLastRow : secondLastRow;
-            // add a new layer null
-            toadd.nexts.add(null);
-            addToList(n, toadd, head);
-        }
-        System.out.println("add " + num);
-        print();
-        size++;
-    }
 
-    private void addToList(int i, ListNode next, ListNode cur) {
-        if (cur.nexts.size() == i) {
-            cur.nexts.add(next);
-        } else {
-            cur.nexts.set(i, next);
-        }
-    }
 
-    public boolean erase(int num) {
-        // same as search, verify the first row
-        List<ListNode> points = findInsertionPoints(num);
-        ListNode firstrow = getNext(points.get(0), 0);
-        if (firstrow == null || firstrow.val != num) {
+        ListNode head = new ListNode(Integer.MIN_VALUE);
+
+        public Skiplist() {
+            // first row empty
+            head.nexts.add(null);
+        }
+
+        public boolean search(int target) {
+            List<ListNode> points = findInsertionPoints(target);
+            // always have the first row because we will have head all the time
+            ListNode firstrow = getNext(points.get(0), 0);
+            if (firstrow != null && firstrow.val == target) {
+                return true;
+            }
             return false;
         }
-        int n = points.size();
-        for (int i = 0; i < n; i++) {
-            ListNode prev = points.get(i);
-            ListNode next = getNext(prev, i);
-            addToList(i, getNext(next, i), prev);
-        }
-        ListNode headLastRow = head.nexts.get(n - 1);
-        ListNode firstLastRow = getNext(headLastRow, n - 1);
-        if (firstLastRow == null) {
-            // shrink
-            head.nexts.remove(head.nexts.size() - 1);
-        }
-        size--;
-        System.out.println("erase " + num);
-        print();
-        return true;
-    }
 
-    private List<ListNode> findInsertionPoints(int target) {
-        int levels = head.nexts.size();
-        ListNode cur = head;
-        int level = levels - 1;
-        List<ListNode> prevs = new ArrayList<>();
-        while (level >= 0) {
-            while (getNext(cur, level) != null) {
-                ListNode next = getNext(cur, level);
-                if (next != null && next.val < target) {
-                    cur = next;
-                } else {
-                    // next >= target, we've found insertion point as next to prev
+        private ListNode getNext(ListNode node, int level) {
+            if (node == null) {
+                return null;
+            }
+            if (node.nexts.size() <= level) {
+                return null;
+            }
+            return node.nexts.get(level);
+        }
+
+        public void add(int num) {
+
+            List<ListNode> points = findInsertionPoints(num);
+            ListNode newelem = new ListNode(num);
+            int n = points.size();
+            int i = 0;
+            for (; i < n; i++) {
+                ListNode prev = points.get(i);
+                ListNode next = getNext(prev, i);
+
+                addToList(i, newelem, prev);
+                addToList(i, next, newelem);
+                int coin = rand.nextInt(2);
+                if (coin == 1) {
                     break;
                 }
             }
-            prevs.add(cur);
-            level--;
-        }
-        // revesrse so that 0th row is at the top of prevs
-        Collections.reverse(prevs);
-        return prevs;
-    }
-
-    void print() {
-        int levels = head.nexts.size();
-        for (int i = 0; i < levels; i++) {
-            System.out.print("lv " + i + " = ");
-            ListNode node = head;
-            while (getNext(node, i) != null) {
-                System.out.print(getNext(node, i).val + "->");
-                node = getNext(node, i);
+            if (i == n) {
+                addToList(n, newelem, head);
             }
-            System.out.println();
+            size++;
+            //  print();
         }
-    }
 
+        private void addToList(int i, ListNode next, ListNode cur) {
+            if (cur.nexts.size() == i) {
+                cur.nexts.add(next);
+            } else {
+                cur.nexts.set(i, next);
+            }
+        }
+
+        public boolean erase(int num) {
+            // same as search, verify the first row
+            List<ListNode> points = findInsertionPoints(num);
+            ListNode firstrow = getNext(points.get(0), 0);
+            if (firstrow == null || firstrow.val != num) {
+                return false;
+            }
+            int n = points.size();
+            int i = 0;
+            for (; i < n; i++) {
+                ListNode prev = points.get(i);
+                ListNode next = getNext(prev, i);
+                addToList(i, getNext(next, i), prev);
+            }
+            // head n-1 level next becomes empty
+            if (i == n && head.nexts.get(n - 1) == null) {
+                // shrink
+                head.nexts.remove(head.nexts.size() - 1);
+            }
+            size--;
+            //    print();
+            return true;
+        }
+
+        private List<ListNode> findInsertionPoints(int target) {
+            int levels = head.nexts.size();
+            ListNode cur = head;
+            List<ListNode> prevs = new ArrayList<>();
+            for (int j = levels - 1; j >= 0; j--) {
+                while (getNext(cur, j) != null) {
+                    ListNode next = getNext(cur, j);
+                    if (next != null && next.val < target) {
+                        cur = next;
+                    } else {
+                        // next >= target or null, we've found insertion point as next to prev. break out and we will start with cur at the next level j-1
+                        break;
+                    }
+                }
+                prevs.add(cur);
+            }
+            // revesrse so that 0th row is at the top of prevs
+            Collections.reverse(prevs);
+            return prevs;
+        }
+
+        // debug only
+        void print() {
+            int levels = head.nexts.size();
+            for (int i = 0; i < levels; i++) {
+                System.out.print("lv " + i + " = ");
+                ListNode node = head;
+                while (getNext(node, i) != null) {
+                    System.out.print(getNext(node, i).val + "->");
+                    node = getNext(node, i);
+                }
+                System.out.println();
+            }
+        }
+
+    }
 }
