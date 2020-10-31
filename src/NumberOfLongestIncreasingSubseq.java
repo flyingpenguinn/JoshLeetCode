@@ -18,33 +18,36 @@ public class NumberOfLongestIncreasingSubseq {
     // record the length and count for each index, then find max
     public int findNumberOfLIS(int[] a) {
         int n = a.length;
-        int[] dp = new int[n];
-        int[] dpcount = new int[n];
-        int max = 0;
-        int maxcount = 0;
+        if (n == 0) {
+            return 0;
+        }
+        int[][] dp = new int[n][2];// len and count
+        int max = -1;
         for (int i = 0; i < n; i++) {
-            int curmax = 1;
-            int cmaxcount = 1;
+            int maxj0 = -1;
             for (int j = i - 1; j >= 0; j--) {
                 if (a[j] < a[i]) {
-                    int len = dp[j] + 1;
-                    if (len > curmax) {
-                        curmax = len;
-                        cmaxcount = dpcount[j];
-                    } else if (len == curmax) {
-                        cmaxcount += dpcount[j];
-                    }
+                    maxj0 = Math.max(maxj0, dp[j][0]);
                 }
             }
-            dp[i] = curmax;
-            dpcount[i] = cmaxcount;
-            if (curmax > max) {
-                max = curmax;
-                maxcount = cmaxcount;
-            } else if (curmax == max) {
-                maxcount += cmaxcount;
+            dp[i][0] = maxj0 + 1;
+            for (int j = i - 1; j >= 0; j--) {
+                if (a[j] < a[i] && dp[j][0] == maxj0) {
+                    dp[i][1] += dp[j][1];
+                }
+            }
+            if (dp[i][1] == 0) {
+                dp[i][0] = 1;
+                dp[i][1] = 1;
+            }
+            max = Math.max(max, dp[i][0]);
+        }
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            if (dp[i][0] == max) {
+                res += dp[i][1];
             }
         }
-        return maxcount;
+        return res;
     }
 }

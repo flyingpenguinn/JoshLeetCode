@@ -30,7 +30,7 @@ seats contains only 0s or 1s, at least one 0, and at least one 1.
  */
 
 public class MaxDistToClosestPerson {
-    // can be o1 space:
+    // can be o1 space: every time we pick in the middle of two ones
     /*
 
      int res = 0, n = seats.length, last = -1;
@@ -43,30 +43,27 @@ public class MaxDistToClosestPerson {
         res = Math.max(res, n - last - 1);
         return res;
      */
-    int Max = 1000000;
-
     public int maxDistToClosest(int[] a) {
         int n = a.length;
-        int[] r = new int[n];
-        int r1 = -1;
-        for (int j = n - 1; j >= 0; j--) {
-            if (a[j] == 1) {
-                r1 = j;
+        int[] right = new int[n];
+        int last = -1;
+        for (int i = n - 1; i >= 0; i--) {
+            if (a[i] == 1) {
+                last = i;
+            } else {
+                right[i] = last;
             }
-            r[j] = r1;
         }
-        // System.out.println(Arrays.toString(r));
-
-        int l1 = -1;
+        last = -1;
         int max = 0;
         for (int i = 0; i < n; i++) {
             if (a[i] == 1) {
-                l1 = i;
+                last = i;
             } else {
-                int dl = l1 == -1 ? Max : i - l1;
-                int dr = r[i] == -1 ? Max : r[i] - i;
-                //  System.out.println(i+" "+dl+" "+dr);
-                max = Math.max(max, Math.min(dl, dr));
+                int leftdist = last == -1 ? Integer.MAX_VALUE : i - last;
+                int rightdist = right[i] == -1 ? Integer.MAX_VALUE : right[i] - i;
+                int cur = Math.min(leftdist, rightdist);
+                max = Math.max(max, cur);
             }
         }
         return max;

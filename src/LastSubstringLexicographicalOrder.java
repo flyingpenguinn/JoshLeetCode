@@ -71,93 +71,89 @@ public class LastSubstringLexicographicalOrder {
 }
 
 
-//TLE... nlgn solution won't work...
+
 class LastSubstringSuffixArray {
-    // find biggest suffix. use suffix array
-    class Entry implements Comparable<Entry> {
-        int v1;
-        int v2;
-        // record the "i" in the algo, i.e. the starting point
-        int start;
+    // nlogn suffix array solution
+    // actually sorting all circular substrings of s+"$"
+    // https://cp-algorithms.com/string/suffix-array.html
+    // sa[i] means the ith suffix starts with sa[i]
+    // ra[i] means the rank of the suffix starting with i
+    // count[i] counts accumulative sums of possible ra[i] values
+    // nsa, nra are tmp copies of them.
+    // use counting sort to sort sa in logn times
 
-        public Entry(int v1, int v2, int start) {
-            this.v1 = v1;
-            this.v2 = v2;
-            this.start = start;
-        }
-
-        @Override
-        public int compareTo(Entry o) {
-            if (v1 != o.v1) {
-                return Integer.compare(v1, o.v1);
-            } else {
-                return Integer.compare(v2, o.v2);
+    // counting sort using ra and get result in sa. we have the suffix array for k/2. now we need to get k sorted according to the "lower" k/2
+    private void countingsort(int[] sa, int[] ra, int k){
+        int n = sa.length;
+        int ranks = Math.max(n, 256);
+        int[] count = new int[ranks];
+        int[] nsa = new int[n];
+        for(int i=0; i<n; i++){
+            count[ra[i]]++;
+            nsa[i] = k+1<=n? (sa[i]-k) %n : sa[i];
+            // when k>n we know this is the last sort we won't adjust nsa further
+            if(nsa[i]<0){
+                nsa[i] += n;
             }
         }
+        for(int i=1; i<ranks;i++){
+            count[i] += count[i-1];
+        }
+        /*
+        typical counting sort, scan from the back so that for same elements, the later ones ranked later too
+        for (int i = n-1; i >=0; i--)
+            p[--cnt[s[i]]] = i;
+        here i == nsa[i] are indexes
+        */
+        for(int i = n-1; i>=0; i--){
+            sa[--count[ra[nsa[i]]]] = nsa[i];
+        }
+    }
+
+    private int[] buildsa(String str) {
+        str += '$';
+        char[] s = str.toCharArray();
+        int n = s.length;
+        int[] sa = new int[n];
+        int ranks = Math.max(n, 256);
+        int[] ra = new int[ranks];
+        for(int i=0; i<n; i++){
+            sa[i] = i;
+            ra[i] = s[i];
+        }
+        // k+1 is actually length of the substring we check
+        // no fear of k>n because we mod and it's circular...
+        for(int k = 0; (k+1)/2 <= n; k= (k==0) ? k+1: k*2){
+            countingsort(sa, ra, k);
+            // counting sort for k/2. adjust sa if k<=n meaning we want to do another round of sorting for higher k/2
+            if(k+1>n){
+                break;
+            }
+            // if k<=n, after this, sa is sorted as of lower k/2 using ra that is corresponding to k/2, but all sa[i] are adjusted with i-k/2. we then sort the renmaining "higher" k/2 to get ranking for k
+            int[] nra = new int[ranks];
+            int rank = 0;
+            // sa[i-1] is what's before sa[i]. if they differ then we found a new rank note sa is already sorted by k/2  we are now calculating the ranking for k
+            nra[sa[0]] = 0;
+            for(int i=1; i<n; i++){
+                // comparing the combined str at
+                // sa[i], sa[i]+k vs sa[i-1], sa[i-1]+k. the former must have ranking >= the latter
+                // ra[i] is the ranking of len k. sa[i] and sa[i-1] are already adjusted for k
+                if(ra[sa[i]]!= ra[sa[i-1]] || ra[(sa[i]+k)%n ]!= ra[(sa[i-1]+k)%n]){
+                    rank++;
+                }
+                nra[sa[i]] = rank;
+            }
+            ra = nra;
+            // ra now has the right ranking for k
+        }
+        return sa;
     }
 
     public String lastSubstring(String s) {
-        int n = s.length();
-        int m = (int) (Math.log(n) / Math.log(2) + 1.5);
-        int[][] p = new int[m + 1][n];
-        Entry[] l = new Entry[n];
-
-        for (int i = 0; i < n; i++) {
-            int v = s.charAt(i) - 'a';
-            //allocate initial rank to each char
-            p[0][i] = v;
-        }
-        int step = 1;
-        int max = -1;
-        int maxi = -1;
-        int buflen = Math.max(27, n + 1);
-        int[] buf = new int[buflen];
-        Entry[] r = new Entry[n];
-        for (int len = 1; len <= n; len *= 2, step++) {
-            for (int i = 0; i < n; i++) {
-                // we have results for i..i+len-1 and i+len...i+2len-1 for previous step. now merge the scores for sorting
-                // if overflow then minimal value -1
-                l[i] = new Entry(p[step - 1][i], i + len < n ? p[step - 1][i + len] : -1, i);
-            }
-            // v2 first then v1 for two keys counting sort
-            countingSort(l, buf, r, false);
-            countingSort(l, buf, r, true);
-            max = -1;
-            maxi = -1;
-            for (int i = 0; i < n; i++) {
-                boolean same = i > 0 && l[i].compareTo(l[i - 1]) == 0;
-                // either stay with before or a new one. start here can be inconsecutive but it's fine
-                int index = l[i].start;
-                p[step][index] = same ? p[step][l[i - 1].start] : i;
-                if (p[step][index] > max) {
-                    max = p[step][index];
-                    maxi = index;
-                }
-            }
-        }
-        return s.substring(maxi);
-    }
-
-
-    private void countingSort(Entry[] l, int[] buf, Entry[] output, boolean usev1) {
-        int n = l.length;
-        Arrays.fill(buf, 0);
-        // buf size n+1 = 0 to n, we map -1 to 0. we need 26 at least for coverage of the alphabet
-        for (int i = 0; i < n; i++) {
-            int rv = usev1 ? l[i].v1 + 1 : l[i].v2 + 1;
-            buf[rv]++;
-        }
-        for (int i = 1; i < buf.length; i++) {
-            buf[i] += buf[i - 1];
-        }
-        for (int i = n - 1; i >= 0; i--) {
-            int rv = usev1 ? l[i].v1 + 1 : l[i].v2 + 1;
-            output[buf[rv] - 1] = l[i];
-            buf[rv]--;
-        }
-        for (int i = 0; i < n; i++) {
-            l[i] = output[i];
-        }
+        s += "$";
+        int[] sa = buildsa(s);
+        return s.substring(sa[s.length()], s.length()-1);
+        //real length is s.len+1 after + $ so this index is correct
     }
 }
 

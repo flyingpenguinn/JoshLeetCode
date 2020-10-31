@@ -43,50 +43,44 @@ public class EncodeNrayToBinaryTree {
         }
     }
 
-    ;
-
     // first child is left child. other children are right children of the left child
     // the example shown by leetcode is incorrect...
-    private class Codec {
 
+    class Codec {
         // Encodes an n-ary tree to a binary tree.
         public TreeNode encode(Node root) {
-            if (root == null) {
+            if(root==null){
                 return null;
             }
             TreeNode cur = new TreeNode(root.val);
-            List<Node> ch = root.children;
-            if (ch == null || ch.isEmpty()) {
+            List<TreeNode> rc = new ArrayList<>();
+            for(Node c: root.children){
+                rc.add(encode(c));
+            }
+            if(rc.isEmpty()){
                 return cur;
             }
-
-            TreeNode left = encode(ch.get(0));
-            cur.left = left;
-            TreeNode linkon = left;
-            for (int i = 1; i < ch.size(); i++) {
-                TreeNode child = encode(ch.get(i));
-                linkon.right = child;
-                linkon = child;
+            cur.left = rc.get(0);
+            TreeNode p = cur.left;
+            for(int i=1; i<rc.size(); i++){
+                p.right = rc.get(i);
+                p = p.right;
             }
             return cur;
         }
 
+
         // Decodes your binary tree to an n-ary tree.
         public Node decode(TreeNode root) {
-            if (root == null) {
+            if(root==null){
                 return null;
             }
             Node cur = new Node(root.val);
             cur.children = new ArrayList<>();
-            if (root.left != null) {
-                Node cl = decode(root.left);
-                cur.children.add(cl);
-                TreeNode pr = root.left.right;
-                while (pr != null) {
-                    Node cr = decode(pr);
-                    cur.children.add(cr);
-                    pr = pr.right;
-                }
+            TreeNode p = root.left;
+            while(p!= null){
+                cur.children.add(decode(p));
+                p = p.right;
             }
             return cur;
         }
