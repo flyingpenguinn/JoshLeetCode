@@ -47,7 +47,38 @@ A solution using O(n) space is pretty straight forward.
 Could you devise a constant space solution?
  */
 public class RecoverBst {
-    // find cliff and min after it
+    private TreeNode pre = null;
+    private TreeNode n1 = null;
+    private TreeNode n2 = null;
+
+    public void recoverTree(TreeNode root) {
+        dfs(root);
+        if (n1 != null && n2 != null) {
+            int tmp = n1.val;
+            n1.val = n2.val;
+            n2.val = tmp;
+        }
+    }
+
+    private void dfs(TreeNode n) {
+        if (n == null) {
+            return;
+        }
+        dfs(n.left);
+        if (n1 == null && pre != null && n.val < pre.val) {
+            n1 = pre;
+        }
+        if (n1 != null && (n2 == null || n.val < n2.val)) {
+            n2 = n;
+        }
+        pre = n;
+        dfs(n.right);
+    }
+
+}
+
+class RecoverBstMorris {
+    // find cliff and min after it. this is O(1) space in order traversal...
     TreeNode bg = null;
     TreeNode sm = null;
     TreeNode pre = null;
