@@ -30,33 +30,29 @@ Note:
  */
 public class LastStoneWeightII {
     // basically asking the min weight diff between two partitions of the stones
-    int[][] dp;
-
+    // min partition diff
+    private Integer[][] dp;
     public int lastStoneWeightII(int[] a) {
         int sum = 0;
-        for (int i = 0; i < a.length; i++) {
+        for(int i=0; i<a.length;i++){
             sum += a[i];
         }
-        dp = new int[a.length][sum + 1];
-        for (int i = 0; i < a.length; i++) {
-            Arrays.fill(dp[i], -1);
-        }
-        return doi(a, sum, 0, 0);
+        dp= new Integer[a.length][sum+1];
+        return domin(a, 0, 0,sum);
     }
 
-    // dp on i and one group sum.either to that group or not
-    int doi(int[] a, int sum, int i, int csum) {
-        if (i == a.length) {
-            int ot = sum - csum;
-            return Math.abs(ot - csum);
+    // d == sum1 - sum2
+    private int domin(int[] a, int i, int sum, int all){
+        if(i==a.length){
+            int other = all-sum;
+            return Math.abs(other-sum);
         }
-        if (dp[i][csum] != -1) {
-            return dp[i][csum];
+        if(dp[i][sum]!= null){
+            return dp[i][sum];
         }
-        int r1 = doi(a, sum, i + 1, csum);
-        int r2 = doi(a, sum, i + 1, csum + a[i]);
-        int rt = Math.min(r1, r2);
-        dp[i][csum] = rt;
-        return rt;
+        int pick = domin(a, i+1, sum+a[i], all);
+        int nopick = domin(a, i+1, sum, all);
+        dp[i][sum]= Math.min(pick, nopick);
+        return dp[i][sum];
     }
 }

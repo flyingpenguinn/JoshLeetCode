@@ -26,19 +26,20 @@ Output: -1->0->3->4->5
  */
 public class InsertionSortList {
     public ListNode insertionSortList(ListNode head) {
-        ListNode nh = new ListNode(-1);
-        ListNode p = head;
-        while (p != null) {
-            ListNode pn = nh;
-            ListNode nextp = p.next;
-            while (pn.next != null && pn.next.val < p.val) {
-                pn = pn.next;
+        ListNode dummy = new ListNode(-1); // dummy.next starts the sorted list
+        ListNode tosort = head;
+        while (tosort != null) {
+            ListNode nextsort = tosort.next;
+            tosort.next = null;
+            ListNode q = dummy;
+            while (q.next != null && q.next.val < tosort.val) {
+                q = q.next;
             }
-            ListNode npn = pn.next;
-            pn.next = p;
-            p.next = npn;
-            p = nextp;
+            ListNode qn = q.next;
+            q.next = tosort;
+            tosort.next = qn;
+            tosort = nextsort;
         }
-        return nh.next;
+        return dummy.next;
     }
 }
