@@ -40,6 +40,23 @@ s contains only lowercase English letters.
  */
 public class ConsecutiveCharacters {
     public int maxPower(String s) {
+        int res = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int j = i + 1;
+            while (j < s.length() && s.charAt(j) == c) {
+                j++;
+            }
+            res = Math.max(res, j - i); // i.. j-1
+        }
+        return res;
+    }
+
+}
+
+class ConsecutiveCharsTemplate {
+    // templated two pointer...
+    public int maxPower(String s) {
         int low = 0;
         int high = 0;
         Map<Character, Integer> m = new HashMap<>();
