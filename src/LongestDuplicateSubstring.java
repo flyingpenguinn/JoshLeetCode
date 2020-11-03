@@ -95,98 +95,86 @@ public class LongestDuplicateSubstring {
 
 
 class LongestDuplciateSubstringSuffixArray {
-    // TODO: fix this suffix array solution. most of the code is copied from last substring in lexi order
-    private int[] buildLCP(String s, int[] sa) {
-        int n = s.length(), k = 0;
-        int ranks = Math.max(n + 1, 256);
-        int[] lcp = new int[n - 1], ra = new int[ranks];
-        for (int i = 0; i < n; i++)
-            ra[sa[i]] = i;
-        for (int i = 0; i < n; i++) {
-            if (ra[i] == n - 1) {
-                k = 0;
-                continue;
-            }
-            int j = sa[ra[i] + 1];
-            while (i + k < n && j + k < n && s.charAt(i + k) == s.charAt(j + k)) k++;
-            lcp[ra[i]] = k;
-            if (k > 0) k--;
-        }
-        return lcp;
-    }
+    // TODO: understand this suffix array better
+    class SuffixArray {
+        private int[] sa, lcp;
+        private String s;
 
-    private void countingsort(int[] sa, int[] ra, int k) {
-        int n = sa.length;
-        int ranks = Math.max(n, 256);
-        int[] count = new int[ranks];
-        int[] nsa = new int[n];
-        for (int i = 0; i < n; i++) {
-            count[ra[i]]++;
-            nsa[i] = k + 1 <= n ? (sa[i] - k) % n : sa[i];
-            // when k>n we know this is the last sort we won't adjust nsa further
-            if (nsa[i] < 0) {
-                nsa[i] += n;
-            }
+        SuffixArray(String s) {
+            this.s = s;
+            this.sa = buildSA(this.s);
+            this.lcp = buildLCP(this.s, this.sa);
         }
-        for (int i = 1; i < ranks; i++) {
-            count[i] += count[i - 1];
-        }
-        /*
-        typical counting sort, scan from the back so that for same elements, the later ones ranked later too
-        for (int i = n-1; i >=0; i--)
-            p[--cnt[s[i]]] = i;
-        here i == nsa[i] are indexes
-        */
-        for (int i = n - 1; i >= 0; i--) {
-            sa[--count[ra[nsa[i]]]] = nsa[i];
-        }
-    }
 
-    private int[] buildsa(String str) {
-        str += '$';
-        char[] s = str.toCharArray();
-        int n = s.length;
-        int[] sa = new int[n];
-        int ranks = Math.max(n, 256);
-        int[] ra = new int[ranks];
-        for (int i = 0; i < n; i++) {
-            sa[i] = i;
-            ra[i] = s[i];
+        int[] getSA() {
+            return this.sa;
         }
-        // k+1 is actually length of the substring we check
-        // no fear of k>n because we mod and it's circular...
-        for (int k = 0; (k + 1) / 2 <= n; k = (k == 0) ? k + 1 : k * 2) {
-            countingsort(sa, ra, k);
-            // counting sort for k/2. adjust sa if k<=n meaning we want to do another round of sorting for higher k/2
-            if (k + 1 > n) {
-                break;
+
+        int[] getLCP() {
+            return this.lcp;
+        }
+
+        private void countSort(int k, int[] sa, int[] ra) {
+            int n = sa.length, N = n + 256;
+            int[] nsa = new int[n], cnt = new int[N];
+            System.arraycopy(sa, 0, nsa, 0, n);
+            for (int i = 0; i < n; i++) {
+                cnt[ra[i]]++;
+                nsa[i] = (nsa[i] - k + n) % n;
             }
-            // if k<=n, after this, sa is sorted as of lower k/2 using ra that is corresponding to k/2, but all sa[i] are adjusted with i-k/2. we then sort the renmaining "higher" k/2 to get ranking for k
-            int[] nra = new int[ranks];
-            int rank = 0;
-            // sa[i-1] is what's before sa[i]. if they differ then we found a new rank note sa is already sorted by k/2  we are now calculating the ranking for k
-            nra[sa[0]] = 0;
-            for (int i = 1; i < n; i++) {
-                // comparing the combined str at
-                // sa[i], sa[i]+k vs sa[i-1], sa[i-1]+k. the former must have ranking >= the latter
-                // ra[i] is the ranking of len k. sa[i] and sa[i-1] are already adjusted for k
-                if (ra[sa[i]] != ra[sa[i - 1]] || ra[(sa[i] + k) % n] != ra[(sa[i - 1] + k) % n]) {
-                    rank++;
+            for (int i = 1; i < N; i++) cnt[i] += cnt[i - 1];
+            for (int i = n - 1; i >= 0; i--) sa[--cnt[ra[nsa[i]]]] = nsa[i];
+        }
+
+        private int[] buildSAUTIL(String s) {
+            int n = s.length();
+            int[] sa = new int[n], ra = new int[n];
+            for (int i = 0; i < n; i++) {
+                sa[i] = i;
+                ra[i] = s.charAt(i);
+            }
+            for (int k = 0; k < n; k = k != 0 ? k << 1 : k + 1) {
+                int[] nra = new int[n];
+                countSort(k, sa, ra);
+                int r = 0;
+                for (int i = 1; i < n; i++) {
+                    if (ra[sa[i]] != ra[sa[i - 1]] || ra[(sa[i] + k) % n] != ra[(sa[i - 1] + k) % n]) r++;
+                    nra[sa[i]] = r;
                 }
-                nra[sa[i]] = rank;
+                ra = nra;
             }
-            ra = nra;
-            // ra now has the right ranking for k
+            return sa;
         }
-        return sa;
+
+        private int[] buildSA(String s) {
+            s += '@';
+            int[] sa = buildSAUTIL(s);
+            return Arrays.copyOfRange(sa, 1, sa.length);
+        }
+
+        private int[] buildLCP(String s, int[] sa) {
+            int n = s.length(), k = 0;
+            int[] lcp = new int[n - 1], ra = new int[n];
+            for (int i = 0; i < n; i++) ra[sa[i]] = i;
+            for (int i = 0; i < n; i++) {
+                if (ra[i] == n - 1) {
+                    k = 0;
+                    continue;
+                }
+                int j = sa[ra[i] + 1];
+                while (i + k < n && j + k < n && s.charAt(i + k) == s.charAt(j + k)) k++;
+                lcp[ra[i]] = k;
+                if (k > 0) k--;
+            }
+            return lcp;
+        }
     }
 
     private String getLRS(String s) {
-        s += "$";
         int max = 0, start = 0, end = 0;
         int n = s.length();
-
-        int[] sa = buildsa(s), lcp = buildLCP(s, sa);
+        SuffixArray array = new SuffixArray(s);
+        int[] sa = array.getSA(), lcp = array.getLCP();
         for (int i = 0; i < n - 1; i++) {
             int len = lcp[i];
             if (len > max) {
