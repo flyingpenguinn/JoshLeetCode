@@ -27,51 +27,59 @@ S consists of lowercase English letters.
 public class LongestDuplicateSubstring {
     // binary search on len then rolling hash
     // because if a longer len works, smaller ones will work too
+    // TODO: use suffix array and lcp
     public String longestDupSubstring(String s) {
         int l = 1;
-        int u = s.length();
-        int lastgood = -1;
+        int u = s.length() - 1;
+        int lastend = -1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            int res = good(s, mid);
-            if (res >= 0) {
-                lastgood = res;
+            int end = hasdup(s, mid);
+            if (end != -1) {
+                lastend = end;
                 l = mid + 1;
             } else {
                 u = mid - 1;
             }
         }
-        if (u > 0) {
-            return s.substring(lastgood, lastgood + u);
-        }
-        return "";
+        return lastend == -1 ? "" : s.substring(lastend - u + 1, lastend + 1);
     }
 
-    long HashMod = 1000000000000007L;
-    int prime = 31;
+    private int toint(char c) {
+        return c - 'a' + 1;
+    }
 
-    private int good(String s, int len) {
+    private long mod = 1000000007L;
+    private long base = 31L;
+
+    private int hasdup(String s, int len) {
+        Map<Long, List<Integer>> m = new HashMap<>();
         long hash = 0;
-        Set<Long> seen = new HashSet<>();
-        long base = 1;
-        for (int i = 0; i < len - 1; i++) {
-            hash = hash * prime + (s.charAt(i) - 'a');
-            hash %= HashMod;
-            base *= prime;
-            base %= HashMod;
-        }
-        for (int i = len - 1; i < s.length(); i++) {
-            hash = hash * prime + (s.charAt(i) - 'a');
-            hash %= HashMod;
-            if (seen.contains(hash)) {
-                return i - len + 1;
+        long topbase = 1;
+
+        for (int i = 0; i < s.length(); i++) {
+            hash = hash * base + toint(s.charAt(i));
+            hash %= mod;
+            int head = i - len + 1;
+            if (head >= 0) {
+                if (m.containsKey(hash)) {
+                    List<Integer> ends = m.get(hash);
+                    for (int end : ends) {
+                        if (s.substring(end - len + 1, end).equals(s.substring(head, i))) {
+                            return end;
+                        }
+                    }
+                }
+                m.computeIfAbsent(hash, k -> new ArrayList<>()).add(i);
+                hash -= topbase * toint(s.charAt(head));
+                hash %= mod;
+                if (hash < 0) {
+                    hash += mod;
+                }
+            } else {
+                topbase *= base;
+                topbase %= mod;
             }
-            seen.add(hash);
-            hash = hash - base * (s.charAt(i - len + 1) - 'a');
-            if (hash < 0) {
-                hash = hash + prime * HashMod;
-            }
-            hash = hash % HashMod;
         }
         return -1;
     }
