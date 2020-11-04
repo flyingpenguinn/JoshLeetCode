@@ -32,36 +32,30 @@ public class FlowerPaintingWithNoAdj {
     // greedy coloring of a graph. the optimal coloring is NPC
     // cant just max smaller ones as there could be holes
     public int[] gardenNoAdj(int n, int[][] paths) {
-        List<Integer>[] dp = new ArrayList[n];
-        for (int[] p : paths) {
-            int min = Math.min(p[0], p[1]);
-            int max = Math.max(p[0], p[1]);
-            if (dp[max - 1] == null) {
-                dp[max - 1] = new ArrayList<>();
-            }
-            dp[max - 1].add(min - 1);
-
-
+        List<Integer>[] g = new ArrayList[n + 1];
+        for (int i = 1; i <= n; i++) {
+            g[i] = new ArrayList<>();
         }
-        //System.out.println(Arrays.toString(dp));
-        int[] r = new int[n];
-        for (int i = 0; i < n; i++) {
-            if (dp[i] == null) {
-                r[i] = 1;
-            } else {
-                boolean[] taken = new boolean[5];
-                for (int j = 0; j < dp[i].size(); j++) {
-                    int ci = dp[i].get(j);
-                    taken[r[ci]] = true;
+        for (int[] path : paths) {
+            g[path[0]].add(path[1]);
+            g[path[1]].add(path[0]);
+        }
+        int[] res = new int[n];
+        for (int i = 1; i <= n; i++) {
+            int[] colors = new int[5];
+            for (int ne : g[i]) {
+                if (res[ne - 1] != 0) {
+                    colors[res[ne - 1]] = 1;
                 }
-                for (int k = 1; k <= 4; k++) {
-                    if (!taken[k]) {
-                        r[i] = k;
-                        break;
-                    }
+            }
+            // degree <=3 so we will always locate a good color
+            for (int j = 1; j <= 4; j++) {
+                if (colors[j] == 0) {
+                    res[i - 1] = j;
                 }
             }
         }
-        return r;
+        return res;
     }
+
 }

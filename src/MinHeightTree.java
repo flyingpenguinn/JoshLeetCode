@@ -44,66 +44,101 @@ public class MinHeightTree {
     // get one leaf by bfs on one random node
     // get the other end by bfs on that leaf above
     // during bfs we keep the parent link in an array so that we can back out the root quickly. no need to keep a list
-
-    int[] pa;
-
-    public List<Integer> findMinHeightTrees(int n, int[][] es) {
-        if (n == 0) {
-            return new ArrayList<>();
-        }
-        pa = new int[n];
-        Arrays.fill(pa, -1);
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
         List<Integer>[] g = new ArrayList[n];
-
-        for (int i = 0; i < n; i++) {
+        for(int i=0; i<n; i++){
             g[i] = new ArrayList<>();
         }
-        for (int[] e : es) {
+        for(int[] e: edges){
             g[e[0]].add(e[1]);
             g[e[1]].add(e[0]);
         }
-        int[] l1 = bfs(0, g);
-        Arrays.fill(pa, -1);
-        int[] l2 = bfs(l1[0], g);
-
-        int pn = l2[1] + 1;
-        int cur = l2[0];
-        int cc = 0;
-        List<Integer> r = new ArrayList<>();
-        // uss pa in last step! only one path between any two nodes
-        while (true) {
-            cc++;
-            if (pn % 2 == 1 && cc == (pn + 1) / 2) {
-                r.add(cur);
-                break;
-            }
-            if (pn % 2 == 0 && cc == pn / 2) {
-                r.add(cur);
-            }
-            if (pn % 2 == 0 && cc == pn / 2 + 1) {
-                r.add(cur);
-                break;
-            }
-            cur = pa[cur];
-        }
-        return r;
-    }
-
-    int[] bfs(int i, List<Integer>[] g) {
-        int[] last = null;
-        // node,dist,parent
+        // node and parent for circle avoidance
         Deque<int[]> q = new ArrayDeque<>();
-        q.offer(new int[]{i, 0});
-        while (!q.isEmpty()) {
+        q.offer(new int[]{0, -1});
+        int last = 0;
+        while(!q.isEmpty()){
             int[] top = q.poll();
-            last = top;
-            for (int next : g[top[0]]) {
-                if (next != pa[top[0]]) {
-                    pa[next] = top[0];
-                    q.offer(new int[]{next, top[1] + 1});
+            last = top[0];
+            for(int ne: g[top[0]]){
+                if(ne != top[1]){
+                    q.offer(new int[]{ne, top[0]});
                 }
             }
         }
-        return last;
+        q.clear();
+        q.offer(new int[]{last, -1,0});
+        int[] pre = new int[n];
+        int first = last;
+        int firstdist = 0;
+        pre[last] = -1;
+        while(!q.isEmpty()){
+            int[] top = q.poll();
+            first = top[0];
+            firstdist = top[2];
+            for(int ne: g[top[0]]){
+                if(ne != top[1]){
+                    pre[ne] = top[0];
+                    q.offer(new int[]{ne, top[0], top[2]+1});
+                }
+            }
+        }
+        int t1 = firstdist/2;
+        int t2 = (firstdist+1)/2;
+        List<Integer> res = new ArrayList<>();
+        int node = first;
+        res.add(node);
+        while(pre[node]!= -1){
+            node = pre[node];
+            res.add(node);
+        }
+        if(t1==t2){
+            return List.of(res.get(t1));
+        }else{
+            return List.of(res.get(t1), res.get(t2));
+        }
+    }
+}
+
+class MinHeightTreeTopoSort {
+    // keep killing leaves. the last round contains the solution
+    // output the mid point, must be on path from last -> first, can't be arbitrarily dist/2 that would include wrong nodes
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        Set<Integer>[] g = new HashSet[n];
+        List<Integer> res = new ArrayList<>();
+        // leaves in each round
+        for (int i = 0; i < n; i++) {
+            g[i] = new HashSet<>();
+        }
+        for (int[] e : edges) {
+            g[e[0]].add(e[1]);
+            g[e[1]].add(e[0]);
+        }
+        for (int i = 0; i < n; i++) {
+            if (g[i].size() <= 1) {
+                res.add(i);
+            }
+        }
+        int rem = n;
+        // can't use res.size()>2. we must have processed at least n-2 elements!
+        // note we iterate by generations! here generation matters as the last generation is the answer
+        // if we dont iterate by generation we won't be able to tell which one in the last 2 is the answer, or both of them.
+        // we will have to judge the last 2 by checking their height one by one
+        while (rem > 2) {
+            List<Integer> nextleaves = new ArrayList<>();
+            for (int i = 0; i < res.size(); i++) {
+                int j = res.get(i);
+                for (int ne : g[j]) {
+                    g[j].remove(ne);
+                    g[ne].remove(j);
+                    if (g[ne].size() == 1) {
+                        nextleaves.add(ne);
+                    }
+                }
+            }
+            rem -= res.size();
+            res = nextleaves;
+        }
+        return res;
     }
 }
