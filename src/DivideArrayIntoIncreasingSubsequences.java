@@ -31,22 +31,26 @@ Note:
 1 <= nums[i] <= 10^5
  */
 public class DivideArrayIntoIncreasingSubsequences {
-    // maxocc * k <= len is the key. we must have maxocc sequences at least
-    // to assign: get groups = int(len/k),then i to i%groups
+    // each number must belong to a k list. so as long as maxocc*k <=n we have a way to assign
+    // assuming max occ is M, for each i assignit to i%M
+    // k*M<=n => n/M>=k we must be able to find one
     public boolean canDivideIntoSubsequences(int[] a, int k) {
-        int last = a[0];
-        int same = 1;
-        int max = 1;
-        for (int i = 1; i < a.length; i++) {
-            if (a[i] == last) {
-                same++;
+        int n = a.length;
+        int cur = 1;
+        int maxocc = 1;
+        for (int i = 1; i < n; i++) {
+            if (a[i] == a[i - 1]) {
+                cur++;
             } else {
-                last = a[i];
-                same = 1;
+                maxocc = Math.max(maxocc, cur);
+                cur = 1;
             }
-            max = Math.max(max, same);
         }
-        return max * k <= a.length;
+        maxocc = Math.max(maxocc, cur);
+        if (k * maxocc > n) {
+            return false;
+        }
+        return true;
     }
 
     public static void main(String[] args) {

@@ -34,7 +34,7 @@ Constraints:
 1 <= chips.length <= 100
 1 <= chips[i] <= 10^9
  */
-public class PlayWithChips {
+public class MinCostToMoveChipsToSamePosition {
     // all odd positions are the same and all even positions are the same
     public int minCostToMoveChips(int[] chips) {
         int odd = 0;
@@ -50,27 +50,6 @@ public class PlayWithChips {
     }
 
     public static void main(String[] args) {
-        System.out.println(new PlayWithChips().minCostToMoveChips(ArrayUtils.read1d("2,2,2,3,3")));
-    }
-}
-
-class PlayWithChipsBruteForce {
-    public int minCostToMoveChips(int[] chips) {
-        Arrays.sort(chips);
-        int n = chips.length;
-        int mincost = Integer.MAX_VALUE;
-        for (int i = 0; i < n; i++) {
-            if (i > 0 && chips[i] == chips[i - 1]) {
-                continue;
-            }
-            int dest = chips[i];
-            int cost = 0;
-            for (int j = 0; j < n; j++) {
-                int dist = Math.abs(chips[j] - dest);
-                cost += dist % 2;
-            }
-            mincost = Math.min(cost, mincost);
-        }
-        return mincost;
+        System.out.println(new MinCostToMoveChipsToSamePosition().minCostToMoveChips(ArrayUtils.read1d("2,2,2,3,3")));
     }
 }
