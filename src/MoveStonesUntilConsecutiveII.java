@@ -43,35 +43,53 @@ Note:
 stones[i] have distinct values.
  */
 public class MoveStonesUntilConsecutiveII {
+    // mostly concerning unoccupied spots
     public int[] numMovesStonesII(int[] a) {
-        int n = a.length;
         Arrays.sort(a);
-        // move leftmost to a1+1,then to le. one stone move at a time,from moving a1 to le(not moving it)
-        int ls = a[1];
-        int le = a[n - 1] - (n - 1);
-        int left2right = le - ls + 1;
-        int rs = a[n - 2];
-        int re = a[0] + n - 1;
-        int right2left = rs - re + 1;
-        int maxmoves = Math.max(right2left, left2right);
-        // window of size n,how many holes
-        int end = 0;
-        int minmoves = n;
-        for (int i = 0; i < n; i++) {
-            while (end < n && a[i] + n > a[end]) {
-                end++;
-            }
-            // i...end-1 are nums
-            int nums = end - i;
-            int holes = n - nums;
-            // when there is one hole still two moves:3->8,9->7 for34569
-            // note 479 has holes =1 and its genuine 1
-            if (holes == 1 && a[i] + n - 2 == a[end - 1]) {
-                holes = 2;
-            }
-            minmoves = Math.min(minmoves, holes);
+        return new int[]{getmin(a), getmax(a)};
+    }
+
+    private int getmax(int[] a){
+        // every unoccupied spot in the big ranges can be attained once. for example 4,7,9, we know all the empty spots: 5,6 between 4,7 can be stood on once: 9=> 6, 7=>5
+        // or if it's 9,12,15,18,
+        int n = a.length;
+        int moveleft = a[n-1]-a[1]-(n-2);
+        // n-2, excluding a[0] (moving) and a[1] (subtracted), rest should be in this a[n-1]-a[1]
+        int moveright = a[n-2]-a[0]-(n-2);
+
+        return Math.max(moveleft, moveright);
+    }
+
+    private int getmin(int[] a){
+        int n = a.length;
+        // if already all done then 0
+        if(a[n-1] == a[0]+n-1){
+            return 0;
         }
-        return new int[]{minmoves, maxmoves};
+        // special case: 3,4,5,6,10
+        // another: 2,5,6,7,8
+        // note the tricky ==2 check first these special cases!
+        if(a[n-2]-a[0]==n-2){
+            return a[n-1]-a[n-2]==2?1:2;
+            // if diff more than one then need 2 moves:3,4,5,6,10
+            // if diff==1 then we need one move: 5,6,7,8,10, 5=>9
+        }
+        if(a[n-1]-a[1]== n-2){
+            return a[1]-a[0]==2?1:2;
+        }
+        int min = Integer.MAX_VALUE;
+        // if no special case, check if each i should be the starting point we then know the range and see how many moves needed. all unoccupied spot is needed one move
+        int j = 0;
+        for(int i=0; i<n; i++){
+            while(j<n && a[j]<=a[i]+n-1){
+                j++;
+            }
+            // range is from a[i] to a[i]+n-1. n spots in all. we have j-1 to i elements in this range already
+            int occu = j-i;
+            int cur = n-occu;
+            min = Math.min(min, cur);
+        }
+        return min;
     }
 
     public static void main(String[] args) {
