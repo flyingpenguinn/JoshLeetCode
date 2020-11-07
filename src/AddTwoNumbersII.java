@@ -15,60 +15,55 @@ Input: (7 -> 2 -> 4 -> 3) + (5 -> 6 -> 4)
 Output: 7 -> 8 -> 0 -> 7
  */
 public class AddTwoNumbersII {
-
-    class Rt {
-        ListNode n;
-        int c;
-
-        public Rt(ListNode n, int c) {
-            this.n = n;
-            this.c = c;
-        }
-    }
-
     public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
-        int r1 = len(l1);
-        int r2 = len(l2);
-        Rt r = null;
-        if (r1 >= r2) {
-            r = dol(r1, r2, l1, l2);
-        } else {
-            r = dol(r2, r1, l2, l1);
+        int len1 = getlen(l1);
+        int len2 = getlen(l2);
+        ListNode res = null;
+        if(len1<len2 ){
+            res = doadd(l2, len2, l1, len1);
+        }else{
+            res = doadd(l1, len1, l2, len2);
         }
-        if (r.c != 0) {
-            ListNode nh = new ListNode(1);
-            nh.next = r.n;
-            return nh;
-        } else {
-            return r.n;
+        if(res.val>=10){
+            ListNode nres = new ListNode(1);
+            res.val = res.val % 10;
+            nres.next = res;
+            return nres;
+        }else{
+            return res;
         }
     }
 
-    // r1>=r2
-    Rt dol(int r1, int r2, ListNode l1, ListNode l2) {
-        if (r1 == 0) {
-            return new Rt(null, 0);
-        }
-        Rt later = null;
-        int v2 = 0;
-        if (r1 > r2) {
-            later = dol(r1 - 1, r2, l1.next, l2);
-        } else {
-            later = dol(r1 - 1, r2 - 1, l1.next, l2.next);
-            v2 = l2.val;
-        }
-        int raw = l1.val + v2 + later.c;
-        ListNode cur = new ListNode(raw % 10);
-        cur.next = later.n;
-        int carry = raw / 10;
-        return new Rt(cur, carry);
+    private int getlen(ListNode n){
+        return n==null?0: 1+getlen(n.next);
     }
 
-    int len(ListNode n) {
-        return n == null ? 0 : 1 + len(n.next);
-    }
-
-    public static void main(String[] args) {
-
+    private ListNode doadd(ListNode l1, int len1, ListNode l2, int len2){
+        if(len2==0 && len1==0){
+            return null;
+        }else if(len2==0){
+            return l1;
+        }else if(len1==0){
+            return l2;
+        }
+        ListNode later = null;
+        int raw = 0;
+        if(len1>len2){
+            later = doadd(l1.next, len1-1, l2, len2);
+            raw = l1.val;
+        }else{
+            // =, minus both
+            later = doadd(l1.next,len1-1, l2.next, len2-1);
+            raw = l1.val+l2.val;
+        }
+        int carry = 0;
+        if(later != null){
+            carry = later.val/10;
+            later.val = later.val%10;
+        }
+        raw += carry;
+        ListNode cur = new ListNode(raw);
+        cur.next = later;
+        return cur;
     }
 }

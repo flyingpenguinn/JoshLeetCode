@@ -36,29 +36,27 @@ Note:
 public class MinSwapToGroupOnes {
     // idea similar to consecutive stone problem!
     // similar to consecutive stonez ii,find a good window. here the window size is fixed
+    // how many zeros each window = ones has? we need to swap them out
     public int minSwaps(int[] a) {
-        int ones = 0;
         int n = a.length;
-        for (int i = 0; i < n; i++) {
-            if (a[i] == 1) {
+        int ones = 0;
+        for(int i=0; i<n; i++){
+            if(a[i]==1){
                 ones++;
             }
         }
-        int zeros = 0;
-        for (int i = 0; i < ones; i++) {
-            if (a[i] == 0) {
-                zeros++;
-            }
+        if(ones<=1 || ones==n){
+            return 0;
         }
-        int min = zeros;
-        for (int i = ones; i < n; i++) {
-            if (a[i - ones] == 0) {
-                zeros--;
+        int[] c = new int[2];
+        int min = n;
+        for(int i=0; i<n; i++){
+            c[a[i]]++;
+            int head = i-ones+1;
+            if(head>=0){
+                min = Math.min(min, c[0]);
+                c[a[head]]--;
             }
-            if (a[i] == 0) {
-                zeros++;
-            }
-            min = Math.min(min, zeros);
         }
         return min;
     }
