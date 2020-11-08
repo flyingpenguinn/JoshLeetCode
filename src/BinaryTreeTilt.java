@@ -25,21 +25,20 @@ The sum of node values in any subtree won't exceed the range of 32-bit integer.
 All the tilt values won't exceed the range of 32-bit integer.
  */
 public class BinaryTreeTilt {
-    int sum = 0;
     public int findTilt(TreeNode root) {
-        dfs(root);
-        return sum;
+        return dfs(root)[0];
     }
 
-    int dfs(TreeNode n){
+    // tilt and sum
+    private int[] dfs(TreeNode n){
         if(n==null){
-            return 0;
+            return new int[]{0,0};
         }
-        int lsum = dfs(n.left);
-        int rsum = dfs(n.right);
-        int diff = Math.abs(lsum-rsum);
-        sum += diff;
-        return lsum+rsum+n.val;
+        int[] lr = dfs(n.left);
+        int[] rr = dfs(n.right);
+        int cur = Math.abs(lr[1]-rr[1]);
+        int sum = lr[1]+rr[1]+n.val;
+        return new int[]{cur+lr[0]+rr[0], sum};
     }
 
 }
