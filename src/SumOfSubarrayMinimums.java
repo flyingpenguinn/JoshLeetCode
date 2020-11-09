@@ -23,30 +23,28 @@ Note:
 
  */
 public class SumOfSubarrayMinimums {
-    int Mod = 1000000007;
+    private int mod = 1000000007;
 
-    // key is to get the nearest smaller on the left
     // each i has contribution from 2 segments: 0...j..i, j<i.
     // contri= dp[j]+(i-j)*a[i]
     public int sumSubarrayMins(int[] a) {
-        // store index,mono decrease
-        Deque<Integer> stack = new ArrayDeque<>();
         int n = a.length;
-        // sum of mins ending at i
-        long[] dp = new long[n];
-        long r = 0L;
+        long sum = 0;
+        Deque<Integer> st = new ArrayDeque<>();
+        int[] dp = new int[n];
+        Deque<Integer> dq = new ArrayDeque<>();
         for (int i = 0; i < n; i++) {
-            while (!stack.isEmpty() && a[stack.peek()] > a[i]) {
-                stack.pop();
+            while (!st.isEmpty() && a[st.peek()] >= a[i]) {
+                st.pop();
             }
-            int left = stack.isEmpty() ? -1 : stack.peek();
-            long cur = (i - left) * a[i];
-            long bf = left == -1 ? 0 : dp[left];
-            dp[i] = (cur + bf) % Mod;
-            r = (r + dp[i]) % Mod;
-            stack.push(i);
+            int j = st.isEmpty() ? -1 : st.peek();
+
+            dp[i] = (j == -1 ? 0 : dp[j]) + (i - j) * a[i];
+            sum += dp[i];
+            sum %= mod;
+            st.push(i);
         }
-        return (int) r;
+        return (int) sum;
     }
 
     public static void main(String[] args) {

@@ -31,7 +31,7 @@ Input: "ABA"
 Output: 8
 Explanation: The same as example 1, except uni("ABA") = 1.
  */
-public class UniqueLetterString {
+public class CountUniqueCharsOfAllSubstrings {
 
     // think about contribution of a[i] as a function of a[i-1]. usually substring score problem can be converted to this
 
@@ -67,7 +67,7 @@ public class UniqueLetterString {
     }
 
     public static void main(String[] args) {
-        System.out.println(new UniqueLetterString().uniqueLetterString("ABCCDEGGEEFFDDE"));
+        System.out.println(new CountUniqueCharsOfAllSubstrings().uniqueLetterString("ABCCDEGGEEFFDDE"));
     }
 
 }
