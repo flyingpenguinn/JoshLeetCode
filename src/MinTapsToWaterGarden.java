@@ -57,30 +57,33 @@ public class MinTapsToWaterGarden {
     // first we find all intervals whose start point <= curstart. then try to extend them as far as possible
     // then next start is the end point of current round
     // note here next round must be able to concat with current round, but last tap seems to be fine... dont need to go n+1
+    // similar to video stitching
     public int minTaps(int n, int[] a) {
         int tapCount = n + 1;
-
         int[][] taps = new int[tapCount][2];
         for (int i = 0; i < tapCount; i++) {
             taps[i][0] = i - a[i];
             taps[i][1] = i + a[i];
         }
         Arrays.sort(taps, (x, y) -> Integer.compare(x[0], y[0]));
-        int i = 0;
-        int res = 0;
-        int curStart = 0;
-        while (i < tapCount && curStart < n) {
-            if (taps[i][0] > curStart) {
-                return -1;
-            }
-            res++;
-            int nextStart = -1;
-            while (i < tapCount && taps[i][0] <= curStart) {
-                nextStart = Math.max(nextStart, taps[i][1]);
-                i++;
-            }
-            curStart = nextStart;
+        //  System.out.println(Arrays.deepToString(taps));
+        int start = Math.max(taps[0][0], 0);
+        int end = taps[0][1];
+        if (start > 0) {
+            return -1;
         }
-        return curStart >= n ? res : -1;
+        int res = 1;
+        for (int i = 1; i < tapCount & end < n; i++) {
+            if (taps[i][0] <= start) {
+                end = Math.max(end, taps[i][1]);
+            } else if (taps[i][0] > end) {
+                break;
+            } else {
+                res++;
+                start = end;
+                end = taps[i][1];
+            }
+        }
+        return end >= n ? res : -1;
     }
 }

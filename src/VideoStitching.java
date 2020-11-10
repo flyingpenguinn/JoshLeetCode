@@ -2,92 +2,31 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class VideoStitching {
-    class ArrayComp implements Comparator<int[]> {
-        @Override
-        public int compare(int[] a, int[] b) {
-            return a[0] == b[0] ? Integer.compare(b[1], a[1]) : Integer.compare(a[0], b[0]);
-
+    // typical greedy: select minimal cover. sort by start and try to extend as much as possible
+    // similar to watering garden problem
+    public int videoStitching(int[][] a, int t) {
+        int n = a.length;
+        if (n == 0) {
+            return -1;
         }
-    }
-
-    // greedy: keep expanding till start > oldConv
-    public int videoStitching(int[][] c, int t) {
-        if (c.length == 0) {
-            return t == 0 ? 0 : -1;
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        int start = Math.max(a[0][0], 0);
+        int end = a[0][1];
+        if (start > 0) { // don't forget to check the starter!
+            return -1;
         }
-        Arrays.sort(c, new ArrayComp());
-
-        int cov = 0;
-        int i = 0;
-        int cnt = 0;
-        int oldcov = 0;
-        // find the longest whose start <=oldcov then set new val
-        while (true) {
-            if (cov >= t) {
-                return cnt;
+        int res = 1;
+        for (int i = 1; i < n && end < t; i++) {
+            if (a[i][0] <= start) {
+                end = Math.max(end, a[i][1]);
+            } else if (a[i][0] > end) {
+                break;
+            } else {
+                res++;
+                start = end; // we are looking for cover from the end so ignore the portions before it
+                end = a[i][1];
             }
-            if (i == c.length) {
-                return -1;
-            }
-            if (c[i][0] > cov) {
-                return -1;
-            }
-
-            while (i < c.length && c[i][0] <= oldcov) {
-                cov = Math.max(cov, c[i][1]);
-                i++;
-            }
-            cnt++;
-            oldcov = cov;
         }
-
+        return end >= t ? res : -1;
     }
-}
-
-class VideoStitchingDp {
-
-    class ArrayComp implements Comparator<int[]> {
-        @Override
-        public int compare(int[] a, int[] b) {
-            return a[0] == b[0] ? Integer.compare(b[1], a[1]) : Integer.compare(a[0], b[0]);
-
-        }
-    }
-
-    int[][] dp;
-    int VB = 101;
-
-    public int videoStitching(int[][] c, int t) {
-        Arrays.sort(c, new ArrayComp());
-        dp = new int[c.length][t];
-        int rt = domin(c, 0, 0, t);
-        return rt >= VB ? -1 : rt;
-    }
-
-    int domin(int[][] c, int i, int covered, int t) {
-        if (covered >= t) {
-            return 0;
-        }
-        if (i == c.length) {
-            // fall short
-            return VB;
-        }
-        if (c[i][0] > covered) {
-            // disconnect
-            return VB;
-        }
-        if (dp[i][covered] != 0) {
-            return dp[i][covered];
-        }
-        int np = domin(c, i + 1, covered, t);
-        int pick = VB;
-        if (c[i][1] > covered) {
-            pick = 1 + domin(c, i + 1, c[i][1], t);
-        }
-        int rt = Math.min(pick, np);
-        dp[i][covered] = rt;
-        return rt;
-    }
-
-
 }
