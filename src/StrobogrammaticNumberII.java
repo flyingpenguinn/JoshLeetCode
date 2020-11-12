@@ -14,34 +14,32 @@ Output: ["11","69","88","96"]
  */
 public class StrobogrammaticNumberII {
     // trap: can't start with 0 when len>1. when len==1 we can always start with 0
-    int[] m = {0, 1, -2, -3, -4, -5, 9, -7, 8, 6};
-    List<String> r = new ArrayList<>();
+    private int[] m = {0, 1, -1, -1, -1, -1, 9, -1, 8, 6};
+    private List<String> res = new ArrayList<>();
 
     public List<String> findStrobogrammatic(int n) {
-        if (n % 2 == 1) {
-            for (int i = 0; i <= 9; i++) {
-                if (m[i] == i) {
-                    dof(n - 1, String.valueOf(i));
-                }
-            }
-        } else {
-            dof(n, "");
-        }
-        return r;
+        dfs(0, n, "", "");
+        return res;
     }
 
-    void dof(int n, String inner) {
-        if (n == 0) {
-            r.add(inner);
+    private void dfs(int i, int n, String p1, String p2) {
+        int start = (i > 0 || n == 1) ? 0 : 1;
+        if (i == n / 2) {
+            if (n % 2 == 1) {
+                for (int j = start; j < 10; j++) {
+                    if (m[j] == j) { // excluding 6 and 9
+                        res.add(p1 + j + p2);
+                    }
+                }
+            } else {
+                res.add(p1 + p2);
+            }
             return;
         }
-        int start = n == 2 ? 1 : 0;
-        for (int i = start; i <= 9; i++) {
-            if (m[i] >= 0) {
-                dof(n - 2, i + inner + m[i]);
+        for (int j = start; j < 10; j++) {
+            if (m[j] != -1) { // can allow all 5
+                dfs(i + 1, n, p1 + j, m[j] + p2);
             }
         }
     }
-
-
 }

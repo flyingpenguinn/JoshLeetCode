@@ -49,30 +49,25 @@ Note:
 After the rotation we can ignore leading zeros, for example if after rotation we have 0008 then this number is considered as just 8.
  */
 public class ConfusingNumber {
-    // use carray to check mapped
-    char[] flip = {'0', '1', '*', '*', '*', '*', '9', '*', '8', '6'};
+    // confusing number can be mapped reversely but won't equal to itself
+    private Map<Integer, Integer> m = new HashMap<>();
 
     public boolean confusingNumber(int n) {
-        return isconf(String.valueOf(n));
-    }
-
-    boolean isconf(String s) {
-        boolean hasdiff = false;
-        int i = 0;
-        int j = s.length() - 1;
-        while (i <= j) {
-            char mappedi = flip[s.charAt(i) - '0'];
-            char mappedj = flip[s.charAt(j) - '0'];
-            if (mappedi == '*' || mappedj == '*') {
+        m.put(0, 0);
+        m.put(1, 1);
+        m.put(6, 9);
+        m.put(8, 8);
+        m.put(9, 6);
+        int res = 0;
+        int oldn = n;
+        while (n > 0) {
+            Integer mapped = m.get(n % 10);
+            if (mapped == null) {
                 return false;
             }
-            boolean same = mappedi == s.charAt(j);
-            if (!same) {
-                hasdiff = true;
-            }
-            i++;
-            j--;
+            res = res * 10 + mapped;
+            n /= 10;
         }
-        return hasdiff;
+        return res != oldn; // if == we are checking strobo number
     }
 }

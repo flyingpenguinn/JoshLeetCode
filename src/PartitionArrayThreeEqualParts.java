@@ -1,30 +1,27 @@
 import base.ArrayUtils;
 
 public class PartitionArrayThreeEqualParts {
+    // just need to find two parts
     public boolean canThreePartsEqualSum(int[] a) {
-        int sum = 0;
         int n = a.length;
+        int sum = 0;
         for (int i = 0; i < n; i++) {
             sum += a[i];
         }
         if (sum % 3 != 0) {
             return false;
         }
-        int rsum = 0;
-        int t = sum / 3;
-        int parts = 3;
+        int times = 0;
+        int pref = 0;
         for (int i = 0; i < n; i++) {
-            rsum += a[i];
-            if (rsum == t) {
-                parts--;
-                if (parts == 1) {
-                    // can return when we find 2 parts because the last part must == sum/3 no matter how many zeros are there
-                    return true;
-                } else {
-                    rsum = 0;
-                }
+            if (times == 2) {
+                return true;
             }
-            // can't return when > because there could be negativge values...
+            pref += a[i];
+            if (pref == sum / 3) {
+                times++;
+                pref = 0;
+            }
         }
         return false;
     }

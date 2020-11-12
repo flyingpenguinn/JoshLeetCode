@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /*
 LC#246
 A strobogrammatic number is a number that looks the same when rotated 180 degrees (looked at upside down).
@@ -19,17 +22,24 @@ Output: false
  */
 public class StrobogrammaticNumber {
     // just a fancier palindrome with a special mapping
+    private Map<Integer, Integer> m = new HashMap<>();
+
     public boolean isStrobogrammatic(String s) {
-        int[] m = {0, 1, -2, -3, -4, -5, 9, -7, 8, 6};
+        m.put(0, 0);
+        m.put(1, 1);
+        m.put(6, 9);
+        m.put(8, 8);
+        m.put(9, 6);
         int i = 0;
         int j = s.length() - 1;
         while (i <= j) {
-            if (m[s.charAt(i) - '0'] != (s.charAt(j) - '0') ||
-                    m[s.charAt(j) - '0'] != (s.charAt(i) - '0')) {
+            Integer mapped = m.get(s.charAt(i) - '0');
+            if (mapped != null && mapped == (s.charAt(j) - '0')) {
+                i++;
+                j--;
+            } else {
                 return false;
             }
-            i++;
-            j--;
         }
         return true;
     }

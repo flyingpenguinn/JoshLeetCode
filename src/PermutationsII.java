@@ -1,9 +1,6 @@
 import base.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
 LC#47
@@ -21,33 +18,39 @@ Output:
  */
 public class PermutationsII {
 
-    // for each position check a map to loop in available elements
+    // for each position check a map (bag) to loop in available elements
     private List<List<Integer>> res = new ArrayList<>();
+
     public List<List<Integer>> permuteUnique(int[] a) {
-        Map<Integer,Integer> m = new HashMap<>();
-        for(int i=0; i<a.length;i++){
-            m.put(a[i], m.getOrDefault(a[i], 0)+1);
+        Map<Integer, Integer> m = new HashMap<>();
+        for (int i = 0; i < a.length; i++) {
+            update(m, a[i], 1);
         }
-        dfs(a, 0, m, new ArrayList<>());
+        dfs(0, m, a.length, new ArrayList<>());
         return res;
     }
 
-    // iterate each number at each position. the number is sth like
-    // first 1/second 1/2/3....this can also be used to solve permutation 1
-    private void dfs(int[] a, int i, Map<Integer, Integer> m, List<Integer> cur) {
-        if(i==a.length){
+    private void dfs(int i, Map<Integer, Integer> m, int n, List<Integer> cur) {
+        if (i == n) {
             res.add(new ArrayList<>(cur));
             return;
         }
-        for(int k: m.keySet()){
-            if(m.get(k)==0){
-                continue;
-            }
+        Set<Integer> keys = new HashSet<>(m.keySet());
+        for (int k : keys) {
+            update(m, k, -1);
             cur.add(k);
-            m.put(k, m.getOrDefault(k, 0)-1);
-            dfs(a, i+1, m, cur);
-            m.put(k, m.getOrDefault(k, 0)+1);
-            cur.remove(cur.size()-1);
+            dfs(i + 1, m, n, cur);
+            cur.remove(cur.size() - 1);
+            update(m, k, 1);
+        }
+    }
+
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
         }
     }
 

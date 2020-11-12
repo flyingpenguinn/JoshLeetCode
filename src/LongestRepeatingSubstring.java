@@ -101,100 +101,80 @@ class LrsDp {
 class LrsBinarySearch {
     // O n^2logn
     public int longestRepeatingSubstring(String s) {
-        // if unfound it would be 0
         int l = 1;
         int u = s.length();
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (exist(s, mid)) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
+        while(l<=u){
+            int mid = l+(u-l)/2;
+            if(repeat(s, mid)){
+                l = mid+1;
+            }else{
+                u = mid-1;
             }
         }
         return u;
     }
 
-    // there exists a len = mid repeated string
-    private boolean exist(String s, int mid) {
-        Set<String> seen = new HashSet<>();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            sb.append(s.charAt(i));
-            if (sb.length() == mid) {
-                if (seen.contains(sb.toString())) {
-                    return true;
-                }
-                seen.add(sb.toString());
-                sb.deleteCharAt(0);
+    private boolean repeat(String s, int m){
+        Set<String> set = new HashSet<>();
+        for(int i=0; i+m-1<s.length(); i++){
+            String sub = s.substring(i, i+m);
+            if(set.contains(sub)){
+                return true;
             }
+            set.add(sub);
         }
         return false;
     }
 }
 
 class LrsRollingHash {
-    int Mod = 1000000007;
-
     public int longestRepeatingSubstring(String s) {
-        int n = s.length();
-
         int l = 1;
-        int u = n - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (exist(s, mid)) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
+        int u = s.length();
+        while(l<=u){
+            int mid = l+(u-l)/2;
+            if(repeat(s, mid)){
+                l = mid+1;
+            }else{
+                u = mid-1;
             }
         }
         return u;
     }
 
-    boolean exist(String s, int len) {
-        int n = s.length();
-        Map<Long, Set<Integer>> seen = new HashMap<>(); // hash to starts
+    private int toint(char c){
+        return c-'a'+1;
+    }
+    private int magic = 31;
+    private long mod = 1000000007;
+    private boolean repeat(String s, int m){
+        long base = 1L;
         long hash = 0L;
-        long base = 1L;// 26^(len-1)
-        for (int i = 0; i < n; i++) {
-            // i is end point
-            hash = (hash * 26L + (s.charAt(i) - 'a')) % Mod;
-
-            if (i - len + 1 >= 0) {
-                int head = i - len + 1;
-                Set<Integer> pres = seen.getOrDefault(hash, new HashSet<>());
-                // need double check on match
-                for (int pre : pres) {
-                    if (same(s, pre, i, len)) {
-                        return true;
+        Map<Long, List<Integer>> map = new HashMap<>();
+        for(int i=0; i<s.length(); i++){
+            hash = hash*magic + toint(s.charAt(i)); // 1 to 26
+            hash %= mod;
+            int head = i-m+1;
+            if(head>=0){
+                List<Integer> cur = map.get(hash);
+                if(cur != null){
+                    for(int e: cur){
+                        if(s.substring(head, i+1).equals(s.substring(e-m+1, e+1))){
+                            return true;
+                        }
                     }
                 }
-                pres.add(i);
-                seen.put(hash, pres);
-                hash = (hash - (s.charAt(head) - 'a') * base) % Mod;
-                // for next step.note BELOW to avoid negative values after minus
-                if (hash < 0) {
-                    hash += Mod;
+                map.computeIfAbsent(hash, k-> new ArrayList<> ()).add(i);
+                hash -= base * toint(s.charAt(head));
+                hash %= mod;
+                if(hash<0){
+                    hash += mod;
                 }
-
-            } else {
-                base *= 26L;
-                base %= Mod;
+            }else{
+                base *= magic;
+                base %= mod;
             }
         }
         return false;
-    }
-
-    // end points
-    boolean same(String s, int i, int j, int len) {
-
-        while (len > 0) {
-            if (s.charAt(i--) != s.charAt(j--)) {
-                return false;
-            }
-            len--;
-        }
-        return true;
     }
 }
