@@ -32,23 +32,25 @@ Note:
  */
 public class MissingElementInSortedArray {
     // find the first index that can be used as the "base"
-    class Solution {
-        public int missingElement(int[] a, int k) {
-            // check null error out if needed
-            // k>=1
-            // a.length>=1
-            int l = 0;
-            int u = a.length - 1;
-            while (l <= u) {
-                int mid = l + (u - l) / 2;
-                if (a[mid] - a[0] - mid >= k) {
-                    u = mid - 1;
-                } else {
-                    l = mid + 1;
-                }
+    public int missingElement(int[] a, int k) {
+        int n = a.length;
+        int l = 0;
+        int u = n - 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            if (count(a, mid) >= k) {
+                u = mid - 1;
+            } else {
+                l = mid + 1;
             }
-            int cur = a[u] - a[0] - u;
-            return a[u] + (k - cur);
         }
+        // a[u] has less than k missing numbers
+        int uth = count(a, u);
+        return a[u] + k - uth;
+    }
+
+    // for given a[i] how many numbers missing
+    private int count(int[] a, int i) {
+        return a[i] - a[0] - i;
     }
 }

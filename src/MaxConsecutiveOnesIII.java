@@ -36,25 +36,28 @@ public class MaxConsecutiveOnesIII {
     // sliding window on numbers of 1. similar to "MaxSwapsToMakeAllOnesTogether" but here window size is not fixed
     // maintain a window of at most k zeros. same as question "max substring with at most k zeros..."
     public int longestOnes(int[] a, int k) {
+        int n = a.length;
         int low = 0;
         int high = -1;
         int zeros = 0;
-        int r = 0;
-        int n = a.length;
-        while (true) {
-            if (zeros <= k) {
-                r = Math.max(r, high - low + 1);
+        int max = 0;
+        while(true){
+            if(zeros<=k){
+                max = Math.max(max, high-low+1);
                 high++;
-                if (high == n) {
+                if(high==n){
                     break;
                 }
-                zeros += a[high] == 1 ? 0 : 1;
-            } else {
-                zeros -= a[low] == 1 ? 0 : 1;
+                if(a[high]==0){
+                    zeros++;
+                }
+            }else{
+                if(a[low]==0){
+                    zeros--;
+                }
                 low++;
             }
         }
-        return r;
+        return max;
     }
-
 }
