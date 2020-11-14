@@ -63,13 +63,11 @@ public class ParallelCoursesII {
             int canStudy = 0;   // what are the classes we can study?
             for (int j = 0; j < n; j++) {
                 // a & b== b means b is a's subset
-                // so if preq[j] is i's subset, we can now study j given status i
-                if ((i & preq[j]) == preq[j]) {
+                // so if we havne't studied j yet, and preq[j] is i's subset, we can now study j given status i
+                if ((((i >> j) & 1) == 0) && (i & preq[j]) == preq[j]) {
                     canStudy |= (1 << j);
                 }
             }
-            canStudy &= ~i;
-            // take out i, so that we only enumerate a subset canStudy without i.
             // note we will | later so here we need a set that has no intersection with i to reduce the enumeration cost
             for (int sub = canStudy; sub > 0; sub = (sub - 1) & canStudy) {
                 // we can study one or more courses indicated by set "canStudy". we need to enumerate all non empty subset of it

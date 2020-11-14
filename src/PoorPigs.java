@@ -20,21 +20,34 @@ Any given bucket can be sampled an infinite number of times (by an unlimited num
  */
 public class PoorPigs {
 
-    //In general, we can solve up to (⌊minutesToTest / minutesToDie⌋ + 1)pigs buckets this way,
-    // so just find the smallest sufficient number of pigs for example like this:
-    // https://leetcode.com/problems/poor-pigs/discuss/94266/Another-explanation-and-solution
-    public int poorPigs(int n, int m, int t) {
-        if (n == 1) {
-            return 0;
+    /*
+    if we have only one chance, then we convert a to binary, then make it an n bit binary number
+    1st pig drinks those binary == 0 at the 1st digit
+    2nd pig drinks those binary == 0 at the 2nd digit...
+    ...
+    nth pig drinks those binary == 0 at the nth digit
+    if any of them die we know that digit is a 0. otherwise it's a 1.
+    we will then know the number because we know every digit of the binary form
+
+    so, if we have more than one try = floor(c/b), we use a try+1 base rather than base of 2
+    in the 1st round, pigs drink binary == 0 at their digits
+    in the 2nd round, pigs drink binary == 1 at their digits
+    ...
+    in the try th round, pigs drink try-1 at their digits
+    so if any of them die, we know which number it is on that digit
+    if none of them die, we know the digit == try
+   */
+    public int poorPigs(int a, int b, int c) {
+        int base = c / b + 1;
+        int cur = 1;
+        int res = 0;
+        // cur-1: res digits, using base, we can get to this number
+        // a-1: we are numbering buckets from 0 to a-1
+        while (cur - 1 < a - 1) {
+            cur *= base;
+            res++;
         }
-        int x = 1;
-        int times = t / m;
-        while (true) {
-            if ((long) Math.pow(times + 1, x) >= n) {
-                return x;
-            }
-            x++;
-        }
+        return res;
     }
 
     public static void main(String[] args) {

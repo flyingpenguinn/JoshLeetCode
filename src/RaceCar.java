@@ -84,7 +84,7 @@ public class RaceCar {
 }
 
 class RaceCarDp {
-    // similar to "LC#964 least operator to express number". we either undershoot or overshoot
+    // similar to "least operator to express number". we either undershoot or overshoot
     // if overshoot, just come back
     // we can undershoot in couple of places before we go pass t
     int[] dp;
@@ -117,10 +117,11 @@ class RaceCarDp {
         int min = steps + 1 + domin(pos - t);
         pos -= speed / 2;// back to the earlier pos
         speed = 1;
-        // no steps-- because we reversse here
+        // no steps-- because we reverse here so it's like steps-- then steps++;
 
         // now we enumerate the spot where we turn back from a reverse journey
         while (pos > 0) {
+            // facing left when we are here. but we decide to go right, so +1 every time for the reverse
             int cur = steps + 1 + domin(t - pos); // +1 for the reverse
             steps++;
             pos -= speed;
