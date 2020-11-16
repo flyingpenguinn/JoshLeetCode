@@ -44,32 +44,32 @@ Note:
 S[i] is 'a', 'b', or 'c'
  */
 public class CheckIfWordIsValidAfterSubstitution {
-    // 3 element ( ) matching. another brute force way is to replace abc till it's empty but time complexity is n2, though it can pass OJ
+    // 3 element ( ) matching. c must see a and b. b must see a right in front of it
     // note just count a,b,c and check their count is wrong: aabbcc is invalid. this is different from () matching
     public boolean isValid(String s) {
-        Deque<Character> stack = new ArrayDeque<>();
+        Deque<Character> st = new ArrayDeque<>();
         int n = s.length();
         for (int i = 0; i < n; i++) {
             char c = s.charAt(i);
-            if (c == 'a') {
-                stack.push(c);
-            }
-            if (c == 'b') {
-                if (stack.isEmpty() || stack.peek() != 'a') {
-                    return false;
-                }
-                stack.pop();
-                stack.push(c);
-            }
             if (c == 'c') {
-                if (stack.isEmpty() || stack.peek() != 'b') {
+                if (st.size() < 2) {
                     return false;
                 }
-                stack.pop();
+                char c1 = st.pop();
+                char c2 = st.pop();
+                if (c1 != 'b' || c2 != 'a') {
+                    return false;
+                }
+            } else if (c == 'b') {
+                if (st.isEmpty() || st.peek() != 'a') {
+                    return false;
+                }
+                st.push(c);
+            } else {
+                st.push(c);
             }
         }
-
-        return stack.isEmpty();
+        return st.isEmpty();
     }
 
     public static void main(String[] args) {
