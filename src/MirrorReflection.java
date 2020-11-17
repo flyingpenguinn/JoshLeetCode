@@ -22,27 +22,25 @@ Note:
 0 <= q <= p
  */
 public class MirrorReflection {
-    // think about extending the room
+    // think about extending the room upward allowing the beam to bounce back and forth on the left and right walls
     public int mirrorReflection(int p, int q) {
         int lcm = lcm(p, q);
-        int qt = lcm / q;
-        int pt = lcm / p;
-        if (qt % 2 == 0) {
+        if ((lcm / q) % 2 == 0) {
+            // the number of bounces on the extended graph. if even it's on the left wall and can only be 2
             return 2;
-        } else if (pt % 2 == 0) {
-            // when this happens it's as if we can fold the upper half into the lower half
-            return 0;
         } else {
-            return 1;
+            return (lcm / p) % 2; // the height of the extended walls and if it's odd (like 1) it's 1 otherwise 0
         }
     }
 
-    int lcm(int p, int q) {
-        int gcd = gcd(p, q);
-        return p * q / gcd;
+    private int lcm(int p, int q) {
+        return p * q / gcd(p, q);
     }
 
-    int gcd(int a, int b) {
-        return b == 0 ? a : gcd(b, a % b);
+    private int gcd(int p, int q) {
+        if (p < q) {
+            return gcd(q, p);
+        }
+        return q == 0 ? p : gcd(q, p % q);
     }
 }
