@@ -46,22 +46,22 @@ Note:
  */
 public class DistributeCoinsInBinaryTree {
     // at each root of subtree we need abs(should-got) moves of coins. should = nodes, got = sum of values
-    int r = 0;
-
+    private int res = 0;
     public int distributeCoins(TreeNode root) {
-        dod(root);
-        return r;
+        dfs(root);
+        return res;
     }
 
-    int[] dod(TreeNode n) {
-        if (n == null) {
-            return new int[]{0, 0};
+    // coins, nodes
+    private int[] dfs(TreeNode n){
+        if(n==null){
+            return new int[]{0,0};
         }
-        int[] lr = dod(n.left);
-        int[] rr = dod(n.right);
-        int coins = lr[0] + rr[0] + n.val;
-        int nodes = lr[1] + rr[1] + 1;
-        r += Math.abs(coins - nodes);
+        int[] left = dfs(n.left);
+        int[] right = dfs(n.right);
+        int coins = left[0]+right[0]+n.val;
+        int nodes = left[1]+right[1]+1;
+        res += Math.abs(coins-nodes);
         return new int[]{coins, nodes};
     }
 }
