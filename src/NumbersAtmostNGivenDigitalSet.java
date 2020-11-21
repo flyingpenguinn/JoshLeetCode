@@ -37,54 +37,42 @@ D is a subset of digits '1'-'9' in sorted order.
  */
 public class NumbersAtmostNGivenDigitalSet {
     // typical digital dp
+    private Integer[][] dp;
 
-    int[][] dp;
-
-    public int atMostNGivenDigitSet(String[] d, int n) {
+    public int atMostNGivenDigitSet(String[] a, int n) {
         String sn = String.valueOf(n);
-        int len = sn.length();
-        dp = new int[len][2];
-        for (int i = 0; i < len; i++) {
-            Arrays.fill(dp[i], -1);
+        int res = 0;
+        for (int k = 1; k <= sn.length() - 1; k++) {
+            res += (int) Math.pow(a.length, k);
         }
-        List<Integer> list = new ArrayList<>();
-        for (String di : d) {
-            list.add(Integer.valueOf(di));
-        }
-        int r = 0;
-        for (int i = 1; i < len; i++) {
-            r += (int) Math.pow(list.size(), i);
-        }
-        int rt = docount(0, 1, sn, list);
-        return r + rt;
+        dp = new Integer[sn.length()][2];
+        res += docount(a, 0, 0, sn.length(), sn);
+        return res;
     }
 
-    // st==0, <
-    // st==1, ==
-    private int docount(int i, int st, String sn, List<Integer> list) {
-        int n = sn.length();
-        if (i == n) {
+    private int docount(String[] a, int i, int allowbigger, int k, String sn) {
+        if (i == k) {
             return 1;
         }
-        if (dp[i][st] != -1) {
-            return dp[i][st];
+        if (i > k) {
+            return 0;
         }
-        int sind = sn.charAt(i) - '0';
-        int cur = 0;
-        for (int j = 0; j < list.size(); j++) {
-            int tind = list.get(j);
-            if (sind > tind) {
-                cur += docount(i + 1, 0, sn, list);
-            } else if (sind == tind) {
-                cur += docount(i + 1, st, sn, list);
+        if (dp[i][allowbigger] != null) {
+            return dp[i][allowbigger];
+        }
+        int res = 0;
+        for (int j = 0; j < a.length; j++) {
+            if (allowbigger == 1) {
+                res += docount(a, i + a[j].length(), 1, k, sn);
             } else {
-                if (st == 0) {
-                    // if >, can only go through when previous parts are <
-                    cur += docount(i + 1, 0, sn, list);
+                String stub = sn.substring(i, Math.min(i + a[j].length(), sn.length()));
+                int cmp = stub.compareTo(a[j]);
+                if (cmp >= 0) {
+                    res += docount(a, i + a[j].length(), cmp > 0 ? 1 : 0, k, sn);
                 }
             }
         }
-        dp[i][st] = cur;
-        return cur;
+        dp[i][allowbigger] = res;
+        return res;
     }
 }

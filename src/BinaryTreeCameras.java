@@ -34,44 +34,41 @@ Every node has value 0.
  */
 
 public class BinaryTreeCameras {
-    // vertex cover in binary tree, with a twist on status maintaining. here only thinking about gp is not enough
-    Map<TreeNode, Map<Integer, Integer>> dp = new HashMap<>();
+    // vertex cover in binary tree, with a twist on status maintaining.
+    private int Max = 10000000;
+    private Map<TreeNode, Map<Integer, Integer>> dp;
 
     public int minCameraCover(TreeNode root) {
-        return dom(root, 2);
+        dp = new HashMap<>();
+        return domin(root, 1);
     }
 
-    int Max = 10000000;
-    // 1: parent has camera, we can but dont need to put a camera
-    // 2. parent has no camera, but covered by gp or some children
-    // 3. parent has no camera and we must cover it
-
-    private int dom(TreeNode root, int status) {
-        if (root == null) {
-            return status == 3 ? Max : 0;
+    // st==0: parent has camera: we can either put, or no
+    // st==1: parent doesnt have camera but has cover by either grand parent or one of the children. we either put or no
+    // st==2: parent relies on this node to cover
+    private int domin(TreeNode n, int st) {
+        if (n == null) {
+            return st == 2 ? Max : 0;
         }
-        Map<Integer, Integer> cm = dp.getOrDefault(root, new HashMap<>());
-        Integer ch = cm.get(status);
+        Map<Integer, Integer> cm = dp.getOrDefault(n, new HashMap<>());
+        Integer ch = cm.get(st);
         if (ch != null) {
             return ch;
         }
-        int rt = 0;
-        int put = 1 + dom(root.left, 1) + dom(root.right, 1);
-        if (status == 3) {
-            rt = put;
+        int put = 1 + domin(n.left, 0) + domin(n.right, 0);
+        int noput = Max;
+        if (st == 1) {
+            // to cover this node, either put on left, or right
+            int onleft = domin(n.left, 2) + domin(n.right, 1);
+            int onright = domin(n.right, 2) + domin(n.left, 1);
+            noput = Math.min(onleft, onright);
+        } else if (st == 0) {
+            // using parent to cover this node, but we are not putting anything here, so 1
+            noput = domin(n.left, 1) + domin(n.right, 1);
         }
-        if (status == 1) {
-            int noput = dom(root.left, 2) + dom(root.right, 2);
-            rt = Math.min(put, noput);
-        }
-        if (status == 2) {
-            int leftcover = dom(root.left, 3) + dom(root.right, 2);
-            int rightcover = dom(root.left, 2) + dom(root.right, 3);
-            int noput = Math.min(leftcover, rightcover);
-            rt = Math.min(put, noput);
-        }
-        cm.put(status, rt);
-        dp.put(root, cm);
-        return rt;
+        int cur = Math.min(put, noput);
+        cm.put(st, cur);
+        dp.put(n, cm);
+        return cur;
     }
 }
