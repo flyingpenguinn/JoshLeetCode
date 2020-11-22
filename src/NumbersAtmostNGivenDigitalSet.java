@@ -35,7 +35,43 @@ Note:
 D is a subset of digits '1'-'9' in sorted order.
 1 <= N <= 10^9
  */
+
 public class NumbersAtmostNGivenDigitalSet {
+    public int atMostNGivenDigitSet(String[] a, int n) {
+        String sn = String.valueOf(n);
+        int res = 0;
+        for (int k = 1; k <= sn.length() - 1; k++) {
+            res += (int) Math.pow(a.length, k);
+        }
+        for (int i = 0; i <= sn.length(); i++) {
+            // invariant: 0.. i-1 are equal to sn. now checking i
+            // the last one is the eq one
+            if (i == sn.length()) {
+                res++;
+                break;
+            }
+            int digit = sn.charAt(i) - '0';
+            int small = 0;
+            int eqdigits = 0;
+            for (int j = 0; j < a.length; j++) {
+                if (Integer.valueOf(a[j]) < digit) {
+                    small++;
+                } else if (Integer.valueOf(a[j]) == digit) {
+                    eqdigits = 1;
+                }
+            }
+            int smaller = small * (int) Math.pow(a.length, sn.length() - 1 - i);
+            res += smaller;
+            if (eqdigits == 0) {
+                break;
+            }
+        }
+        return res;
+    }
+}
+
+
+class NumbersAtmostNGivenDigitalSetDp {
     // typical digital dp
     private Integer[][] dp;
 
