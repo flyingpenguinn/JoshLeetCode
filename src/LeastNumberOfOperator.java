@@ -42,7 +42,7 @@ public class LeastNumberOfOperator {
     // multiple till it's >=t, then take /x to get the closest number. we recurse on the diff
     // note the processing when x>t
     // similar to "race car", but here we dont need to emunrate the "go back time". we either overhsoot or undershoot
-    // @todo: math proof that this will work?
+    // @todo: math proof that this will work? need proof on only going back one step, and prod >= 2*t    part
     Map<Long, Integer> dp = new HashMap<>();
 
     public int leastOpsExpressTarget(int x, int t) {

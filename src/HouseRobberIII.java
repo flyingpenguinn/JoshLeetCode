@@ -39,26 +39,22 @@ public class HouseRobberIII {
     private Map<TreeNode, Integer> dp = new HashMap<>();
 
     public int rob(TreeNode root) {
-        return dorob(root);
-    }
-
-    private int dorob(TreeNode n) {
-        if (n == null) {
+        if (root == null) {
             return 0;
         }
-        if (dp.containsKey(n)) {
-            return dp.get(n);
+        if (dp.containsKey(root)) {
+            return dp.get(root);
         }
-        int left = dorob(n.left);
-        int right = dorob(n.right);
-        int ll = n.left == null ? 0 : dorob(n.left.left);
-        int lr = n.left == null ? 0 : dorob(n.left.right);
-        int rl = n.right == null ? 0 : dorob(n.right.left);
-        int rr = n.right == null ? 0 : dorob(n.right.right);
-        int way1 = n.val + ll + lr + rl + rr;
-        int way2 = left + right;
+        int way1 = rob(root.left) + rob(root.right);
+        int way2 = root.val;
+        if (root.left != null) {
+            way2 += rob(root.left.left) + rob(root.left.right);
+        }
+        if (root.right != null) {
+            way2 += rob(root.right.left) + rob(root.right.right);
+        }
         int rt = Math.max(way1, way2);
-        dp.put(n, rt);
+        dp.put(root, rt);
         return rt;
     }
 }

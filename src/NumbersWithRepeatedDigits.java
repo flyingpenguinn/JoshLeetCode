@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 /*
 LC#1012
 Given a positive integer N, return the number of positive integers less than or equal to N that have at least 1 repeated digit.
@@ -40,9 +41,10 @@ public class NumbersWithRepeatedDigits {
                 Arrays.fill(dp[i][j], -1);
             }
         }
-        return num - don(0, s, 1, 0)+1;
+        return num - don(0, s, 1, 0) + 1;
     }
 
+    // all unique numbers+ empty. so subtract this in the above code
     private int don(int i, String s, int eq, int st) {
         int n = s.length();
         if (i == n) {
@@ -51,6 +53,7 @@ public class NumbersWithRepeatedDigits {
         if (dp[i][eq][st] != -1) {
             return dp[i][eq][st];
         }
+        // this is the technique to get numbers whose length < s.length()
         int cur = st == 0 ? don(i + 1, s, 0, st) : 0;
         int sd = s.charAt(i) - '0';
         int start = st == 0 ? 1 : 0;
