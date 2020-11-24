@@ -1,4 +1,13 @@
 public class LowestCommonAncestorIII {
+    private class Node {
+        public int val;
+        public Node left;
+        public Node right;
+        public Node parent;
+    }
+
+    ;
+
     public Node lowestCommonAncestor(Node p, Node q) {
         int hp = height(p);
         int hq = height(q);
