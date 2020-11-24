@@ -25,77 +25,70 @@ You may assume that the given expression is always valid.
 Do not use the eval built-in library function.
  */
 public class BasicCalculatorII {
-    Deque<Long> nums = new ArrayDeque<>();
-    Deque<Character> ops = new ArrayDeque<>();
-
     public int calculate(String s) {
-        if (s.startsWith("-")) {
-            return calculate("0" + s);
-        }
-        char[] cs = s.toCharArray();
-        int n = cs.length;
+        Deque<Character> ops = new ArrayDeque<>();
+        Deque<Integer> nums = new ArrayDeque<>();
         int i = 0;
 
-        while (i < n) {
-            char c = cs[i];
+        while (i < s.length()) {
+            char c = s.charAt(i);
             if (c == ' ') {
                 i++;
-            } else if (Character.isDigit(c)) {
+            } else if (isnum(c)) {
                 int j = i;
-                long cur = 0;
-                while (j < n && Character.isDigit(cs[j])) {
-                    cur = cur * 10 + (cs[j++] - '0');
+                int num = 0;
+                while (j < s.length() && isnum(s.charAt(j))) {
+                    num = num * 10 + (s.charAt(j) - '0');
+                    j++;
                 }
-                nums.push(cur);
+                nums.push(num);
                 i = j;
             } else {
-                // + - * /
-                while (shouldcalc(c)) {
-                    // keep collapsing till we meet a stop for example 2-3/4+30 when we see the + we calc 3/4 but we can still keep calcing 2-0
-                    // this is to ensure we always calc from left to right
-                    calconce();
+                // use while because we could have 1+2*3*3+xxx we need to collapse the 2 *
+                while (shouldcollapse(ops, c)) {
+                    docollapse(nums, ops);
                 }
                 ops.push(c);
                 i++;
             }
         }
         while (!ops.isEmpty()) {
-            calconce();
+            docollapse(nums, ops);
         }
-        return nums.isEmpty() ? 0 : nums.pop().intValue();
+        return nums.pop();
     }
 
-    private boolean shouldcalc(char c) {
-        // 1+2+3-> 1+2 first
-        // 1-2-3-> 1-2 first
-        // 1*2+3-> 1*2 first
-        // 1-2*3=> dont know, need to wait for 2*3 to play out
+    private boolean isnum(char c) {
+        return c >= '0' && c <= '9';
+    }
+
+    private boolean shouldcollapse(Deque<Character> ops, char c) {
         if (ops.isEmpty()) {
             return false;
         }
-        char top = ops.peek();
-        // if current one can still develop then no rush to calc. otherwise calc it
-        // this way we dont run into 2-3-4 != 2-(3-4) problem
-        if ((top == '+' || top == '-') && (c == '*' || c == '/')) {
+        // 1+2*3 we can't collapse the + yet
+        if ((c == '*' || c == '/') && (ops.peek() == '+' || ops.peek() == '-')) {
             return false;
         }
         return true;
     }
 
-    private void calconce() {
-        long n2 = nums.pop(); //note to flip
-        long n1 = nums.pop();
+    private void docollapse(Deque<Integer> nums, Deque<Character> ops) {
+        int num1 = nums.pop();
+        int num2 = nums.pop();
         char op = ops.pop();
-        long rt = 0;
+        nums.push(docalc(num2, num1, op));
+    }
+
+    private int docalc(int n1, int n2, char op) {
         if (op == '+') {
-            rt = n1 + n2;
+            return n1 + n2;
         } else if (op == '-') {
-            rt = n1 - n2;
+            return n1 - n2;
         } else if (op == '*') {
-            rt = n1 * n2;
+            return n1 * n2;
         } else {
-            rt = n1 / n2;
+            return n1 / n2;
         }
-        nums.push(rt);
     }
 }
