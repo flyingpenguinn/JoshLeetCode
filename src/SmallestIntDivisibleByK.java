@@ -28,24 +28,17 @@ Note:
 1 <= K <= 10^5
  */
 public class SmallestIntDivisibleByK {
+    // from 11 to 111 we know how to transform the mod
     public int smallestRepunitDivByK(int k) {
-        if (k % 2 == 0) {
-            return -1;
-        }
-
-        int len = 1;
-        int b = 1 % k;
-        int a = 1 / k;
-        // if all not 0 then could only be 1...k-1 different remainders.
-        // if we start to see a duplicated remainder then because next remainder is set purely by current reminder we are doom to duplicate again
+        int mod = 0;
+        int len = 0;
         while (len <= k) {
-            if (b == 0) {
+            // can also use a hashset, but there can be at most k different mods
+            mod = (mod * 10 + 1) % k;
+            len++;
+            if (mod == 0) {
                 return len;
             }
-            int nrb = 10 * b + 1;
-            b = nrb % k;
-            a += nrb / k;
-            len++;
         }
         return -1;
     }
