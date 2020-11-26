@@ -40,6 +40,8 @@ public class ShortestSubarrayWithSumAtleastK {
  comparison: we compare with the front of the data structure and remove it if it's already good. so add at tail, get from front, it's a queue
 
  if shortest <=k, mono decrease queue
+ if longest >=k, mono decrease queue and we scan from the back and compare with the tail of the queue
+ if longest <=k, mono increase but scan from the back
  */
 
     public int shortestSubarray(int[] a, int k) {

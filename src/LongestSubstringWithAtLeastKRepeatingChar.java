@@ -51,49 +51,64 @@ public class LongestSubstringWithAtLeastKRepeatingChar {
 }
 
 class LongestSubstringAtleastKrepeatingDivideAndConquer {
+    // in l...u, bad chars will never have a chance. we need to weed them out.
+    // so we dig them out and recursion on smaller ones split by them
+    // because we throw away one char at every level it's O(26n)
+    private int[][] m;
 
-    // key insight: we loop the big array once. if there are chars that dont show up >= k times
-    // we take them out and do recursion on smaller ones
-    // note there could be multiple such "hole"s but we just need to divide once- other holes will be divided later anyway
-    // in avg O(nlgn)
     public int longestSubstring(String s, int k) {
-        return doFind(s, k, 0, s.length() - 1);
+        int n = s.length();
+        m = new int[n][26];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < 26; j++) {
+                m[i][j] = (i == 0 ? 0 : m[i - 1][j]);
+            }
+            int cind = s.charAt(i) - 'a';
+            m[i][cind]++;
+        }
+        return dolong(s, 0, n - 1, k);
     }
 
-    private int doFind(String s, int k, int l, int u) {
+    private int dolong(String s, int l, int u, int k) {
+        if (u - l + 1 < k) {
+            return 0;
+        }
         if (l > u) {
             return 0;
         }
-        int[] map = new int[26];
-        for (int i = l; i <= u; i++) {
-            char c = s.charAt(i);
-            map[c - 'a']++;
+        int bad = -1;
+        for (int i = 0; i < 26; i++) {
+            int count = m[u][i] - (l == 0 ? 0 : m[l - 1][i]);
+            if (count == 0) {
+                continue;
+            }
+            if (count < k) {
+                bad = i;
+                break;
+            }
         }
-        if (isGood(map, k)) {
+        if (bad == -1) {
             return u - l + 1;
         }
+        int last = l - 1;
+        int res = 0;
         for (int i = l; i <= u; i++) {
-            if (map[s.charAt(i) - 'a'] < k) {
-                int ll = doFind(s, k, l, i - 1);
-                int lr = doFind(s, k, i + 1, u);
-                return Math.max(ll, lr);
+            int cind = s.charAt(i) - 'a';
+            if (cind == bad) {
+                int cur = dolong(s, last + 1, i - 1, k);
+                res = Math.max(res, cur);
+                last = i;
             }
         }
-        return 0;
-    }
-
-    private boolean isGood(int[] map, int k) {
-        for (int i = 0; i < map.length; i++) {
-            if (map[i] != 0 && map[i] < k) {
-                return false;
-            }
-        }
-        return true;
+        int stub = dolong(s, last + 1, u, k);
+        res = Math.max(res, stub);
+        return res;
     }
 }
 
 class LongestSubstringWithAtleastKRepeatingTwoPointer {
     // for each exactly k chars, check the frequencies. turning this question to at most k distinct chars with freq check
+
     public int longestSubstring(String s, int target) {
         int max = 0;
         for (int i = 1; i < 26; i++) {
@@ -130,8 +145,9 @@ class LongestSubstringWithAtleastKRepeatingTwoPointer {
                 }
                 count[sc[high] - 'a']++;
             } else {
-                // note after low+= we may not catch each case of k distinct chars,
-                // but we want the longest and at least k repeated, so what we get won't be worse than that
+                // note after low++ we may not catch each case of k distinct chars,but we want the longest and at least targeted repeated, so smaller ones won't count anyway
+                // this is also to say that if we want longest substring where we have at most k distinct chars, we can use two pointer
+                // note this is different from counting all subarrays with k distinct chars. that's #992 and can be done by atmost(m)- atmost(m-1)
                 count[sc[low++] - 'a']--;
             }
         }
