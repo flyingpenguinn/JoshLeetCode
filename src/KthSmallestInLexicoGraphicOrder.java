@@ -19,44 +19,43 @@ public class KthSmallestInLexicoGraphicOrder {
     // mimic the way we would do this on a paper: start with 1? how many are there? start with 2?....
     // similar to #386
     public int findKthNumber(int n, int k) {
-        long r = 0;
+        int res = 0;
         while (k > 0) {
-            long start = r == 0 ? 1 : 0;
-            long i = start;
-            while (i < 9) {
-                long cur = nums(r, i, n);
-                if (cur < k) {
-                    k -= cur;
-                } else {
+            int i = res == 0 ? 1 : 0;
+            while (i <= 8) {
+                int gap = gap(res, i, n);
+                if (gap >= k) {
+                    // found, i is the number
                     break;
+                } else {
+                    k -= gap;
                 }
                 i++;
             }
-            r = r * 10 + i;
+            res = res * 10 + i;
             k--;
-            // key: r is now standing one number forward than before.
-            // if r==7 and i==8 before, it would be 78 here. note it's 78 without any trailing 0
+            //we are putting down i here.  count in res*10+i itself. note in next steps we started counting res*10+xx so this res should be counted
         }
-        return (int) r;
-
+        return res;
     }
 
-    // 11 vs 12: 11->12, 110-> 120, 1100->1200....
-    private long nums(long cur, long i, long n) {
-        long r = 0;
-        long now = cur * 10 + i;
-        long next = cur * 10 + (i + 1);
-        while (now <= n) {
-            if (next <= n) {
-                r += next - now;
+    // n==123   i = 4
+    // nums between 1234xxx and 1235xxx
+    private int gap(long curn, int i, long n) {
+        long cn = curn * 10 + i;
+        long nn = curn * 10 + (i + 1);// i<=8
+        int res = 0;
+        while (cn <= n) {
+            if (nn <= n) {
+                res += nn - cn;
             } else {
-                r += n - now + 1;
+                res += n - cn + 1;
                 break;
             }
-            now *= 10;
-            next *= 10;
+            cn *= 10;
+            nn *= 10;
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {

@@ -33,68 +33,48 @@ Note:
 The tree will have between 1 and 100 nodes.
  */
 public class CheckCompletenessOfBinaryTree {
-    // once a node has null left/right, all later nodes would have empty children
+    // dfs way!  null is either on h or h-1. once we met a null on h-1 we know the last row is done. shouldnt see null there. can only see null on h-1 after that
+    private boolean alllast = false;
+    // met all last level nodes. note we meet every level left to right
+    private int h = 0;
+
     public boolean isCompleteTree(TreeNode root) {
-        if(root==null){
-            return true;
-        }
-        Deque<TreeNode> q = new ArrayDeque<>();
-        q.offer(root);
-        boolean seen = false;
-        while(!q.isEmpty()){
-            TreeNode top = q.poll();
-            if(top.left==null){
-                seen = true;
-            }else{
-                if(seen){
-                    return false;
-                }
-                q.offer(top.left);
+        return dfs(root, 1);
+    }
+
+    private boolean dfs(TreeNode n, int level) {
+
+        if (n == null) {
+            if (h == 0) {
+                h = level;
+            } else if (level < h) {
+                alllast = true;
+                // we should have seen all null level nodes
             }
-            if(top.right == null){
-                seen = true;
-            }else{
-                if(seen){
-                    return false;
-                }
-                q.offer(top.right);
-            }
+            return level == h - (alllast ? 1 : 0);
+// if we havent seen all null level then h, otherwise h-1
         }
-        return true;
+        return dfs(n.left, level + 1) && dfs(n.right, level + 1);
     }
 }
 
 class CheckCompletenessCounter {
-    // complete tree has nodes at index 2*i+1 and 2*i+2. verify if we see this
-    private class Result {
-        private TreeNode n;
-        private int c;
-
-        public Result(TreeNode n, int c) {
-            this.n = n;
-            this.c = c;
-        }
-    }
-
+    // once we see null it's all null afterwards
     public boolean isCompleteTree(TreeNode root) {
-        if (root == null) {
-            return true;
-        }
-        Deque<Result> q = new ArrayDeque<>();
-        q.offer(new Result(root, 0));
-        int count = 0;
+        LinkedList<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        boolean seen = false;
         while (!q.isEmpty()) {
-            Result top = q.poll();
-            if (top.c != count) {
-                return false;
+            TreeNode top = q.poll();
+            if (top == null) {
+                seen = true;
+            } else {
+                if (seen) {
+                    return false;
+                }
+                q.offer(top.left);
+                q.offer(top.right);
             }
-            if (top.n.left != null) {
-                q.offer(new Result(top.n.left, 2 * top.c + 1));
-            }
-            if (top.n.right != null) {
-                q.offer(new Result(top.n.right, 2 * top.c + 2));
-            }
-            count++;
         }
         return true;
     }
