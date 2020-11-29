@@ -4,7 +4,7 @@ import java.util.PriorityQueue;
 public class CampusBikes {
 
     // if we use bucket sort it's even faster as the range of dist is way smaller than the number of pairs itself
-    class Pair implements Comparable<Pair> {
+    private class Pair implements Comparable<Pair> {
         int bike;
         int worker;
         int dist;

@@ -32,33 +32,32 @@ text consists of lowercase English letters.
 public class SmallestSubsequenceOfDistinctChars {
     // identical to #316
     // pop out if adding a smaller one won't hurt earlier big ones in the stack
-    public String smallestSubsequence(String text) {
-        int[] map = new int[26];
-        for (int i = 0; i < text.length(); i++) {
-            map[text.charAt(i) - 'a']++;
+    public String smallestSubsequence(String s) {
+        int n = s.length();
+        int[] pos = new int[26];
+        for (int i = 0; i < n; i++) {
+            int cind = s.charAt(i) - 'a';
+            pos[cind] = i;
         }
-        boolean[] put = new boolean[26];
-        Deque<Integer> stack = new ArrayDeque<>();
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            int cint = c - 'a';
-            if (put[cint]) {
-                map[cint]--;
+        Deque<Integer> st = new ArrayDeque<>();
+        Set<Integer> seen = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            int cind = s.charAt(i) - 'a';
+            if (seen.contains(cind)) {
+                // avoid duplicates
                 continue;
             }
-            while (!stack.isEmpty() && stack.peek() > cint && map[stack.peek()] > 0) {
-                int popped = stack.pop();
-                put[popped] = false;
+            while (!st.isEmpty() && st.peek() > cind && pos[st.peek()] > i) {
+                seen.remove(st.pop());
             }
-            stack.push(cint);
-            put[cint] = true;
-            map[cint]--;
+            st.push(cind);
+            seen.add(cind);
         }
-        StringBuilder sb = new StringBuilder();
-        while (!stack.isEmpty()) {
-            sb.append((char) (stack.pop() + 'a'));
+        StringBuilder res = new StringBuilder();
+        while (!st.isEmpty()) {
+            res.append((char) ('a' + st.pop()));
         }
-        return sb.reverse().toString();
+        return res.reverse().toString();
     }
 
     public static void main(String[] args) {
