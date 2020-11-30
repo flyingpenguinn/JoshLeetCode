@@ -23,77 +23,64 @@ The output list must be sorted by the x position.
 There must be no consecutive horizontal lines of equal height in the output skyline. For instance, [...[2 3], [4 5], [7 5], [11 5], [12 7]...] is not acceptable; the three lines of height 5 should be merged into one in the final output as such: [...[2 3], [4 5], [12 7], ...]
  */
 public class SkylineProblem {
-
-    // line sweep. use a pq to store the heights of the currently "living" buildings. each higher entering or leaving is a point. handle multiple points with the same x
-    class Edge {
-        int x;
-        int y;
-        int t;
-
-        Edge(int x, int y, int t) {
-            this.x = x;
-            this.y = y;
-            this.t = t;
+    // assuming we have a priority queue that we can delete from easily. if priorityqueue is too slow, use treemap
+    // two reasons to add a point: entering edge and higher than rest, or exiting edge and higher than what's remaining.
+    // mind the "addresult" to remove duplicated points
+    public List<List<Integer>> getSkyline(int[][] a) {
+        int n = a.length;
+        // x, y, type=0 enter type =1 exit
+        List<int[]> ps = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            int x1 = a[i][0];
+            int x2 = a[i][1];
+            int y = a[i][2];
+            ps.add(new int[]{x1, y, 0});
+            ps.add(new int[]{x2, y, 1});
         }
-    }
-
-    public List<List<Integer>> getSkyline(int[][] buildings) {
-        List<Edge> es = new ArrayList<>();
-        for (int[] b : buildings) {
-            es.add(new Edge(b[0], b[2], 0));
-            es.add(new Edge(b[1], b[2], 1));
-        }
-        Collections.sort(es, new Comparator<Edge>() {
-            public int compare(Edge e1, Edge e2) {
-                if (e1.x != e2.x) {
-                    return e1.x - e2.x;
-                } else if (e1.y != e2.y) {
-                    // higher first
-                    return e2.y - e1.y;
-                } else {
-                    return e1.t - e2.t;
-                }
+        Collections.sort(ps, (x, y) -> {
+            if (x[0] != y[0]) {
+                // small x first
+                return Integer.compare(x[0], y[0]);
+            } else if (x[1] != y[1]) {
+                // big y first
+                return Integer.compare(y[1], x[1]);
+            } else {
+                // same x and y edges, entering edge comes first
+                return Integer.compare(x[2], y[2]);
             }
         });
-        // higher first
-        PriorityQueue<Integer> ys = new PriorityQueue<>(Collections.reverseOrder());
-        List<List<Integer>> r = new ArrayList<>();
-        for (Edge e : es) {
-            if (e.t == 0) {
-                if (ys.isEmpty() || e.y > ys.peek()) {
-                    // visible entering points
-                    addr(r, mp(e.x, e.y));
+
+        // keep a big first pq on current ys. we assume pq.remove can be fast
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        List<List<Integer>> res = new ArrayList<>();
+        for (int i = 0; i < ps.size(); i++) {
+            int[] cur = ps.get(i);
+            int type = cur[2];
+            if (type == 0) {
+                // enter a building add its height if it's higher than what we have record a point
+                if (pq.isEmpty() || cur[1] > pq.peek()) {
+                    res.add(list(cur[0], cur[1]));
                 }
-                // else a shorter one entered just record
-                ys.add(e.y);
+                pq.offer(cur[1]);
             } else {
-                // visible dropping points. can use a treemap to make priority queue removal faster
-                ys.remove(e.y);
-                int nb = ys.isEmpty() ? 0 : ys.peek();
-                if (e.y > nb) {
-                    addr(r, mp(e.x, nb));
+                pq.remove(cur[1]); // leaving a building taking out its height
+                int landon = pq.isEmpty() ? 0 : pq.peek();
+                if (cur[1] > landon) {
+                    addresult(res, list(cur[0], landon));
                 }
             }
         }
-        return r;
+        return res;
     }
 
-    List<Integer> mp(int x, int y) {
-        List<Integer> r = new ArrayList<>();
-        r.add(x);
-        r.add(y);
-        return r;
-    }
-
-    void addr(List<List<Integer>> r, List<Integer> add) {
-        // handle same drop: because under same h lowest ponit visible
-        int n = r.size();
-        if (n > 0 && r.get(n - 1).get(0).equals(add.get(0))) {
-            //  System.out.println(r.get(n-1)+"=>"+add);
-            r.set(n - 1, add);
-        } else {
-            //System.out.println("+"+add);
-            r.add(add);
+    private void addresult(List<List<Integer>> r, List<Integer> p) {
+        if (!r.isEmpty() && r.get(r.size() - 1).get(0).equals(p.get(0))) {
+            r.remove(r.size() - 1);
         }
+        r.add(p);
+    }
+
+    private List<Integer> list(int x, int y) {
+        return List.of(x, y);
     }
 }
