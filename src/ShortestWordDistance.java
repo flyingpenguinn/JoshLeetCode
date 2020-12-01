@@ -18,27 +18,24 @@ Note:
 You may assume that word1 does not equal to word2, and word1 and word2 are both in the list.
  */
 public class ShortestWordDistance {
-
-
     // chasing algo
-    public int shortestDistance(String[] ws, String w1, String w2) {
+    public int shortestDistance(String[] words, String word1, String word2) {
         int p1 = -1;
         int p2 = -1;
-        int min = ws.length + 1;
-        for (int i = 0; i < ws.length; i++) {
-            if (ws[i].equals(w1)) {
-                if (p2 != -1) {
-                    min = Math.min(i - p2, min);
-                }
+        int res = Integer.MAX_VALUE;
+        for(int i=0; i<words.length;i++){
+            if(words[i].equals(word1)){
                 p1 = i;
-            } else if (ws[i].equals(w2)) {
-                if (p1 != -1) {
-                    min = Math.min(i - p1, min);
+                if(p2 != -1){
+                    res = Math.min(res, p1-p2);
                 }
+            }else if(words[i].equals(word2)){
                 p2 = i;
+                if(p1 != -1){
+                    res = Math.min(res, p2-p1);
+                }
             }
         }
-        return min;
+        return res;
     }
-
 }

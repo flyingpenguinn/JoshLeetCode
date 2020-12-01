@@ -26,71 +26,55 @@ Note:
 public class FindShortestSuperstring {
     // tsp without fixed start
     // cache match results between i and j dont need to calc over and over
-    // when concat subtract the overlapping part and the remaining would be the "edge length"
-    String[][] dp;
+    // when concat subtract the overlapping part and the remaining would be the "edge length". each time we just add the remaning part of a[j].
+    // note for each starting point i we need to add a[i]
+    private String[][] dp;
 
     public String shortestSuperstring(String[] a) {
         int n = a.length;
-        int[][] overlap = new int[n][n];
-        dp = new String[n][1 << n];
+        String[][] g = new String[n + 1][n + 1];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i == j) {
                     continue;
                 }
-                overlap[i][j] = calcoverlap(a[i], a[j]);
-                overlap[j][i] = calcoverlap(a[j], a[i]);
+                // == a[i].length will get empty string out to cover "not sharing any prefix" case
+                for (int k = 1; k <= a[i].length(); k++) {
+                    String istub = a[i].substring(k);
+                    if (a[j].startsWith(istub)) {
+                        g[i][j] = a[j].substring(istub.length());
+                        break;
+                    }
+                }
             }
         }
-        String min = null;
+        // for the initial state we pass in n and can go to any node as starting point
         for (int i = 0; i < n; i++) {
-            String cur = dos(i, (1 << i), overlap, a);
-            if (min == null || cur.length() < min.length()) {
-                min = cur;
-            }
+            g[n][i] = a[i];
         }
-        return min;
+        dp = new String[n + 1][1 << n];
+        return travel(g, a, n, 0);
     }
 
-    private int calcoverlap(String s, String t) {
-        int overlap = 0;
-        int sn = s.length();
-        for (int i = sn - 1; i >= 0; i--) {
-            String stub = s.substring(i, sn);
-            if (t.startsWith(stub)) {
-                overlap = sn - i;
-            }
-        }
-        return overlap;
-    }
-
-    // last string was i, st is the status: 1 means used already, 0 means we can use
-    private String dos(int i, int st, int[][] overlap, String[] a) {
+    private String travel(String[][] g, String[] a, int i, int st) {
         int n = a.length;
-        int all = (1 << n) - 1;
-        if (st == all) {
-            return a[i];
+        if (st + 1 == (1 << n)) {
+            return "";
         }
         if (dp[i][st] != null) {
             return dp[i][st];
         }
-        String min = null;
+        String res = null;
         for (int j = 0; j < n; j++) {
-            if (j == i) {
-                continue;
-            }
             if (((st >> j) & 1) == 0) {
-                // can still use j
-                int nst = (st | (1 << j));
-                String later = dos(j, nst, overlap, a);
-                String cur = a[i].substring(0, a[i].length() - overlap[i][j]) + later;
-                if (min == null || cur.length() < min.length()) {
-                    min = cur;
+                String cur = g[i][j] + travel(g, a, j, (st | (1 << j)));
+                if (res == null || res.length() > cur.length()) {
+                    res = cur;
                 }
             }
         }
-        dp[i][st] = min;
-        return min;
+        dp[i][st] = res;
+        return res;
     }
 
 
