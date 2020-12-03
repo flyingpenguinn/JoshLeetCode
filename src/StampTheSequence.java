@@ -36,7 +36,8 @@ stamp and target only contain lowercase letters.
  */
 public class StampTheSequence {
     // work backward. set every matching substring to ???. ? matches to anything
-    // we dont really need to stamp the sme position twice
+    // we dont really need to stamp the same position twice
+    // the ability to stamp somewhere is always good: we have more ? to match with. so there is no backtracking: we always move forward!
     // time complexity n-m * n: we execute the inner most for loop at most n times together with the for loop at the while line
     // abc must be revealed before ab?. but later ones' sequences can't be determined. the ones with more ? may be matched later in the stamping
     public int[] movesToStamp(String stamp, String target) {
@@ -72,17 +73,19 @@ public class StampTheSequence {
         return r;
     }
 
-    boolean match(char[] t, String s, int i) {
-        int j = 0;
-        while (j < s.length()) {
-            if (t[i] == '?' || t[i] == s.charAt(j)) {
-                i++;
-                j++;
-            } else {
-                return false;
+    private boolean match(char[] t, String s, int i) {
+        boolean converted = false;
+        for (int j = i; j < i + s.length(); j++) {
+            if (t[j] == '?') {
+                continue;
             }
+            if (t[j] == s.charAt(j - i)) {
+                converted = true;
+                continue;
+            }
+            return false;
         }
-        return true;
+        return converted;
     }
 
     public static void main(String[] args) {
@@ -90,5 +93,72 @@ public class StampTheSequence {
         System.out.println(Arrays.toString(new StampTheSequence().movesToStamp("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")));
         System.out.println(System.currentTimeMillis() - start);
 
+    }
+}
+
+class StampTheSequenceRecursion {
+    private List<Integer> res = new ArrayList<>();
+    private Set<Integer> stepped = new HashSet<>();
+
+    public int[] movesToStamp(String s, String t) {
+        dfs(s.toCharArray(), t.toCharArray(), 0, new ArrayList<>());
+        int[] rt = new int[res.size()];
+        for (int i = res.size() - 1; i >= 0; i--) {
+            rt[rt.length - 1 - i] = res.get(i);
+        }
+        return rt;
+    }
+
+    private void dfs(char[] s, char[] t, int done, List<Integer> cur) {
+        if (done == t.length) {
+            res = new ArrayList<>(cur);
+            return;
+        }
+        boolean found = false;
+        int mj = -1;
+        for (int i = 0; i <= t.length - s.length; i++) {
+            if (stepped.contains(i)) {
+                continue;
+            }
+            if (match(t, i, s)) {
+                mj = i;
+                break;
+            }
+        }
+        if (mj == -1) {
+            return;
+        }
+        int newdone = done;
+        char[] nt = Arrays.copyOf(s, s.length);
+        for (int j = mj; j < mj + s.length; j++) {
+            nt[j - mj] = t[j];
+            if (t[j] != '?') {
+                newdone++;
+                t[j] = '?';
+            }
+        }
+        stepped.add(mj);
+        cur.add(mj);
+        dfs(s, t, newdone, cur);
+        cur.remove(cur.size() - 1);
+        stepped.remove(mj);
+        for (int j = mj; j < mj + s.length; j++) {
+            t[j] = nt[j - mj];
+        }
+    }
+
+    private boolean match(char[] t, int i, char[] s) {
+        boolean converted = false;
+        for (int j = i; j < i + s.length; j++) {
+            if (t[j] == '?') {
+                continue;
+            }
+            if (t[j] == s[j - i]) {
+                converted = true;
+                continue;
+            }
+            return false;
+        }
+        return converted;
     }
 }

@@ -43,60 +43,66 @@ In all test cases, all words were chosen randomly from the 1000 most common US E
 The time limit may be more challenging than usual. It is expected that a 50 sticker test case can be solved within 35ms on average.
  */
 public class StickersToSpellWords {
-    // use string as dp key! maybe hard to use int /long as if we pick a sticker since there are duplicated chars
-    // to represent a set of chars,  map<char, integer> is actually a string! it's also an int[] of len 26
-    // so if we need to dp on it we use string otherwise use int[] + string both to do searching
+    // map<char, int> is actually string! so use string as key not a map
+    private int[] tomap(String t) {
+        int[] tmap = new int[26];
+        for (int i = 0; i < t.length(); i++) {
+            char tc = t.charAt(i);
+            tmap[tc - 'a']++;
+        }
+        return tmap;
+    }
 
-    Map<String, Integer> dp = new HashMap<>();
+    private String tostring(int[] tmap) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 26; i++) {
+            int c = tmap[i];
+            for (int j = 0; j < c; j++) {
+                sb.append((char) ('a' + i));
+            }
+        }
+        return sb.toString();
+    }
 
-    public int minStickers(String[] stickers, String t) {
+    private Map<String, Integer> dp;
+    private int Max = 1000;
 
-        int rt = dom(t, stickers);
+    public int minStickers(String[] ss, String t) {
+
+        int[][] ssmap = new int[ss.length][26];
+        for (int i = 0; i < ss.length; i++) {
+            ssmap[i] = tomap(ss[i]);
+        }
+        dp = new HashMap<>();
+        int rt = domin(t, ssmap);
         return rt >= Max ? -1 : rt;
     }
 
-    int Max = 1000000;
-
-
-    private int dom(String t, String[] stickers) {
+    private int domin(String t, int[][] ssmap) {
         if (t.isEmpty()) {
             return 0;
         }
-        Integer ch = dp.get(t);
-        if (ch != null) {
-            return ch;
+        Integer cached = dp.get(t);
+        if (cached != null) {
+            return cached;
         }
         int min = Max;
-        for (String s : stickers) {
-            StringBuilder sb = new StringBuilder();
-            int[] sm = getmap(s);
-            boolean used = false;
-            for (int i = 0; i < t.length(); i++) {
-                if (sm[t.charAt(i) - 'a'] > 0) {
-                    used = true;
-                    sm[t.charAt(i) - 'a']--;
-                } else {
-                    sb.append((t.charAt(i)));
+        for (int i = 0; i < ssmap.length; i++) {
+            int[] tmap = tomap(t);
+            for (int j = 0; j < 26; j++) {
+                if (ssmap[i][j] > 0) {
+                    int curs = ssmap[i][j];
+                    tmap[j] = Math.max(0, tmap[j] - curs);
                 }
             }
-            if (!used) {
-                continue;
+            String nt = tostring(tmap);
+            if (!nt.equals(t)) {
+                int cur = 1 + domin(nt, ssmap);
+                min = Math.min(cur, min);
             }
-            String next = sb.toString();
-            int later = dom(next, stickers);
-            int cur = later + 1;
-            min = Math.min(min, cur);
         }
         dp.put(t, min);
         return min;
-    }
-
-    private int[] getmap(String t) {
-        int[] m = new int[26];
-        for (int i = 0; i < t.length(); i++) {
-            m[t.charAt(i) - 'a']++;
-        }
-        return m;
     }
 
 
