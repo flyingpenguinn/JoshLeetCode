@@ -41,28 +41,25 @@ Each node will have a unique integer value from 0 to 1000.
 import base.TreeNode;
 
 public class IncreasingSerchOrderTree {
-    TreeNode prev = null;
-    TreeNode head = null;
-
+    private TreeNode last = null;
+    private TreeNode head = null;
     public TreeNode increasingBST(TreeNode root) {
-
         dfs(root);
-        prev.right = null; // !
         return head;
     }
 
-    void dfs(TreeNode n) {
-        if (n == null) {
+    private void dfs(TreeNode n){
+        if(n==null){
             return;
         }
         dfs(n.left);
-        n.left = null; // !
-        if (prev == null) {
+        n.left = null;
+        if(last != null){
+            last.right = n;
+        }else{
             head = n;
-        } else {
-            prev.right = n; // prev.rightis cur n or empty
         }
-        prev = n;
+        last = n;
         dfs(n.right);
     }
 }
