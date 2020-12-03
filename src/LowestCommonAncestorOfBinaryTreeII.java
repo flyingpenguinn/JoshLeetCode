@@ -1,6 +1,8 @@
 import base.TreeNode;
 
 public class LowestCommonAncestorOfBinaryTreeII {
+    // this way we can handle cases where p/q doesnt exist in the tree
+    // if p and q are both in the tree, check quicker ways in IV
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         return lca(root, p, q)[0];
     }

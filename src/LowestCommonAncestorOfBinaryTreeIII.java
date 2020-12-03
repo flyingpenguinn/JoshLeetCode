@@ -1,4 +1,4 @@
-public class LowestCommonAncestorIII {
+public class LowestCommonAncestorOfBinaryTreeIII {
     private class Node {
         public int val;
         public Node left;
