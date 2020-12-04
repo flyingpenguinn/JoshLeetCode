@@ -25,35 +25,32 @@ Note:
 1 <= N <= 1000
  */
 public class BeautifulArray {
-    // put even after odd ones. between them there won't be any a[k]
-    // in the first half, 1,3,5,7 == 1,2,3,4
-    // in the 2nd half,2,4,6,8== 1,2,3,4
-    // so we end up recursing on a smaller scale
+    // think about merging the two n/2 results to form n
     public int[] beautifulArray(int n) {
-        return dob(n);
+        return find(n);
     }
 
-    int[] dob(int n) {
+    // two 1,2,3 => one half 2*a[i]-1, the other 2*a[i], can merge out 1,2,3,4,5,6
+    // we put the even one after odd one. between the groups, there can be no odd+even = even = a[k]*2. within the groups, we know beauty holds after arithmetic operations
+    private int[] find(int n) {
         if (n == 1) {
             return new int[]{1};
         }
-        if (n == 0) {
-            return new int[0];
+        if (n == 2) {
+            return new int[]{1, 2};
         }
-        int p1 = n % 2 == 0 ? n / 2 : (n + 1) / 2;
-        int p2 = n % 2 == 0 ? n / 2 : (n - 1) / 2;
-
-        int[] r1 = dob(p1);
-        int[] r2 = dob(p2);
-        int[] r = new int[n];
-        int ri = 0;
-        for (int i = 0; i < r1.length; i++) {
-            r[ri++] = 2 * r1[i] - 1;
+        int p1n = (n + 1) / 2;
+        int[] p1 = find(p1n);
+        int p2n = n - p1n;
+        int[] p2 = find(p2n);
+        int[] rt = new int[n];
+        for (int i = 0; i < p1n; i++) {
+            rt[i] = 2 * p1[i] - 1;
         }
-        for (int i = 0; i < r2.length; i++) {
-            r[ri++] = 2 * r2[i];
+        for (int i = p1n; i < n; i++) {
+            rt[i] = 2 * p2[i - p1n];
         }
-        return r;
+        return rt;
     }
 
     public static void main(String[] args) {
