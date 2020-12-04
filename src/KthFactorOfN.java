@@ -45,21 +45,23 @@ import java.util.Collections;
 import java.util.List;
 
 public class KthFactorOfN {
+    // sqrt n in complexity. note the i-- and they way we scan backward
     public int kthFactor(int n, int k) {
-        List<Integer> fact = new ArrayList<>();
-        for (int i = 1; i * i <= n; i++) {
-            if (n % i == 0) {
-                fact.add(i);
-                if (i != n / i) {
-                    fact.add(n / i);
-                }
+        int i = 1;
+        for (; i * i <= n; i++) {
+            if (n % i == 0 && --k == 0) {
+                return i;
             }
-
         }
-        Collections.sort(fact);
-        if (k > fact.size()) {
-            return -1;
+        i--; // i*i<=n again
+        for (; i >= 1; i--) {
+            if (i * i == n) {
+                continue; // skip square number naturally
+            }
+            if (n % i == 0 && --k == 0) {
+                return n / i;
+            }
         }
-        return fact.get(k - 1);
+        return -1;
     }
 }
