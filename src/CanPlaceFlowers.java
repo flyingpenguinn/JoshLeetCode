@@ -16,21 +16,26 @@ The input array size is in the range of [1, 20000].
 n is a non-negative integer which won't exceed the input array size.
  */
 public class CanPlaceFlowers {
-    // note after 1 there is no other 1
-    public boolean canPlaceFlowers(int[] a, int k) {
-        int n = a.length;
-        int i = 0;
-        while (i < n && k > 0) {
+    // if next one is 0 and we can place here we place 1. it's always profitable to place 1 here
+    public boolean canPlaceFlowers(int[] a, int t) {
+        if (t == 0) {
+            return true;
+        }
+        int res = 0;
+        for (int i = 0; i < a.length; i++) {
             if (a[i] == 1) {
-                i += 2;
-            } else if (a[i] == 0 && (i == n - 1 || a[i + 1] != 1)) {
-                k--;
-                i += 2;
-            } else {
-                i++;
+                continue;
+            }
+            if ((i + 1 < a.length && a[i + 1] == 1) || (i > 0 && a[i - 1] == 1)) {
+                continue;
+            }
+            a[i] = 1;
+            res++;
+            if (res >= t) {
+                return true;
             }
         }
-        return k == 0;
+        return false;
     }
 
     public static void main(String[] args) {
