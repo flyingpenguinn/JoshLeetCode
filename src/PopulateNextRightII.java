@@ -37,13 +37,15 @@ Recursive approach is fine, implicit stack space does not count as extra space f
  */
 // works for both I and II
 public class PopulateNextRightII {
+    // don't really need to dfs, can use already populated next pointers to traverse the tree
     class Node {
         public int val;
         public Node left;
         public Node right;
         public Node next;
 
-        public Node() {
+        public Node(int val) {
+            this.val = val;
         }
 
         public Node(int _val, Node _left, Node _right, Node _next) {
@@ -54,42 +56,31 @@ public class PopulateNextRightII {
         }
     }
 
-
-    // gist is to use already built "next" for this and next level, to avoid a queue
     public Node connect(Node root) {
-        Node nh = null;
-        Node cur = root;
-        while (cur != null) {
-            while (cur != null) {
-                if (cur.left == null && cur.right == null) {
-                    cur = cur.next;
-                } else {
-                    if (cur.left != null && cur.right != null) {
-                        cur.left.next = cur.right;
+        if (root == null) {
+            return null;
+        }
+        Node p = root;
+        while (p != null) {
+            // p standing on the first non null on this level
+            Node head = new Node(-1);
+            Node last = head;
+            // head and last are for next levels
+            while (p != null) {
+                if (p.left != null || p.right != null) {
+                    // if all empty, then nothing to weave
+                    if (p.left != null && p.right != null) {
+                        p.left.next = p.right;
                     }
-                    Node nxt = cur.next;
-                    while (nxt != null && nxt.left == null && nxt.right == null) {
-                        nxt = nxt.next;
-                    }
-                    Node cright = cur.right == null ? cur.left : cur.right;
-                    Node cleft = cur.left == null ? cur.right : cur.left;
-                    if (nh == null) {
-                        nh = cleft;
-                    }
-                    if (nxt != null) {
-                        Node nleft = nxt.left == null ? nxt.right : nxt.left;
-                        cright.next = nleft;
-                        cur = nxt;
-                    } else {
-                        break;
-                    }
+                    last.next = p.left != null ? p.left : p.right;
+                    last = p.right != null ? p.right : p.left;
                 }
+                p = p.next;
             }
-            cur = nh;
-            nh = null;
+            p = head.next;
+            // head.next is the first non null at next level
         }
         return root;
-
     }
 
 }
