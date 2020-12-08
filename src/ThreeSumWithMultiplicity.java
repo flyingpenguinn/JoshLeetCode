@@ -39,40 +39,40 @@ Note:
 public class ThreeSumWithMultiplicity {
     // O(n+size*size)  in this one possible range of numbers is small
     // idea is to loop numbers themselves
-
-    private long MOD = 1000000007;
-
-    public int threeSumMulti(int[] a, int target) {
-        int maxv = 100;
-        int[] count = new int[maxv + 1];
-        for (int i = 0; i < a.length; i++) {
-            count[a[i]]++;
+// x sum usually has 3 ways: hashmap + pre counting, sum counting check pairs, and sort and count. below is sum counting
+    public int threeSumMulti(int[] a, int t) {
+        int n = a.length;
+        long[] c = new long[101];
+        for (int i = 0; i < n; i++) {
+            c[a[i]]++;
         }
         long res = 0;
-        for (int i = 0; i <= maxv; i++) {
-            if (count[i] == 0) {
-                continue;
-            }
-            for (int j = i; j <= maxv; j++) {
-                if (count[j] == 0) {
-                    continue;
-                }
-                int k = target - i - j;
-                if (k < j || k > maxv || count[k] == 0) {
-                    // must be within j and maxv just like j is within i and maxv
-                    continue;
-                }
-                // the values i<=j<=k
-                if (i == j && j == k) {
-                    res += 1L * count[i] * (count[i] - 1) * (count[i] - 2) / 6; // cn3
-                } else if (i == j) {
-                    res += 1L * count[k] * count[i] * (count[i] - 1) / 2;// cn2
-                } else if (j == k) {
-                    res += 1L * count[i] * count[j] * (count[j] - 1) / 2;//cn2
+        int mod = 1000000007;
+        for (int i = 0; i < 100; i++) {
+            int j = i; // from i, because in sum counting it's ok to have same number so that i+i = t
+            int k = 100;
+            while (j <= k) {
+                int sum = i + j + k;
+                if (sum < t) {
+                    j++;
+                } else if (sum > t) {
+                    k--;
                 } else {
-                    res += 1L * count[i] * count[j] * count[k];
+                    if (i == j && j == k) {
+                        res += c[i] * (c[i] - 1) * (c[i] - 2) / 6;
+                    } else if (i == j) {
+                        res += c[k] * c[i] * (c[i] - 1) / 2;
+                    } else if (j == k) {
+                        res += c[i] * c[j] * (c[j] - 1) / 2;
+                    } else if (i == k) {
+                        res += c[j] * c[i] * (c[i] - 1) / 2;
+                    } else {
+                        res += c[i] * c[j] * c[k];
+                    }
+                    j++;
+                    k--;
+                    res %= mod;
                 }
-                res %= MOD;
             }
         }
         return (int) res;
@@ -80,7 +80,7 @@ public class ThreeSumWithMultiplicity {
 }
 
 class ThreeSumWithMultiSol2 {
-    // like traditional 3 sum but a twist on counting.
+    // sort and count: like traditional 3 sum but a twist on counting.
     // note it's just counting triples not reporting their position so we can sort
     // also, note when ==, we dont really know how to move if we need to count the occurrences
     long MOD = 1000000007;
@@ -91,6 +91,7 @@ class ThreeSumWithMultiSol2 {
         int i = 0;
         long res = 0;
         while (i < n) {
+            // can't float i when equal: j could be overlooked in this case among "equal" is
             int j = i + 1;
             int k = n - 1;
             while (j < k) {
@@ -131,7 +132,7 @@ class ThreeSumWithMultiSol2 {
 
 class ThreeSumWithMultiSol3 {
     // fix j, loop i and count how many ks we have. note in 3 index problem we usually fix middle and loop the two sides
-
+    // we can think of this as a tuned hash + pre solution
     long MOD = 1000000007;
 
     public int threeSumMulti(int[] a, int t) {

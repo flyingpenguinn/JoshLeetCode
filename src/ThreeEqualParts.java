@@ -34,72 +34,84 @@ Note:
 A[i] == 0 or A[i] == 1
  */
 public class ThreeEqualParts {
-    // rely on the fact that for the 3 parts to be equal, their 1s must equal. we can use count of one to know the starting points of 3 parts
-    // once we figure out the positions we can compare them in On time
+    // rely on the fact that for the 3 parts to be equal, their 1s must equal.
+    // then 0s at the end of the 3rd number decides the number itself, if they can be equal
+    // note after counting 0s and 1s, we need to verify they are really equal
     public int[] threeEqualParts(int[] a) {
+        int allones = 0;
         int n = a.length;
-        int ones = 0;
         for (int i = 0; i < n; i++) {
-            if (a[i] == 1) {
-                ones++;
-            }
+            allones += a[i];
         }
-        if (ones % 3 != 0) {
+        if (allones % 3 != 0) {
             return new int[]{-1, -1};
         }
-        if (ones == 0) {
-            return new int[]{0, 2};
+        if (allones == 0) {
+            return new int[]{0, n - 1};
         }
-        int count = 0;
-        int start2 = -1;
-        int start3 = -1;
-        for (int i = 0; i < n; i++) {
-            if (a[i] == 1) {
-                count++;
+        int t = allones / 3;
+        int rzeros = 0;
+        int j = n - 1;
+        int[] res = new int[2];
+        for (int times = 2; times >= 0; times--) {
+            int i = j;
+            int zeros = 0;
+            while (i >= 0 && a[i] == 0) {
+                i--;
+                zeros++;
             }
-            if (count == ones / 3) {
-                start2 = i + 1;
+            if (times == 2) {
+                rzeros = zeros;
+            } else {
+                if (zeros < rzeros) {
+                    return new int[]{-1, -1};
+                }
+                int diff = zeros - rzeros;
+                res[times] = j - diff + times;
+                if (times == 0) {
+                    break;
+                }
+                // if times==1 we need to +1
             }
-            if (count == 2 * ones / 3) {
-                start3 = i + 1;
-                break;
+            int ones = 0;
+            j = i;
+            while (j >= 0 && ones < t) {
+                ones += a[j--];
             }
         }
-        return allsame(a, start2, start3);
-    }
 
-    private int[] allsame(int[] a, int j, int k) {
-        int n = a.length;
-        int i = 0;
-        int p2start = j;
-        int p3start = k;
-        while (i < p2start && a[i] == 0) {
-            i++;
-        }
-        while (j < p3start && a[j] == 0) {
-            j++;
-        }
-        while (k < n && a[k] == 0) {
-            k++;
-        }
-        p2start = j;
-        p3start = k;
-        int len = n - p3start; // we know the needed len from p3
-        int curlen = 0;
-        while (i < p2start && j < p3start && k < n) {
-            if (a[i] != a[j] || a[j] != a[k] || a[i] != a[k]) {
-                return new int[]{-1, -1};
-            }
-            i++;
-            j++;
-            k++;
-            curlen++;
-        }
-        if (curlen == len) {
-            return new int[]{i - 1, j};
+        if (match(a, 0, res[0], res[0] + 1, res[1] - 1, res[1], n - 1)) {
+            return res;
         } else {
             return new int[]{-1, -1};
         }
+    }
+
+    private boolean match(int[] a, int i1, int i2, int j1, int j2, int k1, int k2) {
+        while (i1 <= i2 && a[i1] == 0) {
+            i1++;
+        }
+        while (j1 <= j2 && a[j1] == 0) {
+            j1++;
+        }
+        while (k1 <= k2 && a[k1] == 0) {
+            k1++;
+        }
+        int len1 = i2 - i1;
+        int len2 = j2 - j1;
+        int len3 = k2 - k1;
+        if (len1 != len2 || len2 != len3 || len1 != len3) {
+            return false;
+        }
+        while (i1 <= i2 && j1 <= j2 && k1 <= k2) {
+            if (a[i1] != a[j1] || a[i1] != a[k1] || a[j1] != a[k1]) {
+                return false;
+            }
+            i1++;
+            j1++;
+            k1++;
+        }
+        return true;
     }
 
     public static void main(String[] args) {
