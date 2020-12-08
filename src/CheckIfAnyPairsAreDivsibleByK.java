@@ -47,31 +47,23 @@ n is even.
 public class CheckIfAnyPairsAreDivsibleByK {
     // similar to LC#974, convert negative mod to positive ones
     public boolean canArrange(int[] a, int k) {
-        Map<Integer, Integer> m = new HashMap<>();
+        int[] mods = new int[k];
         for (int i = 0; i < a.length; i++) {
             int mod = a[i] % k;
             if (mod < 0) {
                 mod += k;
-                // -2, k=5, then 3
-                // -3, k=5, then 2. still would match each other.
-                // note -2 can match with either 2 or -3, and the latters are both mapped to 2
             }
-            m.put(mod, m.getOrDefault(mod, 0) + 1);
+            mods[mod]++;
         }
-        for (int key : m.keySet()) {
-            int count = m.get(key);
-            if (key == 0) {
-                // 2 traps
-                // we need to single out mod==0 case because there is no valid other
-                // also can't simply return when count %2==0
-                if (count % 2 != 0) {
-                    return false;
-                }
-            } else {
-                int othercount = m.getOrDefault(k - key, 0);
-                if (count != othercount) {
-                    return false;
-                }
+        if (mods[0] % 2 == 1) {
+            return false;
+        }
+        if (k % 2 == 0 && (mods[k / 2] % 2) == 1) {
+            return false;
+        }
+        for (int i = 1; i < (k + 1) / 2; i++) {
+            if (mods[i] != mods[k - i]) {
+                return false;
             }
         }
         return true;
