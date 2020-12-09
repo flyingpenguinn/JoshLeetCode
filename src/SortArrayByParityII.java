@@ -27,22 +27,29 @@ A.length % 2 == 0
 0 <= A[i] <= 1000
  */
 public class SortArrayByParityII {
-    // find the consecutive two violations and swap them. "swap head" technique
+    // two pointers dont necessarily need to start from 0 and n-1
     public int[] sortArrayByParityII(int[] a) {
         int n = a.length;
-        int p1 = 1;
-        for (int p0 = 0; p0 < n; p0 += 2) {
-            if (a[p0] % 2 == 1) {
-                while (p1 < n && a[p1] == 0) {
-                    p1 += 2;
-                }
-                swap(a, p0, p1);
+        int i = 0;
+        int j = 1;
+        while (i < n && j < n) {
+            while (i < n && a[i] % 2 == 0) {
+                i += 2;
             }
+            while (j < n && a[j] % 2 == 1) {
+                j += 2;
+            }
+            if (i < n && j < n) {
+                swap(a, i, j);
+            }
+            i += 2;
+            j += 2;
         }
         return a;
     }
 
     private void swap(int[] a, int i, int j) {
+        //  System.out.println("swapping "+i+" "+j);
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
