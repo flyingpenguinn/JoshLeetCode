@@ -40,42 +40,19 @@ import base.ArrayUtils;
 
 public class RemoveDuplicatesFromSortedArrayII {
     public int removeDuplicates(int[] a) {
-        if (a.length < 2) {
-            return a.length;
-        }
-        int rp = 2;
-        // note old vals are overwritten!
-        int p0 = a[0];
-        int p1 = a[1];
-        for (int i = 2; i < a.length; i++) {
-            if (a[i] == p0 && a[i] == p1) {
-                continue;
+        int n = a.length;
+        int i = 0;
+        int ri = 0;
+        while (i < n) {
+            int j = i;
+            while (j < n && a[j] == a[i]) {
+                j++;
             }
-            p0 = p1;
-            p1 = a[i];
-            a[rp++] = a[i];
-        }
-        return rp;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new RemoveDuplicateElegant().removeDuplicates(ArrayUtils.read1d("1,1,1,2,2,2,3")));
-    }
-}
-
-// can be extended to k easily...
-class RemoveDuplicateElegant {
-    public int removeDuplicates(int[] a) {
-        int k = 2;
-        if (a.length < k) {
-            return a.length;
-        }
-        int ri = k;
-        for (int i = k; i < a.length; i++) {
-            if (a[i] > a[ri - k]) {
-                // ri, not i!
-                a[ri++] = a[i];
+            // i...j-1
+            for (int k = 0; k < 2 && i + k < j; k++) {
+                a[ri++] = a[i + k];
             }
+            i = j;
         }
         return ri;
     }

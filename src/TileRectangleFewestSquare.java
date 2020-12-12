@@ -61,6 +61,7 @@ public class TileRectangleFewestSquare {
         int mh = m;
         int ms = -1;
         int base = n + 1;
+        // st is the height of all columns after the last tiling. here we compute a status for the heights.
         for (int i = 0; i < n; i++) {
             status = status * base + st[i];
             if (st[i] < mh) {
@@ -74,13 +75,16 @@ public class TileRectangleFewestSquare {
         if (dp.containsKey(status)) {
             return dp.get(status);
         }
+        // from the above we have got the column with the smallest height. now we calc how wide we can go. note the max side len of the square is limited
+        // by m-mh the height
         int min = Integer.MAX_VALUE;
         int me = ms;
         int maxfit = m - mh;
         while (me < n && st[me] == st[ms] && me - ms + 1 <= maxfit) {
             me++;
         }
-        // ms...me-1 can place stuff
+        // ms...me-1 can place a square of j-ms+1, we iterate on the possible squares we can put. note we must put square in the smallest height because
+        // we would have to fill this hole. but we may only need a smaller square
         for (int j = ms; j < me; j++) {
             // we fill from minstart to j
             int[] nst = Arrays.copyOf(st, n);
