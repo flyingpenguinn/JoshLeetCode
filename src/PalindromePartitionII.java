@@ -1,4 +1,5 @@
 import java.util.Arrays;
+
 /*
 LC#132
 Given a string s, partition s such that every substring of the partition is a palindrome.
@@ -21,7 +22,7 @@ public class PalindromePartitionII {
         dp = new int[n];
         Arrays.fill(dp, -1);
         p = new boolean[n][n];
-        // in this way we get everything for n2 so that we dont need to call is palin in a n2 loop
+        // in this way we get everything for n2 so that we dont need to call is palin in a n2 loop. note the n^# loop won't work
         for (int len = 1; len <= n; len++) {
             for (int i = 0; i + len - 1 < n; i++) {
                 int j = i + len - 1;

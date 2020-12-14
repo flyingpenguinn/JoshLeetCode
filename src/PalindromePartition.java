@@ -17,43 +17,44 @@ Output:
 ]
  */
 public class PalindromePartition {
-    boolean[][] p;
-    List<List<String>> r = new ArrayList<>();
+    private List<List<String>> r = new ArrayList<>();
+    private boolean[][] p;
 
-    public List<List<String>> partition(String str) {
-
-        int n = str.length();
+    public List<List<String>> partition(String s) {
+        int n = s.length();
         p = new boolean[n][n];
-
-        char[] s = str.toCharArray();
-        for (int len = 1; len <= n; len++) {
-            for (int i = 0; i + len - 1 < n; i++) {
-                int j = i + len - 1;
-                if (len == 1) {
+        // n^3 but ok in this case since it's an exponential dfs
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (ispalin(s, i, j)) {
                     p[i][j] = true;
-                } else if (len == 2) {
-                    p[i][j] = s[i] == s[j];
-                } else {
-                    p[i][j] = s[i] == s[j] ? p[i + 1][j - 1] : false;
                 }
             }
         }
-        dfs(str, 0, new ArrayList<>());
+        dfs(s, 0, new ArrayList<>());
         return r;
     }
 
-    void dfs(String s, int i, List<String> cur) {
-        int n = s.length();
-        if (i == n) {
+    private void dfs(String s, int i, List<String> cur) {
+        if (i == s.length()) {
             r.add(new ArrayList<>(cur));
             return;
         }
-        for (int j = i; j < n; j++) {
+        for (int j = i; j < s.length(); j++) {
             if (p[i][j]) {
                 cur.add(s.substring(i, j + 1));
                 dfs(s, j + 1, cur);
                 cur.remove(cur.size() - 1);
             }
         }
+    }
+
+    private boolean ispalin(String s, int i, int j) {
+        while (i < j) {
+            if (s.charAt(i++) != s.charAt(j--)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
