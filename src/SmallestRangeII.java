@@ -33,28 +33,67 @@ Note:
  */
 
 import java.util.Arrays;
+import java.util.PriorityQueue;
+import java.util.TreeSet;
 
 public class SmallestRangeII {
-    // it must be like +++++----  the + and - wont interleave. we enumerate the end point of +
-    public int smallestRangeII(int[] a, int k) {        Arrays.sort(a);
+    // actually similar to "minimum deviation array", convert to n lists' minimum range cover (min..max cover one number from each array)
+    public int smallestRangeII(int[] a, int k) {
+        int n = a.length;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0]));
+        // value, array, index
+        int max = 0;
+        for (int i = 0; i < n; i++) {
+            pq.offer(new int[]{a[i] - k, i, 0});
+            max = Math.max(max, a[i] - k);
+        }
+        int res = Integer.MAX_VALUE;
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            int topv = top[0];
+            int topi = top[1];
+            int topj = top[2];
+            int diff = max - topv;
+            //    System.out.println(topv+" "+max);
+            res = Math.min(res, diff);
+            if (topj == 0) {
+                max = Math.max(max, a[topi] + k);
+                pq.offer(new int[]{a[topi] + k, topi, 1});
+            } else {
+                break;
+            }
+        }
+        return res;
+    }
+}
 
-        int n=a.length;
-        int min= Integer.MAX_VALUE;
-        int max= Integer.MIN_VALUE;
-        for(int i=0;i<n;i++){
-            a[i]-= k;
-            min= Math.min(min,a[i]);
-            max= Math.max(max,a[i]);
+class SmallestRangeIIAnotherWay {
+    // first all +, then we will only reduce the number
+    // note we break when we can't reduce a number further
+    public int smallestRangeII(int[] a, int k) {
+        TreeSet<int[]> ts = new TreeSet<>((x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0]) : Integer.compare(x[1], y[1]));
+        // must compare 1 too to avoid removing wrong element
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
+            ts.add(new int[]{a[i] + k, 1});
         }
-        int mind= max-min;
-        for(int i=0;i<n-1;i++){
-            int nv= a[i]+2*k;
-            // smallest must be among these two
-            min= Math.min(a[0]+2*k,a[i+1]);
-            // biggest must be among these two
-            max=Math.max(a[n-1],nv);
-            mind= Math.min(mind,max-min);
+        // the only thing we will do is to reduce
+        int min = Integer.MAX_VALUE;
+        while (!ts.isEmpty()) {
+            int[] last = ts.last();
+            int[] first = ts.first();
+
+            //   System.out.println(Arrays.toString(first)+" "+Arrays.toString(last));
+            int diff = last[0] - first[0];
+            min = Math.min(min, diff);
+            ts.remove(last);
+            if (last[1] == 1) {
+                ts.add(new int[]{last[0] - 2 * k, 0});
+            } else {
+                // can't get smaller so have to stop
+                break;
+            }
         }
-        return mind;
+        return min;
     }
 }
