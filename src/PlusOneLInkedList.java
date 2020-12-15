@@ -14,34 +14,24 @@ Input: [1,2,3]
 Output: [1,2,4]
  */
 public class PlusOneLInkedList {
-    // find right most non nine, add one and change all right to it to 0, like plus one
+    // recursive solution
     public ListNode plusOne(ListNode head) {
-        ListNode cand = null;
-        ListNode p = head;
-        // cand will be right most non 9 node
-        while (p != null) {
-            if (p.val != 9) {
-                cand = p;
-            }
-            p = p.next;
-        }
-        if (cand == null) {
+        int carry = doplus(head);
+        if (carry != 0) {
             ListNode nh = new ListNode(1);
-            p = head;
-            while (p != null) {
-                p.val = 0;
-                p = p.next;
-            }
             nh.next = head;
             return nh;
-        } else {
-            cand.val++;
-            p = cand.next;
-            while (p != null) {
-                p.val = 0;
-                p = p.next;
-            }
-            return head;
         }
+        return head;
+    }
+
+    private int doplus(ListNode n) {
+        if (n == null) {
+            return 1;
+        }
+        int carry = doplus(n.next);
+        int raw = n.val + carry;
+        n.val = raw % 10;
+        return raw / 10;
     }
 }
