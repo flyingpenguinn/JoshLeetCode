@@ -77,54 +77,58 @@ public class SuperPalindromes {
 
 class SuperPalindromeRecursion {
 
-    // concact numbers to form palindromes in a recursion
-    int res = 0;
-
+    // enumerate our choices each time for the middle one and the two sides. note all operations are int/long
     public int superpalindromesInRange(String l, String r) {
-        counts(Long.valueOf(l), Long.valueOf(r));
+        solve(Long.valueOf(l), Long.valueOf(r));
         return res;
     }
 
-    private void counts(long l, long r) {
-        dfs("", "", l, r);
+    private int res = 0;
+
+    private void solve(long l, long r) {
+        int limit = String.valueOf((int) Math.sqrt(r)).length() / 2 + 1;
+        //  System.out.println(limit);
+        dfs(l, r, limit, 0, 0, 0, 1);
     }
 
-    // p1+p2 is the palindrome and square of it is the candidate
-    private void dfs(String p1, String p2, long l, long r) {
-        String palin = p1 + p2;
-        if (!palin.isEmpty()) {
-            long pv = Long.valueOf(palin);
-            long sq = pv * pv;
-            if (pv > Long.MAX_VALUE / pv || sq > r) {
-                return;
-            } else {
-                String sqs = String.valueOf(sq);
-                if (sq >= l && ispalin(sqs)) {
-                    res++;
-                }
-            }
-        }
-        // p1 and p2 must be mirrors for us to expand on them
-        if (p1.length() != p2.length()) {
+    // -1 means we stuff an empty in the middle
+    private int[] choices = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    private void dfs(long l, long r, int limit, int i, long p1, long p2, long base) {
+
+        if (i >= limit) {
             return;
         }
-        int start = p1.isEmpty() ? 1 : 0;
-        for (int j = start; j <= 9; j++) {
-            dfs(p1 + j, j + p2, l, r);
-            // 123->123321
-            dfs(p1 + j, p2, l, r);
-            // 123->1234321 but note we shouldnt expand 1234 any more later
-        }
-    }
 
-    private boolean ispalin(String palinstr) {
-        int i = 0;
-        int j = palinstr.length() - 1;
-        while (i < j) {
-            if (palinstr.charAt(i++) != palinstr.charAt(j--)) {
-                return false;
+        for (int c : choices) {
+            long cur = c == -1 ? p1 * base + p2 : (p1 * 10 + c) * base + p2;
+            // System.out.println(cur+" "+p1+" "+p2+" "+base);
+            long csq = cur * cur;
+            if (csq >= l && csq <= r && isPalin(csq)) {
+                //    System.out.println(csq);
+                res++;
             }
         }
-        return true;
+
+        int start = i == 0 ? 1 : 0;
+        for (int j = start; j <= 9; j++) {
+            dfs(l, r, limit, i + 1, p1 * 10 + j, j * base + p2, base * 10);
+        }
+
+    }
+
+    private boolean isPalin(long n) {
+        // quick way without doing string!
+        long rem = 0;
+        while (n > rem) {
+            if (n / 10 == rem) {
+                // 13 vs 1
+                return true;
+            }
+            long d = n % 10;
+            rem = rem * 10 + d;
+            n = n / 10;
+        }
+        return n == rem;
     }
 }
