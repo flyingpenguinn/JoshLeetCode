@@ -51,7 +51,7 @@ public class ThreeSumWithMultiplicity {
         for (int i = 0; i < 100; i++) {
             int j = i; // from i, because in sum counting it's ok to have same number so that i+i = t
             int k = 100;
-            while (j <= k) {
+            while (j <= k) { // note j can == k when we pick sums
                 int sum = i + j + k;
                 if (sum < t) {
                     j++;

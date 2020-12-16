@@ -52,33 +52,36 @@ Note:
 
 // Find longest two value streak, "two valueness" is monotonous so we can use two pointers... same as question 159
 public class FruitInoBasket {
-    // longest streak with at most two distinct values
+    // revived leetcode practice from this problem in Jan 2019
     public int totalFruit(int[] a) {
-        Map<Integer, Integer> map = new HashMap<>();
-        int high = -1;
+        // longest subarray with at most 2 distinct element
         int low = 0;
+        int high = -1;
+        Map<Integer, Integer> m = new HashMap<>();
         int max = 0;
         while (true) {
-            if (map.size() <= 2) {
+            if (m.size() <= 2) {
                 max = Math.max(max, high - low + 1);
                 high++;
                 if (high == a.length) {
                     break;
-                } else {
-                    map.put(a[high], map.getOrDefault(a[high], 0) + 1);
                 }
+                update(m, a[high], 1);
             } else {
-                Integer cl = map.get(a[low]);
-                if (cl == 1) {
-                    map.remove(a[low]);
-                } else {
-                    map.put(a[low], cl - 1);
-                }
+                update(m, a[low], -1);
                 low++;
             }
         }
         return max;
+    }
 
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
+        }
     }
 
     public static void main(String[] args) {
