@@ -34,19 +34,16 @@ S consists of lowercase letters only.
 public class OrderlyQueue {
     // when k>1, it means we can swap two element's positions
     public String orderlyQueue(String s, int k) {
-        char[] sc = s.toCharArray();
-        if (k > 1) {
-            Arrays.sort(sc);
-            return new String(sc);
-        } else {
-            int n = s.length();
-            StringBuilder sb = new StringBuilder();
+        char[] c = s.toCharArray();
+        if(k>1){
+            Arrays.sort(c);
+            return new String(c);
+        }else{
             String min = s;
-            for (int i = 0; i < n; i++) {
-                sb.append(s.charAt(i));
-                String ns = s.substring(i + 1) + sb.toString();
-                if (ns.compareTo(min) < 0) {
-                    min = ns;
+            for(int i=0; i<s.length();i++){
+                s = s.substring(1)+s.substring(0,1);
+                if(s.compareTo(min)<0){
+                    min = s;
                 }
             }
             return min;
