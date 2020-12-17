@@ -38,56 +38,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class BitwiseOrOfSubarrays {
-    // "frontier set" technique
+    // "frontier set" technique.
+    // "last" is the fontier set. key insight is it will contain at most 32 values because it's the bitwise or result from 0....i-1
+    // for each i. r0>=r1>=r2..>=ri-1 and each of them is at least 1 bit in diff. so there can be at most 32 different values for 32 bit integer
     public int subarrayBitwiseORs(int[] a) {
-        Set<Integer> all = new HashSet<>();
-        Set<Integer> cur = new HashSet<>();
+        Set<Integer> set = new HashSet<>();
+        Set<Integer> last = new HashSet<>();
         for (int i = 0; i < a.length; i++) {
-            Set<Integer> ncur = new HashSet<>();
-            // cur is at most 32 in size because each new value must have at least ONE more 1 than the previous
-            ncur.add(a[i]);
-            for (int c : cur) {
-                ncur.add(c | a[i]);
+            Set<Integer> added = new HashSet<>();
+            added.add(a[i]);
+            for (int item : last) {
+                added.add((item | a[i]));
             }
-
-            all.addAll(ncur);
-            cur = ncur;
+            //   System.out.println(added);
+            set.addAll(added);
+            last = added;
         }
-        return all.size();
-    }
-
-    public static void main(String[] args) {
-        int[] a = new int[33];
-        for (int i = 0; i < 30; i++) {
-            a[i] = 1 << i;
-        }
-        a[31] = 9;
-        a[32] = 5;
-
-        System.out.println(new BitwiseOrSubarraysSol2().subarrayBitwiseORs(a));
-    }
-}
-
-// surprisingly effective but complexity is dubious
-class BitwiseOrSubarraysSol2 {
-    public int subarrayBitwiseORs(int[] a) {
-        int n = a.length;
-        Map<Integer, Integer> all = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            int curn = 0;
-            int j = i;
-            for (; j < n; j++) {
-                curn |= a[j];
-                // if i...j is the same as i-k...j+k we dont need any bigger j to be checked they will be the same
-                // in the worst case each i+1 and i's biggest value differ by one digit...and are disjoint. the ony possible case is 1,2,4,8...2^32
-                int ext = all.getOrDefault(curn, -1);
-                if (ext >= j) {
-                    break;
-                }
-                all.put(curn, j);
-            }
-            System.out.println("breaking at " + (j - i + 1));
-        }
-        return all.size();
+        return set.size();
     }
 }
