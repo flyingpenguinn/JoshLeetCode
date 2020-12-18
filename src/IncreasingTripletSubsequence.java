@@ -25,21 +25,17 @@ class IncreasingTripletSubsequenceO1space {
     // note at some point, cand is before min, but that's ok
     // can also do LIS and len = 3 so it's nlog3 == O(n)
     public boolean increasingTriplet(int[] a) {
+        int min1 = Integer.MAX_VALUE;
+        int min2 = Integer.MAX_VALUE;
+        // potential min1 and min2. note min1 could be a smaller value after min2 but that's ok
         int n = a.length;
-        if (n < 3) {
-            return false;
-        }
-        int min = Integer.MAX_VALUE; // smallest
-        int cand = Integer.MAX_VALUE; // best candidate for number 2. it has > some min
-        for (int i = 0; i < n; i++) {
-            if (a[i] > cand) {
+        for(int i=0; i<n; i++){
+            if(a[i]<=min1){
+                min1 = a[i];
+            }else if(a[i]<=min2){
+                min2 = a[i];
+            }else{
                 return true;
-            }
-            if (a[i] < min) {
-                min = a[i];
-            } else if (a[i] > min) {
-                // a[i]<=cand
-                cand = a[i];
             }
         }
         return false;
