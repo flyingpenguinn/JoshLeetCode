@@ -1,6 +1,8 @@
 import base.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 /*
@@ -48,59 +50,61 @@ A reachable node is a node that can be travelled to using at most M moves starti
 public class ReachableNodesInSubdividedGraph {
     // dijkastra with a twist of calculating travelled dist: we will still need to visit nodes we touched before because we need to pick up
     // middle ones
-    int Max = 1000000000 + 100;
+    private int Max = 10000000;
 
-    public int reachableNodes(int[][] edges, int m, int n) {
-        int[][] g = new int[n][n];
+    public int reachableNodes(int[][] es, int m, int n) {
+        Map<Integer, Integer>[] g = new HashMap[n];
         for (int i = 0; i < n; i++) {
-            Arrays.fill(g[i], -1);
+            g[i] = new HashMap<>();
         }
-        for (int[] e : edges) {
-            g[e[0]][e[1]] = e[2];
-            g[e[1]][e[0]] = e[2];
+        for (int[] e : es) {
+            int start = e[0];
+            int end = e[1];
+            int nodes = e[2];
+            g[start].put(end, nodes);
+            g[end].put(start, nodes);
         }
         int[] dist = new int[n];
         Arrays.fill(dist, Max);
         dist[0] = 0;
         boolean[] done = new boolean[n];
-        // node and dist to 0
         PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
-        int r = 0;
+        // node id, dist, sort by dist
         pq.offer(new int[]{0, 0});
+        int res = 0;
         while (!pq.isEmpty()) {
             int[] top = pq.poll();
             int i = top[0];
+            int d = top[1];
+
             if (done[i]) {
                 continue;
             }
+            res++; // the node itself. note we must do after done to avoid double countinue
             done[i] = true;
-            r++;// visit the node if not visited yet
-            int cd = top[1];
-            for (int j = 0; j < n; j++) {
-                if (j != i && g[i][j] != -1) {
-                    int nd = cd + g[i][j] + 1;// +1 to count in the end node
-                    if (nd <= m) {
-                        // note even if j is visited before we need to do this walk to pick up remaining middle nodes!
-                        r += g[i][j];
-                        g[i][j] = 0;
-                        g[j][i] = 0;
-                        // can go to the next node
-                        if (dist[j] > nd) {
-                            dist[j] = nd;
-                            pq.offer(new int[]{j, nd});
-                        }
-                    } else {
-                        // can't go to the next node, subtract the nodes we can walk on
-                        // note even if j is visited, we need to do this walk to pick up middle nodes!
-                        int walked = m - cd;
-                        r += walked;
-                        g[i][j] -= walked;
-                        g[j][i] -= walked;
+            Map<Integer, Integer> nexts = g[i];
+            for (int next : nexts.keySet()) {
+                int edge = nexts.get(next);
+                int nd = edge + d + 1;
+                // dist to reach the next node
+                if (nd <= m) {
+                    if (dist[next] > nd) {
+                        // we could have reached next earlier so checking here. we need to add the remnants on the edge regardelss of this check
+                        dist[next] = nd;
+                        pq.offer(new int[]{next, nd});
                     }
+                    // consumed this edge
+                    g[next].remove(i);
+                    res += edge;
+                } else {
+                    int walked = m - d;
+                    // note how many we can walk in reverse
+                    g[next].put(i, edge - walked);
+                    res += walked;
                 }
             }
         }
-        return r;
+        return res;
     }
 
 
