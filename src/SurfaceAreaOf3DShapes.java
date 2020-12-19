@@ -36,29 +36,30 @@ Note:
 0 <= grid[i][j] <= 50
  */
 public class SurfaceAreaOf3DShapes {
-    // can't use projection there could be holes
-    // calc the common parts with i=1 and j-1
-    public int surfaceArea(int[][] g) {
-        int m = g.length;
-        int n = g[0].length;
-        int area = 0;
-
+    // count he parts where this cell is bigger than neighbors
+    public int surfaceArea(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int res = 0;
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                int v = g[i][j];
-                if (v > 0) {
-                    area += 4 * v + 2;
-                    if (j - 1 >= 0) {
-                        int com = Math.min(g[i][j - 1], v);
-                        area -= 2 * com;
-                    }
-                    if (i - 1 >= 0) {
-                        int com = Math.min(g[i - 1][j], v);
-                        area -= 2 * com;
+                if (a[i][j] == 0) {
+                    continue;
+                }
+                res += 2;
+                for (int[] d : dirs) {
+                    int ni = i + d[0];
+                    int nj = j + d[1];
+                    if (ni < 0 || ni >= m || nj < 0 || nj >= n) {
+                        res += a[i][j];
+                    } else {
+                        // if < then 0 can't over subtract
+                        res += Math.max(a[i][j] - a[ni][nj], 0);
                     }
                 }
             }
         }
-        return area;
+        return res;
     }
 }

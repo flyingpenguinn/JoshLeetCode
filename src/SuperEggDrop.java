@@ -40,6 +40,31 @@ Note:
  */
 
 public class SuperEggDrop {
+    // dp(i,j) means i eggs, j drops, how many floors we can cover
+    // it can cover dp(i-1, j-1) floors if egg is broken, and dp(i-1, j) floors more if the eggs is not broken
+    // counting in the floor that we tested, then +1
+    public int superEggDrop(int k, int n) {
+
+        // dp[0][j] = 0, dp[i][0] = 0
+        int[][] dp = new int[k+1][n+1];
+        int res = n;
+        for(int i=1; i<=k; i++){
+            for(int j=1; j<=n; j++){
+                dp[i][j] = dp[i][j-1]+ dp[i-1][j-1]+1;
+                if(dp[i][j]>=n){
+                    res = j;
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+
+
+}
+
+class SuperEggDropAnotherDp {
+
     // break point for n,k won't deviate from n-1,k's point too much
     // note if it's 2 eggs, the first floor is x, then x+(x-1)+....1==100, we solve for x = 14
     int[][] dp;
@@ -85,29 +110,6 @@ public class SuperEggDrop {
         dp[n][k] = min;
         mini[n][k] = cmini;
         return min;
-    }
-
-}
-
-class SuperEggDropAnotherDp {
-    // dp(i,j) means i eggs, j drops, how many floors we can cover
-    // it can cover dp(i-1, j-1) floors if egg is broken, and dp(i-1, j) floors more if the eggs is not broken
-    // counting in the floor that we tested, then +1
-    public int superEggDrop(int k, int n) {
-        long[][] dp = new long[k + 1][n + 1];
-        // dp[0][x] = 0
-        // dp[x][0] = 0
-
-        // i eggs, j drops
-        for (int i = 1; i <= k; i++) {
-            for (int j = 1; j <= n; j++) {
-                dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1] + 1;
-                if (i == k && dp[i][j] >= n) {
-                    return j;
-                }
-            }
-        }
-        return -1;
     }
 }
 
