@@ -48,3 +48,45 @@ public class NthDigit {
         return sn.charAt(n - 1) - '0';
     }
 }
+
+class NthDigitBinarySearch {
+    // find the first u that is having digits count <n. next number u+1 is >-n
+    public int findNthDigit(long n) {
+        long l = 1;
+        long u = Integer.MAX_VALUE;
+        while (l <= u) {
+            long mid = l + (u - l) / 2;
+            long count = count(mid);
+            //    System.out.println(mid+" "+count);
+            if (count >= n) {
+                u = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+// u is the number that is the first <, l is the first >=
+        long cu = count(u);
+        int rem = (int) (n - cu);
+        return String.valueOf(u + 1).charAt(rem - 1) - '0';
+    }
+
+    private long count(long n) {
+        long base = 9;
+        long basemax = 9;
+        int digits = 1;
+        long res = 0;
+        // base: 9, 90, 900, ....
+        // basemax; 9, 99, 999...
+        while (basemax <= n) {
+            res += base * digits;
+            base = base * 10;
+            basemax = basemax * 10 + 9;
+            digits++;
+        }
+        // basemax >n. go back to previous base, but digits = current one. we are < current one's limit
+        basemax = (basemax - 9) / 10;
+        long diff = (n - basemax) * digits;
+        res += diff;
+        return res;
+    }
+}

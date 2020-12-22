@@ -40,80 +40,46 @@ The input is two lists: the subroutines called and their arguments. Solution's c
  */
 public class RandomPointNonOverlappingRect {
 
-    // can't pick rect first then pick point because that makes small rect more likely to be picked.
-    // need to pick proportional to area (weight) then pick a point inside
-
-    // pick according to area proportionally. similar to random pick with weight but this is 2d
     static class Solution {
-        private Random rand = new Random();
-        private int[][] rects;
-        // same trick as random pick with weight: sum[i] = sum[i-1]+area[i-1], then pick an area, find the eq or < index
-        private int[] sums;
-        private int allAreas = 0;
+        // add areas together say 3,4,5=> 3,7,12 then pick a number between 1 and 12. then find first that is >= the number we picked
+        private int[] a;
+        private int sum = 0;
+        private int n;
+        private int[][] rs;
 
-        public Solution(int[][] rects) {
-            this.rects = rects;
-            sums = new int[rects.length];
-            allAreas = getArea(rects[0]);
-            // sum[0] alreays == 0
-            for (int i = 1; i < rects.length; i++) {
-                sums[i] = sums[i - 1] + getArea(rects[i - 1]);
-                allAreas += getArea(rects[i]);
+        public Solution(int[][] rs) {
+            this.rs = rs;
+            n = rs.length;
+            a = new int[n];
+            for (int i = 0; i < n; i++) {
+                a[i] = (i == 0 ? 0 : a[i - 1]) + (rs[i][3] - rs[i][1] + 1) * (rs[i][2] - rs[i][0] + 1);
             }
+            sum = a[n - 1];
         }
 
-        private int getArea(int[] rect) {
-            return (rect[2] - rect[0] + 1) * (rect[3] - rect[1] + 1);
-        }
-
+        private Random ran = new Random();
 
         public int[] pick() {
-            // this is similar setting as random pick with weight
-            int picked = rand.nextInt(allAreas);
-            int found = binarySearch(sums, picked);
-            int[] rect = rects[found];
-            int randx = rect[0] + rand.nextInt(rect[2] - rect[0] + 1);
-            int randy = rect[1] + rand.nextInt(rect[3] - rect[1] + 1);
-            return new int[]{randx, randy};
-        }
-
-        // if eq find it otherwise find the biggest smaller
-        private int binarySearch(int[] a, int t) {
+            int picked = ran.nextInt(sum) + 1;
+            // 1... sum
             int l = 0;
-            int u = a.length - 1;
+            int u = n - 1;
+            // find first a[i]>=picked
             while (l <= u) {
                 int mid = l + (u - l) / 2;
-                if (a[mid] == t) {
-                    return mid;
-                } else if (a[mid] < t) {
+                if (a[mid] < picked) {
                     l = mid + 1;
                 } else {
                     u = mid - 1;
                 }
             }
-            return u;
+            // l is first >=
+            // randomly pick in l
+            int dy = rs[l][3] - rs[l][1] + 1;
+            int dx = rs[l][2] - rs[l][0] + 1;
+            int randy = ran.nextInt(dy) + rs[l][1];
+            int randx = ran.nextInt(dx) + rs[l][0];
+            return new int[]{randx, randy};
         }
     }
-
-    public static void main(String[] args) {
-        Solution sol = new Solution(ArrayUtils.read("[[82918473, -57180867, 82918476, -57180863], [83793579, 18088559, 83793580, 18088560], [66574245, 26243152, 66574246, 26243153], [72983930, 11921716, 72983934, 11921720]]"));
-        int[] score = new int[sol.rects.length];
-        for (int i = 0; i < 1000000; i++) {
-            int[] p = sol.pick();
-            int found = -1;
-            for (int j = 0; j < sol.rects.length; j++) {
-                if (p[0] >= sol.rects[j][0] && p[0] <= sol.rects[j][2] && p[1] >= sol.rects[j][1] && p[1] <= sol.rects[j][3]) {
-                    found = j;
-                    break;
-                }
-            }
-            if (found == -1) {
-                System.out.println("!!!bad..." + Arrays.toString(p));
-            } else {
-                score[found]++;
-            }
-        }
-        System.out.println(Arrays.toString(score));
-    }
-
 }
