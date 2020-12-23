@@ -34,25 +34,24 @@ What is the expected value for the number of calls to rand7() function?
 Could you minimize the number of calls to rand7()?
  */
 public class Rand10UsingRand7 {
-    // i.e. rand 0-9 using rand 0-6
     public int rand10() {
-        while (true) {
-            int sum = 7 * rand6() + rand6(); // - to 48
-            // note we dont use x*rand6() only becaus that only covers limited numbers and 0 and 5 are duplicates
-            // can't do rand6+rand6 because number 1 has two representations: 1,0 or 0,1. note this problem exists for any
-            // x*rand6 where x <=6
-            if (sum < 40) {
-                return 1 + sum % 10;
+        return rand9()+1;
+    }
+
+    private int rand9(){
+        while(true){
+            int num = 7*rand6()+rand6();
+            if(num<40){
+                return num%10; // 0...9
             }
         }
     }
 
-    // 0 to 6
-    private int rand6() {
-        return rand7() - 1;
+    //0..6
+    private int rand6(){
+        return rand7()-1;
     }
 
-    // fake implementation
     private int rand7() {
         return 0;
     }

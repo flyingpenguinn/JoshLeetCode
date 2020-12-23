@@ -24,14 +24,13 @@ public class NextGreaterElementII {
             while (!dq.isEmpty() && dq.peekFirst() <= i - n) {
                 dq.pollFirst();
             }
-            while (!dq.isEmpty() && dq.peekLast() >= n) {
-                dq.pollLast();
-            }
             while (!dq.isEmpty() && a[dq.peekLast()] < a[i % n]) {
                 int lastindex = dq.pollLast();
                 r[lastindex] = a[i % n];
             }
-            dq.offerLast(i);
+            if(i<n){
+                dq.offerLast(i);
+            }
         }
         return r;
     }
