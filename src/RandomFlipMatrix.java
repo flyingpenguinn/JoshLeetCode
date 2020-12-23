@@ -30,86 +30,34 @@ The input is two lists: the subroutines called and their arguments. Solution's c
 https://leetcode.com/problems/random-flip-matrix/
  */
 public class RandomFlipMatrix {
-    // unlike pick with black list, here black list is a moving target...
     static class Solution {
-        Map<Integer, Integer> map = new HashMap<>();
-        int rows;
-        int cols;
-        int n;
-        int wn;
-        int bp;
-        Random ran = new Random();
+        private int rs;
+        private int cs;
+        private int cand = 0;
+        private Random rand = new Random();
+        private Map<Integer,Integer> m = new HashMap<>();
 
-        public Solution(int n_rows, int n_cols) {
-            rows = n_rows;
-            cols = n_cols;
-            n = rows * cols;
-            wn = n;
-            bp = n - 1;
+        public Solution(int rs, int cs) {
+            this.rs = rs;
+            this.cs = cs;
+            cand = rs*cs;
         }
 
         public int[] flip() {
-            int num = ran.nextInt(wn--);
-            int x = map.getOrDefault(num, num);
-            int row = x / cols;
-            int col = x % cols;
-            // bp is either mapped, or not mapped...if mapped we set it to the mapped value...
-            map.put(num, map.getOrDefault(bp, bp));
-            bp--;
-            return new int[]{row, col};
+
+            int ran = rand.nextInt(cand--);
+
+            int real = m.getOrDefault(ran, ran);
+            int r = real/cs;
+            int c = real%cs;
+            m.put(ran, m.getOrDefault(cand, cand));
+
+            return new int[]{r,c};
         }
 
         public void reset() {
-            map.clear();
-            wn = n;
-            bp = n - 1;
-        }
-    }
-
-    public static void main(String[] args) {
-        Solution matrix = new Solution(2, 2);
-        for (int i = 0; i < 4; i++) {
-            System.out.println(Arrays.toString(matrix.flip()));
-        }
-    }
-}
-
-class FlipMatrixSlower {
-    // use a while loop to find the mapping. in previous solution we compressed this path
-    class Solution {
-        Map<Integer, Integer> map = new HashMap<>();
-
-        int rsize = 0;
-        int csize = 0;
-
-        public Solution(int rows, int cols) {
-            rsize = rows;
-            csize = cols;
-            last = rsize * csize - 1;
-        }
-
-        int last = 0;
-        Random ran = new Random();
-
-        public int[] flip() {
-            int rt = ran.nextInt(last + 1);
-            while (true) {
-                Integer mapped = map.getOrDefault(rt, rt);
-                if (mapped == rt) {
-                    break;
-                } else {
-                    rt = mapped;
-                }
-            }
-            map.put(rt, last);
-            last--;
-            return new int[]{rt / csize, rt % csize};
-        }
-
-
-        public void reset() {
-            map.clear();
-            last = rsize * csize - 1;
+            m.clear();
+            cand = rs*cs;
         }
     }
 }
