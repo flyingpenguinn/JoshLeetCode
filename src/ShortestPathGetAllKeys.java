@@ -34,68 +34,65 @@ public class ShortestPathGetAllKeys {
     // cache the dist and run tsp on treasures
     // same trick can't be applied here because if we dont have the key we can't pass. so this is state on top of bfs problem. no need to enumerate permutation
     // similar to #1293 when it wants shortest path with some optional obstacle we can build the state into bfs states
-
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
+    private int[][] dirs = {{-1,0}, {1,0}, {0, -1}, {0,1}};
     public int shortestPathAllKeys(String[] a) {
+        Deque<int[]> q = new ArrayDeque<>();
+        // row, col, key obtain status, dist
         int m = a.length;
         int n = a[0].length();
-        int[] start = null;
         int keys = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i].charAt(j) == '@') {
-                    start = new int[]{i, j};
-                } else if (Character.isLowerCase(a[i].charAt(j))) {
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                char c = a[i].charAt(j);
+                if(c=='@'){
+                    q.offer(new int[]{i, j, 0, 0 });
+                }else if(Character.isLowerCase(c)){
                     keys++;
                 }
             }
         }
-        Deque<int[]> q = new ArrayDeque<>();
-        q.offer(new int[]{0, start[0], start[1], 0});
-        // state on top of bfs: here state is what are the keys we have got
-        boolean[][][] v = new boolean[m][n][1 << keys];
-        v[start[0]][start[1]][0] = true;
-        while (!q.isEmpty()) {
+        boolean[][][] v = new boolean[m][n][(1<<keys)];
+        v[0][0][0] = true;
+        while(!q.isEmpty()){
+            // just into i, j, if there's key on ij it's not set yet
             int[] top = q.poll();
-            int st = top[0];
-            int i = top[1];
-            int j = top[2];
+            int i = top[0];
+            int j = top[1];
+
+            int ck = top[2];
             int dist = top[3];
-            if (st + 1 == (1 << keys)) {
+            if( (ck+1) ==(1<<keys)){
                 return dist;
             }
-            for (int[] d : dirs) {
-                int ni = i + d[0];
-                int nj = j + d[1];
-                int nst = st;
-                int ndist = dist + 1;
-                if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
+            for(int[] d: dirs){
+                int ni = i+d[0];
+                int nj = j+d[1];
+                if(ni>=0 && ni<m && nj>=0 && nj<n ){
                     char nc = a[ni].charAt(nj);
-                    if (nc == '#') {
-                        continue;
+                    int nck = ck;
+                    if(Character.isLowerCase(nc)){
+                        nck |= (1<<(nc-'a'));
                     }
-                    if (Character.isUpperCase(nc)) {
-                        int ncind = nc - 'A';
-                        if (((st >> ncind) & 1) == 0) {
-                            continue;
-                        }
+                    if(canstep(a[ni].charAt(nj), ck) && !v[ni][nj][nck] ){
+                        v[ni][nj][nck] = true;
+                        q.offer(new int[]{ni, nj, nck, dist+1});
                     }
-                    if (Character.isLowerCase(nc)) {
-                        int ncind = nc - 'a';
-                        nst = st | (1 << ncind);
-                    }
-                    if (v[ni][nj][nst]) {
-                        continue;
-                    }
-                    v[ni][nj][nst] = true;
-                    q.offer(new int[]{nst, ni, nj, ndist});
                 }
             }
         }
         return -1;
     }
 
+    private boolean canstep(char c, int ck){
+        if(Character.isUpperCase(c)){
+            int lock= c-'A';
+            return ((ck>>lock) & 1) ==1;
+        }else if(c=='#'){
+            return false;
+        }else{
+            return true;
+        }
+    }
 
     public static void main(String[] args) {
         String[] grid = {"@abcdeABCDEFf"};
