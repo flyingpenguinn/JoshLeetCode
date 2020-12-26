@@ -31,6 +31,11 @@ class ChessSolution {
 
     public boolean solve(char[][] a, int t, int depth, int limit) {
 
+        boolean check0 = checkmate(a, 0);
+        if (check0 && t == 1) {
+            // 0 can't get check mated at any time
+            return false;
+        }
         boolean check1 = checkmate(a, 1);
         if (check1 && t == 0) {
             return true;
@@ -67,11 +72,6 @@ class ChessSolution {
                                 a[ni][nj] = upgrade(ni, old, t);
                                 a[i][j] = '#';
 
-                                if (t == 0 && checkmate(a, 0)) {
-                                    a[ni][nj] = oldn;
-                                    a[i][j] = old;
-                                    continue;
-                                }
                                 // found a place to move: can't be attacked, and won't checkmate
                                 String toadd = old + "-> (" + makemove(ni, nj) + ")";
                                 boolean cur = solve(a, t ^ 1, depth + 1, limit);
@@ -122,7 +122,7 @@ class ChessSolution {
                         break;
                     }
                 }
-                if(ki!= -1){
+                if (ki != -1) {
                     break;
                 }
             }
