@@ -48,7 +48,7 @@ class ChessSolution {
             for (int j = 0; j < n; j++) {
                 if (canmove(a, i, j, t)) {
                     char old = a[i][j];
-                    movable.add(old);
+
                     for (int ni = 0; ni < m; ni++) {
                         for (int nj = 0; nj < n; nj++) {
                             if (ni == i && nj == j) {
@@ -62,6 +62,9 @@ class ChessSolution {
                             }
                             if (moveorattack(a, ni, nj, i, j, t, true)) {
 
+                                if (Character.toLowerCase(old) != 'k') {
+                                    movable.add(old);
+                                }
                                 char oldn = a[ni][nj];
                                 a[ni][nj] = upgrade(ni, old, t);
                                 a[i][j] = '#';
@@ -94,11 +97,11 @@ class ChessSolution {
             }
         }
         if (t == 1) {
-            // if only king is movable and it's stuck, we must be checking it
-            if (movable.size() == 1 && movable.iterator().next() == 'K') {
+            // other than king nothing is movable, we must check if we checkmate. otherwise it's a draw
+            if (movable.isEmpty()) {
                 return check1;
             }
-            // otherwise we can move others but it all boils down to failure
+            // otherwise after movable things move it's a checkmate, we return true
             return true;
         }
         return false;
