@@ -11,8 +11,6 @@ package chess;
  * If you need more classes, simply define them inline.
  */
 
-import java.util.HashSet;
-import java.util.Set;
 
 class ChessSolution {
     // telling the first step in a chess puzzle. if we want to know later moves we will have to input the board at that time...
@@ -43,7 +41,7 @@ class ChessSolution {
         }
         int m = a.length;
         int n = a[0].length;
-        Set<Character> movable = new HashSet<>();
+        boolean nonkingmovable = false;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (canmove(a, i, j, t)) {
@@ -63,7 +61,7 @@ class ChessSolution {
                             if (moveorattack(a, ni, nj, i, j, t, true)) {
 
                                 if (Character.toLowerCase(old) != 'k') {
-                                    movable.add(old);
+                                    nonkingmovable = true;
                                 }
                                 char oldn = a[ni][nj];
                                 a[ni][nj] = upgrade(ni, old, t);
@@ -84,6 +82,7 @@ class ChessSolution {
 
                                 } else if (cur && t == 0) {
                                     if (depth == 0) {
+                                        // we can only output the first move because later ones may vary. it's a tree rather than a list of string
                                         System.out.println(toadd);
                                     }
                                     return true;
@@ -98,7 +97,7 @@ class ChessSolution {
         }
         if (t == 1) {
             // other than king nothing is movable, we must check if we checkmate. otherwise it's a draw
-            if (movable.isEmpty()) {
+            if (!nonkingmovable) {
                 return check1;
             }
             // otherwise after movable things move it's a checkmate, we return true
@@ -108,8 +107,8 @@ class ChessSolution {
     }
 
     private boolean checkmate(char[][] a, int turn) {
-        int ki = 0;
-        int kj = 0;
+        int ki = -1;
+        int kj = -1;
         int m = a.length;
         int n = a[0].length;
 
@@ -122,6 +121,9 @@ class ChessSolution {
                         kj = j;
                         break;
                     }
+                }
+                if(ki!= -1){
+                    break;
                 }
             }
         }
@@ -313,20 +315,22 @@ class ChessSolution {
 
     public static void main(String[] args) {
         String[][] inputs = {
-                {"K###N###", "p#######", "npk###n#", "#p######", "########", "########", "########", "########"}, // 417
-                {"####b###", "####p###", "###PKp##", "###B#r##", "##R#n#P#", "##P#q#b#", "####n###", "####k###"}, // club problem
+                {"#####K##", "##R##P##", "#####p##", "####n###", "########", "#QP#####", "#p##r###", "#k####r#"}, // 4075 n-> (D,7)
+                {"K###N###", "p#######", "npk###n#", "#p######", "########", "########", "########", "########"}, // 417  p-> (B,7)
+                {"####b###", "####p###", "###PKp##", "###B#r##", "##R#n#P#", "##P#q#b#", "####n###", "####k###"}, // club problem  q-> (C,5)
 
-                {"###n####", "KPk#####", "pn######", "#p######", "########", "########", "########", "########"}, // 418
+                {"###n####", "KPk#####", "pn######", "#p######", "########", "########", "########", "########"}, // 418  n-> (C,8)
 
-                {"####b###", "####p###", "###PKp##", "##RB#r##", "####n#P#", "##P###b#", "####n###", "####k###"}, // club problem after black rook taking queen
+                {"####b###", "####p###", "###PKp##", "##RB#r##", "####n#P#", "##P###b#", "####n###", "####k###"}, // club problem after black rook taking queen  n-> (D,4)
 
-                {"R####B#R", "PPPBKbPP", "Q#N###N#", "#####P##", "##np####", "#qp#####", "pp###ppp", "rnb##rk#"},  //1054
-                {"RN####NR", "PPPQ##BK", "#######P", "#####B#p", "####nbq#", "###b####", "ppp###p#", "r###k##r"}, // 4069
+                {"R####B#R", "PPPBKbPP", "Q#N###N#", "#####P##", "##np####", "#qp#####", "pp###ppp", "rnb##rk#"},  //1054  b-> (G,5)
+                {"RN####NR", "PPPQ##BK", "#######P", "#####B#p", "####nbq#", "###b####", "ppp###p#", "r###k##r"}, // 4069  q-> (G,6)
+                {"R####R#K", "P####P#P", "#PP##p##", "Q#P#Pn#P", "##p#####", "p#p##p##", "########", "######rk"}, // 4087 n-> (H,6)
 
 
         };
         int[] limits = {
-                2, 2, 2, 2, 2, 3
+                3, 2, 2, 2, 2, 2, 3, 3
         };
         for (int k = 0; k < inputs.length; k++) {
             String[] input = inputs[k];
