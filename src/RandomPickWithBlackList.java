@@ -44,42 +44,42 @@ The input is two lists: the subroutines called and their arguments. Solution's c
 public class RandomPickWithBlackList {
     // we know where whitelist should end. any number after it can substitute bad numbers before it
     static class Solution {
+        private int wlen = 0;
+        private Map<Integer, Integer> m = new HashMap<>();
 
-        Map<Integer, Integer> m = new HashMap<>();
-        int wn;
-
-        public Solution(int n, int[] blacklist) {
-            Set<Integer> set = new HashSet<>();
-            for (int b : blacklist) {
-                set.add(b);
+        public Solution(int n, int[] b) {
+            Set<Integer> bset = new HashSet<>();
+            for (int bi : b) {
+                bset.add(bi);
             }
-            this.wn = n - blacklist.length;
-            int j = n - 1;
-            for (int b : blacklist) {
-                // shouldnt map ones already bad
-                if (b >= wn) {
+            int swapt = n - 1;
+            this.wlen = n - b.length;
+            // can't go from 0 to wlen otherwise we got tle
+            for (int bi : bset) {
+                if (bi >= wlen) {
                     continue;
                 }
-                // skip bad ones after wn they are naturally bad
-                while (set.contains(j)) {
-                    j--;
+                while (bset.contains(swapt)) {
+                    swapt--;
                 }
-                m.put(b, j--);
+                m.put(bi, swapt--);
+                // must --swap to give others a chance
             }
+
         }
 
-        Random rand = new Random();
+        private Random rand = new Random();
 
         public int pick() {
-            int r = rand.nextInt(wn);
-            return m.getOrDefault(r, r);
+            int ran = rand.nextInt(wlen);
+            return m.getOrDefault(ran, ran);
         }
-    }
 
-    public static void main(String[] args) {
-        Solution rand = new Solution(4, ArrayUtils.read1d("2,1"));
-        for (int i = 0; i < 100; i++) {
-            System.out.println(rand.pick());
+        public static void main(String[] args) {
+            Solution rand = new Solution(4, ArrayUtils.read1d("2,1"));
+            for (int i = 0; i < 100; i++) {
+                System.out.println(rand.pick());
+            }
         }
     }
 }
