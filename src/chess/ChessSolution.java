@@ -14,6 +14,7 @@ package chess;
 
 class ChessSolution {
     // telling the first step in a chess puzzle. if we want to know later moves we will have to input the board at that time...
+    // only checking if 0 can win and its first step. can't deal with rook-> knight
     private final int[][] RDIRS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     private final int[][] BDIRS = {{-1, 1}, {-1, -1}, {1, -1}, {1, 1}};
     private final int[][] KDIRS = concat(RDIRS, BDIRS);
@@ -69,11 +70,8 @@ class ChessSolution {
                                     nonkingmovable = true;
                                 }
                                 char oldn = a[ni][nj];
-                                a[ni][nj] = upgrade(ni, old, t);
+                                a[ni][nj] = aftermove(ni, old, t);
                                 a[i][j] = '#';
-
-                                // found a place to move: can't be attacked, and won't checkmate
-                                String toadd = old + "-> (" + makemove(ni, nj) + ")";
                                 boolean cur = solve(a, t ^ 1, depth + 1, limit);
                                 a[ni][nj] = oldn;
                                 a[i][j] = old;
@@ -82,8 +80,9 @@ class ChessSolution {
 
                                 } else if (cur && t == 0) {
                                     if (depth == 0) {
+                                        String move = old + "-> (" + makemove(ni, nj) + ")";
                                         // we can only output the first move because later ones may vary. it's a tree rather than a list of string
-                                        System.out.println(toadd);
+                                        System.out.println(move);
                                     }
                                     return true;
                                 }
@@ -131,7 +130,8 @@ class ChessSolution {
     }
 
 
-    private char upgrade(int ni, char old, int t) {
+    private char aftermove(int ni, char old, int t) {
+        // deal with pawn's change. get a queen by default
         if (ni == 0 && Character.toLowerCase(old) == 'p') {
             return t == 0 ? 'q' : 'Q';
         }
