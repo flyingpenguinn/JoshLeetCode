@@ -315,6 +315,7 @@ class ChessSolution {
 
     public static void main(String[] args) {
         String[][] inputs = {
+                {"#####BKR", "##P###PP", "r###p###", "q#######", "########", "Pp#####Q", "p#p#r##p", "######rk"}, // 3864 r-> (G,7)
                 {"#####K##", "##R##P##", "#####p##", "####n###", "########", "#QP#####", "#p##r###", "#k####r#"}, // 4075 n-> (D,7)
                 {"K###N###", "p#######", "npk###n#", "#p######", "########", "########", "########", "########"}, // 417  p-> (B,7)
                 {"####b###", "####p###", "###PKp##", "###B#r##", "##R#n#P#", "##P#q#b#", "####n###", "####k###"}, // club problem  q-> (C,5)
@@ -330,7 +331,7 @@ class ChessSolution {
 
         };
         int[] limits = {
-                3, 2, 2, 2, 2, 2, 3, 3
+                3, 3, 3, 2, 2, 2, 2, 2, 3, 3
         };
         for (int k = 0; k < inputs.length; k++) {
             String[] input = inputs[k];
