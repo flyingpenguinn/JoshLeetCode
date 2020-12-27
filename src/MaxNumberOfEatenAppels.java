@@ -1,26 +1,40 @@
-public class MaxNumberOfEatenAppels {
-    // similar to interval problem, we negate when appels rot
-    public int eatenApples(int[] a, int[] d) {
+import base.ArrayUtils;
 
-        int[] apps = new int[200001];
-        for (int i = 0; i < a.length; i++) {
-            apps[i] += a[i];
-            apps[i + d[i]] -= a[i];
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.PriorityQueue;
+
+public class MaxNumberOfEatenAppels {
+    // eat the apple that is rotting first. note as we move in the day we "enable" more apples
+    public int eatenApples(int[] a, int[] d) {
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
+        int n = a.length;
+        // eat rot firsts
+        int maxd = 0;
+        for (int i = 0; i < n; i++) {
+            maxd = Math.max(maxd, i + d[i]);
         }
-        int sum = 0;
         int res = 0;
-        int accu = 0;// in this sprint how many did we eat- we will need to discount these when apps[i] is <0
-        for (int i = 0; i < apps.length; i++) {
-            if (apps[i] < 0) {
-                sum += apps[i] + accu;
-                accu = 0;
-            } else {
-                sum += apps[i];
+        for (int i = 0; i <= maxd; i++) {
+            // rotten appels...
+            while (!pq.isEmpty()) {
+                if (pq.peek()[1] == i) {
+                    pq.poll();
+                } else {
+                    break;
+                }
             }
-            if (sum - res > 0) {
+            // new apples
+            if (i < n && a[i] > 0) {
+                pq.offer(new int[]{a[i], i + d[i]});
+            }
+            // eaten appels
+            if (!pq.isEmpty()) {
                 res++;
-                // note that we ate apples so that when we negate we pay these back
-                accu++;
+                pq.peek()[0]--;
+                if (pq.peek()[0] == 0) {
+                    pq.poll();
+                }
             }
         }
         return res;
