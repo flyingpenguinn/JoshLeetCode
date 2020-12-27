@@ -8,36 +8,42 @@ import java.util.*;
 
 public class BusRoutes {
     // visit as a level order in a bfs way.
-    // note we dont expand a bus again if we have done so
+    // note we dont expand a bus again if we have done so, similar to jump game iv
+    // note the constraints are a bit misleading...
     public int numBusesToDestination(int[][] a, int s, int t) {
+
         int n = a.length;
-        Map<Integer, Set<Integer>> stoptobus = new HashMap<>();
+        // stop-> bus
+        Map<Integer, Set<Integer>> m = new HashMap<>();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < a[i].length; j++) {
-                int stop = a[i][j];
-                int bus = i;
-                stoptobus.computeIfAbsent(stop, k -> new HashSet<>()).add(bus);
+                m.computeIfAbsent(a[i][j], k -> new HashSet<>()).add(i);
             }
         }
-        // stop and buses taken at this point
+        //     System.out.println(m);
         Deque<int[]> q = new ArrayDeque<>();
         q.offer(new int[]{s, 0});
         Set<Integer> seenstop = new HashSet<>();
-        seenstop.add(s);
         Set<Integer> seenbus = new HashSet<>();
+        seenstop.add(s);
         while (!q.isEmpty()) {
             int[] top = q.poll();
             int stop = top[0];
             int dist = top[1];
+            //  System.out.println(stop+" "+dist);
             if (stop == t) {
                 return dist;
             }
-            Set<Integer> buses = stoptobus.getOrDefault(stop, new HashSet<>());
-            for (int bus : buses) {
-                if (seenbus.add(bus)) {// important: if we expanded this bus already, dont do it again
-                    for (int nextstop : a[bus]) {
-                        if (seenstop.add(nextstop)) {
-                            q.offer(new int[]{nextstop, top[1] + 1});
+            Set<Integer> buses = m.getOrDefault(stop, new HashSet<>());
+            for (int b : buses) {
+                if (!seenbus.contains(b)) {
+                    // key: if a bus was expanded before we dont need to redo it
+                    seenbus.add(b);
+                    for (int st : a[b]) {
+                        //   System.out.println("adding..."+st);
+                        if (!seenstop.contains(st)) {
+                            seenstop.add(st);
+                            q.offer(new int[]{st, dist + 1});
                         }
                     }
                 }

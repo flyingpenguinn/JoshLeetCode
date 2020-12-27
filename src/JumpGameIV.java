@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 /*
 LC#1345
 Given an array of integers arr, you are initially positioned at the first index of the array.
@@ -49,46 +46,42 @@ Constraints:
  */
 
 public class JumpGameIV {
-    // min steps: dp or bfs
-    // BFS. using a deque here to avoid visiting useless edges. can also remove the key after visiting all the values
+    // min steps: dp or bfs. here we can go back or same value so dp is not suitable
+    // BFS. remove the value from map to avoid useless revisiting
     public int minJumps(int[] a) {
-        Map<Integer, ArrayDeque<Integer>> map = new HashMap<>();
         int n = a.length;
-        for (int i = n - 1; i >= 0; i--) {
-            ArrayDeque<Integer> list = map.getOrDefault(a[i], new ArrayDeque<>());
-            list.add(i);
-            map.put(a[i], list);
+        Map<Integer, Set<Integer>> m = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            m.computeIfAbsent(a[i], k -> new HashSet<>()).add(i);
         }
+
         Deque<int[]> q = new ArrayDeque<>();
-        boolean[] v = new boolean[n];
         q.offer(new int[]{0, 0});
+        boolean[] v = new boolean[n];
         v[0] = true;
         while (!q.isEmpty()) {
             int[] top = q.poll();
-            int cur = top[0];
-            if (cur == n - 1) {
-                return top[1];
+            int i = top[0];
+            int dist = top[1];
+            if (i == n - 1) {
+                return dist;
             }
-            if (cur == n - 2) {
-                return top[1] + 1;
+            if (i + 1 < n && !v[i + 1]) {
+                v[i + 1] = true;
+                q.offer(new int[]{i + 1, dist + 1});
             }
-            int bd = top[1] + 1;
-            ArrayDeque<Integer> nq = map.getOrDefault(a[cur], new ArrayDeque<>());
-            while (!nq.isEmpty()) {
-                int next = nq.poll();
-                if (next != cur && !v[next]) {
+            if (i > 0 && !v[i - 1]) {
+                v[i - 1] = true;
+                q.offer(new int[]{i - 1, dist + 1});
+            }
+            for (int next : m.getOrDefault(a[i], new HashSet<>())) {
+                if (!v[next]) {
                     v[next] = true;
-                    q.offer(new int[]{next, bd});
+                    m.remove(a[i]); // key: avoid revisiting big sets again and again. we only need to do it once
+                    q.offer(new int[]{next, dist + 1});
                 }
             }
-            if (cur - 1 >= 0 && !v[cur - 1]) {
-                v[cur - 1] = true;
-                q.offer(new int[]{cur - 1, bd});
-            }
-            if (cur + 1 < n && !v[cur + 1]) {
-                v[cur + 1] = true;
-                q.offer(new int[]{cur + 1, bd});
-            }
+
         }
         return -1;
     }
