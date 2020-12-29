@@ -23,32 +23,27 @@ Note:
 target will be a non-zero integer in the range [-10^9, 10^9].
  */
 public class ReachANumber {
+    // if we overshoot we can always only flip one number in the middle if the diff is even
     public int reachNumber(int t) {
         t = Math.abs(t);
-        int s = 1;
-        int i = 0;
-        int dist = 0;
-        while (dist < t) {
-            dist += s;
-            s++;
-            i++;
+        int step = 1;  // the step we are stepping next
+        int sum = 0;
+        while (sum < t) {
+            sum += step++;
         }
-        while ((dist - t) % 2 == 1) {
-            // 1...n can form any number in 1...n*(n+1)/2 by sign chane: if(t<=n) directly pick. otherwise t-n will be in 1..n-1. t will be <= biggest eventually
-            //so as long as diff/2==int we are good
-            dist += s;
-            s++;
-            i++;
+        // now we have sum and next step is step
+        if (sum == t) {
+            return step - 1;
+        } else if ((sum - t) % 2 == 0) {
+            //(sum-t)/2 must be within 1...step because 1+2...n-1<t, 1+2+...n=sum >t. sum-t must be <=n
+            return step - 1;
+        } else if (step % 2 == 1) {
+            // diff is odd. we add step, now diff would be even
+            return step;
+        } else {
+            // otherwise we add step, then substract step-1. diff becomes even
+            return step + 1;
         }
-        return i;
     }
 
-    // if not convinced we can use this method to verify
-    // t<=n*(n+1)/2, whether t can be combined by some numbers in 1...n
-    boolean doc(int n, int t, int i) {
-        if (t <= n) {
-            return true;
-        }
-        return doc(n - 1, t - n, i);
-    }
 }

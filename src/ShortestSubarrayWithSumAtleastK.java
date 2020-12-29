@@ -31,7 +31,7 @@ Note:
 public class ShortestSubarrayWithSumAtleastK {
 /*
  if all numbers are non negative, it's LC#209 we can use plain two pointer
- keep an increasing mono queue.
+ keep an increasing mono queue and scan from the front
  as for the front, when value j meets requirement it's of no use since later i-j will be better
 
  reasoning: for i...j
@@ -39,8 +39,8 @@ public class ShortestSubarrayWithSumAtleastK {
  fix i, for js, if both aj1 and aj2 can win, then we want j1. so scan from the front
  comparison: we compare with the front of the data structure and remove it if it's already good. so add at tail, get from front, it's a queue
 
- if shortest <=k, mono decrease queue
- if longest >=k, mono decrease queue and we scan from the back and compare with the tail of the queue
+ if shortest <=k, mono decrease queue, scan from the back
+ if longest >=k, mono decrease queue and we scan from the BACK and compare with the tail of the queue so as to gain the "longest" possible for each tail
  if longest <=k, mono increase but scan from the back
  */
 

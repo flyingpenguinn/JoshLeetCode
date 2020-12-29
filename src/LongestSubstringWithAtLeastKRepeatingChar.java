@@ -111,7 +111,7 @@ class LongestSubstringWithAtleastKRepeatingTwoPointer {
 
     public int longestSubstring(String s, int target) {
         int max = 0;
-        for (int i = 1; i < 26; i++) {
+        for (int i = 1; i <= 26; i++) {
             max = Math.max(max, domax(s, i, target));
         }
         return max;

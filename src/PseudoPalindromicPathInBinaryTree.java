@@ -29,38 +29,36 @@ Output: 1
  */
 public class PseudoPalindromicPathInBinaryTree {
     // at most one odd in the path
-    int r = 0;
-
-    public int pseudoPalindromicPaths(TreeNode root) {
-        int[] count = new int[10];
-        dfs(root, count);
-        return r;
+    public int pseudoPalindromicPaths (TreeNode root) {
+        return dfs(root, new int[10]);
     }
 
-    private void dfs(TreeNode root, int[] count) {
-        if (root == null) {
-            return;
+    private int dfs(TreeNode n, int[] m){
+        if(n==null){
+            return 0;
         }
-        count[root.val]++;
-        if (root.left == null && root.right == null) {
-            int odds = 0;
-            for (int i = 1; i <= 9; i++) {
-                if (count[i] % 2 == 1) {
-                    odds++;
+        m[n.val]++;
+        int cur = 0;
+        if(n.left == null && n.right==null && ispalin(m)){
+            cur = 1;
+        }
+        int left = dfs(n.left, m);
+        int right = dfs(n.right, m);
+        m[n.val]--;
+        return left+right+cur;
+    }
+
+    private boolean ispalin(int[] m){
+        // System.out.println(Arrays.toString(m));
+        boolean odds = false;
+        for(int i=1; i<=9; i++){
+            if(m[i]%2==1){
+                if(odds){
+                    return false;
                 }
+                odds = true;
             }
-            if (odds <= 1) {
-                r++;
-            }
-            count[root.val]--; // dont forget this
-            return;
         }
-        if (root.left != null) {
-            dfs(root.left, count);
-        }
-        if (root.right != null) {
-            dfs(root.right, count);
-        }
-        count[root.val]--;
+        return true;
     }
 }

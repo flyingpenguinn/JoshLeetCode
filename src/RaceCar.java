@@ -117,7 +117,7 @@ class RaceCarDp {
         int min = steps + 1 + domin(pos - t);
         pos -= speed / 2;// back to the earlier pos
         speed = 1;
-        // no steps-- because we reverse here so it's like steps-- then steps++;
+        // no steps-- because we reverse here so it's like steps-- (to get to the earlier step) then steps++ (to reverse);
 
         // now we enumerate the spot where we turn back from a reverse journey
         while (pos > 0) {
