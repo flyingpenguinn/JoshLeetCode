@@ -34,49 +34,51 @@ ExamRoom.seat() and ExamRoom.leave() will be called at most 10^4 times across al
 Calls to ExamRoom.leave(p) are guaranteed to have a student currently sitting in seat number p.
  */
 class ExamRoom {
-
-    // just plain O(n) with edge cases on both sides minded...
-    private List<Integer> ps = new ArrayList<>();
-    private int n = 0;
-
+    private List<Integer> a = new ArrayList<>();
+    private int n;
     public ExamRoom(int n) {
         this.n = n;
     }
 
+    private int addandreturn(int v, int i){
+        a.add(i, v);
+        return v;
+    }
+
     public int seat() {
-        if (ps.isEmpty()) {
-            ps.add(0);
-            return 0;
+        //    System.out.println(a);
+        if(a.isEmpty()){
+            return addandreturn(0,0);
         }
-        int maxgap = -1;
+        int diff0 = a.get(0);
+        int diffn = n-1- a.get(a.size()-1);
+
+        int maxdiff = -1;
         int maxpoint = -1;
         int maxindex = -1;
-        for (int i = 0; i + 1 < ps.size(); i++) {
-            int curgap = (ps.get(i + 1) - ps.get(i)) / 2; // note the formula here
-            if (curgap > maxgap) {  // note the > here
-                maxgap = curgap;
-                maxpoint = ps.get(i) + curgap;
-                maxindex = i + 1;
+        for(int i=0; i+1<a.size();i++){
+            int cur = a.get(i);
+            int next = a.get(i+1);
+            int mid = (cur+next)/2;
+            int dist = Math.min(mid-cur, next-mid);
+            if(dist>maxdiff){
+                maxdiff = dist;
+                maxpoint = mid;
+                maxindex = i+1;
             }
         }
-        int gap1 = ps.get(0); // note no /2
-        if (gap1 >= maxgap) { // note the >= here
-            maxgap = gap1;
-            maxpoint = 0;
-            maxindex = 0;
+        //   System.out.println(diff0+" "+diffn+" "+maxdiff);
+        if(diff0>=maxdiff && diff0>=diffn){
+            return addandreturn(0,0);
+        }else if(maxdiff > diff0 && maxdiff >= diffn){
+            return addandreturn(maxpoint, maxindex);
+        }else{
+            return addandreturn(n-1, a.size());
         }
-        int gapn = n - 1 - ps.get(ps.size() - 1);
-        if (gapn > maxgap) {  // note the > here
-            maxgap = gapn;
-            maxpoint = n - 1;
-            maxindex = ps.size();
-        }
-        ps.add(maxindex, maxpoint);
-        return maxpoint;
     }
 
     public void leave(int p) {
-        ps.remove(Integer.valueOf(p));
+        a.remove(Integer.valueOf(p));
     }
 }
 
