@@ -28,54 +28,81 @@ rectanges[i].length = 4
 The total area covered by all rectangles will never exceed 2^63 - 1 and thus will fit in a 64-bit signed integer.
  */
 public class RectangleAreaII {
-    // for each x that is the edge, check its intersection with ALL rectangles and use interval merge to calc the y length
-    // area is (curx- prex)*cury
-    int Mod = 1000000007;
+    private int mod = 1000000007;
 
     public int rectangleArea(int[][] a) {
-        // sort all rects by x we will later scan on x
+        // keep a sorted list of currently live pending edges
+        // key insigt: till next x, all live edges generate areas because there is nothing in between. hence for each edge, first calc what we have last time till this line by last len* diff on x.
+        // then if it's entering edge, add and merge with current edges. the merge is similar to interval merging problem
+        // if it's leaving edge, remove it from live edge list
         int n = a.length;
-        TreeSet<Integer> set = new TreeSet<>();
+        // y start, end, index
+        List<int[]> es = new ArrayList<>();
+        // x, y start, yend, type, index
         for (int i = 0; i < n; i++) {
-            set.add(a[i][0]);
-            set.add(a[i][2]);
+            int[] start = new int[]{a[i][0], a[i][1], a[i][3], 0, i};
+            int[] end = new int[]{a[i][2], a[i][1], a[i][3], 1, i};
+            es.add(start);
+            es.add(end);
         }
-        Arrays.sort(a, (s, t) -> Integer.compare(s[1], t[1]));
-        long r = 0;
-        int lastx = -1;
-        for (int x : set) {
-            if (lastx == -1) {
-                lastx = x;
-                continue;
-            }
-            long lasty1 = -1;
-            long lasty2 = -1;
-            long diffy = 0;
-            for (int i = 0; i < n; i++) {
-                if (a[i][2] <= lastx || a[i][0] >= x) {
-                    continue;  // too left or too right. we either handled already last time, or will handle it
-                }
-                // this x cuts all rectangles to form intervals. now merge these intervals
-                int y1 = a[i][1];
-                int y2 = a[i][3];
-                if (lasty1 == -1) {
-                    lasty1 = y1;
-                    lasty2 = y2;
-                } else if (y1 > lasty2) {
-                    diffy += lasty2 - lasty1;
-                    lasty1 = y1;
-                    lasty2 = y2;
+        // ordered in x
+        Collections.sort(es, (x, y) -> Integer.compare(x[0], y[0]));
+        //  print(es);
+        long res = 0;
+        long lastlen = 0;
+        int lastx = 0;
+        int i = 0;
+        List<int[]> ys = new ArrayList<>();
+        // ystart, yend, index
+        while (i < es.size()) {
+
+            int[] e = es.get(i);
+            int x = e[0];
+            long added = lastlen * (x - lastx);
+            res += added;
+            res %= mod;
+            while (i < es.size() && es.get(i)[0] == x) {
+                e = es.get(i);
+                if (e[3] == 0) {
+                    // entering edge, add and then sort and merge
+                    ys.add(new int[]{e[1], e[2], e[4]});
                 } else {
-                    lasty2 = Math.max(lasty2, y2);
+                    // delete that entering edge
+                    for (int j = 0; j < ys.size(); j++) {
+                        if (ys.get(j)[2] == e[4]) {
+                            ys.remove(j);
+                            break;
+                        }
+                    }
                 }
+                i++;
             }
-            diffy += lasty2 - lasty1;
-            int diffx = x - lastx;
-            // key: between x and lastx there is nothing. so if x gets diffy on y direction, we have diffx*diffy area cut out
-            r += diffx * diffy;
+            // sort by start
+            Collections.sort(ys, (p, q) -> Integer.compare(p[0], q[0]));
+            lastlen = merge(ys);
             lastx = x;
         }
-        return (int) (r % Mod);
+        return (int) res;
+    }
+
+    private int merge(List<int[]> ys) {
+        if (ys.isEmpty()) {
+            return 0;
+        }
+        int start = -1;
+        int end = -1;
+        int res = 0;
+        for (int[] y : ys) {
+            if (y[0] <= end) {
+                end = Math.max(end, y[1]);
+            } else {
+                res += end - start;
+                start = y[0];
+                end = y[1];
+            }
+        }
+        res += end - start;
+        return res;
     }
 
 

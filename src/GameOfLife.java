@@ -32,40 +32,36 @@ Could you solve it in-place? Remember that the board needs to be updated at the 
 In this question, we represent the board using a 2D array. In principle, the board is infinite, which would cause problems when the active area encroaches the border of the array. How would you address these problems?
  */
 public class GameOfLife {
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
+    // 0->1: 2
+    // 1->0: 3
+    private int[][] dirs = {{-1,0},{1,0}, {0, -1}, {0,1}, {-1,1}, {-1, -1}, {1, -1}, {1,1}};
     public void gameOfLife(int[][] a) {
-        int m = a.length;
-        if (m == 0) {
-            return;
-        }
+        int m =a.length;
         int n = a[0].length;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                int live = 0;
-                for (int[] d : dirs) {
-                    int ni = i + d[0];
-                    int nj = j + d[1];
-                    if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
-                        live += a[ni][nj] % 2;
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n;j++){
+                int lives = 0;
+                for(int[] d: dirs){
+                    int ni = i+d[0];
+                    int nj = j+d[1];
+                    if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj] %2 ==1){
+                        lives++;
                     }
                 }
-                if (a[i][j] == 1 && (live < 2 || live > 3)) {
-                    a[i][j] = 3;
+                if(a[i][j]==0){
+                    a[i][j] = lives==3? 2: 0; // rule 4
+                }else if(lives <2 || lives>3){
+                    a[i][j] = 3;  //rule 1,3
                 }
-                if (a[i][j] == 0 && (live == 3)) {
-                    a[i][j] = 2;
-                }
+                // rule 2
             }
-
         }
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 3) {
-                    a[i][j] = 0;
-                }
-                if (a[i][j] == 2) {
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                if(a[i][j]==2){
                     a[i][j] = 1;
+                }else if(a[i][j]==3){
+                    a[i][j] = 0;
                 }
             }
         }
