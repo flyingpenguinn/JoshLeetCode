@@ -23,53 +23,38 @@ Note:
 s contains only lowercase English letters.
  */
 public class LastSubstringLexicographicalOrder {
-
+    // duval algo. rule out impossible as r
+    // if l+m > r+m, then we know l+ any in [0...m] > r+ any in [0...m], so anything from r to r+m won't be qualified as starting point. so we skip them
+    // if l+m < r+m, then we know similarly anything between l...any in [0...m] < r+ any in [0...m] so i should be i+m+1.
+    // also anything before r was "defeated" already so we can jump to the max
     public String lastSubstring(String s) {
-        int r = 0;
-        int n = s.length();
-
-        int i = 1;
-        while (i < n) {
-            if (s.charAt(i) > s.charAt(r)) {
-                r = i;
-            } else if (s.charAt(i) == s.charAt(r)) {
-                int pr = r + 1;
-                int pi = i + 1;
-                while (pi < n) {
-                    char ci = s.charAt(pi);
-                    char cr = s.charAt(pr);
-                    if (ci > cr) {
-                        r = i;
-                        break;
-                    } else if (ci < cr) {
-                        // key: when i is defeated, r....pr > i... pi. we should set i to pi+1 in the next round
-                        // this is because any middle i2...pi < some middle r2.....pr
-                        // note it won't happen that there is a better start after r and between i, because otherwise we would have known
-                        i = pi;
-                        break;
-                    } else {
-                        pi++;
-                        pr++;
-                    }
-                }
-                // r can hold i out till n, it's bigger than anything else
-                if (pi == n) {
-                    break;
-                }
+        char[] a = s.toCharArray();
+        int n = a.length;
+        int l = 0;
+        int r = 1;
+        int m = 0;
+        while (r + m < n) {
+            if (a[l + m] == a[r + m]) {
+                m++;
+            } else if (a[l + m] > a[r + m]) {
+                r = r + m + 1;
+                m = 0;
+            } else {
+                l = Math.max(l + m + 1, r);
+                r = l + 1;
+                m = 0;
             }
-            i++;
         }
-        return s.substring(r);
+        return s.substring(l);
     }
 
 
     public static void main(String[] args) {
         //   System.out.println(new LastSubstringLexicographicalOrder().lastSubstring("banana"));
-        System.out.println(new LastSubstringLexicographicalOrder().lastSubstring("zzaazzbbzc"));
+        System.out.println(new LastSubstringLexicographicalOrder().lastSubstring("cacacacb"));
 
     }
 }
-
 
 
 class LastSubstringSuffixArray {
@@ -83,21 +68,21 @@ class LastSubstringSuffixArray {
     // use counting sort to sort sa in logn times
 
     // counting sort using ra and get result in sa. we have the suffix array for k/2. now we need to get k sorted according to the "lower" k/2
-    private void countingsort(int[] sa, int[] ra, int k){
+    private void countingsort(int[] sa, int[] ra, int k) {
         int n = sa.length;
         int ranks = Math.max(n, 256);
         int[] count = new int[ranks];
         int[] nsa = new int[n];
-        for(int i=0; i<n; i++){
+        for (int i = 0; i < n; i++) {
             count[ra[i]]++;
-            nsa[i] = k+1<=n? (sa[i]-k) %n : sa[i];
+            nsa[i] = k + 1 <= n ? (sa[i] - k) % n : sa[i];
             // when k>n we know this is the last sort we won't adjust nsa further
-            if(nsa[i]<0){
+            if (nsa[i] < 0) {
                 nsa[i] += n;
             }
         }
-        for(int i=1; i<ranks;i++){
-            count[i] += count[i-1];
+        for (int i = 1; i < ranks; i++) {
+            count[i] += count[i - 1];
         }
         /*
         typical counting sort, scan from the back so that for same elements, the later ones ranked later too
@@ -105,7 +90,7 @@ class LastSubstringSuffixArray {
             p[--cnt[s[i]]] = i;
         here i == nsa[i] are indexes
         */
-        for(int i = n-1; i>=0; i--){
+        for (int i = n - 1; i >= 0; i--) {
             sa[--count[ra[nsa[i]]]] = nsa[i];
         }
     }
@@ -117,16 +102,16 @@ class LastSubstringSuffixArray {
         int[] sa = new int[n];
         int ranks = Math.max(n, 256);
         int[] ra = new int[ranks];
-        for(int i=0; i<n; i++){
+        for (int i = 0; i < n; i++) {
             sa[i] = i;
             ra[i] = s[i];
         }
         // k+1 is actually length of the substring we check
         // no fear of k>n because we mod and it's circular...
-        for(int k = 0; (k+1)/2 <= n; k= (k==0) ? k+1: k*2){
+        for (int k = 0; (k + 1) / 2 <= n; k = (k == 0) ? k + 1 : k * 2) {
             countingsort(sa, ra, k);
             // counting sort for k/2. adjust sa if k<=n meaning we want to do another round of sorting for higher k/2
-            if(k+1>n){
+            if (k + 1 > n) {
                 break;
             }
             // if k<=n, after this, sa is sorted as of lower k/2 using ra that is corresponding to k/2, but all sa[i] are adjusted with i-k/2. we then sort the renmaining "higher" k/2 to get ranking for k
@@ -134,11 +119,11 @@ class LastSubstringSuffixArray {
             int rank = 0;
             // sa[i-1] is what's before sa[i]. if they differ then we found a new rank note sa is already sorted by k/2  we are now calculating the ranking for k
             nra[sa[0]] = 0;
-            for(int i=1; i<n; i++){
+            for (int i = 1; i < n; i++) {
                 // comparing the combined str at
                 // sa[i], sa[i]+k vs sa[i-1], sa[i-1]+k. the former must have ranking >= the latter
                 // ra[i] is the ranking of len k. sa[i] and sa[i-1] are already adjusted for k
-                if(ra[sa[i]]!= ra[sa[i-1]] || ra[(sa[i]+k)%n ]!= ra[(sa[i-1]+k)%n]){
+                if (ra[sa[i]] != ra[sa[i - 1]] || ra[(sa[i] + k) % n] != ra[(sa[i - 1] + k) % n]) {
                     rank++;
                 }
                 nra[sa[i]] = rank;
@@ -152,7 +137,7 @@ class LastSubstringSuffixArray {
     public String lastSubstring(String s) {
         s += "$";
         int[] sa = buildsa(s);
-        return s.substring(sa[s.length()], s.length()-1);
+        return s.substring(sa[s.length()], s.length() - 1);
         //real length is s.len+1 after + $ so this index is correct
     }
 }

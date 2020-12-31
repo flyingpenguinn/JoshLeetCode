@@ -17,27 +17,29 @@ Input: [2,1,5,6,2,3]
 Output: 10
  */
 public class LargestRectangleInHistogram {
-    // find cliff. anything bigger we can recon them now. replace the last non sm one
     public int largestRectangleArea(int[] a) {
-        // h,pos
-        Deque<int[]> stack = new ArrayDeque<>();
+        // when we meet a cliff we know what's in stack is ascending.
+        // then we know for each in stack it can be a starting point for a rect with its own height. nothing on the left is capable to be in that rect
+        // note we move the smallest height to the left
         int n = a.length;
-        int max = 0;
+        Deque<int[]> st = new ArrayDeque<>();
+        // index, height
+        int res = 0;
         for (int i = 0; i <= n; i++) {
-            int h = i == n ? 0 : a[i];
-            int lastnonsm = i;
-            while (!stack.isEmpty() && stack.peek()[0] >= h) {
-                int[] p = stack.pop();
-                int cur = (i - p[1]) * p[0];
-                max = Math.max(max, cur);
-                lastnonsm = p[1];
+            int ch = i == n ? 0 : a[i];
+            int lasti = i;
+            while (!st.isEmpty() && st.peek()[1] >= ch) {
+                lasti = st.peek()[0];
+                int lasth = st.peek()[1];
+                int cur = lasth * (i - lasti);
+                // from lasti as starting point to i-1 all >=lasth, can for a rect
+                res = Math.max(res, cur);
+                st.pop();
             }
-
-            stack.push(new int[]{h, lastnonsm});
+            st.push(new int[]{lasti, ch});
         }
-        stack.pop();
-        return max;
-
+        st.pop();
+        return res;
     }
 }
 
