@@ -1,63 +1,42 @@
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import base.ArrayUtils;
+
+import static java.lang.Math.min;
+import static java.lang.Math.max;
 
 public class MinMovesToMakeArrayComplementary {
-    // for each pair, we can at most get it to
-    //  1 + Math.min(a[i], a[n - 1 - i])...limit + Math.max(a[i], a[n - 1 - i])  via one move. otherwise it requires two moves
-    // so for each t, we know how many pairs need one move, how many need two moves, if we sort the two ends and call binary search on them
-    public int minMoves(int[] a, int limit) {
-        int n = a.length;
-        int[] l1 = new int[n / 2];
-        int[] l2 = new int[n / 2];
-        Map<Integer, Integer> m = new HashMap<>();
+    public int minMoves(int[] nums, int limit) {
+        // given a t, if t
+        // between 2.. min(a,b), lower both numbers,2 changes
+        // min(a,b)+1... a+b-1, lower one number, 1 change
+        // a+b, 0 change
+        // a+b+1... max(a,b)+limit, 1 change
+        // max(a,b)+limit+1...2* limit, 2 changes
+        // then we can form these intervals for each pair sum
+        // then use a trick similar to meeting rooms overlap
+        int n = nums.length;
+        int[] d = new int[2 * limit + 2];
         for (int i = 0; i < n / 2; i++) {
-            l1[i] = limit + Math.max(a[i], a[n - 1 - i]);
-            l2[i] = 1 + Math.min(a[i], a[n - 1 - i]);
-            int sum = (a[i] + a[n - 1 - i]);
-            m.put(sum, m.getOrDefault(sum, 0) + 1);
+            int a = nums[i];
+            int b = nums[n - i - 1];
+            d[2] += 2;
+            d[min(a, b) + 1] -= 1;
+            // comparing to the previous segment, from 2 to 1
+            // actually -2 first then +1
+            d[a + b] -= 1;
+            d[a + b + 1] += 1;
+            d[max(a, b) + limit + 1] += 1;
         }
-        Arrays.sort(l1);
-        Arrays.sort(l2);
-        int min = 1000000;
-        for (int t = 2; t <= 2 * limit; t++) {
-            int pos1 = binaryfirstbigger(l2, t);
-            int pos2 = binarylastsmaller(l1, t);
-            int bigger = n / 2 - pos1;
-            int smaller = pos2 + 1;
-            int other = n / 2 - m.getOrDefault(t, 0) - bigger - smaller;
-            int res = bigger * 2 + smaller * 2 + other;
-            //     System.out.println(t+" "+pos1+" "+pos2+" "+smaller+" "+bigger+" "+other);
-            min = Math.min(min, res);
+        int cur = 0;
+        int res = Integer.MAX_VALUE;
+        for (int i = 2; i <= 2 * limit; i++) {
+            cur += d[i];
+            res = min(res, cur);
         }
-        return min;
+        return res;
     }
 
-    private int binaryfirstbigger(int[] a, int t) {
-        int l = 0;
-        int u = a.length - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a[mid] <= t) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
-            }
-        }
-        return l;
+    public static void main(String[] args) {
+        System.out.println(new MinMovesToMakeArrayComplementary().minMoves(ArrayUtils.read1d("[3,1,1,1,2,3,2,3,1,3,2,1]"), 3));
     }
 
-    private int binarylastsmaller(int[] a, int t) {
-        int l = 0;
-        int u = a.length - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a[mid] >= t) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
-        }
-        return u;
-    }
 }

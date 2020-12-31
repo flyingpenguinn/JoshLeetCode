@@ -36,7 +36,9 @@ public class PartitionToKEqualSubsets {
     }
 
     private boolean cando(int[] a, int k, int i, int st, int times, int cursum, int target) {
-        // sum is just adding all st==1 together, driven by st
+        // hidden all subset sum driven by st
+        // cursum is allsum % target
+        // times is allsum / target
         int n = a.length;
         if (st + 1 == (1 << n)) {
             return times == k - 1;

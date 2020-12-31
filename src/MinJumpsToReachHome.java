@@ -3,22 +3,24 @@ import base.ArrayUtils;
 import java.util.*;
 
 public class MinJumpsToReachHome {
-    // note the magic number 6000... similar to race car
-    public int minimumJumps(int[] f, int a, int b, int x) {
-
+    public int minimumJumps(int[] fbd, int a, int b, int x) {
+//TODO for limit we may need a mathematical proof
+        int maxfbd = 0;
+        for (int i = 0; i < fbd.length; i++) {
+            maxfbd = Math.max(maxfbd, fbd[i]);
+        }
+        int limit = Math.max(x, maxfbd) + a + b;
+        boolean[][] seen = new boolean[limit + 1][2];
+        boolean[] fb = new boolean[limit + 1];
+        for (int i = 0; i < fbd.length; i++) {
+            fb[fbd[i]] = true;
+        }
         Deque<int[]> q = new ArrayDeque<>();
         q.offer(new int[]{0, 0, 0});
-        int limit = 6000;
-        // actually max(forbidden, x)+a+b
-        boolean[][] seen = new boolean[limit + 1][2];
-        for (int i = 0; i < f.length; i++) {
-            if (f[i] < seen.length) {
-                seen[f[i]][0] = true;
-                seen[f[i]][1] = true;
-            }
-        }
+
         while (!q.isEmpty()) {
             int[] top = q.poll();
+            //  System.out.println(top[0]);
             int pos = top[0];
             int dist = top[1];
             int back = top[2];
@@ -26,12 +28,12 @@ public class MinJumpsToReachHome {
                 return dist;
             } else {
                 int npos1 = pos + a;
-                if (valid(npos1, limit, seen, 0)) {
+                if (valid(npos1, limit, seen, fb, 0)) {
                     seen[npos1][0] = true;
                     q.offer(new int[]{npos1, dist + 1, 0});
                 }
                 int npos2 = pos - b;
-                if (valid(npos2, limit, seen, 1) && back == 0) {
+                if (valid(npos2, limit, seen, fb, 1) && back == 0) {
                     seen[npos2][1] = true;
                     q.offer(new int[]{npos2, dist + 1, 1});
                 }
@@ -41,46 +43,20 @@ public class MinJumpsToReachHome {
     }
 
 
-    private boolean valid(int i, int limit, boolean[][] seen, int back) {
-        return i >= 0 && i <= limit && !seen[i][back];
+    private boolean valid(int i, int limit, boolean[][] seen, boolean[] fb, int back) {
+        return i >= 0 && i <= limit && !seen[i][back] && !fb[i];
     }
 
-    public static void main(String[] args) {
-
-        System.out.println(new MinJumpsToReachHome().minimumJumps(ArrayUtils.read1d("[549, 693, 456, 1814, 1609]"), 748, 889, 545));
+    private int lcm(int a, int b) {
+        int gcd = gcd(a, b);
+        return a * b / gcd;
     }
-}
 
-class JumpCorrect {
-    public int minimumJumps(int[] forbidden, int a, int b, int x) {
-        Deque<int[]> pq = new ArrayDeque<>();
-        pq.offer(new int[]{0, 0, 0});//step, current index, direction(0 is back, 1 is forward)
-        Set<Integer> forbit = new HashSet<>();
-        Set<String> visited = new HashSet<>();
-        int maxLimit = 2000 + 2 * b;
-        for (int num : forbidden) {
-            forbit.add(num);
-            maxLimit = Math.max(maxLimit, num + 2 * b);
+    private int gcd(int a, int b) {
+        if (a < b) {
+            return gcd(b, a);
+        } else {
+            return b == 0 ? a : gcd(b, a % b);
         }
-        while (!pq.isEmpty()) {
-            int[] node = pq.poll();
-            System.out.println(Arrays.toString(node));
-
-            int idx = node[0];
-            int step = node[1];
-            int dir = node[2];
-            if (idx == x) return step;
-            //try jump forward
-            if (idx + a < maxLimit && !forbit.contains(idx + a) && !visited.contains(idx + a + "," + 0)) {
-                visited.add(idx + a + "," + 0);
-                pq.offer(new int[]{idx + a, step + 1, 0});
-            }
-            //try jump back
-            if (idx - b >= 0 && !forbit.contains(idx - b) && !visited.contains(idx - b + "," + 1) && dir != 1) {
-                visited.add(idx - b + "," + 1);
-                pq.offer(new int[]{idx - b, step + 1, 1});
-            }
-        }
-        return -1;
     }
 }
