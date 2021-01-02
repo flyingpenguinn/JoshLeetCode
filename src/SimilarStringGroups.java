@@ -100,59 +100,58 @@ public class SimilarStringGroups {
 class SimilarStringGroupsUnionFind {
     // if same group, union the groups
     public int numSimilarGroups(String[] ss) {
-        // must all be anagrams. array non null
-        int[] pa = new int[ss.length];
-        for (int i = 0; i < ss.length; i++) {
+        int n = ss.length;
+        int[] pa = new int[n];
+        for(int i=0; i<n;i++){
             pa[i] = i;
         }
-        int groups = ss.length;
-        for (int i = 0; i < ss.length; i++) {
-            for (int j = i + 1; j < ss.length; j++) {
-                if (sameGroup(ss[i], ss[j])) {
-                    if (union(pa, i, j)) {
-                        groups--;
-                    }
+        for(int i=0; i<n; i++){
+            for(int j=i+1; j<n; j++){
+                if(samegroup(ss[i], ss[j])){
+                    union(pa, i, j);
                 }
             }
         }
-        return groups;
+        int res=0;
+        for(int i=0; i<n; i++){
+            if(pa[i]==i){
+                res++;
+            }
+        }
+        return res;
     }
 
-    private boolean union(int[] pa, int i, int j) {
-        int ri = find(pa, i);
-        int rj = find(pa, j);
-        if (ri != rj) {
-            pa[ri] = rj;
-            return true;
-        } else {
+    private boolean samegroup(String s1, String s2){
+        if(s1.length() != s2.length()){
             return false;
         }
-    }
-
-    private int find(int[] pa, int cur) {
-        int pcur = pa[cur];
-        if (pcur == cur) {
-            return cur;
-        } else {
-            int rcur = find(pa, pcur);
-            pa[cur] = rcur;
-            return rcur;
-        }
-    }
-
-    private boolean sameGroup(String s, String t) {
-        // anagrams, same length
         int diff = 0;
-        for (int i = 0; i < s.length(); i++) {
-            char cs = s.charAt(i);
-            char ct = t.charAt(i);
-            if (cs != ct) {
+        for(int i=0; i<s1.length(); i++){
+            if(s1.charAt(i)!= s2.charAt(i)){
                 diff++;
             }
-            if (diff > 2) {
+            if(diff>2){
                 break;
             }
         }
-        return diff == 2 || diff == 0; // equal also counted as similar
+        return diff==0 || diff ==2;
+    }
+
+    private int find(int[] pa, int i){
+        if(pa[i]== i){
+            return i;
+        }
+        int rt = find(pa, pa[i]);
+        pa[i] = rt;
+        return rt;
+    }
+
+    private void union(int[] pa, int i, int j){
+        int ai = find(pa, i);
+        int aj = find(pa, j);
+        if(ai==aj){
+            return;
+        }
+        pa[ai] = aj;
     }
 }

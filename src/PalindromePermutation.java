@@ -2,20 +2,22 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PalindromePermutation {
-    // use set to get one pass
+    // can only have one odd char
     public boolean canPermutePalindrome(String s) {
-        if (s == null || s.isEmpty()) {
-            return true;
-        }
-        Set<Character> set = new HashSet<>();
+        int[] count = new int[255];
         for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (set.contains(c)) {
-                set.remove(c);
-            } else {
-                set.add(c);
+            count[s.charAt(i)]++;
+        }
+        boolean seen = false;
+        for (int i = 0; i < 255; i++) {
+            if (count[i] % 2 == 1) {
+                if (seen) {
+                    return false;
+                } else {
+                    seen = true;
+                }
             }
         }
-        return set.size() <= 1;
+        return true;
     }
 }

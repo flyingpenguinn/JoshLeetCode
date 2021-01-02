@@ -1,22 +1,25 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MaxNumberOfNonOverlappingSubarraysSumEqual {
     // subarray sum + interval problem. in interval problem we always pick the smallest end
     public int maxNonOverlapping(int[] a, int t) {
+        Set<Integer> set = new HashSet<>();
+        // possible starts
+        int n = a.length;
         int sum = 0;
-        int end = -1;
-        Map<Integer, Integer> m = new HashMap<>();
-        m.put(0, -1); // dont forget this in all subarray problems
+        set.add(0);
         int res = 0;
-        for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < n; i++) {
             sum += a[i];
-            Integer pre = m.get(sum - t);
-            if (pre != null && pre >= end) {  // >=end because it starts from pre+1 anyway
+            if (set.contains(sum - t)) {
                 res++;
-                end = i;
+                set.clear();
+                // none of the possible starts we stored would be used later as they are disqualified
             }
-            m.put(sum, i);
+            set.add(sum);
         }
         return res;
     }
