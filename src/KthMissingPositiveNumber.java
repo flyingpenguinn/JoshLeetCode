@@ -1,24 +1,25 @@
 public class KthMissingPositiveNumber {
     public int findKthPositive(int[] a, int k) {
-        int first = a[0] - 1;
-        if (first >= k) {
+        int n = a.length;
+        int front = a[0] - 1;
+        if (k <= front) {
             return k;
         }
-        k -= first;
+        k -= front;
         int l = 0;
-        int u = a.length - 1;
+        int u = n - 1;
+        // find the last qualifying number that middiff is <k
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            int th = a[mid] - a[0] - mid;
-            if (th >= k) {
-                // we are looking for th < k
-                u = mid - 1;
-            } else {
+            int middiff = a[mid] - a[0] - mid;
+            if (middiff < k) {
                 l = mid + 1;
+            } else {
+                u = mid - 1;
             }
         }
-        // au is the last number that from a0... au there are <k numbers missing
-        k -= (a[u] - a[0] - u);
-        return a[u] + k;
+        // u is the last <, we add on top of u. note u wont be -1 because k >0 in the while and mid diff for 0 ==0
+        int udiff = a[u] - a[0] - u;
+        return a[u] + (k - udiff);
     }
 }

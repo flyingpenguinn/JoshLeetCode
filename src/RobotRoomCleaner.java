@@ -71,35 +71,38 @@ interface Robot {
 public class RobotRoomCleaner {
     // from the entrance dir we keep cleaning then move back, turn right and clean up the next direction
     // gotcha is how to sync the robot with our dfs note when dfs returns robot needs to return to the old position at the same dir
+    // from the entrance dir we keep cleaning then move back, turn right and clean up the next direction
+    // gotcha is how to sync the robot with our dfs note when dfs returns robot needs to return to the old position at the same dir
     private Set<String> seen = new HashSet<>();
+    // from i to i+1 it takes a right turn
     private int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
     public void cleanRoom(Robot robot) {
-        dfs(0, 0, robot, 0);
+        dfs(robot,0,0,0);
     }
 
-    private void dfs(int i, int j, Robot rob, int dir) {
-        seen.add(code(i, j));
+    // rob is now i,j, facing cd. we make sure when this method ends, it remains in this status
+    private void dfs(Robot rob, int i, int j, int cd){
+        //  System.out.println(i+" "+j);
+        seen.add(code(i,j));
         rob.clean();
-        for (int k = dir; k != dir + 4; k++) {
-            int modk = k % 4;
-            int ni = i + dirs[modk][0];
-            int nj = j + dirs[modk][1];
-            if (!seen.contains(code(ni, nj)) && rob.move()) {
-                // when rob moves to ni nj our call stack needs to be in sync
-                dfs(ni, nj, rob, modk);
-                // when the dfs returns we are back at i and j. here we need to reset
-                // the robot to be in sync with the current call stack
-                // after the dfs function robot is facing the original direction on ni nj, so we need to turn it back and move, then
-                // re-face the original dir i.e. ni nj
-                rob.turnRight();
-                rob.turnRight();
+        for(int d = cd; d<cd+4; d++){
+            int nd = d%4;
+            int ni = i+dirs[nd][0];
+            int nj = j+dirs[nd][1];
+            if(!seen.contains(code(ni, nj)) && rob.move()){
+                dfs(rob,ni, nj, nd);
+                turn180(rob);
                 rob.move();
-                rob.turnRight();
-                rob.turnRight();
+                turn180(rob);
             }
             rob.turnRight();
         }
+    }
+
+    private void turn180(Robot rob){
+        rob.turnRight();
+        rob.turnRight();
     }
 
     private String code(int i, int j) {

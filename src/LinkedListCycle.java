@@ -41,12 +41,12 @@ public class LinkedListCycle {
         if (h == null || h.next == null) {
             return false;
         }
-        ListNode f = h.next;
+        ListNode f = h;
         ListNode s = h;
-        while (f != null && f.next != null && f != s) {
+        do {
             f = f.next.next;
             s = s.next;
-        }
+        } while (f != null && f.next != null && f != s);
         return f == s;
     }
 }

@@ -15,18 +15,18 @@ Output: 1->2->3
  */
 public class RemoveDuplicatesFromSortedList {
     public ListNode deleteDuplicates(ListNode head) {
-        if (head == null) {
-            return null;
-        }
+        ListNode dummy = new ListNode(-1);
+        ListNode q = dummy;
         ListNode p = head;
-        // p ia the last good
-        while (p.next != null) {
-            if (p.next.val == p.val) {
-                p.next = p.next.next;
-            } else {
+        while(p!= null){
+            q.next = p;
+            q = q.next;
+            int v = p.val;
+            while(p!= null && p.val == v){
                 p = p.next;
             }
         }
-        return head;
+        q.next = null;
+        return dummy.next;
     }
 }

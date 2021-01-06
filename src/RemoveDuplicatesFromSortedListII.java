@@ -15,23 +15,24 @@ Output: 2->3
  */
 public class RemoveDuplicatesFromSortedListII {
     public ListNode deleteDuplicates(ListNode head) {
-        ListNode dm = new ListNode(-1);
-        dm.next = head;
-        ListNode p = dm;
-        ListNode q = head;
-        // q: next candidate.p: last known good one
-        while (q != null) {
-            ListNode k = q.next;
-            while (k != null && k.val == q.val) {
-                k = k.next;
+        ListNode dummy = new ListNode(-1);
+        ListNode p = head;
+        ListNode q = dummy;
+        while(p != null){
+            // p is a new distinct value
+            int v = p.val;
+            ListNode cur = p;
+            int dup = 0;
+            while(p!= null && p.val == v){
+                dup++;
+                p = p.next;
             }
-            if (k == q.next) {// no duplication
-                p.next = q;
-                p = p.next; // move p too!
+            if(dup==1){
+                q.next = cur;
+                q = q.next;
             }
-            q = k;
         }
-        p.next = null; // cut short
-        return dm.next;
+        q.next = null;
+        return dummy.next;
     }
 }

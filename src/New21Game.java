@@ -27,31 +27,55 @@ Output: 0.73278
  */
 public class New21Game {
     // dp with a twist to get accumulated dp values in O1
-    double[] dp;
-
+    // note the definition of dp[i]: it is the prob of getting i at some point.
+    // note when
     public double new21Game(int n, int k, int w) {
-        if (n < k) {
-            return 0.0;
+        double[] dp = new double[n + 1];
+        double res = 0;
+        double sum = 0;
+        for (int i = 0; i <= n; i++) {
+            if (i == 0) {
+                dp[i] = 1;
+            } else {
+                dp[i] = sum / w;
+            }
+            if (i >= k) {
+                // if >= it won't leave this number
+                res += dp[i];
+            } else {
+                // only draw number when i <k
+                sum += dp[i];
+            }
+            if (i - w >= 0) {
+                // i-w will be out of range for i+1 so drop it
+                sum -= dp[i - w];
+            }
         }
-        int lmt = Math.max(k + w, n);
-        double[] dp = new double[lmt + 2];
-        double[] psum = new double[lmt + 2]; // or can use a sliding window
-
-        for (int i = k + w - 1; i > n; i--) {
-            dp[i] = 0.0;
-            psum[i] = psum[i + 1] + dp[i];// p[lmt]=0 anyway we made the buffer big enough
-        }
-        for (int i = n; i >= k; i--) {
-            dp[i] = 1.0;
-            psum[i] = psum[i + 1] + dp[i];
-        }
-        for (int i = k - 1; i >= 0; i--) {
-            double cur = psum[i + 1] - psum[i + w + 1];
-            // i+1...i+w
-            dp[i] = cur / w;
-            psum[i] = psum[i + 1] + dp[i];
-        }
-        return dp[0];
+        return res;
     }
 
+}
+
+class New21GameTLE {
+    // raw form without optimization to on. note the way we filter bad i-j data and res+= dp[i]. also dp[0]=1. these are crucial
+    public double new21Game(int n, int k, int w) {
+        double[] dp = new double[n + 1];
+        // dp[i] is the prob of getting i at some point. note when we get >=k we stop so these becomes the final prob too..
+        double res = 0;
+        for (int i = 0; i <= n; i++) {
+            if (i == 0) {
+                dp[i] = 1.0;  // !
+            } else {
+                for (int j = 1; j <= w; j++) {
+                    if (i - j >= 0 && i - j < k) {  // !only <k can we try to get here. if i-j is already >k we stop
+                        dp[i] += dp[i - j] / w;
+                    }
+                }
+            }
+            if (i >= k) {
+                res += dp[i];
+            }
+        }
+        return res;
+    }
 }

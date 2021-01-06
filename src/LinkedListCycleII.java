@@ -39,20 +39,20 @@ Can you solve it without using extra space?
 public class LinkedListCycleII {
     // 2*(a+l-b) = a+l+l-b => a==b
     public ListNode detectCycle(ListNode head) {
-        if(head==null || head.next == null){
+        if (head == null || head.next == null) {
             return null;
         }
-        ListNode fast = head.next.next;
-        ListNode slow = head.next;
-        while(fast != null && fast.next != null && fast != slow){
+        ListNode fast = head;
+        ListNode slow = head;
+        do {
             fast = fast.next.next;
             slow = slow.next;
-        }
-        if (fast==null || fast.next==null){
+        } while (fast != null && fast.next != null && fast != slow);
+        if (fast == null || fast.next == null) {
             return null;
         }
         fast = head;
-        while(fast!= slow){
+        while (fast != slow) {
             fast = fast.next;
             slow = slow.next;
         }
