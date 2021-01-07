@@ -68,25 +68,17 @@ public class LongestSubstringWithoutRepeat {
 }
 
 class LongestSubstringWithoutRepeatEeasier {
-    // think from the point of every i, the substrings ending at i
+    // think from the point of every i, the substrings ending at i. the pre that we can start from must be after the last appearance of char of i
     public int lengthOfLongestSubstring(String s) {
-        if (s == null || s.isEmpty()) {
-            return 0;
-        }
-        int start = 0;
-        Map<Character, Integer> last = new HashMap<>();
+        int[] last = new int[255];
+        Arrays.fill(last, -1);
+        int pre = -1; // we start after -1 to begin with
         int max = 0;
-        // invariant: start...i-1 no repeat
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            Integer pre = last.get(c);
-            if (pre != null && pre + 1 > start) {
-                start = pre + 1;
-            }
-            // now start...i has no repeat
-            int cur = i - start + 1;
-            max = Math.max(max, cur);
-            last.put(c, i);
+            pre = Math.max(pre, last[c]);
+            max = Math.max(max, i - pre);
+            last[c] = i;
         }
         return max;
     }
