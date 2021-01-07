@@ -20,17 +20,25 @@ Explanation: 15 = 15 = 8 + 7 = 4 + 5 + 6 = 1 + 2 + 3 + 4 + 5
 Note: 1 <= N <= 10 ^ 9.
  */
 public class ConsecutiveNumberSum {
-    // given n we know a1
-    // a1= (2*t-n(n+1))/2(n+1)
-    // each int solution is counted.find it solution by %
-    public int consecutiveNumbersSum(int s) {
-        int r = 0;
-        for (int i = 2; i * (i - 1) / 2 < s; i++) {
-            int diff = s - i * (i - 1) / 2;
-            if (diff % i == 0) {
-                r++;
+    // given how many items are there
+    // (a1+a1+x)*(x+1)/2 = n, so 2*n/(x+1) - x = 2a1 => 2n/(x+1) - (x+1) +1 = 2a1
+    // only need to enumerate x+1 up to sqrt(2n)
+    // all int solutions are counted
+    public int consecutiveNumbersSum(int n) {
+        int n2 = 2 * n;
+        int res = 0;
+        for (int x = 0; (x + 1) * (x + 1) <= n2; x++) {
+            if (n2 % (x + 1) == 0) {
+                if (good(x + 1, n2)) {
+                    res++;
+                }
+                // dont really need to worry the other half because if x+1 > sqrt then the left hand will be <=0
             }
         }
-        return r + 1;
+        return res;
+    }
+
+    private boolean good(int a, int n2) {
+        return (n2 / a - a + 1) % 2 == 0;
     }
 }
