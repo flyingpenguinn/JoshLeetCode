@@ -37,28 +37,32 @@ Constraints:
 s contain upper-case English letters only.
  */
 public class CountUniqueCharacterSubstring {
-    public int uniqueLetterString(String s) {
-        Map<Character, Deque<Integer>> m = new HashMap<>();
-        int n = s.length();
-        long r = 0;
-        long[] dp = new long[n];
-        long Mod = 1000000007;
-        for (int i = 0; i < n; i++) {
-            char c = s.charAt(i);
-            Deque<Integer> pre = m.getOrDefault(c, new ArrayDeque<>());
-            int j = pre.isEmpty() ? -1 : pre.peekLast();
-            int k = pre.size() <= 1 ? -1 : pre.peekFirst();
-            dp[i] = (i == 0 ? 0 : dp[i - 1]) + (i - j) - (j - k);
-            dp[i] %= Mod;
-            r += dp[i];
-            r %= Mod;
-            pre.offerLast(i);
-            if (pre.size() > 2) {
-                pre.pollFirst();
-            }
-            m.put(c, pre);
-        }
+    // think about contribution of each i on top of dp[i-1]
+    private long Mod = 1000000007;
 
-        return (int) r;
+    public int uniqueLetterString(String s) {
+        int n = s.length();
+        Deque<Integer>[] pre = new ArrayDeque[26];
+        for (int i = 0; i < 26; i++) {
+            pre[i] = new ArrayDeque<>();
+        }
+        long last = 0;
+        long res = 0;
+        for (int i = 0; i < n; i++) {
+            int c = s.charAt(i) - 'A';
+            Deque<Integer> dq = pre[c];
+            int j = dq.isEmpty() ? -1 : dq.peekLast();
+            int k = dq.size() < 2 ? -1 : dq.peekFirst();
+            long cur = last + (i - j) - (j - k);
+            // from j+1....i these substrings got 1 more unique char. from k+1...j these substrings lost 1 unique char
+            res += cur;
+            res %= Mod;
+            last = cur;
+            dq.offerLast(i);
+            if (dq.size() > 2) {
+                dq.pollFirst();
+            }
+        }
+        return (int) res;
     }
 }
