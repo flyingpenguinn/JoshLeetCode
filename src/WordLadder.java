@@ -38,36 +38,39 @@ Explanation: The endWord "cog" is not in wordList, therefore no possible transfo
 public class WordLadder {
 
     // shortest path is usually not solved by DFS, but should do bfs
-    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
-        // verify input throw if error
-        Set<String> set = new HashSet<>();
-        for (String w : wordList) {
-            set.add(w);
-        }
+    public int ladderLength(String bw, String ew, List<String> wordList) {
+        Set<String> set = new HashSet<>(wordList);
         Deque<String> q = new ArrayDeque<>();
-        q.offer(beginWord);
-        Map<String, Integer> m = new HashMap<>();
-        m.put(beginWord, 1);
-        while (!q.isEmpty()) {
-            // when sth is in the queue its m is also populated already
+        Map<String,Integer> m = new HashMap<>();
+        m.put(bw, 1);
+        q.offer(bw);
+        while(!q.isEmpty()){
             String top = q.poll();
-            int steps = m.get(top);
-            if (top.equals(endWord)) {
+            if(top.equals(ew)){
                 break;
             }
-            for (int i = 0; i < top.length(); i++) {
-                for (char c = 'a'; c <= 'z'; c++) {
-                    StringBuilder sb = new StringBuilder(top);
+            int dist = m.get(top);
+            StringBuilder sb = new StringBuilder(top);
+            for(int i=0; i<top.length(); i++){
+                char sc = top.charAt(i);
+                for(char c = 'a'; c<='z'; c++){
+                    if(c==sc){
+                        continue;
+                    }
                     sb.setCharAt(i, c);
-                    String str = sb.toString();
-                    if (set.contains(str) && !m.containsKey(str)) {
-                        m.put(str, steps + 1);
-                        q.offer(str);
+                    String next = sb.toString();
+                    if(set.contains(next)){
+                        Integer cdist = m.get(next);
+                        if(cdist==null){
+                            m.put(next, dist+1);
+                            q.offer(next);
+                        }
                     }
                 }
+                sb.setCharAt(i, sc);
             }
         }
-        return m.getOrDefault(endWord, 0);
+        return m.getOrDefault(ew, 0);
     }
 
     public static void main(String[] args) {

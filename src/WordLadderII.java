@@ -43,63 +43,65 @@ public class WordLadderII {
 // only caveat is there could be multiple sources, each landing at current word at the same step. we need to record them in the pre map
     // also note there could be no solutions!
 
-    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
-        // verify input throw if error
-        Set<String> set = new HashSet<>();
-        for (String w : wordList) {
-            set.add(w);
-        }
+    public List<List<String>> findLadders(String bw, String ew, List<String> wordList) {
+        Set<String> set = new HashSet<>(wordList);
         Deque<String> q = new ArrayDeque<>();
-        q.offer(beginWord);
-        Map<String, Integer> m = new HashMap<>();
+        Map<String,Integer> m = new HashMap<>();
+        m.put(bw, 1);
+        q.offer(bw);
         Map<String, Set<String>> pre = new HashMap<>();
-        m.put(beginWord, 1);
-        while (!q.isEmpty()) {
-            // when sth is in the queue its m is also populated already
+        while(!q.isEmpty()){
             String top = q.poll();
-            int steps = m.get(top);
-            int nextStep = steps + 1;
-            if (top.equals(endWord)) {
+            if(top.equals(ew)){
                 break;
             }
-            for (int i = 0; i < top.length(); i++) {
-                for (char c = 'a'; c <= 'z'; c++) {
-                    StringBuilder sb = new StringBuilder(top);
+            int dist = m.get(top);
+            StringBuilder sb = new StringBuilder(top);
+            for(int i=0; i<top.length(); i++){
+                char sc = top.charAt(i);
+                for(char c = 'a'; c<='z'; c++){
+                    if(c==sc){
+                        continue;
+                    }
                     sb.setCharAt(i, c);
                     String next = sb.toString();
-                    if (set.contains(next)) {
-                        if (!m.containsKey(next)) {
-                            // new node, setup its steps and put to queue
-                            m.put(next, nextStep);
+                    if(set.contains(next)){
+                        Integer cdist = m.get(next);
+                        if(cdist==null){
+                            m.put(next, dist+1);
                             q.offer(next);
-                            pre.computeIfAbsent(next, k -> new HashSet<>()).add(top);
-                        } else if (m.get(next) == nextStep) {
-                            // if same steps, setup the pre set
-                            pre.computeIfAbsent(next, k -> new HashSet<>()).add(top);
-                        } // otherwise just throw away arrived too late
+                        }
+                        // for all qualified paths we recortd the pres
+                        if(cdist == null || cdist==dist+1){
+                            pre.computeIfAbsent(next, k-> new HashSet<>()).add(top);
+                        }
                     }
                 }
+                sb.setCharAt(i, sc);
             }
         }
-        List<List<String>> r = new ArrayList<>();
-        dfs(endWord, beginWord, new ArrayList<>(), r, pre);
-        return r;
+        //  System.out.println(pre);
+        List<List<String>> res = new ArrayList<>();
+        dfs(ew, bw, new ArrayList<>(), res, pre);
+        return res;
     }
 
-    // we are at cur and we want to grow from it to the begin word
-    private void dfs(String cur, String begin, List<String> list, List<List<String>> r, Map<String, Set<String>> pre) {
-        list.add(cur);
-        if (cur.equals(begin)) {
-            List<String> rev = new ArrayList<>(list);
-            Collections.reverse(rev);
-            r.add(rev);
-        } else {
-            Set<String> nexts = pre.getOrDefault(cur, new HashSet<>());
-            for (String next : nexts) {
-                dfs(next, begin, list, r, pre);
-            }
+    private void dfs(String w, String bw, List<String> cur, List<List<String>> res, Map<String, Set<String>> pre){
+        //   System.out.println(cur);
+        cur.add(w);
+        if(w.equals(bw)){
+            List<String> rcur = new ArrayList<>(cur);
+            // make begin word appear first
+            Collections.reverse(rcur);
+            res.add(rcur);
+            cur.remove(cur.size()-1);
+            return;
         }
-        list.remove(list.size() - 1);
+        for(String next: pre.getOrDefault(w, new HashSet<>())){
+            //System.out.println(w+"->"+next);
+            dfs(next, bw, cur, res, pre);
+        }
+        cur.remove(cur.size()-1);
     }
 
     public static void main(String[] args) {
