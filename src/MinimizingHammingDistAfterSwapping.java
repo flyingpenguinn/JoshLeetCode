@@ -31,20 +31,15 @@ public class MinimizingHammingDistAfterSwapping {
                 sm.put(s[i], sm.getOrDefault(s[i], 0) + 1);
                 tm.put(t[i], tm.getOrDefault(t[i], 0) + 1);
             }
-
-            int delta = 0;
+            int diff = 0;
             for (int tk : tm.keySet()) {
-                int diff = Math.abs(tm.get(tk) - sm.getOrDefault(tk, 0));
-                delta += diff;
-                System.out.println(tk + " " + diff);
+                int tc = tm.get(tk);
+                int sc = sm.getOrDefault(tk, 0);
+                if (sc <= tc) {
+                    diff += tc - sc;
+                }
             }
-            for (int sk : sm.keySet()) {
-                int diff = Math.abs(tm.getOrDefault(sk, 0) - sm.get(sk));
-                delta += diff;
-                System.out.println(sk + " " + diff);
-            }
-
-            res += delta / 2; // diff is reflected twice
+            res += diff;
         }
         return res;
     }
