@@ -86,7 +86,8 @@ public class RaceCar {
 class RaceCarDp {
     // similar to "least operator to express number". we either undershoot or overshoot
     // if overshoot, just come back
-    // we can undershoot in couple of places before we go pass t
+    // we can undershoot, then go back 0,1,2 steps, then reverse
+    // NOTE WE ONLY UNDERSHOOT once at the nearest under place. we dont check further. actually lack mathematical proof that this works
     int[] dp;
 
     public int racecar(int t) {
@@ -123,10 +124,10 @@ class RaceCarDp {
         while (pos > 0) {
             // facing left when we are here. but we decide to go right, so +1 every time for the reverse
             int cur = steps + 1 + domin(t - pos); // +1 for the reverse
+            min = Math.min(min, cur);
             steps++;
             pos -= speed;
             speed *= 2;
-            min = Math.min(min, cur);
         }
         dp[t] = min;
         return min;
