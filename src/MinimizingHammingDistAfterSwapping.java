@@ -40,7 +40,7 @@ public class MinimizingHammingDistAfterSwapping {
                 }
             }
             res += diff;
-        }
+        }a
         return res;
     }
 

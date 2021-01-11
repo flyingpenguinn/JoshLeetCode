@@ -35,40 +35,44 @@ S[0] = "(", S[S.length - 1] = ")", and the other elements in S are digits.
 public class AmbiguousCoordinates {
     // On3, just two nums so cut and loop
     public List<String> ambiguousCoordinates(String s) {
+        List<String> res = new ArrayList<>();
         int n = s.length();
-        List<String> r = new ArrayList<>();
-        for (int i = 1; i < n - 2; i++) {
-            List<String> n1 = don(s, 1, i);
-            List<String> n2 = don(s, i + 1, n - 2);
-            for (String s1 : n1) {
-                for (String s2 : n2) {
-                    r.add("(" + s1 + ", " + s2 + ")");
+        for(int i=1; i<n-1; i++){
+            List<String> p1 = dfs(s, 1, i);
+            List<String> p2 = dfs(s, i+1, n-2);
+            for(String ps1: p1){
+                for(String ps2: p2){
+                    res.add("("+ps1+", "+ps2+")");
                 }
             }
         }
-        return r;
+        return res;
     }
 
-    List<String> don(String s, int l, int u) {
-        List<String> r = new ArrayList<>();
-        if (s.charAt(l) == '0') {
-            if (l == u) {
-                r.add("0");
-            } else if (s.charAt(u) != '0') {
-                // no trailing zero
-                r.add("0." + s.substring(l + 1, u + 1));
-            }
-
-        } else {
-            if (s.charAt(u) != '0') {
-                // no trailing zero after .
-                for (int i = l; i < u; i++) {
-                    r.add(s.substring(l, i + 1) + "." + s.substring(i + 1, u + 1));
-                }
-            }
-            // but ints can end with 0
-            r.add(s.substring(l, u + 1));
+    private List<String> dfs(String s, int l, int u){
+        List<String> res = new ArrayList<>();
+        if(l>u){
+            return res;
         }
-        return r;
+        // the int part: no starting 0 andlen >1
+        char first = s.charAt(l);
+        if(! (s.startsWith("0", l) && u>l)){
+            res.add(s.substring(l, u+1));
+        }
+        for(int j=l; j<u; j++){
+            String left = s.substring(l, j+1);
+            String right = s.substring(j+1, u+1);
+            // left valid: same as int valid. no starting with 0 and len >1, nothing else will save us
+            if(left.startsWith("0") && left.length()>1){
+                break;
+            }
+            // right valid: ending with 0. nothing else will save us
+            if(right.endsWith("0")){
+                break;
+            }
+            String str = left+"."+right;
+            res.add(str);
+        }
+        return res;
     }
 }
