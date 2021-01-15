@@ -29,98 +29,74 @@ Please do not use the built-in HashMap library.
 public class DesignHashMap {
 
 }
-
 class MyHashMap {
 
-    /**
-     * Initialize your data structure here.
-     */
-    class Entry {
-        int k;
-        int v;
-        Entry next = null;
-        Entry prev = null;
-
-        public Entry(int k, int v) {
+    private class Entry{
+        private int k;
+        private int v;
+        private Entry next;
+        private Entry prev;
+        public Entry(int k, int v){
             this.k = k;
             this.v = v;
         }
     }
-
-    // can't be as big as 1 million
-    int n = 1000;
-    // entry array, not a list of array
-    Entry[] les = new Entry[n];
-
+    private int n = 1024;
+    private Entry[] b = new Entry[n];
+    /** Initialize your data structure here. */
     public MyHashMap() {
-        for (int i = 0; i < n; i++) {
-            les[i] = new Entry(-1, -1);
-        }
+
     }
 
-    /**
-     * value will always be non-negative.
-     */
+    /** value will always be non-negative. */
     public void put(int key, int value) {
-        Entry cur = getentry(key);
-        if (cur != null) {
-            cur.v = value;
+        int mod = key % n;
+        Entry found = find (key);
+        if (found != null){
+            found.v = value;
             return;
         }
-        int hk = key % n;
         Entry e = new Entry(key, value);
-        // head insert
-        Entry next = les[hk].next;
-        les[hk].next = e;
-        e.next = next;
-        e.prev = les[hk];
-        if (next != null) {
-            next.prev = e;
+        e.next = b[mod];
+        if(b[mod] != null){
+            b[mod].prev = e;
         }
+        b[mod] = e;
     }
 
-    Entry getentry(int key) {
-        int hk = key % n;
-        Entry p = les[hk].next;
-        while (p != null) {
-            // must compare key
-            if (p.k == key) {
-                return p;
+    private Entry find(int key){
+        int mod = key % n;
+        Entry e = b[mod];
+        while(e!= null){
+            if(e.k == key){
+                return e;
             }
-            p = p.next;
+            e = e.next;
         }
         return null;
     }
 
-    /**
-     * Returns the value to which the specified key is mapped, or -1 if this map contains no mapping for the key
-     */
+    /** Returns the value to which the specified key is mapped, or -1 if this map contains no mapping for the key */
     public int get(int key) {
-        Entry e = getentry(key);
-        return e == null ? -1 : e.v;
+        Entry found = find (key);
+        return found == null? -1: found.v;
     }
 
-    /**
-     * Removes the mapping of the specified value key if this map contains a mapping for the key
-     */
+    /** Removes the mapping of the specified value key if this map contains a mapping for the key */
     public void remove(int key) {
-        Entry e = getentry(key);
-        if (e == null) {
+        int mod = key % n;
+        Entry found = find(key);
+        if(found==null){
             return;
         }
-        Entry pre = e.prev;
-        Entry next = e.next;
-        pre.next = next;
-        if (next != null) {
-            next.prev = pre;
+        if(found.prev == null){
+            b[mod] = found.next;
+        }else{
+            found.prev.next = found.next;
+        }
+        if(found.next != null){
+            found.next.prev = found.prev;
         }
     }
 }
 
-/**
- * Your MyHashMap object will be instantiated and called as such:
- * MyHashMap obj = new MyHashMap();
- * obj.put(key,value);
- * int param_2 = obj.get(key);
- * obj.remove(key);
- */
