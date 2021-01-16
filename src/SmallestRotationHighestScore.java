@@ -39,35 +39,43 @@ A[i] will be in the range [0, A.length].
  */
 public class SmallestRotationHighestScore {
     // because when we move left all number's score-1 except for the head one. we can think of as score is increasing...
-    // we compensate the head by adding round number to its diff so that it can "live" longer
+    // each round we raise the bar from i-a[i]>=0 to 1,2,3...
+    // but the first number thrown to the last will give us n-1-a[i] which is >=0 for sure. we need to +(i+1) to make sure the raised bar won't impact it
     public int bestRotation(int[] a) {
-        Map<Integer, Integer> m = new HashMap<>();
         int n = a.length;
+        int res = 0;
+        int resk = 0;
+        Map<Integer, Integer> m = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            int diff = i - a[i];
-            m.put(diff, m.getOrDefault(diff, 0) + 1);
-        }
-        int base = 0;
-        for (int k : m.keySet()) {
-            if (k >= 0) {
-                base += m.get(k);
+            update(m, i - a[i], 1);
+            if (i >= a[i]) {
+                res++;
             }
         }
-        // at first we just need to be >=0
-        int maxbase = base;
-        int maxi = 0;
-        for (int i = 1; i < n; i++) { // n-1 rounds
-            // because now the water level is increasing and i-1 counts as good
-            int minus = m.getOrDefault(i - 1, 0);
-            base = base - minus + ((n - 1 + i) >= a[i - 1] ? 1 : 0); // with this we can handle a[i] at any range
-            if (base > maxbase) {
-                maxbase = base;
-                maxi = i;
+        int cur = res;
+        for (int i = 0; i < n; i++) {
+            // moving a[i], last round we were using i as bar.
+            // this round using i+1 as bar after moving a[i]
+            cur -= m.getOrDefault(i, 0);
+            update(m, i - a[i], -1);
+            update(m, n - 1 - a[i] + (i + 1), 1);
+            // note the +(i+1) is to make sure we are fair with this new diff
+            cur++;
+            if (cur > res) {
+                res = cur;
+                resk = (i + 1);
             }
-            int ndiff = n - 1 - a[i - 1] + i;  //+i to make it survive rest of the rounds.
-            m.put(ndiff, m.getOrDefault(ndiff, 0) + 1);
         }
-        return maxi;
+        return resk;
+    }
+
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
+        }
     }
 
     public static void main(String[] args) {

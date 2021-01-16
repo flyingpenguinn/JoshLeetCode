@@ -45,23 +45,22 @@ public class CheapestFlightWithinKStops {
     // we need a k to store previous rounds paths so that we avoid this case: s->i->j, s..i has k stop, and we accidentally update j based on dist[i]
     // we can further improve by using %2 trick since we only need k-1
     private int Max = 10000000;
-
-    public int findCheapestPrice(int n, int[][] edges, int u, int v, int k) {
-        // check not null, k>=0, u,v>=0 <n
-        int[][] dist = new int[n][k + 2]; // path could be of k+1, so in all k+2 paths, including 0
-        for (int i = 0; i < n; i++) {
-            Arrays.fill(dist[i], Max);
-        }
-        dist[u][0] = 0;
-        for (int i = 1; i <= k + 1; i++) {
-            for (int[] e : edges) {
-                int start = e[0];
-                int end = e[1];
-                int cost = e[2];
-                dist[end][i] = Math.min(dist[end][i], Math.min(dist[end][i - 1], dist[start][i - 1] + cost));
+    public int findCheapestPrice(int n, int[][] es, int s, int t, int k) {
+        int[] dist = new int[n];
+        Arrays.fill(dist,Max);
+        dist[s] = 0;
+// k+1 relaxations because it's k stops i.e. path len = k+1
+        for(int i=0; i<=k; i++){
+            int[] ndist = Arrays.copyOf(dist,n);
+            for(int[] e: es){
+                int from = e[0];
+                int to = e[1];
+                int newto= dist[from]+e[2];
+                ndist[to]= Math.min(ndist[to], newto);
             }
+            dist = ndist;
         }
-        return dist[v][k + 1] >= Max ? -1 : dist[v][k + 1];
+        return dist[t]>=Max? -1: dist[t];
     }
 
     public static void main(String[] args) {
