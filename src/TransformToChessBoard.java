@@ -1,5 +1,8 @@
 import base.ArrayUtils;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /*
 LC#782
 An N x N board contains only 0s and 1s. In each move, you can swap any 2 rows with each other, or any 2 columns with each other.
@@ -40,74 +43,72 @@ board will have the same number of rows and columns, a number in the range [2, 3
 board[i][j] will be only 0s or 1s.
  */
 public class TransformToChessBoard {
-    /*
-    For any row/column, the number of 1 and 0 must differ by at most 1.
-    For any two rows r1 and r2, either board[r1][c] == board[r2][c] for all c or board[r1][c] != board[r2][c] for all c. Same for columns.
-     */
+    // for row/col, refer to 0 or 0's opposite
+    private int Max = 10000000;
+
     public int movesToChessboard(int[][] a) {
         int n = a.length;
-        for (int i = 0; i < n; i++) {
-            // rule 2: any two rows are either same or totally different
-            // we only need to compare with row 0 in this case
-            int rowflag = a[i][0] ^ a[0][0];// either 0 vs 0 or 1vs1
-            for (int j = 1; j < n; j++) {
-                int curflag = a[i][j] ^ a[0][j];
-                if (curflag != rowflag) {
-                    return -1;
+        int res = 0;
+        for (int round = 0; round <= 1; round++) {
+            // row and col, round0 and 1
+            int rres = Max;
+            for (int way = 0; way <= 1; way++) {
+                // use row/col 0 or its opposite
+                int cur = 0;
+                int[] w = new int[2];
+                for (int i = 0; i < n; i++) {
+                    boolean cur1 = same(a, 0, i, round, way);
+                    boolean cur2 = same(a, 0, i, round, way ^ 1);
+                    int index = way;
+                    if (i % 2 == 1) {
+                        index = way ^ 1;
+                        cur1 = same(a, 0, i, round, way ^ 1);
+                        cur2 = same(a, 0, i, round, way);
+                    }
+
+                    if (cur1) {
+                        continue;
+                    } else if (cur2) {
+                        if (w[index] != 0) {
+                            w[index]--;
+                            // dont really need to swap. swap will ruin 0 and make it incorrect
+                            cur++;
+                        } else {
+                            w[index ^ 1]++;
+                        }
+                    } else {
+                        cur = Max;
+                        break;
+                    }
+                }
+                if (w[0] > 0 || w[1] > 0) {
+                    cur = Max;
+                }
+                rres = Math.min(rres, cur);
+            }
+            res += rres;
+        }
+
+        return res >= Max ? -1 : res;
+    }
+
+    private boolean same(int[][] a, int i, int j, int round, int flag) {
+        int n = a.length;
+        if (round == 0) {
+            for (int k = 0; k < n; k++) {
+                if (a[i][k] != (a[j][k] ^ flag)) {
+                    return false;
                 }
             }
-        }
-
-        int rowcount = 0;
-        int colcount = 0;
-        // because each row are either same or totally different, we only need to verify first col and row's 1 count
-        // below is to verify rule 1
-        for (int i = 0; i < n; i++) {
-            if (a[i][0] == 1) {
-                rowcount++;
-            }
-            if (a[0][i] == 1) {
-                colcount++;
-            }
-        }
-        int orowcount = n - rowcount;
-        int ocolcount = n - colcount;
-        if (Math.abs(orowcount - rowcount) > 1 || Math.abs(ocolcount - colcount) > 1) {
-            return -1;
-        }
-        // we must have a solution. now suppose we want to make sure rows are 010101. so any 1 appearing in bad place will be counted
-        // in the end the moves are either rmove, or n-rmove. in the opposite case we need to change n-rmove numbers
-        // to make it swap based, /2 is the number of swaps, when the change count is even. otherwise we can't swap
-        int rmove = 0;
-        for (int i = 0; i < n; i++) {
-            // assume it must be 010101
-            if (a[i][0] != i % 2) {
-                rmove++;
-            }
-        }
-        if (n % 2 == 1) {
-            // the moves must be even otherwise we can't /2 and get the swaps
-            rmove = rmove % 2 == 0 ? rmove : n - rmove;
+            return true;
         } else {
-            rmove = Math.min(rmove, n - rmove);
-        }
-
-        int cmove = 0;
-        for (int i = 0; i < n; i++) {
-            // assume it must be 010101
-            if (a[0][i] != i % 2) {
-                cmove++;
+            for (int k = 0; k < n; k++) {
+                if (a[k][i] != (a[k][j] ^ flag)) {
+                    return false;
+                }
             }
+            return true;
         }
-        if (n % 2 == 1) {
-            // the moves must be even otherwise we can't /2 and get the swaps
-            cmove = cmove % 2 == 0 ? cmove : n - cmove;
-        } else {
-            cmove = Math.min(cmove, n - cmove);
-        }
-        // we /2: if moves are even, then how to swap: swap any misplaced 0 or 1 that are counted as "misplaced".
-        // because of rule 1, there must be same number of 0 and 1 to be swapped
-        return (rmove + cmove) / 2;
     }
 
     public static void main(String[] args) {
