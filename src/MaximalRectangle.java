@@ -1,6 +1,7 @@
 import base.ArrayUtils;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 
 /*
@@ -20,62 +21,55 @@ Output: 6
  */
 public class MaximalRectangle {
     // convert to maximal rectangle from largest histo. note this is not maximal square!
-    public int maximalRectangle(char[][] m) {
-        int rows = m.length;
-        if (rows == 0) {
+    public int maximalRectangle(char[][] a) {
+        int m = a.length;
+        if (m == 0) {
             return 0;
         }
-        int cols = m[0].length;
-        if (cols == 0) {
-            return 0;
-        }
-        int[] a = new int[cols];
-        int max = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                a[j] = i == 0 ? m[i][j] - '0' : (m[i][j] == '0' ? 0 : a[j] + 1);
-            }
-            int cur = largesthisto(a);
-            // System.out.println(Arrays.toString(a));
-            //System.out.println(cur);
+        int n = a[0].length;
+        int[] dp = new int[n];
 
-            max = Math.max(max, cur);
+        int res = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == '0') {
+                    dp[j] = 0;
+                } else {
+                    dp[j]++;
+                }
+
+            }
+            int cur = largesthisto(dp);
+            res = Math.max(res, cur);
         }
-        return max;
+        return res;
+
     }
 
     // using a more templated way: find nearest smaller element on left and right
-    int largesthisto(int[] a) {
+    private int largesthisto(int[] a) {
         // mono increase stack
-        Deque<Integer> stack = new ArrayDeque<>();
+        Deque<int[]> st = new ArrayDeque<>();
         int n = a.length;
-        int[] right = new int[n];
+        int res = 0;
         for (int i = 0; i <= n; i++) {
-            int val = i == n ? -1 : a[i];
-            while (!stack.isEmpty() && a[stack.peek()] > val) {
-                int pos = stack.pop();
-                right[pos] = i;
+            int ch = i == n ? 0 : a[i];
+            int last = -1;
+            while (!st.isEmpty() && st.peek()[0] >= ch) {
+                int before = st.peek()[1];
+                int blen = st.peek()[0];
+                int cur = (i - before) * blen;
+                res = Math.max(res, cur);
+                last = st.peek()[1];
+                st.pop();
             }
-            stack.push(i);
-        }
-        stack.clear();
-        int[] left = new int[n];
-        for (int i = n - 1; i >= -1; i--) {
-            int val = i == -1 ? -1 : a[i];
-            while (!stack.isEmpty() && a[stack.peek()] > val) {
-                int pos = stack.pop();
-                left[pos] = i;
+            if (last != -1) {
+                st.push(new int[]{ch, last});
+            } else {
+                st.push(new int[]{ch, i});
             }
-            stack.push(i);
-
         }
-        stack.clear();
-        int max = 0;
-        for (int i = 0; i < n; i++) {
-            int cur = a[i] * (right[i] - left[i] - 1);
-            max = Math.max(max, cur);
-        }
-        return max;
+        return res;
     }
 
     public static void main(String[] args) {
