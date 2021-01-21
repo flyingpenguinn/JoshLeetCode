@@ -41,16 +41,19 @@ public class SplitBst {
         return dfs(root, v);
     }
 
+    // <=, >
     private TreeNode[] dfs(TreeNode n, int v){
         if(n==null){
-            return new TreeNode[]{null,null};
+            return new TreeNode[2];
         }
         TreeNode[] left = dfs(n.left, v);
-        TreeNode[] right = dfs(n.right,v);
-        if(n.val<=v){
+        TreeNode[] right = dfs(n.right, v);
+        if(n.val <=v){
+            // left[1] must be null. left[0] is the whole left tree
             n.right = right[0];
             return new TreeNode[]{n, right[1]};
         }else{
+            // right[0] must be null. right[1] is the whole right tree
             n.left = left[1];
             return new TreeNode[]{left[0], n};
         }

@@ -18,34 +18,36 @@ import java.util.Arrays;
 
 public class LongestPalindromeSubstring {
     public String longestPalindrome(String s) {
-        if (s == null || s.isEmpty()) {
+        int n = s.length();
+        if (n == 0) {
             return "";
         }
-        int[] r = {0, 0};
-        for (int i = 0; i < s.length(); i++) {
-            int[] cur = palin(s, i, i);
-            if (cur[1] - cur[0] > r[1] - r[0]) {
-                r = cur;
+        int[] res = {0, 1};
+        for (int i = 0; i < n; i++) {
+            int[] e1 = expand(s, i, i);
+            if (e1[1] > res[1]) {
+                res = e1;
             }
-            cur = palin(s, i, i + 1);
-            if (cur[1] - cur[0] > r[1] - r[0]) {
-                r = cur;
+            int[] e2 = expand(s, i, i + 1);
+            if (e2[1] > res[1]) {
+                res = e2;
             }
         }
-        return s.substring(r[0], r[1] + 1);
+        return s.substring(res[0], res[0] + res[1]);
     }
 
-    private int[] palin(String s, int i, int j) {
-        // i must be valid pos in the string
-        while (i >= 0 && j < s.length()) {
-            if (s.charAt(i) != s.charAt(j)) {
+    private int[] expand(String s, int s1, int s2) {
+        int n = s.length();
+        int j = s1;
+        int k = s2;
+        while (j >= 0 && k < n) {
+            if (s.charAt(j) != s.charAt(k)) {
                 break;
             }
-            i--;
-            j++;
+            j--;
+            k++;
         }
-        // i+1... j-1 is local longets palin
-        return new int[]{i + 1, j - 1};
+        return new int[]{j + 1, k - 1 - j};
     }
 
     public static void main(String[] args) {

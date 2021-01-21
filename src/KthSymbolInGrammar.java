@@ -28,22 +28,19 @@ N will be an integer in the range [1, 30].
 K will be an integer in the range [1, 2^(N-1)].
  */
 public class KthSymbolInGrammar {
-    // cur = last + ~last. so it's either the same as last , or the flip of it, in k- cur len/2 position
     public int kthGrammar(int n, int k) {
-        return dok(n, k);
+        // our n. k both start from 0
+        return dfs(n-1, k-1);
     }
 
-    int dok(int n, int k) {
-        //  System.out.println(n+" "+k);
-        if (n == 1) {
-            return 0;
+    private int dfs(int n, int k){
+        if(n==0){
+            return 0; // k must be 0
         }
-        int len = 1 << (n - 1);
-        if (k <= len / 2) {
-            return dok(n - 1, k);
-        } else {
-            int rt = dok(n - 1, k - len / 2);
-            return rt == 0 ? 1 : 0;
+        if(dfs(n-1, k/2)==0){
+            return k%2; // if last == 0, it's 01
+        }else{
+            return (k%2) ^ 1; // otherwise it's 10
         }
     }
 }
