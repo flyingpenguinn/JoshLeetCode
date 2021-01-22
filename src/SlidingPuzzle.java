@@ -37,83 +37,70 @@ board[i][j] will be a permutation of [0, 1, 2, 3, 4, 5].
  */
 public class SlidingPuzzle {
     // bfs on states
-    class QItem {
-        int[][] a;
-        int step;
 
-        public QItem(int[][] a, int step) {
-            this.a = a;
-            this.step = step;
-        }
-    }
+    private int solved = 123450;
+    private int[][] dirs = {{1,0}, {0,1}, {-1,0}, {0,-1}};
 
-    public int slidingPuzzle(int[][] a) {
-        Deque<QItem> q = new ArrayDeque<>();
-        q.offer(new QItem(a, 0));
+    public int slidingPuzzle(int[][] b) {
+        int m = b.length;
+        int n = b[0].length;
+        Deque<int[]> q = new ArrayDeque<>();
+        int start = number(b);
+        q.offer(new int[]{start,0});
         Set<Integer> seen = new HashSet<>();
-        seen.add(code(a));
-        while (!q.isEmpty()) {
-            QItem top = q.poll();
-            if (Arrays.deepEquals(top.a, end)) {
-                return top.step;
+        seen.add(start);
+        while(!q.isEmpty()){
+            int[] top = q.poll();
+            //System.out.println(top[0]);
+            if(top[0]==solved){
+                return top[1];
             }
-            List<int[][]> nexts = getnext(top.a);
-            for (int[][] ne : nexts) {
-                int code = code(ne);
-                if (!seen.contains(code)) {
-                    seen.add(code);
-                    q.offer(new QItem(ne, top.step + 1));
+            int[][] cb = board(top[0], m,n);
+            for(int i=0; i<cb.length; i++){
+                for(int j=0; j<cb[i].length;j++){
+                    if(cb[i][j]==0){
+                        for(int[] d: dirs){
+                            int ni = i+d[0];
+                            int nj = j+d[1];
+                            if(ni>=0 && ni<m && nj>=0 && nj<n){
+                                int v = cb[ni][nj];
+                                cb[i][j] = v;
+                                cb[ni][nj] = 0;
+                                int ncode = number(cb);
+                                if(!seen.contains(ncode)){
+                                    seen.add(ncode);
+                                    q.offer(new int[]{ncode,top[1]+1});
+                                }
+                                cb[i][j] = 0;
+                                cb[ni][nj] = v;
+                            }
+                        }
+                        break;
+                    }
                 }
             }
         }
         return -1;
     }
 
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-    private List<int[][]> getnext(int[][] a) {
-        int m = a.length;
-        List<int[][]> r = new ArrayList<>();
-        for (int i = 0; i < m; i++) {
-            int n = a[0].length;
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 0) {
-                    for (int[] d : dirs) {
-                        int ni = i + d[0];
-                        int nj = j + d[1];
-                        if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
-                            int[][] copya = new int[m][n];
-                            for (int k = 0; k < m; k++) {
-                                copya[k] = Arrays.copyOf(a[k], a[k].length);
-                            }
-                            swap(copya, i, j, ni, nj);
-                            r.add(copya);
-                        }
-                    }
-                    break;
-                }
+    private int number(int[][] b){
+        int res = 0;
+        for(int i=0; i<b.length;i++){
+            for(int j=0; j<b[0].length;j++){
+                res = res*10+ b[i][j];
             }
         }
-        return r;
+        return res;
     }
 
-    private void swap(int[][] a, int i, int j, int ni, int nj) {
-        int tmp = a[i][j];
-        a[i][j] = a[ni][nj];
-        a[ni][nj] = tmp;
-    }
-
-    private int code(int[][] a) {
-        // 123450=? 123450
-        // 012345=> 12345
-        int r = 0;
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[0].length; j++) {
-                r = r * 10 + a[i][j];
+    private int[][] board(int num, int m, int n){
+        int[][] res = new int[m][n];
+        for(int i=m-1; i>=0; i--){
+            for(int j=n-1; j>=0; j--){
+                res[i][j] = num%10;
+                num /= 10;
             }
         }
-        return r;
+        return res;
     }
-
-    int[][] end = {{1, 2, 3}, {4, 5, 0}};
 }
