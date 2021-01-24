@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /*
 LC#768
 This question is the same as "Max Chunks to Make Sorted" except the integers of the given array are not necessarily distinct, the input array could be up to length 2000, and the elements could be up to 10**8.
@@ -29,21 +32,64 @@ public class MaxChunksToMakeSortedII {
     // if maxleft[i] <= minright[i+1] we got a new chunk
     public int maxChunksToSorted(int[] a) {
         int n = a.length;
-        // min number after self
-        int[] min = new int[n];
-        min[n - 1] = Integer.MAX_VALUE;
+        int[] right = new int[n];
+        // min on the right including self
+        right[n - 1] = a[n - 1];
         for (int i = n - 2; i >= 0; i--) {
-            min[i] = Math.min(a[i + 1], min[i + 1]);
+            right[i] = Math.min(right[i + 1], a[i]);
         }
-        int r = 0;
-        int max = Integer.MIN_VALUE;
-        // must be >= max numbers we've seen so far
+        int left = -1;
+        int res = 0;
         for (int i = 0; i < n; i++) {
-            max = Math.max(max, a[i]);
-            if (max <= min[i]) {
-                r++;
+            left = Math.max(left, a[i]);
+            if (i == n - 1 || left <= right[i + 1]) {
+                res++;
             }
         }
-        return r;
+        return res;
+    }
+}
+
+class MaxChunksToMakeSortedIIAnotherWay {
+    // use binary search to get the left most >, j. i and j must be in the same chunk
+    public int maxChunksToSorted(int[] a) {
+        int n = a.length;
+        int[] left = new int[n];// left most >
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            int pos = binarySearchFirstBigger(list, a, i);
+            if (pos < list.size()) {
+                left[i] = list.get(pos);
+            } else {
+                left[i] = n;
+                if (list.isEmpty() || a[i] > a[list.size() - 1]) {
+                    list.add(i);
+                }
+            }
+        }
+        int cb = n; // current left boundary
+        int res = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            cb = Math.min(cb, left[i]);
+            if (i == cb || cb == n) {
+                res++;
+                cb = n;
+            }
+        }
+        return res;
+    }
+
+    private int binarySearchFirstBigger(List<Integer> list, int[] a, int i) {
+        int l = 0;
+        int u = list.size() - 1;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            if (a[list.get(mid)] <= a[i]) {
+                l = mid + 1;
+            } else {
+                u = mid - 1;
+            }
+        }
+        return l;
     }
 }

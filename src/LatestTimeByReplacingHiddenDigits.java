@@ -1,39 +1,29 @@
 public class LatestTimeByReplacingHiddenDigits {
-    private int lastt = -1;
-    private String last = null;
-
-    public String maximumTime(String s) {
-        dfs(new StringBuilder(s), 0);
-        return last;
-    }
-
-    private void dfs(StringBuilder s, int i) {
-        if (i == 2) {
-            dfs(s, i + 1);
-        }
-        if (i == 5) {
-            String hour = s.substring(0, 2);
-            String min = s.substring(3, 5);
-            int hint = Integer.valueOf(hour);
-            int mint = Integer.valueOf(min);
-            if (hint <= 23 && mint <= 59) {
-                int mins = hint * 60 + mint;
-                //  System.out.println(mins+" "+s.toString());
-                if (mins > lastt) {
-                    lastt = mins;
-                    last = s.toString();
-                }
-            }
-            return;
-        }
-        if (s.charAt(i) != '?') {
-            dfs(s, i + 1);
-        } else {
-            for (char j = '0'; j <= '9'; j++) {
-                s.setCharAt(i, j);
-                dfs(s, i + 1);
-                s.setCharAt(i, '?');
+    public String maximumTime(String time) {
+        char[] t = time.toCharArray();
+        if (t[0] == '?') {
+            if (t[1] == '?') {
+                t[0] = '2';
+                t[1] = '3';
+            } else if (t[1] <= '3') {
+                t[0] = '2';
+            } else {
+                t[0] = '1';
             }
         }
+        if (t[1] == '?') {
+            if (t[0] < '2') {
+                t[1] = '9';
+            } else {
+                t[1] = '3';
+            }
+        }
+        if (t[3] == '?') {
+            t[3] = '5';
+        }
+        if (t[4] == '?') {
+            t[4] = '9';
+        }
+        return new String(t);
     }
 }
