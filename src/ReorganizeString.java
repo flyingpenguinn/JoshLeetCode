@@ -19,40 +19,32 @@ Note:
 S will consist of lowercase letters and have length in range [1, 500].
  */
 public class ReorganizeString {
-    // almost same as task scheduler, interval is 1 here while in that problem it's k
+    // almost same as task scheduler, segment length is 2 here while in that problem it's k+1
     public String reorganizeString(String s) {
+        int[][] count = new int[26][2];
         int n = s.length();
-        Map<Character, Integer> m = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            m.put(s.charAt(i), m.getOrDefault(s.charAt(i), 0) + 1);
+            int cind = s.charAt(i) - 'a';
+            count[cind][0]++;
+            count[cind][1] = cind;
         }
-
-        StringBuilder sb = new StringBuilder();
-        PriorityQueue<Character> pq = new PriorityQueue<>((x, y) -> Integer.compare(m.get(y), m.get(x)));  // big freq first
-        for (char ck : m.keySet()) {
-            pq.offer(ck);
-        }
-        char pre = '*';
-        while (sb.length() < n) {
-            char top = pq.poll();
-            if (top == pre) {
-                if (pq.isEmpty()) {
-                    return "";
-                }
-                char top2 = pq.poll();
-                pq.offer(top);
-                top = top2;
+        StringBuilder res = new StringBuilder();
+        while (true) {
+            Arrays.sort(count, (x, y) -> Integer.compare(y[0], x[0]));
+            //   System.out.println(Arrays.deepToString(count));
+            if (count[0][0] == 0) {
+                break;
             }
-            pre = top;
-            sb.append(top);
-            int nv = m.get(top) - 1;
-            if (nv == 0) {
-                m.remove(top);
-            } else {
-                m.put(top, nv);
-                pq.offer(top);
+            if (count[1][0] == 0 && count[0][0] > 1) {
+                return "";
+            }
+            int put = 0;
+            for (int i = 0; i < 26 && count[i][0] != 0 && put < 2; i++) {
+                res.append((char) ('a' + count[i][1]));
+                count[i][0]--;
+                put++;
             }
         }
-        return sb.toString();
+        return res.toString();
     }
 }

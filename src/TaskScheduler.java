@@ -32,49 +32,30 @@ public class TaskScheduler {
     2. num++: must be num apart, means segment is num+1 in length
 
      */
-    public int leastInterval(char[] a, int interval) {
-        if(a==null){
-            return 0;
-        }
-        Map<Character,Integer> m = new HashMap<>();
-        int n = a.length;
-        for(int i=0; i<n; i++){
-            update(m, a[i], 1);
-        }
-        int seg = interval+1;
-        PriorityQueue<Character> pq = new PriorityQueue<>((x,y) -> Integer.compare(m.get(y), m.get(x))); // big first
-        for(char ch: m.keySet()){
-            pq.offer(ch); // all chars freq high to low
+    public int leastInterval(char[] s, int k) {
+        k++;// segment length = k+1
+        int[][] count = new int[26][2];
+        int n = s.length;
+        for (int i = 0; i < n; i++) {
+            int cind = s[i] - 'A';
+            count[cind][0]++;
+            count[cind][1] = cind;
         }
         int res = 0;
-        while(!m.isEmpty()){
-            int curseg = 0;
-            List<Character> polled = new ArrayList<>();
-            while(!pq.isEmpty() && curseg <seg){
-                Character top = pq.poll();
-                polled.add(top);
-                update(m, top, -1);
-                res++;
-                curseg++;
+        while (true) {
+            Arrays.sort(count, (x, y) -> Integer.compare(y[0], x[0]));
+            int put = 0;
+            for (int i = 0; i < 26 && count[i][0] != 0 && put < k; i++) {
+                count[i][0]--;
+                put++;
             }
-            if(!m.isEmpty() && curseg<seg){
-                res += seg-curseg;
-            }
-            for(char pc: polled){
-                if(m.containsKey(pc)){
-                    pq.offer(pc); // will reorder based on new counts
-                }
+            if (count[0][0] > 0) {
+                // last segment won't need k
+                res += k - put;
+            } else {
+                break;
             }
         }
-        return res;
-    }
-
-    private void update(Map<Character,Integer> m, char k, int delta){
-        int nv = m.getOrDefault(k, 0)+delta;
-        if(nv<=0){
-            m.remove(k);
-        }else{
-            m.put(k, nv);
-        }
+        return res + n;
     }
 }
