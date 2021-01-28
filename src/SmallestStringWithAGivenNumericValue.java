@@ -1,16 +1,13 @@
 public class SmallestStringWithAGivenNumericValue {
-    // try to make later as big as possible to get a number as small as possible
+    // try to make later as big as possible to get a number at the front as small as possible
     public String getSmallestString(int n, int k) {
-        StringBuilder sb = new StringBuilder();
-        int cur = 0;
+        char[] res = new char[n];
         for (int i = 0; i < n; i++) {
-            int laterdigits = n - 1 - i;
-            int latermax = 26 * laterdigits;
-            int diff = k - cur - latermax;
-            int cind = Math.max(diff, 1);
-            sb.append((char) ('a' + cind - 1));
-            cur += cind;
+            int later = (n - 1 - i) * 26;
+            int cur = Math.max(k - later, 1);
+            res[i] = (char) ('a' + cur - 1);
+            k -= cur;
         }
-        return sb.toString();
+        return new String(res);
     }
 }
