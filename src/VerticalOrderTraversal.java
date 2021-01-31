@@ -47,31 +47,36 @@ Each node's value will be between 0 and 1000.
 public class VerticalOrderTraversal {
 
     // put each node into correct position. note must use treemap as y values can be non-continuous
+    private Map<Integer,List<int[]>> m = new HashMap<>();
+    private int min = Integer.MAX_VALUE;
+    private int max = Integer.MIN_VALUE;
     public List<List<Integer>> verticalTraversal(TreeNode root) {
-        TreeMap<Integer, TreeMap<Integer, List<Integer>>> map = new TreeMap<>();
-        dfs(root, 0, 0, map);
-        List<List<Integer>> r = new ArrayList<>();
-        for (int x : map.keySet()) {
-            List<Integer> cx = new ArrayList<>();
-            TreeMap<Integer, List<Integer>> my = map.get(x);
-            for (int y : my.keySet()) {
-                List<Integer> values = my.get(y);
-                Collections.sort(values);
-                cx.addAll(values);
+        dfs(root, 0, 0);
+
+        List<List<Integer>> res = new ArrayList<>();
+        for(int i=min; i<=max; i++){
+            List<int[]> list = m.get(i);
+            if(list==null){
+                continue;
             }
-            r.add(cx);
+            Collections.sort(list, (x,y) -> x[0]!= y[0]? Integer.compare(y[0], x[0]): Integer.compare(x[1], y[1]));
+            List<Integer> rl = new ArrayList<>();
+            for(int[] li: list){
+                rl.add(li[1]);
+            }
+            res.add(rl);
         }
-        return r;
+        return res;
     }
 
-    private void dfs(TreeNode n, int x, int y, TreeMap<Integer, TreeMap<Integer, List<Integer>>> map) {
-        if (n == null) {
+    private void dfs(TreeNode n, int x, int y){
+        if(n==null){
             return;
         }
-        TreeMap<Integer, List<Integer>> cx = map.getOrDefault(x, new TreeMap<>());
-        cx.computeIfAbsent(y, k -> new ArrayList<>()).add(n.val);
-        map.put(x, cx);
-        dfs(n.left, x - 1, y + 1, map);
-        dfs(n.right, x + 1, y + 1, map);
+        min = Math.min(min, x);
+        max = Math.max(max, x);
+        m.computeIfAbsent(x, k-> new ArrayList<>()).add(new int[]{y, n.val});
+        dfs(n.left, x-1, y-1);
+        dfs(n.right, x+1, y-1);
     }
 }
