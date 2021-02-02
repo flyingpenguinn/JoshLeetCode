@@ -56,54 +56,44 @@ public class CherryPickup {
     // as long as they both move in the same speed, they will reach at the same time because the distance is the same
 
     // purpose of them moving in the same speed is to detect duplicated pick early so that we dont need to note the picked flowers down
-    int[][][] dp;
-
+    private Integer[][][] dp;
     public int cherryPickup(int[][] a) {
-        int n = a.length;
-        dp = new int[n][n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                Arrays.fill(dp[i][j], -1);
-            }
-        }
-        return doc(n - 1, n - 1, n - 1, a);
+        int m = a.length;
+        int n = a[0].length;
+        dp = new Integer[m][n][m];
+        return Math.max(doc(a, 0, 0, 0),0);
     }
 
-    // one person at i,j, the other at p,q. note q is derived because i+j == p+q. they move at the same speed
-    private int doc(int i, int j, int p, int[][] a) {
-        int q = i + j - p;
-        if (i < 0 || j < 0 || p < 0 || q < 0 || a[i][j] == -1 || a[p][q] == -1) {
-            return Integer.MIN_VALUE;
-        }
-        if (i == 0 && j == 0 && p == 0 && q == 0) {
+    private int doc(int[][] a, int i, int j, int s){
+        int m = a.length;
+        int n = a[0].length;
+        int t = i+j-s;
+        if(i==m-1 && j==n-1 && s==m-1){
             return a[i][j];
         }
-        if (dp[i][j][p] != -1) {
-            return dp[i][j][p];
+        if(i<0 || i>=m || j<0 || j>=n || s<0 || s>=m || t<0 || t>=n){
+            return Integer.MIN_VALUE;
+        }
+        if(a[i][j]==-1 || a[s][t]==-1){
+            return Integer.MIN_VALUE;
+        }
+        if(dp[i][j][s] != null){
+            return dp[i][j][s];
         }
         int cur = 0;
-        if (i == p && j == q) {
-            if (a[i][j] == 1) {
-                cur++;
-            }
-        } else {
-            if (a[i][j] == 1) {
-                cur++;
-            }
-            if (a[p][q] == 1) {
-                cur++;
-            }
+        if(a[i][j]==1){
+            cur++;
         }
-        List<Integer> r = new ArrayList<>();
-        // can only go up/left
-        r.add(cur + doc(i - 1, j, p - 1, a));
-        r.add(cur + doc(i - 1, j, p, a));
-        r.add(cur + doc(i, j - 1, p - 1, a));
-        r.add(cur + doc(i, j - 1, p, a));
-        Collections.sort(r);
-        int max = r.get(r.size() - 1);
-        dp[i][j][p] = max;
-        return max;
+        if(a[s][t]==1 && (s!= i || t!=j)){
+            cur++;
+        }
+        int way1 = doc(a, i+1, j, s);
+        int way2 = doc(a, i, j+1, s);
+        int way3 = doc(a, i+1, j, s+1);
+        int way4 = doc(a, i, j+1, s+1);
+        int later = Math.max(way1, Math.max(way2, Math.max(way3, way4)));
+        dp[i][j][s] = later +cur;
+        return dp[i][j][s];
     }
 
     public static void main(String[] args) {
