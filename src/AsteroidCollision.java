@@ -42,27 +42,36 @@ Each asteroid will be a non-zero integer in the range [-1000, 1000]..
 public class AsteroidCollision {
     public int[] asteroidCollision(int[] a) {
         Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < a.length; i++) {
-            int abs = Math.abs(a[i]);
-            while (!st.isEmpty() && clash(st.peek(), a[i]) && Math.abs(st.peek()) < abs) {
-                st.pop();
+        for (int ai : a) {
+            if (ai > 0) {
+                st.push(ai);
+            } else if (ai < 0) {
+                boolean thrown = false;
+                while (!st.isEmpty()) {
+                    int top = st.peek();
+                    if (top < 0) {
+                        break;
+                    } else if (top + ai > 0) {
+                        thrown = true;
+                        break;
+                    } else if (top + ai == 0) {
+                        st.pop();
+                        thrown = true;
+                        break;
+                    } else {
+                        // positive but <0, eject
+                        st.pop();
+                    }
+                }
+                if (!thrown) {
+                    st.push(ai);
+                }
             }
-            if (st.isEmpty() || !clash(st.peek(), a[i])) {
-                st.push(a[i]);
-            } else if (Math.abs(st.peek()) == abs) {
-                st.pop();
-            }
-            // if > do nothing i.e. throwing a[i] away
         }
         int[] res = new int[st.size()];
-        int ri = st.size() - 1;
-        while (!st.isEmpty()) {
-            res[ri--] = st.pop();
+        for (int i = res.length - 1; i >= 0; i--) {
+            res[i] = st.pop();
         }
         return res;
-    }
-
-    private boolean clash(int a, int b) {
-        return a > 0 && b < 0;
     }
 }
