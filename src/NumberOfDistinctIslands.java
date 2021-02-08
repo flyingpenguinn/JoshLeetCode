@@ -3,64 +3,39 @@ import java.util.*;
 public class NumberOfDistinctIslands {
     // encode each island according to their top left as "points"
     // we can use a set of list because if islands are the same the sequence from top left to all others must be the same, we visit in the same order
-    // we can also use a direction string to tell the sequence from the starting point
-    class Point {
-        int r;
-        int c;
-
-        public Point(int r, int c) {
-            this.r = r;
-            this.c = c;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Point point = (Point) o;
-            return r == point.r &&
-                    c == point.c;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(r, c);
-        }
-    }
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public int numDistinctIslands(int[][] a) {
-        Set<List<Point>> set = new HashSet<>();
+        Set<List<Integer>> comps = new HashSet<>();
         int m = a.length;
         int n = a[0].length;
-
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 if (a[i][j] == 1) {
-                    List<Point> r = dfs(a, i, j, i, j);
-                    set.add(r);
+                    List<Integer> comp = new ArrayList<>();
+                    dfs(a, i, j, comp, i, j);
+                    comps.add(comp);
+                    //         System.out.println(comp);
                 }
             }
         }
-        return set.size();
+        return comps.size();
     }
 
-    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-    List<Point> dfs(int[][] a, int i, int j, int si, int sj) {
+    private void dfs(int[][] a, int i, int j, List<Integer> comp, int ui, int uj) {
         int m = a.length;
         int n = a[0].length;
-        a[i][j] = 2;
-        List<Point> r = new ArrayList<>();
-        r.add(new Point(i - si, j - sj));
+        a[i][j] = 0;
+        int di = i - ui;
+        int dj = j - uj;
+        //  System.out.println(i+" "+j+" "+ui+" "+uj);
+        comp.add(di * n + dj);
         for (int[] d : dirs) {
             int ni = i + d[0];
             int nj = j + d[1];
             if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
-                r.addAll(dfs(a, ni, nj, si, sj));
+                dfs(a, ni, nj, comp, ui, uj);
             }
         }
-        return r;
     }
-
-
 }
