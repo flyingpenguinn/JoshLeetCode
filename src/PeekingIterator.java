@@ -17,21 +17,23 @@ Calling hasNext() after that should return false.
 Follow up: How would you extend your design to be generic and work with all types, not just integer?
  */
 public class PeekingIterator implements Iterator<Integer> {
-    private Integer preFetch;
+    private Deque<Integer> dq = new ArrayDeque<>();
     private Iterator<Integer> it;
-
     public PeekingIterator(Iterator<Integer> iterator) {
         // initialize any member here.
-        it = iterator;
+        this.it = iterator;
     }
 
     // Returns the next element in the iteration without advancing the iterator.
     public Integer peek() {
-        if (preFetch != null) {
-            return preFetch;
-        } else {
-            preFetch = next();
-            return preFetch;
+        if(!hasNext()){
+            return null;
+        }
+        else {
+            if(dq.isEmpty()){
+                dq.offerLast(next());
+            }
+            return dq.peekFirst();
         }
     }
 
@@ -39,22 +41,18 @@ public class PeekingIterator implements Iterator<Integer> {
     // Override them if needed.
     @Override
     public Integer next() {
-        if (preFetch != null) {
-            Integer rt = preFetch;
-            preFetch = null;
-            return rt;
-        } else {
-            if (!hasNext()) {
-                return null;
-            }
-            return it.next();
+        if(!hasNext()){
+            return null;
         }
-
+        if(!dq.isEmpty()){
+            return dq.pollFirst();
+        }
+        return it.next();
     }
 
     @Override
     public boolean hasNext() {
-        if (preFetch != null) {
+        if(!dq.isEmpty()){
             return true;
         }
         return it.hasNext();
