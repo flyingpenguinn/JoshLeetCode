@@ -15,7 +15,6 @@ public class NumberOfDistinctIslands {
                     List<Integer> comp = new ArrayList<>();
                     dfs(a, i, j, comp, i, j);
                     comps.add(comp);
-                    //         System.out.println(comp);
                 }
             }
         }
@@ -28,7 +27,6 @@ public class NumberOfDistinctIslands {
         a[i][j] = 0;
         int di = i - ui;
         int dj = j - uj;
-        //  System.out.println(i+" "+j+" "+ui+" "+uj);
         comp.add(di * n + dj);
         for (int[] d : dirs) {
             int ni = i + d[0];
