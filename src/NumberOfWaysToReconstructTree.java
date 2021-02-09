@@ -23,7 +23,6 @@ public class NumberOfWaysToReconstructTree {
         if (nodes.isEmpty() || nodes.size() == 1) {
             return 1;
         }
-        //   System.out.println("nodes..."+nodes);
         // find root
         int root = 0;
         int maxsize = 0;
@@ -45,15 +44,19 @@ public class NumberOfWaysToReconstructTree {
         g.remove(root);
         //  System.out.println ("new g "+g);
         Set<Integer> keys = new HashSet<>(g.keySet());
+        int twos = 0;
         for (int k : keys) {
-
             Set<Integer> comp = new HashSet<>();
             dfswithroot(k, g, comp);
-            //    System.out.println("found comp "+comp +   " using " +k);
             int later = dfs(comp, g);
-            if (later != 1) {
-                return later;
+            if (later == 0) {
+                return 0;
+            } else if (later == 2) {
+                twos++;
             }
+        }
+        if (twos > 0) {
+            return 2;
         }
         return maxsize > 1 ? 2 : 1;
     }
