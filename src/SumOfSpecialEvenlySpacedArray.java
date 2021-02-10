@@ -3,42 +3,41 @@ import java.util.Set;
 
 public class SumOfSpecialEvenlySpacedArray {
     // step related think about sqrt because n/y == sqrtn after we preprocess <=sqrt and deal with >sqrt directly
-    private long Mod = 1000000007;
+    private int cutoff = (int)Math.sqrt(50000)+1;
+    private int mod = 1000000007;
 
     public int[] solve(int[] a, int[][] qs) {
         int n = a.length;
-        int sqrt = (int) Math.sqrt(n);
-        long[][] dp = new long[n][sqrt + 1];
-        // calc values starting from 0
-        Set<Integer> set = new HashSet<>();
-        for (int[] q : qs) {
-            set.add(q[1]);
+        int maxj = 0;
+        for(int i=0; i<qs.length;i++){
+            maxj = Math.max(maxj, qs[i][1]);
         }
-        for (int i = n - 1; i >= 0; i--) {
-            for (int len = 1; len <= sqrt; len++) {
-                if (!set.contains(len)) {
-                    continue;
+        // from i...n-1, step len j
+        long [][] dp = new long [n][cutoff];
+        for(int i=n-1; i>=0; i--){
+            for(int j=1; j<cutoff;j++){
+                if(i+j < n){
+                    dp[i][j] = dp[i+j][j]+ a[i];
+                    dp[i][j] %= mod;
+                }else{
+                    dp[i][j] = a[i];
                 }
-                dp[i][len] = (i + len >= n ? 0 : dp[i + len][len]) + a[i];
-                dp[i][len] %= Mod;
             }
         }
-        //   System.out.println(Arrays.deepToString(dp));
         int[] res = new int[qs.length];
-
-        for (int i = 0; i < qs.length; i++) {
-            int[] q = qs[i];
-            int start = q[0];
-            int len = q[1];
-            if (len <= sqrt) {
-                res[i] = (int) (dp[start][len]);
-            } else {
+        for(int ri = 0; ri<qs.length; ri++){
+            int[] q = qs[ri];
+            int i = q[0];
+            int j = q[1];
+            if(j<cutoff){
+                res[ri] = (int)(dp[i][j]);
+            }else{
                 long sum = 0;
-                for (int j = start; j < a.length; j += len) {
-                    sum += a[j];
-                    sum %= Mod;
+                for(int k=i; k<n; k+= j){
+                    sum += a[k];
+                    sum %= mod;
                 }
-                res[i] = (int) sum;
+                res[ri] = (int)sum;
             }
         }
         return res;
