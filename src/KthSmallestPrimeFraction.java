@@ -2,67 +2,46 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 
 public class KthSmallestPrimeFraction {
-    class Fraction implements Comparable<Fraction> {
-        int a;
-        int b;
 
-        public Fraction(int a, int b) {
-            this.a = a;
-            this.b = b;
-        }
-
-        Fraction add(Fraction o) {
-            return new Fraction(this.a * o.b + this.b * o.a, this.b * o.b);
-        }
-
-        Fraction divide(int num) {
-            if (this.a % num == 0) {
-                return new Fraction(a / num, b);
-            } else {
-                return new Fraction(a, b * num);
-            }
-        }
-
-        @Override
-        public int compareTo(Fraction o) {
-            return Integer.compare(this.a * o.b, this.b * o.a);
-        }
-    }
+    private double eps = 0.000001;
 
     public int[] kthSmallestPrimeFraction(int[] a, int k) {
         int n = a.length;
-        Fraction l = new Fraction(1, a[n - 1]);
-        Fraction smallest = l;
-        Fraction u = new Fraction(a[n - 1], 1);
-        while (l.compareTo(u) <= 0) {
-            Fraction mid = l.add(u).divide(2);
-            if (count(mid, a) <= k) {
-                l = mid.add(smallest);
+        double l = 1.0 / a[n - 1];
+        double u = (a[n - 1] - 1) * 1.0 / a[n - 1];
+        double lastgood = -1.0;
+        while (u - l > eps * eps) {
+            double mid = (l + u) / 2;
+            int i = n - 2;
+            int j = n - 1;
+            int smaller = 0;
+            while (i >= 0) {
+                while (j >= 0 && a[i] * 1.0 / a[j] <= mid) {
+                    j--;
+                }
+                // 0..j-1
+                smaller += n - 1 - j;
+                // 0..j-1
+                i--;
+            }
+            // <= has nobigger elements
+            if (smaller >= k) {
+                u = mid;
+                lastgood = mid;
             } else {
-                u = mid.add(smallest);
+                l = mid;
             }
         }
-        int[] r = new int[2];
-        r[0] = u.a;
-        r[1] = u.b;
-        return r;
-    }
 
-    private int count(Fraction mid, int[] a) {
-        int n = a.length;
-        int i = 0;
-        int j = 0;
-        int count = 0;
-        while (j < n) {
-
-            if (i < n && new Fraction(a[i], a[j]).compareTo(mid) >= 0) {
-                i++;
-            } else {
-                count += i;
-                j++;
+        for (int i = 1; i < n; i++) {
+            double ddem = lastgood * a[i];
+            int idem = (int) ddem;
+            double diff = Math.abs(ddem - idem);
+            if (idem > 0 && diff <= 0.000001) {
+                return new int[]{idem, a[i]};
             }
         }
-        return count + 1;
+        return null;
     }
 }
 
