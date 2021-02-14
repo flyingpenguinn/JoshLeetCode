@@ -40,16 +40,14 @@ graph[i] will not contain i or duplicate values.
 The graph is undirected: if any element j is in graph[i], then i will be in graph[j].
  */
 public class IsGraphBipartite {
-    // label the nodes as 1 if it's an unvisited component because components are not connected with each other anyway
+    // label the nodes as 0 if it's an unvisited component because components are not connected with each other anyway
     public boolean isBipartite(int[][] g) {
-        // simple graph, no duplicated edge. vertexs...0..n-1
-        // undirected graph
         int n = g.length;
-        int[] color = new int[n];
-        for(int i=0; i<n; i++){
-            if(color[i] == 0){
-                boolean res = dfs(i, 1, g, color);
-                if(!res){
+        int[] cs = new int[n];
+        Arrays.fill(cs, -1);
+        for (int i = 0; i < n; i++) {
+            if (cs[i] == -1) {
+                if (!dfs(g, i, 0, cs)) {
                     return false;
                 }
             }
@@ -57,24 +55,19 @@ public class IsGraphBipartite {
         return true;
     }
 
-
-    private boolean dfs(int i, int curColor, int[][] g, int[] color){
-        // we know i can be on curColor
-        color[i] = curColor;
-        int nextColor = (curColor==1?2:1);
-        if(g[i]==null){
-            return true;
+    private boolean dfs(int[][] g, int i, int cc, int[] cs) {
+        if (cs[i] != -1) {
+            if (cs[i] != cc) {
+                return false;
+            } else {
+                return true;
+            }
         }
-        for(int next: g[i]){
-            if(color[next] == 0){
-                boolean res = dfs(next, nextColor, g, color);
-                if(!res){
-                    return false;
-                }
-            }else if (color[next] != nextColor){
+        cs[i] = cc;
+        for (int ne : g[i]) {
+            if (!dfs(g, ne, cc ^ 1, cs)) {
                 return false;
             }
-            // otherwise good let go
         }
         return true;
     }
