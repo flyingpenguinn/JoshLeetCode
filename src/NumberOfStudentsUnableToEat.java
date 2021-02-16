@@ -1,21 +1,25 @@
 public class NumberOfStudentsUnableToEat {
-    // as long as sb wants to eat the b sandwich we are fine.. otherwise we are stuck
-    public int countStudents(int[] a, int[] b) {
-        int n = a.length;
-        int a1 = 0;
+    // because student rotates, we count students and iterate sandwiches. As long as there is some student willing to eat we are good
+    public int countStudents(int[] students, int[] sandwiches) {
+        int n = sandwiches.length;
+        int zeros = 0;
         for (int i = 0; i < n; i++) {
-            a1 += a[i] == 1 ? 1 : 0;
+            zeros += students[i] == 0 ? 1 : 0;
         }
-        int a0 = n - a1;
-
+        int ones = n - zeros;
         for (int i = 0; i < n; i++) {
-            if (b[i] == 1) {
-                a1--;
+            if (sandwiches[i] == 1) {
+                if (ones == 0) {
+                    return n - i;
+                } else {
+                    ones--;
+                }
             } else {
-                a0--;
-            }
-            if (a0 < 0 || a1 < 0) {
-                return n - i;
+                if (zeros == 0) {
+                    return n - i;
+                } else {
+                    zeros--;
+                }
             }
         }
         return 0;

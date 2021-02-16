@@ -22,29 +22,24 @@ S will be a string with length between 1 and 12.
 S will consist only of letters or digits.
  */
 public class LetterCasePermutation {
+    public List<String> letterCasePermutation(String s) {
+        List<String> res = new ArrayList<>();
+        dfs(s, 0, "", res);
+        return res;
+    }
 
-    class Solution {
-        List<String> r = new ArrayList<>();
-
-        public List<String> letterCasePermutation(String s) {
-            dfs(s, 0, "");
-            return r;
+    private void dfs(String s, int i, String cur, List<String> res){
+        int n = s.length();
+        if(i==n){
+            res.add(cur);
+            return;
         }
-
-        void dfs(String s, int i, String cur) {
-            int n = s.length();
-            if (i == n) {
-                r.add(cur);
-                return;
-            }
-            char c = s.charAt(i);
-            if (isLetter(c)) {
-                dfs(s, i + 1, cur + toLowerCase(c));
-                dfs(s, i + 1, cur + toUpperCase(c));
-            } else {
-                dfs(s, i + 1, cur + c);
-            }
+        char c = s.charAt(i);
+        dfs(s, i+1, cur+c, res);
+        if(Character.isUpperCase(c)){
+            dfs(s, i+1, cur+Character.toLowerCase(c), res);
+        }else if(Character.isLowerCase(c)){
+            dfs(s, i+1, cur+Character.toUpperCase(c), res);
         }
-
     }
 }
