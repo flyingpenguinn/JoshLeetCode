@@ -28,19 +28,19 @@ return: 3, for 3 arithmetic slices in A: [1, 2, 3], [2, 3, 4] and [1, 2, 3, 4] i
 public class ArithmeticSlices {
     public int numberOfArithmeticSlices(int[] a) {
         int n = a.length;
-        int last = 0;
-        int r = 0;
-        for (int i = 1; i < n; i++) {
-            int d = a[i] - a[i - 1];
-            int cur = 0;
-            if (i - 2 >= 0 && a[i] - a[i - 1] == a[i - 1] - a[i - 2]) {
-                cur = last + 1;
-            } else {
-                cur = 2; // if not equal then this starts a 2-len slice
+        int lcount = 0;
+        // last count. how many len>=3 arith seq ended at i-1. could be 0 if no good one formed
+        int res = 0;
+        for (int i = 2; i < n; i++) {
+            int ncount = 0;
+            if (a[i] - a[i - 1] == a[i - 1] - a[i - 2]) {
+                // a new 3 elem one.
+                // if a[i-1] can't form anything it's 0 anyway
+                ncount = 1 + lcount;
             }
-            r += cur - 2;// if cur=3, +1. if cur==4, +2
-            last = cur;
+            res += ncount;
+            lcount = ncount;
         }
-        return r;
+        return res;
     }
 }
