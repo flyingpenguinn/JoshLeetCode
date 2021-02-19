@@ -17,54 +17,43 @@ Note:
 0 < nums[i] < 10000.
  */
 public class PartitionToKEqualSubsets {
-    // dp on states. note times and cursum are incorporated in sum
-    // need cursum and times to differentiate the boundary of each round
-    private Boolean[][] dp;
-
+    // actually similar to min incompatability. for each state we iterate its subset. upper bound is 3^n
     public boolean canPartitionKSubsets(int[] a, int k) {
         int n = a.length;
-        int sum = 0;
+        int allsum = 0;
         for (int i = 0; i < n; i++) {
-            sum += a[i];
+            allsum += a[i];
         }
-        if (sum % k != 0) {
+        if (allsum % k != 0) {
             return false;
         }
-        dp = new Boolean[n][1 << n];
-        int t = sum / k;
-        return cando(a, k, 0, 0, 0, 0, t);
-    }
-
-    private boolean cando(int[] a, int k, int i, int st, int times, int cursum, int target) {
-        // hidden all subset sum driven by st
-        // cursum is allsum % target
-        // times is allsum / target
-        int n = a.length;
-        if (st + 1 == (1 << n)) {
-            return times == k - 1;
-            // make sure we really made k-1 cuts
+        int t = allsum / k;
+        int[] sums = new int[1 << n];
+        boolean[] dp = new boolean[1 << n];
+        for (int i = 0; i < (1 << n); i++) {
+            int sum = 0;
+            for (int j = 0; j < n; j++) {
+                if (((i >> j) & 1) == 1) {
+                    sum += a[j];
+                }
+            }
+            sums[i] = sum;
+            if (sum == t) {
+                dp[i] = true;
+            }
         }
-        if (cursum > target) {
-            return false;
+        for (int i = 0; i < (1 << n); i++) {
+            int sum = sums[i];
+            if (sum % t != 0) {
+                continue;
+            }
+            for (int j = i - 1; j > 0; j = ((j - 1) & i)) {
+                if (dp[j] && dp[i - j]) {
+                    dp[i] = true;
+                    break;
+                }
+            }
         }
-        if (cursum == target) {
-            return cando(a, k, 0, st, times + 1, 0, target);
-        }
-        if (i == n) {
-// can't pick sum == target correctly for this cycle
-            return false;
-        }
-        if (dp[i][st] != null) {
-            return dp[i][st];
-        }
-        boolean nopick = cando(a, k, i + 1, st, times, cursum, target);
-        if (nopick || ((st >> i) & 1) == 1) {
-            dp[i][st] = nopick;
-            return nopick;
-        }
-        int nst = st | (1 << i);
-        boolean pick = cando(a, k, i + 1, nst, times, cursum + a[i], target);
-        dp[i][st] = pick;
-        return pick;
+        return dp[(1 << n) - 1];
     }
 }
