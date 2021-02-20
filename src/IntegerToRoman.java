@@ -47,11 +47,11 @@ Explanation: M = 1000, CM = 900, XC = 90 and IV = 4.
 
  */
 public class IntegerToRoman {
-    String[] thousands = {"", "M", "MM", "MMM"}; // at most 3999
-    String[] hundreds = {"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"};
-    String[] tens = {"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"};
-    String[] ds = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"};
-    String[][] bases = {thousands, hundreds, tens, ds};
+    private String[] thousands = {"", "M", "MM", "MMM"}; // at most 3999
+    private String[] hundreds = {"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"};
+    private String[] tens = {"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"};
+    private String[] ds = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"};
+    private String[][] bases = {thousands, hundreds, tens, ds};
 
     public String intToRoman(int num) {
         // no 0 in roman
@@ -68,10 +68,5 @@ public class IntegerToRoman {
             baseindex++;
         }
         return sb.toString();
-    }
-
-
-    public static void main(String[] args) {
-        System.out.println(new IntegerToRoman().intToRoman(3942));
     }
 }
