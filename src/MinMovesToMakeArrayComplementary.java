@@ -4,35 +4,34 @@ import static java.lang.Math.min;
 import static java.lang.Math.max;
 
 public class MinMovesToMakeArrayComplementary {
-    public int minMoves(int[] nums, int limit) {
-        // given a t, if t
-        // between 2.. min(a,b), lower both numbers,2 changes
-        // min(a,b)+1... a+b-1, lower one number, 1 change
-        // a+b, 0 change
-        // a+b+1... max(a,b)+limit, 1 change
-        // max(a,b)+limit+1...2* limit, 2 changes
-        // then we can form these intervals for each pair sum
-        // then use a trick similar to meeting rooms overlap
-        int n = nums.length;
-        int[] d = new int[2 * limit + 2];
+    public int minMoves(int[] a, int limit) {
+        int n = a.length;
+        // if the target is from [2 to 1+ min), need 2 changes
+        // from 1 + min to sum), need 1 change
+        // sum, sum+1) 0 change
+        // [sum+1 to limit+max+1), need 1 change
+        // from limit+max+1 to 2*limit+1), need 2 changes
+        // use the res array to get a running total at each possible point of target sum
+        int[] res = new int[2 * limit + 2];
+        // from 2 to 2*limit
         for (int i = 0; i < n / 2; i++) {
-            int a = nums[i];
-            int b = nums[n - i - 1];
-            d[2] += 2;
-            d[min(a, b) + 1] -= 1;
-            // comparing to the previous segment, from 2 to 1
-            // actually -2 first then +1
-            d[a + b] -= 1;
-            d[a + b + 1] += 1;
-            d[max(a, b) + limit + 1] += 1;
+            int sum = a[i] + a[n - i - 1];
+            int min = Math.min(a[i], a[n - i - 1]);
+            int max = Math.max(a[i], a[n - i - 1]);
+            res[2] += 2;
+            res[1 + min] -= 1;
+            res[sum] -= 1;
+            res[sum + 1] += 1;
+            res[limit + max + 1] += 1;
+            res[2 * limit + 1] -= 2;
         }
-        int cur = 0;
-        int res = Integer.MAX_VALUE;
+        int rt = 0;
+        int min = 2 * n + 1;
         for (int i = 2; i <= 2 * limit; i++) {
-            cur += d[i];
-            res = min(res, cur);
+            rt += res[i];
+            min = Math.min(min, rt);
         }
-        return res;
+        return min;
     }
 
     public static void main(String[] args) {

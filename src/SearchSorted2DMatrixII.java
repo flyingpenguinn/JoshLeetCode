@@ -27,21 +27,17 @@ public class SearchSorted2DMatrixII {
     // all on the col are bigger. so we can throw one row or col effectively
     public boolean searchMatrix(int[][] a, int t) {
         int m = a.length;
-        if(m==0){
-            return false;
-        }
         int n = a[0].length;
-
         int i = 0;
         int j = n-1;
-        while(j>=0 && i<m){
-            while(i<m && a[i][j]<t){
+        while(i<m && j>=0){
+            if(a[i][j]==t){
+                return true;
+            }else if(a[i][j]>t){
+                j--;
+            }else{
                 i++;
             }
-            if(i<m && a[i][j]==t){
-                return true;
-            }
-            j--;
         }
         return false;
     }
