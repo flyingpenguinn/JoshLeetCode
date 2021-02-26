@@ -17,67 +17,45 @@ Then length of the input array is in range [1, 10,000].
 The input array may contain duplicates, so ascending order here means <=.
  */
 public class ShortestUnsortedSubarray {
-    // 1. find the suspicous area first
-    // 2. get its min and max
-    // 3. scan from front or back to get the range. i.e. we extand the suspicious area wider to include boundaries
+    // the last one has smaller left to it, and is the last one from left to right
+    // the first one has bigger to it, and is the last one from right to left
+
     public int findUnsortedSubarray(int[] a) {
         int n = a.length;
-        int i = 1;
-        for (; i < n; i++) {
-            if (a[i] < a[i - 1]) {
-                i--;
-                break;
+        int start = -1;
+        int end = -1;
+        int right = a[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            right = Math.min(right, a[i]);
+            if (right < a[i]) {
+                start = i;
             }
         }
-        if (i == n) {
-            return 0;
-        }
-
-        int j = n - 2;
-        for (; j >= 0; j--) {
-            if (a[j] > a[j + 1]) {
-                j++;
-                break;
+        int left = a[0];
+        for (int i = 1; i < n; i++) {
+            left = Math.max(left, a[i]);
+            if (left > a[i]) {
+                end = i;
             }
         }
-        int min = a[i];
-        int max = a[i];
-
-        for (int k = i; k <= j; k++) {
-            min = Math.min(min, a[k]);
-            max = Math.max(max, a[k]);
-        }
-        int rs = -1;
-        for (i = 0; i < n; i++) {
-            if (a[i] > min) {
-                rs = i;
-                break;
-            }
-        }
-        int re = -1;
-        for (i = n - 1; i >= 0; i--) {
-            if (a[i] < max) {
-                re = i;
-                break;
-            }
-        }
-        return re - rs + 1;
+        return start == -1 ? 0 : end - start + 1;
     }
 }
 
 class ShortedUnsotedSubarraySorting {
-    // "flood" from both sides.
+    // any part that is unequal to sorted array is the boundary
     public int findUnsortedSubarray(int[] a) {
-        int[] clone = a.clone();
-        Arrays.sort(a);
-        int start = 0;
-        while (start < a.length && a[start] == clone[start]) {
-            start++;
+        int n = a.length;
+        int[] ca = Arrays.copyOf(a, n);
+        Arrays.sort(ca);
+        int first = -1;
+        int last = -1;
+        for (int i = 0; i < n; i++) {
+            if (ca[i] != a[i]) {
+                last = i;
+                first = first == -1 ? i : first;
+            }
         }
-        int end = a.length - 1;
-        while (end >= start && a[end] == clone[end]) {
-            end--;
-        }
-        return end - start + 1;
+        return first == -1 ? 0 : last - first + 1;
     }
 }

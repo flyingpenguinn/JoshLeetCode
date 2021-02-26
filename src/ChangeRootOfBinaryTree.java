@@ -6,30 +6,30 @@ public class ChangeRootOfBinaryTree {
         public Node parent;
     }
 
+    // similar to reversing linked list!
     public Node flipBinaryTree(Node root, Node leaf) {
-        // changing pp while moving p. typical linked list stuff...
         Node cur = leaf;
-        Node p = cur.parent;
-        while (p != null) {
-            Node pp = p.parent;
-            if (cur.left != null) {
+        Node pre = null;
+        while(cur != root){
+            Node p = cur.parent;
+            cur.parent = pre;
+            clearParent(p, cur);
+            if(cur.left != null){
                 cur.right = cur.left;
             }
-            if (cur.parent == p) {
-                cur.parent = null;
-            }
             cur.left = p;
-            p.parent = cur;
-            if (cur == p.left) {
-                p.left = null;
-            } else {
-                p.right = null;
-            }
-
+            pre = cur;
             cur = p;
-            p = pp;
-            pp = pp == null ? null : pp.parent;
         }
+        cur.parent  = pre;
         return leaf;
+    }
+
+    private void clearParent(Node p, Node cur){
+        if(p.left == cur){
+            p.left = null;
+        }else{
+            p.right = null;
+        }
     }
 }
