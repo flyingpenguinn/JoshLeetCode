@@ -11,6 +11,7 @@ public class ConstructLexiLargestSeq {
     private boolean dfs(int[] res, int st, int i, int n) {
         //  System.out.println(Arrays.toString(res)+" "+st+" "+i);
         if (st + 2 == (1 << (n + 1))) {
+            // 1110 is the number we are shooting for when n = 3. note we start from 1th positon 0th is emptied
             return true;
         }
         if (i == res.length) {

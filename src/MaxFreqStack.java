@@ -63,8 +63,8 @@ public class MaxFreqStack {
     static class FreqStack {
         // use the fact that whatever is coming later must be popped first. so we just need to record their arrival timing
         // keep freq at insertion time + insertion time into a pq
-        Map<Integer, Integer> freq = new HashMap<>();
-        PriorityQueue<int[]> ts = new PriorityQueue<>((x, y) -> x[1] == y[1] ? Integer.compare(y[2], x[2]) : Integer.compare(y[1], x[1]));
+        private Map<Integer, Integer> freq = new HashMap<>();
+        private PriorityQueue<int[]> ts = new PriorityQueue<>((x, y) -> x[1] == y[1] ? Integer.compare(y[2], x[2]) : Integer.compare(y[1], x[1]));
         // value, freq and last appearance time
         // dont need another stack here to keep track of each element: they are already in treeset
 
@@ -96,37 +96,44 @@ public class MaxFreqStack {
     }
 
     static class FreqStackO1 {
-        // for a given number that shows t times, it's in st map, with key from 1 to t
-        Map<Integer, Integer> freq = new HashMap<>();
-        Map<Integer, Deque<Integer>> st = new HashMap<>();
-        // freq-> all numbers that had shown this freq before
+        // keep the elements in the old freq's stack map!
+        private Map<Integer, Deque<Integer>> m = new HashMap<>();
+        private Map<Integer, Integer> f = new HashMap<>();
+        private int maxfreq = 0;
 
-        int maxfreq = 0;
+        public FreqStackO1() {
+
+        }
 
         public void push(int x) {
-            int nv = freq.getOrDefault(x, 0) + 1;
+            int nv = update(f, x, 1);
             maxfreq = Math.max(maxfreq, nv);
-            freq.put(x, nv);
-            st.computeIfAbsent(nv, k -> new ArrayDeque<>()).push(x);
+            m.computeIfAbsent(nv, k -> new ArrayDeque<>()).push(x);
+            //   System.out.println("after push "+m);
         }
 
         public int pop() {
-
-            Deque<Integer> maxfreqstack = st.get(maxfreq);
-
-
-            int rt = maxfreqstack.pop();
-            if (maxfreqstack.isEmpty()) {
-                st.remove(maxfreq);
+            if (maxfreq == 0) {
+                return -1;
+            }
+            int rt = m.get(maxfreq).pop();
+            update(f, rt, -1);
+            if (m.get(maxfreq).isEmpty()) {
+                m.remove(maxfreq);
                 maxfreq--;
             }
-            int nv = freq.getOrDefault(rt, 0) - 1;
-            if (nv <= 0) {
-                freq.remove(rt);
-            } else {
-                freq.put(rt, nv);
-            }
+            //   System.out.println("after pop "+m);
             return rt;
+        }
+
+        private int update(Map<Integer, Integer> m, int k, int d) {
+            int nv = m.getOrDefault(k, 0) + d;
+            if (nv <= 0) {
+                m.remove(k);
+            } else {
+                m.put(k, nv);
+            }
+            return nv;
         }
     }
 }
