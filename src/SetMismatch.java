@@ -14,23 +14,20 @@ The given array's numbers won't have any order.
 
 public class SetMismatch {
 
-    // can reuse a as hashtable: set a[i] to negative if exist
     public int[] findErrorNums(int[] a) {
         int n = a.length;
-        boolean[] v = new boolean[n + 1];
-        int[] r = new int[2];
+        long sum = 0;
+        long sqsum = 0;
         for (int i = 0; i < n; i++) {
-            if (v[a[i]]) {
-                r[0] = a[i];
-            }
-            v[a[i]] = true;
+            sqsum += a[i] * a[i];
+            sum += a[i];
         }
-        for (int i = 1; i <= n; i++) {
-            if (!v[i]) {
-                r[1] = i;
-                break;
-            }
-        }
-        return r;
+        long diff = sum - n * (n + 1) / 2;
+        long sqdiff = sqsum - 1L * n * (n + 1) * (2 * n + 1) / 6;
+        long theirsum = sqdiff / diff;
+        long v1 = (diff + theirsum) / 2;
+        long v2 = (theirsum - diff) / 2;
+        return new int[]{(int) v1, (int) v2};
     }
 }
+
