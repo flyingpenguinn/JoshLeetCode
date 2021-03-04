@@ -45,40 +45,33 @@ Your code should preferably run in O(n) time and use only O(1) memory.
 import base.ListNode;
 
 public class IntersectionOfTwoLinkedLists {
-    public ListNode getIntersectionNode(ListNode h1, ListNode h2) {
-        if (h1 == null || h2 == null) {
-            return null;
+    public ListNode getIntersectionNode(ListNode ha, ListNode hb) {
+        int sa = size(ha);
+        int sb = size(hb);
+        ListNode pa = ha;
+        ListNode pb = hb;
+        while(sa>sb){
+            pa = pa.next;
+            sa--;
         }
-        int len1 = 0;
-        ListNode p1 = h1;
-        while (p1.next != null) {
-            p1 = p1.next;
-            len1++;
+        while(sb>sa){
+            pb = pb.next;
+            sb--;
         }
-        int len2 = 0;
-        ListNode p2 = h2;
-        while (p2.next != null) {
-            p2 = p2.next;
-            len2++;
+        while(pa != pb){
+            pa = pa.next;
+            pb = pb.next;
+            sb--;
         }
-        if (p1 != p2) {
-            return null;
-        }
-        p1 = h1;
-        p2 = h2;
-        while (len1 > len2) {
-            p1 = p1.next;
-            len1--;
-        }
-        while (len2 > len1) {
-            p2 = p2.next;
-            len2--;
-        }
-        while (p1 != p2) {
-            p1 = p1.next;
-            p2 = p2.next;
-        }
-        return p1;
+        return sb==0? null: pa;
+    }
 
+    private int size(ListNode p){
+        int res = 0;
+        while(p != null){
+            res++;
+            p = p.next;
+        }
+        return res;
     }
 }
