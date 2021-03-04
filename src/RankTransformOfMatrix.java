@@ -101,7 +101,7 @@ public class RankTransformOfMatrix {
         Node pn2 = find(n2);
         if (pn1 != pn2) {
             pn2.parent = pn1;
-            // caveat: is this really O(1)?
+            // caveat: is this really O(1) ?  at most O(m+n) because it's row + col that a number can be compared with at most
             pn1.prevs.addAll(pn2.prevs);
         }
     }
