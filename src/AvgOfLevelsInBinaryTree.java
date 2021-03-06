@@ -19,29 +19,30 @@ Note:
 The range of node's value is in the range of 32-bit signed integer.
  */
 public class AvgOfLevelsInBinaryTree {
-    Map<Integer,Double> m = new HashMap<>();
-    Map<Integer,Integer> count = new HashMap<>();
-    int max = -1;
+    private Map<Integer, Double> m = new HashMap<>();
+    private Map<Integer, Integer> count = new HashMap<>();
+    private int max = -1;
+
     public List<Double> averageOfLevels(TreeNode root) {
         dfs(root, 0);
         List<Double> r = new ArrayList<>();
-        for(int i=0; i<=max;i++){
+        for (int i = 0; i <= max; i++) {
             int c = count.get(i);
             double v = m.get(i);
-            double avg = v/c;
+            double avg = v / c;
             r.add(avg);
         }
         return r;
     }
 
-    void dfs(TreeNode n, int d){
-        if(n==null){
+    void dfs(TreeNode n, int d) {
+        if (n == null) {
             return;
         }
         max = Math.max(max, d);
-        m.put(d, m.getOrDefault(d, 0.0)+n.val);
-        count.put(d, count.getOrDefault(d, 0)+1);
-        dfs(n.left, d+1);
-        dfs(n.right, d+1);
+        m.put(d, m.getOrDefault(d, 0.0) + n.val);
+        count.put(d, count.getOrDefault(d, 0) + 1);
+        dfs(n.left, d + 1);
+        dfs(n.right, d + 1);
     }
 }
