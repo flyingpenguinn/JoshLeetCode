@@ -31,72 +31,86 @@ public class DesignHashMap {
 }
 class MyHashMap {
 
-    private class Entry{
+    class Entry{
         private int k;
         private int v;
         private Entry next;
         private Entry prev;
-        public Entry(int k, int v){
+        public Entry(int k, int v, Entry next, Entry prev){
             this.k = k;
             this.v = v;
+            this.next = next;
+            this.prev = prev;
         }
     }
-    private int n = 1024;
-    private Entry[] b = new Entry[n];
+    private final int bsize = 1024;
+    private Entry[] bucket = new Entry[bsize];
     /** Initialize your data structure here. */
     public MyHashMap() {
-
     }
 
     /** value will always be non-negative. */
     public void put(int key, int value) {
-        int mod = key % n;
-        Entry found = find (key);
-        if (found != null){
-            found.v = value;
+
+        Entry e = locate(key);
+        if(e!= null){
+            e.v = value;
             return;
         }
-        Entry e = new Entry(key, value);
-        e.next = b[mod];
-        if(b[mod] != null){
-            b[mod].prev = e;
+        int slot = getslot(key);
+        Entry oldhead = bucket[slot];
+        Entry newhead = new Entry(key, value, oldhead,null);
+        if(oldhead != null){
+            oldhead.prev = newhead;
         }
-        b[mod] = e;
+        bucket[slot] = newhead;
     }
 
-    private Entry find(int key){
-        int mod = key % n;
-        Entry e = b[mod];
-        while(e!= null){
-            if(e.k == key){
-                return e;
-            }
-            e = e.next;
-        }
-        return null;
-    }
 
     /** Returns the value to which the specified key is mapped, or -1 if this map contains no mapping for the key */
     public int get(int key) {
-        Entry found = find (key);
-        return found == null? -1: found.v;
+        Entry e = locate(key);
+        return e!= null? e.v: -1;
     }
 
     /** Removes the mapping of the specified value key if this map contains a mapping for the key */
     public void remove(int key) {
-        int mod = key % n;
-        Entry found = find(key);
-        if(found==null){
+        Entry e = locate(key);
+        if(e==null){
             return;
         }
-        if(found.prev == null){
-            b[mod] = found.next;
+        Entry prev = e.prev;
+        Entry next = e.next;
+        int slot = getslot(key);
+        if(prev==null){
+            // first in bucket
+            bucket[slot] = next;
+            if(next != null){
+                next.prev = null;
+            }
         }else{
-            found.prev.next = found.next;
+            prev.next = next;
+            if(next != null){
+                next.prev = prev;
+            }
         }
-        if(found.next != null){
-            found.next.prev = found.prev;
+    }
+
+
+    private Entry locate(int key){
+        int slot = getslot(key);
+        Entry e = bucket[slot];
+        while(e!= null && e.k != key){
+            e = e.next;
         }
+        if(e!= null && e.k == key){
+            return e;
+        }
+        return null;
+    }
+
+    private int getslot(int key){
+        return key % bsize;
     }
 }
 
