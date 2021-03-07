@@ -3,55 +3,43 @@ import java.util.Comparator;
 
 public class ShortEncodingOfWords {
     // suffix trie tree
-    class TrieNode {
-        char v;
-        TrieNode[] ch = new TrieNode[26];
+    private class Trie {
+        private char c;
+        private Trie[] ch = new Trie[26];
 
-        public TrieNode(char v) {
-            this.v = v;
-        }
-
-        // return whether it's fully incorporated in the tree i.e. no new node
-        boolean insert(String w, int i, boolean created) {
-            if (i == -1) {
-                return created;
-            }
-            char c = w.charAt(i);
-            int index = c - 'a';
-            TrieNode child = ch[index];
-            if (child == null) {
-                ch[index] = new TrieNode(c);
-                return ch[index].insert(w, i - 1, true);
-            } else {
-                return ch[index].insert(w, i - 1, created);
-            }
-        }
-
-    }
-
-    TrieNode root = new TrieNode('-');
-
-    class StringComparator implements Comparator<String> {
-
-        @Override
-        public int compare(String x, String y) {
-            return x.length() == y.length() ? x.compareTo(y) : Integer.compare(x.length(), y.length());
+        public Trie(char c) {
+            this.c = c;
         }
     }
+
+    private Trie root = new Trie('*');
+    private int len = 0;
+    private int count = 0;
 
     public int minimumLengthEncoding(String[] words) {
-        // sort by len first
-        Arrays.sort(words, new StringComparator());
-        int n = words.length;
-        int len = 0;
-        for (int i = n - 1; i >= 0; i--) {
-            boolean created = root.insert(words[i], words[i].length() - 1, false);
-            if (created) {
-                len += words[i].length() + 1;
+        for (String w : words) {
+            if (insert(root, w)) {
+                len += w.length();
+                count++;
             }
         }
-        return len;
+        return len + count;
     }
+
+    private boolean insert(Trie n, String w) {
+        Trie p = n;
+        for (int i = w.length() - 1; i >= 0; i--) {
+            char c = w.charAt(i);
+            int cind = c - 'a';
+            if (p.ch[cind] == null) {
+                p.ch[cind] = new Trie(c);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public static void main(String[] args) {
         String[] words = {"time", "atime", "btime"};
