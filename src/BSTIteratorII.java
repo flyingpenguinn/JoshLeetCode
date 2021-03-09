@@ -7,105 +7,47 @@ import java.util.List;
 
 public class BSTIteratorII {
     class BSTIterator {
-        // Three Stacks:
-        // nst stores the next values and is the next() when ncache() is empty. pushing nodes here requires pushLeft
-        // ncache stores previously fetched prev() values for later next() calls. Pushing values here doesn't require pushLeft
-        // pst stores the previously fetched next() for later prev() calls.  prev() will be the second node from the top of this stack
 
-        private Deque<TreeNode> nst = new ArrayDeque<>();
-        private Deque<TreeNode> pst = new ArrayDeque<>();
-        private Deque<TreeNode> ncache = new ArrayDeque<>();
-
-        private void pushLeft(TreeNode p) {
-            while (p != null) {
-                nst.push(p);
-                p = p.left;
-            }
-        }
-
-        public BSTIterator(TreeNode root) {
-            pushLeft(root);
-        }
-
-        public boolean hasNext() {
-            return !ncache.isEmpty() || !nst.isEmpty();
-        }
-
-        public int next() {
-            TreeNode next = null;
-            if (!ncache.isEmpty()) {
-                next = ncache.pop();
-            } else {
-                next = nst.pop();
-                pushLeft(next.right);
-            }
-            pst.push(next);
-            return next.val;
-        }
-
-        public boolean hasPrev() {
-            return pst.size() > 1;
-        }
-
-        public int prev() {
-            ncache.push(pst.pop());
-            return pst.peek().val;
-        }
-    }
-}
-
-class BstIteratorIIList {
-    class BSTIterator {
-        private Deque<TreeNode> stack = new ArrayDeque<>();
+        private Deque<TreeNode> st = new ArrayDeque<>();
         private List<TreeNode> list = new ArrayList<>();
-        private int curIndex = -1;
-        // curIndex is the cur element tht we are standing on
-        // curIndex- 1 is the prev value; curIndex+1 is the next value, if exists, in the list
-        // if curIndex+1 is too big we expand the list by adding the top of the stack to it and move nextIndex
+        private int index = -1; // we are standing on -1 to start with
 
-        private void pushLeft(TreeNode p) {
+        public BSTIterator(TreeNode root) {
+            pushleft(root);
+        }
+
+        private void pushleft(TreeNode p) {
             while (p != null) {
-                stack.push(p);
+                st.push(p);
                 p = p.left;
             }
         }
 
-        private boolean inRange(int i) {
-            return i >= 0 && i < list.size();
-        }
-
-        public BSTIterator(TreeNode root) {
-            pushLeft(root);
-        }
-
         public boolean hasNext() {
-            if (inRange(curIndex + 1)) {
+            if (index + 1 < list.size()) {
                 return true;
             }
-            return !stack.isEmpty();
+            return !st.isEmpty();
         }
 
         public int next() {
-            int rt = 0;
-            if (inRange(curIndex + 1)) {
-                rt = list.get(curIndex + 1).val;
+            if (index + 1 < list.size()) {
+                return list.get(++index).val;
             } else {
-                // if cur node is the last we will have to expand
-                TreeNode next = stack.pop();
-                pushLeft(next.right);
-                list.add(next);
-                rt = next.val;
+                TreeNode p = st.pop();
+                list.add(p);
+                index++;
+                pushleft(p.right);
+                return p.val;
             }
-            curIndex++;
-            return rt;
         }
 
         public boolean hasPrev() {
-            return inRange(curIndex - 1);
+            return index - 1 >= 0;
         }
 
         public int prev() {
-            return list.get(--curIndex).val;
+            return list.get(--index).val;
         }
     }
 }
