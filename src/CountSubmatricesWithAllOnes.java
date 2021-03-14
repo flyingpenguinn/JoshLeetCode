@@ -1,3 +1,6 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /*
 LC#1504
 Given a rows * columns matrix mat of ones and zeros, return how many submatrices have all ones.
@@ -52,7 +55,6 @@ public class CountSubmatricesWithAllOnes {
     // note this is submatrice, not square. can be rectangular
     // Om^2*n. we convert to sth like 2d subarray problem
     // find the one streaks in each i-j segment. each full column would contribute to k-start+1 matrices ending at that column
-    // @todo investigate the on^2 stack solution
     public int numSubmat(int[][] a) {
         int m = a.length;
         int n = a[0].length;
@@ -81,6 +83,43 @@ public class CountSubmatricesWithAllOnes {
                     }
                 }
             }
+        }
+        return res;
+    }
+}
+
+class CountSubmatricesWithAllOnesOn2 {
+    // find the first < on the left. note the rectangles is using current one + all < ones can do because we can just extend beyond it
+    public int numSubmat(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int[] h = new int[n];
+        int res = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                h[j] = a[i][j] == 0 ? 0 : h[j] + 1;
+            }
+            res += count(h);
+        }
+        return res;
+    }
+
+    private int count(int[] h) {
+        int n = h.length;
+        int[] dp = new int[n];
+        int res = 0;
+        Deque<Integer> st = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            while (!st.isEmpty() && h[st.peek()] >= h[i]) {
+                st.pop();
+            }
+            //pre is the first <
+            int pre = st.isEmpty() ? -1 : st.peek();
+            // pre+1...i
+            int cur = (pre == -1 ? 0 : dp[pre]) + h[i] * (i - pre);
+            dp[i] = cur;
+            res += cur;
+            st.push(i);
         }
         return res;
     }

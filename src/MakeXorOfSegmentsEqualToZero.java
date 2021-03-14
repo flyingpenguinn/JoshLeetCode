@@ -1,3 +1,7 @@
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public class MakeXorOfSegmentsEqualToZero {
     // we differentiate "in set" and "out set" cases because for outset we dont rely on dp[i][j] at all. we can take any previous j and map it to a needed number. if it's in set, we covered in inset already. if not, we know how many we need to change
     public int minChanges(int[] a, int k) {
