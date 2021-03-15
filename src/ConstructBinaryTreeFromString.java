@@ -79,39 +79,33 @@ public class ConstructBinaryTreeFromString {
 
 class ConstructBinaryTreeFromStringStack {
     // ): pop out current
-    // (: do nothing
-    // numbers or -: loop on the spot to get all numbers!
+    // (: push
+    // numbers or -: change the top of stack directly they describe the current stack top
     public TreeNode str2tree(String s) {
-        if (s == null || s.isEmpty()) {
+        if (s.isEmpty()) {
             return null;
         }
-        int n = s.length();
-        int i = 0;
         Deque<TreeNode> st = new ArrayDeque<>();
-        while (i < n) {
+        int n = s.length();
+        st.push(new TreeNode(0));
+        int sign = 1;
+        for (int i = 0; i < n; i++) {
             char c = s.charAt(i);
-            if (c == ')') {
-                st.pop();
-                i++;
+            if (Character.isDigit(c)) {
+                st.peek().val = st.peek().val * 10 + sign * (c - '0');
             } else if (c == '(') {
-                i++;
+                sign = 1;
+                st.push(new TreeNode(0));
+            } else if (c == ')') {
+                TreeNode cur = st.pop();
+                if (st.peek().left == null) {
+                    st.peek().left = cur;
+                } else {
+                    st.peek().right = cur;
+                }
             } else {
-                // i could be on number, or -
-                int j = i + 1;
-                while (j < n && s.charAt(j) >= '0' && s.charAt(j) <= '9') {
-                    j++;
-                }
-                int val = Integer.valueOf(s.substring(i, j));
-                TreeNode node = new TreeNode(val);
-                if (!st.isEmpty()) {
-                    if (st.peek().left == null) {
-                        st.peek().left = node;
-                    } else {
-                        st.peek().right = node;
-                    }
-                }
-                st.push(node);
-                i = j;
+                // - sign
+                sign = -1;
             }
         }
         return st.pop();
