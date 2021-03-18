@@ -47,25 +47,20 @@ n is even.
 public class CheckIfAnyPairsAreDivsibleByK {
     // similar to LC#974, convert negative mod to positive ones
     public boolean canArrange(int[] a, int k) {
-        int[] mods = new int[k];
-        for (int i = 0; i < a.length; i++) {
+        int[] pairs = new int[k];
+        int n = a.length;
+        for (int i = 0; i < n; i++) {
             int mod = a[i] % k;
             if (mod < 0) {
                 mod += k;
             }
-            mods[mod]++;
+            pairs[mod]++;
         }
-        if (mods[0] % 2 == 1) {
-            return false;
-        }
-        if (k % 2 == 0 && (mods[k / 2] % 2) == 1) {
-            return false;
-        }
-        for (int i = 1; i < (k + 1) / 2; i++) {
-            if (mods[i] != mods[k - i]) {
+        for (int i = 1; i < k; i++) {
+            if (pairs[i] != pairs[k - i]) {
                 return false;
             }
         }
-        return true;
+        return pairs[0] % 2 == 0;
     }
 }

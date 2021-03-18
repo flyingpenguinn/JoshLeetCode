@@ -59,39 +59,38 @@ class WiggleSubsequenceOn {
     // 2,1,0-> use 0 to supercede 1
     // 1,2,1-> good, keep the 1 look for > we can't do better than this
     // 2,1,2-> good, keep the 2 look for < we can't do better than this
+// so we must select 0. then we diverge by +1 or -1, but we must pick the best +1 (the max) or best -1 (the min) and use this number as the next
     public int wiggleMaxLength(int[] a) {
+        return Math.max(solve(a, 1), solve(a, -1));
+    }
+
+    private int solve(int[] a, int sign) {
         int n = a.length;
-        if (n == 0) {
-            return 0;
-        }
-        int i = 1;
-        while (i < n) {
-            if (a[i] != a[0]) {
-                break;
-            }
-            i++;
-        }
-        if (i == n) {
-            return 1;
-        }
-        boolean inc = a[i] > a[0] ? true : false;
-        int r = 2;
-        for (; i < n; i++) {
-            if (a[i] == a[i - 1]) {
-                continue;
-            } else if (a[i] > a[i - 1]) {
-                if (!inc) {
-                    inc = true;
-                    r++;
+        int i = 0;
+        int res = 1;
+        while (i < n - 1) {
+            int j = i + 1;
+            if (sign == 1) {
+                while (j < n && a[j] <= a[i]) {
+                    j++;
+                }
+                while (j + 1 < n && a[j] <= a[j + 1]) {
+                    j++;
                 }
             } else {
-                // a[i]<a[i-1]
-                if (inc) {
-                    inc = false;
-                    r++;
+                while (j < n && a[j] >= a[i]) {
+                    j++;
+                }
+                while (j + 1 < n && a[j] >= a[j + 1]) {
+                    j++;
                 }
             }
+            if (j < n) {
+                res++;
+            }
+            i = j;
+            sign = -sign;
         }
-        return r;
+        return res;
     }
 }
