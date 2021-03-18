@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FindTheRootOfNrayTree {
     private class Node {
@@ -22,24 +24,15 @@ public class FindTheRootOfNrayTree {
     }
 
     public Node findRoot(List<Node> tree) {
-        // all unique nodes
-        if (tree == null) {
-            return null;
+        Set<Node> all = new HashSet<>();
+        for(Node node: tree){
+            all.add(node);
         }
-        long sum = 0;
-        for (Node n : tree) {
-            // and can be iterated once
-            sum += n.val;
-            // every node can be children once
-            for (Node c : n.children) {
-                sum -= c.val;
+        for(Node node:tree){
+            for(Node o: node.children){
+                all.remove(o);
             }
         }
-        for (Node n : tree) {
-            if (n.val == sum) {
-                return n;
-            }
-        }
-        return null;
+        return all.iterator().next();
     }
 }

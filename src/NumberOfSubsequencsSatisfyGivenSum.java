@@ -54,51 +54,40 @@ So we can sort the original A, and the result won't change.
 note if the resultant subsequence needs to satisfy some ordering condition, then we can't sort
      */
     // subsequence, check if we can sort the array first!
-    int Mod = 1000000007;
-    long[] dp; // to remember power 2 results
+    private long mod = 1000000007;
 
     public int numSubseq(int[] a, int t) {
+        int n = a.length;
         Arrays.sort(a);
-        dp = new long[a.length + 1];
-        Arrays.fill(dp, -1);
-        int l = 0;
-        int u = a.length - 1;
         long res = 0;
-        while (l <= u) {
-            if (a[l] + a[u] > t) {
-                u--;
-            } else {
-                res += pow2(u - l);
-                res %= Mod;
-                // 3,5,6, we can omit (5,6)'s subset, including making it 3 only
-                l++;
+        int j=n-1;
+        for(int i=0; i<n && j>=i; i++){
+            while(j>=i && a[i]+a[j]>t){
+                j--;
             }
+            //i...j sum <=t items
+            long cur =  pow(j-i);
+            //    System.out.println(i+" "+j+" "+cur);
+            res += cur;
+            res %= mod;
         }
-        return (int) res;
+        return (int)res;
     }
 
-    private long pow2(int n) {
-        if (n == 0) {
+    private long pow(int n){
+        if(n<0){
+            return 0;
+        }
+        if(n==0){
             return 1;
         }
-        if (n == 1) {
-            return 2;
+        long half = pow(n/2);
+        long res = half*half;
+        res %= mod;
+        if(n%2==1){
+            res *= 2;
+            res %= mod;
         }
-        if (dp[n] != -1) {
-            return dp[n];
-        }
-        long half = pow2(n / 2);
-        long rt = 0;
-        if (n % 2 == 0) {
-            rt = half * half;
-            rt %= Mod;
-        } else {
-            rt = half * half;
-            rt %= Mod;
-            rt *= 2;
-            rt %= Mod;
-        }
-        dp[n] = rt;
-        return rt;
+        return res;
     }
 }
