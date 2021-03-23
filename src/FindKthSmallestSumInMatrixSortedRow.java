@@ -48,44 +48,41 @@ public class FindKthSmallestSumInMatrixSortedRow {
     // can also merge n/2 first then merge the remaining 2 as the last step
     // note k is small and every time we merge till we get k numbers and stop
     public int kthSmallest(int[][] a, int k) {
-        List<List<Integer>> list = new ArrayList<>();
-        for (int i = 0; i < a.length; i++) {
-            List<Integer> li = new ArrayList<>();
-            for (int j = 0; j < a[i].length && j < k; j++) {
-                li.add(a[i][j]);
-            }
-            list.add(li);
-        }
-        while (list.size() > 1) {
-            List<List<Integer>> nlist = new ArrayList<>();
-            for (int i = 0; i < list.size(); i += 2) {
-                if (i + 1 < list.size()) {
-                    List<Integer> ri = merge(list.get(i), list.get(i + 1), k);
-                    nlist.add(ri);
-                } else {
-                    nlist.add(list.get(i));
-                }
-            }
-            list = nlist;
-        }
-        return list.get(0).get(k - 1);
+        List<Integer> res = kth(a, 0, a.length-1, k);
+        return res.get(k-1);
     }
 
-    private List<Integer> merge(List<Integer> l1, List<Integer> l2, int k) {
-        // i1, i2, value
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
-        List<Integer> res = new ArrayList<>();
-        pq.offer(new int[]{0, 0, l1.get(0) + l2.get(0)});
-        while (!pq.isEmpty() && k > 0) {
-            int[] top = pq.poll();
-            res.add(top[2]);
-            int i = top[0];
-            int j = top[1];
-            if (j + 1 < l2.size()) {
-                pq.offer(new int[]{i, j + 1, l1.get(i) + l2.get(j + 1)});
+    private List<Integer> kth(int[][] a, int l, int u, int k){
+        int m = a.length;
+        int n = a[0].length;
+        if(u==l){
+            List<Integer> res = new ArrayList<>();
+            for(int j=0; j<n && j<k; j++){
+                res.add(a[l][j]);
             }
-            if (j == 0 && i + 1 < l1.size()) {
-                pq.offer(new int[]{i + 1, j, l1.get(i + 1) + l2.get(j)});
+            return res;
+        }
+        int mid = l+(u-l)/2;
+        List<Integer> l1 = kth(a, l, mid, k);
+        List<Integer> l2 = kth(a, mid+1, u, k);
+        return kthfrom2(l1, l2, k);
+    }
+
+    private List<Integer> kthfrom2(List<Integer> l1, List<Integer> l2, int k){
+        // sum, 0, 1
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x,y)-> Integer.compare(x[0], y[0]));
+        List<Integer> res = new ArrayList<>();
+        pq.offer(new int[]{l1.get(0)+l2.get(0), 0, 0});
+        while(k>0 && !pq.isEmpty()){
+            int[] top = pq.poll();
+            res.add(top[0]);
+            int i = top[1];
+            int j = top[2];
+            if(j+1<l2.size()){
+                pq.offer(new int[]{l1.get(i)+l2.get(j+1), i, j+1});
+            }
+            if(i+1<l1.size() && j==0){
+                pq.offer(new int[]{l1.get(i+1)+l2.get(j), i+1, j});
             }
             k--;
         }

@@ -83,7 +83,7 @@ class ThreeSumWithMultiSol2 {
     // sort and count: like traditional 3 sum but a twist on counting.
     // note it's just counting triples not reporting their position so we can sort
     // also, note when ==, we dont really know how to move if we need to count the occurrences
-    long MOD = 1000000007;
+    private int Mod = 1000000007;
 
     public int threeSumMulti(int[] a, int t) {
         Arrays.sort(a);
@@ -91,33 +91,29 @@ class ThreeSumWithMultiSol2 {
         int i = 0;
         long res = 0;
         while (i < n) {
-            // can't float i when equal: j could be overlooked in this case among "equal" is
             int j = i + 1;
             int k = n - 1;
             while (j < k) {
-                int sum = a[i] + a[j] + a[k];
+                int sum = a[j] + a[k] + a[i];
                 if (sum == t) {
                     if (a[j] == a[k]) {
-                        int count = k - j + 1;
-                        res += count * (count - 1) / 2;
-                        res %= MOD;
+                        int cjk = k - j + 1;
+                        res += cjk * (cjk - 1) / 2;
+                        res %= Mod;
                         break;
-                    } else {
-                        int m = j;
-                        while (j < k && a[m] == a[j]) {
-                            j++;
-                        }
-                        // j is at the pos where it doesnt equal old aj(am)
-                        int countj = j - m;
-                        m = k;
-                        while (k >= j && a[k] == a[m]) {
-                            k--;
-                        }
-                        // k>=j because j is at the counted pos +1. k can still step on it
-                        int countk = m - k;
-                        res += countj * countk;
-                        res %= MOD;
                     }
+                    int oj = j;
+                    while (j < k && a[j] == a[oj]) {
+                        j++;
+                    }
+                    // oj to j-1
+                    int ok = k;
+                    while (k >= j && a[k] == a[ok]) {
+                        k--;
+                    }
+                    // ok to k+1
+                    res += (j - oj) * (ok - k);
+                    res %= Mod;
                 } else if (sum < t) {
                     j++;
                 } else {
