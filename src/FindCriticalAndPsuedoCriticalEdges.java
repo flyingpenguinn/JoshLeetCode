@@ -44,68 +44,65 @@ All pairs (fromi, toi) are distinct.
 public class FindCriticalAndPsuedoCriticalEdges {
     // crit edge is those if you + weight, mst increases
     // pseudo edge is those if you - weight, mst decreases
-    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] edges) {
-        pa = new int[n];
-        List<List<Integer>> res = new ArrayList<>();
+    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] es) {
         List<Integer> crit = new ArrayList<>();
         List<Integer> pcrit = new ArrayList<>();
-        int mst = mst(n, edges);
-        for(int i=0; i<edges.length;i++){
-            int old = edges[i][2];
-            edges[i][2] = old+1;
-            int cur = mst(n, edges);
-            edges[i][2] = old;
+        int[][] nes = copyof(es);
+        int mst = mst(n,nes);
+        for(int i=0; i<es.length;i++){
+            nes = copyof(es);
+            nes[i][2]++;
+            int cur = mst(n,nes);
             if(cur>mst){
                 crit.add(i);
-                continue;
+            }else{
+                nes = copyof(es);
+                nes[i][2]--;
+                cur = mst(n, nes);
+                if(cur<mst){
+                    pcrit.add(i);
+                }
             }
-            edges[i][2] = old-1;
-            cur = mst(n, edges);
-            edges[i][2] = old;
-            if(cur<mst){
-                pcrit.add(i);
-            }
-
         }
+        List<List<Integer>> res = new ArrayList<>();
         res.add(crit);
         res.add(pcrit);
         return res;
     }
 
-    private int[] pa;
-
-
-    private int mst(int n, int[][] edges){
-        int[][] es = new int[edges.length][3];
-        for(int i=0; i<edges.length;i++){
-            es[i][0] = edges[i][0];
-            es[i][1] = edges[i][1];
-            es[i][2] = edges[i][2];
+    private int[][] copyof(int[][] input){
+        int[][] es = new int[input.length][3];
+        for(int i=0; i<input.length;i++){
+            es[i] = Arrays.copyOf(input[i], 3);
         }
+        return es;
+    }
+
+    private int mst(int n, int[][] es){
+        int[] pa = new int[n];
         Arrays.sort(es, (x,y)-> Integer.compare(x[2], y[2]));
         Arrays.fill(pa, -1);
-
         int res = 0;
-        for(int[] e: es){
-            int v1 = e[0];
-            int v2 = e[1];
-            int p1 = find(pa, v1);
-            int p2 = find(pa, v2);
-            if(p1 != p2){
-                pa[p1] = p2;
-                res += e[2];
+        for(int i=0; i<es.length;i++){
+            int v1 = es[i][0];
+            int v2 = es[i][1];
+            int pv1 = find(pa, v1);
+            int pv2 = find(pa, v2);
+            if(pv1==pv2){
+                continue;
             }
+            res += es[i][2];
+            pa[pv1] = pv2;
         }
-
         return res;
     }
 
-    private int find(int[] pa, int v){
-        if(pa[v] == -1){
-            return v;
+    private int find(int[] pa, int i){
+        if(pa[i] == -1){
+            return i;
         }
-        int rt = find(pa, pa[v]);
-        pa[v] = rt;
+        int rt = find(pa, pa[i]);
+        pa[i] = rt;
         return rt;
     }
 }

@@ -1,6 +1,7 @@
 import base.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -32,25 +33,31 @@ public class AdvantageShuffle {
 
     // a bag not a set! pick the smallest that can beat b, or just pick the smallest as there is no hope
     public int[] advantageCount(int[] a, int[] b) {
-        TreeMap<Integer, Integer> map = new TreeMap<>();
-        for (int ai : a) {
-            map.put(ai, map.getOrDefault(ai, 0) + 1);
+        TreeMap<Integer,Integer> ta = new TreeMap<>();
+        for(int i=0; i<a.length; i++){
+            update(ta, a[i], 1);
         }
-        int[] r = new int[a.length];
-        for (int i = 0; i < b.length; i++) {
-            Integer cand = map.higherKey(b[i]);
-            if (cand == null) {
-                cand = map.firstKey();
+        int[] res = new int[a.length];
+        for(int i=0; i<b.length;i++){
+            Integer higher = ta.higherKey(b[i]);
+            if(higher != null){
+                update(ta, higher, -1);
+                res[i] = higher;
+            }else{
+                res[i] = ta.firstKey();
+                update(ta, res[i], -1);
             }
-            int nc = map.getOrDefault(cand, 0) - 1;
-            if (nc == 0) {
-                map.remove(cand);
-            } else {
-                map.put(cand, nc);
-            }
-            r[i] = cand;
         }
-        return r;
+        return res;
+    }
+
+    private void update(Map<Integer,Integer> m, int k, int d){
+        int nv = m.getOrDefault(k, 0)+d;
+        if(nv<=0){
+            m.remove(k);
+        }else{
+            m.put(k, nv);
+        }
     }
 
     public static void main(String[] args) {
