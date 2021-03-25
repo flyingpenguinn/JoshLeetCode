@@ -59,29 +59,36 @@ public class MakingFileNamesUnique {
     // note we must
     // 1. put count for file name itself
     // 2. put count for the original name too
+
+    // fs contains all the exact matches
+    // cm contains pes -> 1,fifa->2, things like this
+    // cm counts the biggest (number) assigning so far, and num is the next one we can use. but it can conflict with fs, hence the while loop
+    private Set<String> fs = new HashSet<>();
+    private Map<String,Integer> cm = new HashMap<>();
     public String[] getFolderNames(String[] names) {
-        Map<String, Integer> m = new HashMap<>();
-        // last (i) for this file
-        Set<String> used = new HashSet<>();
-        String[] r = new String[names.length];
+        int n = names.length;
+        String[] res = new String[n];
         int ri = 0;
-        for (String s : names) {
-            if (used.contains(s)) {
-                int index = m.getOrDefault(s, 0) + 1;
-                // go until we can find a good index. note this while loop is AT MOST n times
-                // because indexes are what we put in before
-                while (used.contains(s + "(" + index + ")")) {
-                    index++;
+        for(String name: names){
+            if(!fs.contains(name)){
+                fs.add(name);
+                cm.put(name,1);
+                res[ri++] = name;
+            }else{
+                int i = cm.getOrDefault(name, 1);
+                while(fs.contains(suffix(name, i))){
+                    i++;
                 }
-                String cur = s + "(" + index + ")";
-                r[ri++] = cur;
-                m.put(s, index);
-                used.add(cur);
-            } else {
-                r[ri++] = s;
-                used.add(s);
+                String cur = suffix(name, i);
+                cm.put(name, i);
+                fs.add(cur);
+                res[ri++] = cur;
             }
         }
-        return r;
+        return res;
+    }
+
+    private String suffix(String s, int i){
+        return s+"("+i+")";
     }
 }
