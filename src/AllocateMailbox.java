@@ -51,24 +51,21 @@ public class AllocateMailbox {
     // each time bite a "sphere of influence of some mailbox" off. and dp on the remaining. in that sphere, we put the mailbox at the median
     // then precalculate the median
     // note we can get rid of the influence of an earlier mailbox because we are biting sphere off
-    private Integer[][] dp;
-
     public int minDistance(int[] a, int k) {
-        Arrays.sort(a);
         int n = a.length;
+        Arrays.sort(a);
         int[] sum = new int[n];
-        dp = new Integer[n][k + 1];
-        sum[0] = a[0];
-        for (int i = 1; i < n; i++) {
-            sum[i] = sum[i - 1] + a[i];
+        for (int i = 0; i < n; i++) {
+            sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
         }
-        return domin(a, sum, 0, k);
+        dp = new Integer[n][k + 1];
+        return solve(a, 0, k, sum);
     }
 
     private int Max = 10000000;
+    private Integer[][] dp;
 
-    // cover houses from i with k boxes. previous houses are covered by earlier boxes
-    private int domin(int[] a, int[] sum, int i, int k) {
+    private int solve(int[] a, int i, int k, int[] sum) {
         int n = a.length;
         if (i == n) {
             return 0;
@@ -80,17 +77,15 @@ public class AllocateMailbox {
             return dp[i][k];
         }
         int min = Max;
-        for (int j = i; j < n; j++) {
-            // the boundary of the mail box area is i...j
+        // i.. j use the mailbox at the mid
+        for (int j = 0; j < n; j++) {
             int mid = (i + j) / 2;
-            int n2 = j - mid;
-            int n1 = mid - i;
-            int p2 = sum[j] - sum[mid];
-            int p1 = mid == 0 ? 0 : (sum[mid - 1] - (i == 0 ? 0 : sum[i - 1]));
-            // a1-a2+a3-a2+a4-a2+a5-a2
-            // so we have j-mid bigger numbers, and mid-i smaller numbers.
-            // each smaller gives extra -a[mid] while bigger number gives +a[mid]
-            int cur = (n1 - n2) * a[mid] + (p2 - p1) + domin(a, sum, j + 1, k - 1);
+            int bsum = (mid == 0 ? 0 : sum[mid - 1]) - (i == 0 ? 0 : sum[i - 1]);
+            int asum = sum[j] - sum[mid];
+            int bcount = mid - i;
+            int acount = j - mid;
+            int dist = asum - bsum - (acount - bcount) * a[mid];
+            int cur = dist + solve(a, j + 1, k - 1, sum);
             min = Math.min(min, cur);
         }
         dp[i][k] = min;

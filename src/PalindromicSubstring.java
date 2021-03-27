@@ -24,24 +24,26 @@ The input string length won't exceed 1000.
  */
 public class PalindromicSubstring {
     public int countSubstrings(String s) {
-        if (s == null || s.isEmpty()) {
-            return 0;
+        char[] sc = s.toCharArray();
+        int res = 0;
+        int n = sc.length;
+        for (int i = 0; i < n; i++) {
+            res += count(sc, i, i);
+            if (i + 1 < n) {
+                res += count(sc, i, i + 1);
+            }
         }
-        int r = 0;
-        for (int i = 0; i < s.length(); i++) {
-            r += count(i, i, s);
-            r += count(i, i + 1, s);
-        }
-        return r;
+        return res;
     }
 
-    private int count(int start, int end, String s) {
-        int r = 0;
-        while (start >= 0 && end < s.length() && s.charAt(start) == s.charAt(end)) {
-            r++;
-            start--;
-            end++;
+    // starting from l and u how many palindrome substrings can we get
+    private int count(char[] s, int l, int u) {
+        int i = l;
+        int j = u;
+        int res = 0;
+        while (i >= 0 && j < s.length && s[i--] == s[j++]) {
+            res++;
         }
-        return r;
+        return res;
     }
 }

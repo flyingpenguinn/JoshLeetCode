@@ -41,40 +41,47 @@ There will be at most 5*10^4 queries.
  */
 public class KthAncestorInTree {
     // similar to Tarjan sparse table rmq algo: nlgn to initalize, lgn to look up
-    class TreeAncestor {
-        private int[][] dep;
 
-        public TreeAncestor(int n, int[] parent) {
-            dep = new int[n][17];
-            for (int i = 0; i < n; i++) {
-                dep[i][0] = parent[i];
-            }
-            for (int d = 1; d <= 16; d++) {
-                for (int i = 0; i < n; i++) {
-                    int ans = dep[i][d - 1];
-                    if (ans == -1) {
-                        dep[i][d] = -1;
-                    } else {
-                        dep[i][d] = dep[ans][d - 1];
-                    }
-                }
-            }
+    class TreeAncestor {
+        private Integer[][] dp;
+        private int[] p;
+
+        public TreeAncestor(int n, int[] p) {
+            dp = new Integer[n][16];
+            this.p = p;
         }
 
+        // k=0 current node, k=1 one level above
         public int getKthAncestor(int node, int k) {
+            if (k == 0) {
+                return node;
+            }
             if (node == -1) {
                 return -1;
             }
             if (k == 1) {
-                return dep[node][0];
+                return p[node];
             }
-            int d = 0;
-            while ((1 << d) < k) {
-                d++;
+            int l = 1;
+            int pow = 0;
+            while (l < k) {
+                l *= 2;
+                pow++;
             }
-            int lower = d - 1;
-            int half = dep[node][lower];
-            return getKthAncestor(half, k - (1 << lower));
+            if (l == k) {
+                if (dp[node][pow] != null) {
+                    return dp[node][pow];
+                }
+                int tn = getKthAncestor(node, l / 2);
+                int rt = getKthAncestor(tn, l / 2);
+                dp[node][pow] = rt;
+                return rt;
+            } else {
+                l /= 2;
+                pow--;
+                int tn = getKthAncestor(node, l);
+                return getKthAncestor(tn, k - l);
+            }
         }
     }
 }
