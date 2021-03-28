@@ -25,3 +25,24 @@ public class MinNumOperationToReInitializePerm {
 
     }
 }
+
+class MinNumOfOperationsOn {
+    public int reinitializePermutation(int n) {
+        // focus on one index, check how many steps
+        int mid = n / 2;
+        // after first pemutation, 1 is at n/2 position
+        int x = n / 2;
+        // it takes one operation to get 1 at n/2 position
+        int cnt = 1;
+        // apply formula until 1 is not back at it's original positions, i.e 1
+        while (x != 1) {
+            if (x % 2 == 1) {
+                x = mid + x / 2;
+            } else {
+                x /= 2;
+            }
+            cnt++;
+        }
+        return cnt;
+    }
+}
