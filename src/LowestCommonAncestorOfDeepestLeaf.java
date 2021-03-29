@@ -40,45 +40,6 @@ The given tree will have between 1 and 1000 nodes.
 Each node of the tree will have a distinct value between 1 and 1000.
  */
 public class LowestCommonAncestorOfDeepestLeaf {
-    // use a set to record lowest leaves then get their parents until there is only one left in the set
-    private Set<TreeNode> set = new HashSet<TreeNode>();
-    private Map<TreeNode, TreeNode> pa = new HashMap<>();
-    private int maxdep = -1;
-
-    public TreeNode lcaDeepestLeaves(TreeNode root) {
-        // non empty
-        dfs(root, null, 0);
-        while (set.size() > 1) {
-            Set<TreeNode> nset = new HashSet<>();
-            for (TreeNode t : set) {
-                nset.add(pa.get(t));
-            }
-            set.clear();
-            set = nset;
-        }
-        return set.iterator().next();
-    }
-
-    private void dfs(TreeNode n, TreeNode p, int dep) {
-        if (n == null) {
-            return;
-        }
-        if (dep > maxdep) {
-            maxdep = dep;
-            set.clear();
-            set.add(n);
-        } else if (dep == maxdep) {
-            set.add(n);
-        }
-        if (p != null) {
-            pa.put(n, p);
-        }
-        dfs(n.left, n, dep + 1);
-        dfs(n.right, n, dep + 1);
-    }
-}
-
-class LowestCommonAncestorOnePass {
     // if left height == right height then it's this node n
     // otherwise, it's the lca in the higher subtree
     // note, this ndoe can well override local lcas in left or right subtree

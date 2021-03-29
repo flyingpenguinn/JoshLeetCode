@@ -20,41 +20,45 @@ Output: "45"
 public class ReconstructOriginalDigitsFromEnglish {
 
     // use the uniqueness of each english word!
-    String[] digitstr = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
+    private String[] nums = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
+    private char[] uniq = {'z', 'o', 'w', 'h', 'u', 'f', 'x', 's', 'g', 'e'}; // this char is used to count for each number
+    private int[] seq = {6, 0, 4, 2, 1, 8, 3, 5, 7, 9}; // we solve in this order
+    private int[] sm = new int[26];
 
     public String originalDigits(String s) {
-        int n = s.length();
-        int[] map = new int[26];
-        for (int i = 0; i < n; i++) {
-            char c = s.charAt(i);
-            map[c - 'a']++;
+
+        for (int i = 0; i < s.length(); i++) {
+            int cind = s.charAt(i) - 'a';
+            sm[cind]++;
         }
-        int[] dc = new int[10];
-        dc[0] = map['z' - 'a'];
-        dc[2] = map['w' - 'a'];
-        dc[8] = map['g' - 'a'];
-        dc[3] = map['h' - 'a'] - dc[8];
-        dc[4] = map['u' - 'a'];
-
-        dc[6] = map['x' - 'a'];
-        dc[1] = map['o' - 'a'] - dc[2] - dc[4] - dc[0];
-        dc[7] = map['s' - 'a'] - dc[6];
-        dc[5] = map['v' - 'a'] - dc[7];
-        dc[9] = map['i' - 'a'] - dc[5] - dc[6] - dc[8];
-
-
+        int[] rm = new int[10];
+        for (int j = 0; j < seq.length; j++) {
+            int ind = seq[j]; // the number itself
+            char uc = uniq[ind]; // the uniq char of this num
+            rm[ind] = sm[uc - 'a'];
+            deduct(ind, rm[ind]);
+        }
         StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < dc[i]; j++) {
+        for (int i = 0; i < rm.length; i++) {
+            int count = rm[i];
+            while (count > 0) {
                 sb.append(i);
+                count--;
             }
         }
-        //System.out.println(Arrays.toString(map));
         return sb.toString();
+    }
+
+    private void deduct(int i, int c) {
+        String str = nums[i];
+        for (int j = 0; j < str.length(); j++) {
+            int cind = str.charAt(j) - 'a';
+            sm[cind] -= c;
+        }
     }
 
     public static void main(String[] args) {
         System.out.println(new ReconstructOriginalDigitsFromEnglish().originalDigits("owoztneoer"));
     }
 }
+
