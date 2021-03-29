@@ -40,49 +40,39 @@ relations[i][0] != relations[i][1]
 There are no repeated relations in the input.
  */
 public class ParallelCourses {
-    Set<Integer>[] graph;
-    int[] indg;
-
-    public int minimumSemesters(int n, int[][] relations) {
-        graph = new HashSet[n + 1];
-        indg = new int[n + 1];
-        for (int i = 1; i <= n; i++) {
-            graph[i] = new HashSet<>();
+    public int minimumSemesters(int n, int[][] rs) {
+        int[] deg = new int[n+1];
+        List<Integer>[] g = new ArrayList[n+1];
+        for(int i=1; i<=n; i++){
+            g[i] = new ArrayList<>();
         }
-        for (int[] e : relations) {
-            graph[e[0]].add(e[1]);
-            indg[e[1]]++;
+        for(int[] r: rs){
+            deg[r[1]]++;
+            g[r[0]].add(r[1]);
         }
-        // any course that doesnt have preq unmet can go ahead.
-        // note it's wrong to traverse the list and check relationship as we miss ones that are in different connection components
-        Deque<Integer> cursem = new ArrayDeque<>();
-        int sem = 0;
-        for (int i = 1; i <= n; i++) {
-            if (indg[i] == 0) {
-                cursem.offer(i);
+        Deque<int[]> q = new ArrayDeque<>();
+        for(int i=1; i<=n; i++){
+            if(deg[i]==0){
+                q.offer(new int[]{i,1});
             }
         }
-        Deque<Integer> nextsem = new ArrayDeque<>();
-        while (!cursem.isEmpty()) {
-            sem++;
-            for (Integer cur : cursem) {
-                for (Integer next : graph[cur]) {
-                    indg[next]--;
-                    if (indg[next] == 0) {
-                        nextsem.offer(next);
-                    }
+        int res = 0;
+        int handled = 0;
+        while(!q.isEmpty()){
+            int[] top = q.poll();
+            int i = top[0];
+            int j = top[1];
+            handled++;
+            res = Math.max(res, j);
+            List<Integer> nexts = g[i];
+            for(int k: nexts){
+                deg[k]--;
+                if(deg[k]==0){
+                    q.offer(new int[]{k, j+1});
                 }
             }
-            cursem = nextsem;
-            nextsem = new ArrayDeque<>();
         }
-        // there are residual unvisited nodes
-        for (int i = 0; i < indg.length; i++) {
-            if (indg[i] > 0) {
-                return -1;
-            }
-        }
-        return sem;
+        return handled == n? res: -1;
     }
 
 
