@@ -40,125 +40,65 @@ public class StampTheSequence {
     // the ability to stamp somewhere is always good: we have more ? to match with. so there is no backtracking: we always move forward!
     // time complexity n-m * n: we execute the inner most for loop at most n times together with the for loop at the while line
     // abc must be revealed before ab?. but later ones' sequences can't be determined. the ones with more ? may be matched later in the stamping
-    public int[] movesToStamp(String stamp, String target) {
-        int mark = 0;
-        Set<Integer> stamped = new HashSet<>();
-        List<Integer> res = new ArrayList<>();
-        char[] t = target.toCharArray();
-        while (mark != t.length) {
-            boolean found = false;
-            for (int i = 0; i + stamp.length() - 1 < t.length; i++) {
-                if (!stamped.contains(i) && match(t, stamp, i)) {
-                    found = true;
-                    stamped.add(i);
-                    res.add(i);
-                    int j = i;
-                    for (; j < i + stamp.length(); j++) {
-                        if (t[j] != '?') {
-                            t[j] = '?';
-                            mark++;
-                        }
-                    }
-                    i = j;
-                }
-            }
-            if (!found) {
-                return new int[0];
-            }
-        }
-        int[] r = new int[res.size()];
-        for (int i = 0; i < res.size(); i++) {
-            r[i] = res.get(res.size() - 1 - i);
-        }
-        return r;
-    }
-
-    private boolean match(char[] t, String s, int i) {
-        boolean converted = false;
-        for (int j = i; j < i + s.length(); j++) {
-            if (t[j] == '?') {
-                continue;
-            }
-            if (t[j] == s.charAt(j - i)) {
-                converted = true;
-                continue;
-            }
-            return false;
-        }
-        return converted;
-    }
-
-    public static void main(String[] args) {
-        long start = System.currentTimeMillis();
-        System.out.println(Arrays.toString(new StampTheSequence().movesToStamp("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")));
-        System.out.println(System.currentTimeMillis() - start);
-
-    }
-}
-
-class StampTheSequenceRecursion {
     private List<Integer> res = new ArrayList<>();
-    private Set<Integer> stepped = new HashSet<>();
-
+    private Set<Integer> stamped = new HashSet<>();
+    private int cur = 0;
+    private boolean bad = false;
     public int[] movesToStamp(String s, String t) {
-        dfs(s.toCharArray(), t.toCharArray(), 0, new ArrayList<>());
-        int[] rt = new int[res.size()];
-        for (int i = res.size() - 1; i >= 0; i--) {
-            rt[rt.length - 1 - i] = res.get(i);
+        stamp(t.toCharArray(),s);
+        if(bad){
+            return new int[0];
         }
-        return rt;
+        Collections.reverse(res);
+        int[] rr = new int[res.size()];
+        for(int i=0; i<res.size(); i++){
+            rr[i] = res.get(i);
+        }
+        return rr;
     }
 
-    private void dfs(char[] s, char[] t, int done, List<Integer> cur) {
-        if (done == t.length) {
-            res = new ArrayList<>(cur);
+    // use t to stamp s
+    private void stamp(char[] s, String t){
+        if(cur == s.length){
             return;
         }
+        int i = 0;
         boolean found = false;
-        int mj = -1;
-        for (int i = 0; i <= t.length - s.length; i++) {
-            if (stepped.contains(i)) {
-                continue;
+        while(i+t.length()-1<s.length && cur<s.length){
+            if(!stamped.contains(i) && startsWith(s, t, i)){
+                found = true;
+                for(int j=0; j<t.length(); j++){
+                    if(s[i+j] != '?'){
+                        s[i+j] = '?';
+                        cur++;
+                    }
+                }
+                res.add(i);
+                stamped.add(i);
             }
-            if (match(t, i, s)) {
-                mj = i;
-                break;
-            }
+            i++;
         }
-        if (mj == -1) {
+        if(!found){
+            bad = true;
             return;
         }
-        int newdone = done;
-        char[] nt = Arrays.copyOf(s, s.length);
-        for (int j = mj; j < mj + s.length; j++) {
-            nt[j - mj] = t[j];
-            if (t[j] != '?') {
-                newdone++;
-                t[j] = '?';
-            }
-        }
-        stepped.add(mj);
-        cur.add(mj);
-        dfs(s, t, newdone, cur);
-        cur.remove(cur.size() - 1);
-        stepped.remove(mj);
-        for (int j = mj; j < mj + s.length; j++) {
-            t[j] = nt[j - mj];
-        }
+        stamp(s, t);
     }
 
-    private boolean match(char[] t, int i, char[] s) {
-        boolean converted = false;
-        for (int j = i; j < i + s.length; j++) {
-            if (t[j] == '?') {
+    private boolean startsWith(char[] s, String t, int i){
+        if(i+t.length()-1>=s.length){
+            return false;
+        }
+        boolean allqs = true;
+        for(int j=0; j<t.length(); j++){
+            if(s[i+j]==t.charAt(j)){
+                allqs = false;
                 continue;
-            }
-            if (t[j] == s[j - i]) {
-                converted = true;
+            }else if(s[i+j]=='?'){
                 continue;
             }
             return false;
         }
-        return converted;
+        return !allqs;
     }
 }

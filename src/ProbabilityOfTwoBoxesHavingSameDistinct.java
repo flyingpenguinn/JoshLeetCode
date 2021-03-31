@@ -60,69 +60,64 @@ public class ProbabilityOfTwoBoxesHavingSameDistinct {
     // not dp, but a backtrack question!
     // the key is to use combination to deduce the number of possible permutations! we don't need to enumerate all the perms
     // enumerate on each balls[i] to see how many balls we should put in this catetory to box1
-    private double count = 0;
+    // can use double to calc the permutations!
+    private double all = 0;
+    private double good = 0;
 
     public double getProbability(int[] a) {
-        int all = 0;
-        double repeat = 1;
-        for (int i = 0; i < a.length; i++) {
-            all += a[i];
-            repeat *= fact(a[i]);
+        int n = a.length;
+        int sum = 0;
+        for (int ai : a) {
+            sum += ai;
         }
-        dfs(all, a, 0, new HashMap<>(), new HashMap<>(), 0, 0);
-        double allperm = fact(all) / repeat;
-        return count / allperm;
+        int[] set1 = new int[n];
+        int[] set2 = new int[n];
+        dfs(a, 0, set1, set2, 0, 0, 0, 0, sum / 2);
+        return good * 1.0 / all;
     }
 
-    private double perm(Map<Integer, Integer> m) {
-        double repeat = 1;
-        int all = 0;
-        for (int k : m.keySet()) {
-            all += m.get(k);
-            repeat *= fact(m.get(k));
-        }
-        return fact(all) / repeat;
-    }
-
-    private double fact(int n) {
-        return n == 0 ? 1.0 : n * fact(n - 1);
-    }
-
-    private void dfs(int all,
-                     int[] a,
-                     int i,
-                     Map<Integer, Integer> m1,
-                     Map<Integer, Integer> m2,
-                     int size1, int size2) {
-        if (size1 > all / 2 || size2 > all / 2) {
+    private void dfs(int[] a, int i, int[] set1, int[] set2, int c1, int c2, int n1, int n2, int limit) {
+        if (n1 > limit || n2 > limit) {
             return;
         }
         int n = a.length;
         if (i == n) {
-            if (size1 == size2 && m1.size() == m2.size()) {
-                count += perm(m1) * perm(m2); // key! use combination to get permutation
+            if (n1 == limit && n2 == limit) {
+                double perms = perm(set2, n2) * perm(set1, n1);
+                all += perms;
+                if (c1 == c2) {
+                    good += perms;
+                }
             }
             return;
         }
+        // pick 0 to a[i] to set1n
         for (int j = 0; j <= a[i]; j++) {
-            update(m1, i, j);
-            update(m2, i, a[i] - j);
-            size1 += j;
-            size2 += (a[i] - j);
-            dfs(all, a, i + 1, m1, m2, size1, size2);
-            size2 -= (a[i] - j);
-            size1 -= j;
-            update(m2, i, j - a[i]);
-            update(m1, i, -j);
+            if (n1 + j <= limit && n2 + a[i] - j <= limit) {
+                int c1d = j == 0 ? 0 : 1;
+                int c2d = j == a[i] ? 0 : 1;
+                set1[i] = j;
+                set2[i] = (a[i] - j);
+                dfs(a, i + 1, set1, set2, c1 + c1d, c2 + c2d, n1 + j, n2 + a[i] - j, limit);
+            }
         }
     }
 
-    private void update(Map<Integer, Integer> m, int k, int delta) {
-        int nv = m.getOrDefault(k, 0) + delta;
-        if (nv <= 0) {
-            m.remove(k);
-        } else {
-            m.put(k, nv);
+    private double[] dp = new double[50];
+
+    private double perm(int[] a, int n) {
+        double res = factor(n);
+        for (int i = 0; i < a.length; i++) {
+            res /= factor(a[i]);
         }
+        return res;
+    }
+
+    private double factor(int n) {
+        if (dp[n] != 0) {
+            return dp[n];
+        }
+        dp[n] = n == 0 ? 1.0 : n * factor(n - 1);
+        return dp[n];
     }
 }

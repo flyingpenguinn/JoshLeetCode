@@ -82,52 +82,39 @@ public class CourseScheduleIv {
     }
 }
 
-class CourseScheduleIvTopoSort {
-    // bfs topo sort.
-    // dfs topo sort can't guarantee visiting all nodes in their topo sorting sequence
-    public List<Boolean> checkIfPrerequisite(int n, int[][] p, int[][] q) {
-
-        int[] ind = new int[n];
+class CourseScheduleIvDp {
+    // also n^3 in aggregate but only doing what needs to be searched
+    public List<Boolean> checkIfPrerequisite(int n, int[][] pres, int[][] qs) {
         List<Integer>[] g = new ArrayList[n];
         for (int i = 0; i < n; i++) {
             g[i] = new ArrayList<>();
         }
-        for (int[] pi : p) {
-            g[pi[0]].add(pi[1]);
-            ind[pi[1]]++;
+        for (int[] pre : pres) {
+            g[pre[0]].add(pre[1]);
         }
-        Queue<Integer> queue = new ArrayDeque<>();
+        List<Boolean> res = new ArrayList<>();
+        Boolean[][] dp = new Boolean[n][n];
+        for (int[] q : qs) {
+            res.add(dfs(q[0], q[1], g, dp));
+        }
+        return res;
+    }
 
-        for (int i = 0; i < n; i++) {
-            if (ind[i] == 0) {
-                queue.offer(i);
+    // cache the results: On3
+    private boolean dfs(int i, int j, List<Integer>[] g, Boolean[][] dp) {
+        if (i == j) {
+            return true;
+        }
+        if (dp[i][j] != null) {
+            return dp[i][j];
+        }
+        for (int ne : g[i]) {
+            if (dfs(ne, j, g, dp)) {
+                dp[i][j] = true;
+                return true;
             }
         }
-        Set<Integer>[] ans = new HashSet[n];
-        for (int i = 0; i < n; i++) {
-            ans[i] = new HashSet<>();
-        }
-        while (!queue.isEmpty()) {
-            int top = queue.poll();
-            for (int next : g[top]) {
-                ans[next].add(top);
-                ans[next].addAll(ans[top]);
-                // add the ancestors of the father too. this is at most n
-                ind[next]--;
-                if (ind[next] == 0) {
-                    // only add to queue when in degree is 0. this happens only once for each node, so no need for visited array
-                    queue.offer(next);
-                }
-            }
-        }
-        List<Boolean> r = new ArrayList<>();
-        for (int[] qi : q) {
-            if (ans[qi[1]].contains(qi[0])) {
-                r.add(true);
-            } else {
-                r.add(false);
-            }
-        }
-        return r;
+        dp[i][j] = false;
+        return false;
     }
 }
