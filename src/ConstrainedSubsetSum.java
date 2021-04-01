@@ -37,57 +37,24 @@ public class ConstrainedSubsetSum {
     // then use deque to optimize, like we did in sliding window max
     public int constrainedSubsetSum(int[] a, int k) {
         int n = a.length;
-        int[] dp = new int[n]; // max profit in picking
-        dp[n - 1] = a[n - 1];
+        int[] dp = new int[n+1];
+        dp[n] = 0;
         Deque<Integer> dq = new ArrayDeque<>();
-        dq.offerLast(dp[n - 1]);
-        int max = dp[n - 1];
-        for (int i = n - 2; i >= 0; i--) {
-            // can opt not to pick
-            int maxlater = Math.max(0, dq.peekFirst());
-            dp[i] = a[i] + maxlater;
-            max = Math.max(max, dp[i]);
-            if (dq.size() >= k) {
-                dq.pollFirst();
-            }
-            while (!dq.isEmpty() && dq.peekLast() <= dp[i]) {
+        dq.offerLast(n);
+        int res = Integer.MIN_VALUE;
+        for(int i=n-1; i>=0; i--){
+            while(!dq.isEmpty() && dq.peekLast() > i+k ){
                 dq.pollLast();
             }
-            dq.offer(dp[i]);
-
-        }
-        return max;
-    }
-}
-
-class ConstrainedSubsetSumTreeMap {
-    // could use a treemap to help max picking without using sliding window solution
-    public int constrainedSubsetSum(int[] a, int k) {
-        int n = a.length;
-        int[] dp = new int[n]; // max profit in picking
-        dp[n - 1] = a[n - 1];
-        TreeMap<Integer, Integer> tm = new TreeMap<>();
-        update(tm, a[n - 1], 1);
-        int max = dp[n - 1];
-        for (int i = n - 2; i >= 0; i--) {
-            // can opt not to pick
-            int maxlater = Math.max(0, tm.lastKey());
-            dp[i] = a[i] + maxlater;
-            max = Math.max(max, dp[i]);
-            update(tm, dp[i], 1);
-            if (i + k < n) {
-                update(tm, dp[i + k], -1);
+            int index = dq.peekLast();
+            dp[i] = Math.max(dp[index],0) +a[i];
+            // can select nothing
+            res = Math.max(res, dp[i]);
+            while(!dq.isEmpty() && dp[dq.peekFirst()] <= dp[i]){
+                dq.pollFirst();
             }
+            dq.offerFirst(i);
         }
-        return max;
-    }
-
-    private void update(TreeMap<Integer, Integer> tm, int k, int delta) {
-        int nv = tm.getOrDefault(k, 0) + delta;
-        if (nv <= 0) {
-            tm.remove(k);
-        } else {
-            tm.put(k, nv);
-        }
+        return res;
     }
 }
