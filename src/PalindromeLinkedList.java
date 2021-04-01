@@ -20,39 +20,26 @@ Accepted
  */
 public class PalindromeLinkedList {
     public boolean isPalindrome(ListNode head) {
-        if (head == null || head.next == null) {
+        int len = getlen(head);
+        if(len<=1){
             return true;
         }
-        int len = getlen(head); // len>=2
+        int half = len/2;
         ListNode p = head;
-        int i = 1;
-        while (i < len / 2) {
+        while(half>0){
             p = p.next;
-            i++;
+            half--;
         }
-        ListNode np = p.next;
-        p.next = null;
-        if (len % 2 == 1) {
-            np = np.next; // 1->2->3, we need to land on 3
+        if(len%2==1){
+            p = p.next;
         }
-        ListNode reversed = reverse(np);
-        return same(reversed, head);
+        ListNode head2 = reverse(p);
+        return same(head, head2);
     }
 
-    boolean same(ListNode n1, ListNode n2) {
-        while (n1 != null && n2 != null) {
-            if (n1.val != n2.val) {
-                return false;
-            }
-            n1 = n1.next;
-            n2 = n2.next;
-        }
-        return n1 == null && n2 == null;
-    }
-
-    ListNode reverse(ListNode p) {
+    private ListNode reverse(ListNode p){
         ListNode pre = null;
-        while (p != null) {
+        while(p!= null){
             ListNode next = p.next;
             p.next = pre;
             pre = p;
@@ -61,8 +48,19 @@ public class PalindromeLinkedList {
         return pre;
     }
 
-    int getlen(ListNode head) {
-        return head == null ? 0 : getlen(head.next) + 1;
+    private boolean same(ListNode p1, ListNode p2){
+        while(p1 != null && p2 != null){
+            if(p1.val != p2.val){
+                return false;
+            }
+            p1 = p1.next;
+            p2 = p2.next;
+        }
+        return true;
+    }
+
+    private int getlen(ListNode h){
+        return h==null? 0: 1+getlen(h.next);
     }
 
     public static void main(String[] args) {
