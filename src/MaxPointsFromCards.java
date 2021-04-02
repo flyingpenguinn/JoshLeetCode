@@ -48,21 +48,21 @@ public class MaxPointsFromCards {
     // note the trap when n==k there is no subarray so need some special treatment
     public int maxScore(int[] a, int k) {
         int n = a.length;
+        int t = n - k;
         int sum = 0;
-        int psum = 0;
+        int allsum = 0;
         int min = Integer.MAX_VALUE;
         for (int i = 0; i < n; i++) {
             sum += a[i];
-            psum += a[i];
-            int head = i - (n - k) + 1;
-            if (head >= 0 && n > k) { //!
-                min = Math.min(min, psum);
-                psum -= a[head];
+            allsum += a[i];
+            if (i - t + 1 >= 0 && i - t + 1 < n) {
+                min = Math.min(min, sum);
+                sum -= a[i - t + 1];
             }
         }
-        if (n <= k) {
-            return sum;
+        if (k == n) {
+            return allsum;
         }
-        return sum - min;
+        return allsum - min;
     }
 }
