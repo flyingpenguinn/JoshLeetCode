@@ -28,13 +28,11 @@ The time limit for this problem has been reduced.
  */
 
 public class GlobalAndLocalInversions {
-    // has inversion cat i => min(after i) so we can use a right array
+    // a number can't deviate from its position too far, must be within local inversion territory
     public boolean isIdealPermutation(int[] a) {
         int n = a.length;
-        int min = Integer.MAX_VALUE;
-        for (int i = n - 1; i >= 0; i--) {
-            min = Math.min(min, a[i]);
-            if (i - 2 >= 0 && a[i - 2] > min) {
+        for (int i = 0; i < n; i++) {
+            if (Math.abs(a[i] - i) > 1) {
                 return false;
             }
         }
@@ -43,7 +41,7 @@ public class GlobalAndLocalInversions {
 }
 
 
-class GlobalLocalInversionBruteForce {
+class GlobalLocalInversionMergeSort {
     // use merge sort to get inversions
     public boolean isIdealPermutation(int[] a) {
         int loc = local(a);
@@ -77,13 +75,10 @@ class GlobalLocalInversionBruteForce {
         int j = mid + 1;
         int k = 0;
         int c = p1 + p2;
-
         while (i <= mid && j <= u) {
-
             if (a[i] > a[j]) {
+                // from i to mid all >a[j], an inversion
                 int delta = mid - i + 1;
-                //System.out.println("glob"+a[i]+" vs "+a[j]+" "+delta);
-
                 c += delta;
                 m[k++] = a[j++];
             } else {
@@ -100,5 +95,44 @@ class GlobalLocalInversionBruteForce {
             a[l + ai] = m[ai];
         }
         return c;
+    }
+}
+
+class GlobalLocalInversionBit {
+    // nlogn using BIT
+    public boolean isIdealPermutation(int[] a) {
+        int n = a.length;
+        int local = 0;
+        for (int i = 0; i + 1 < n; i++) {
+            if (a[i] > a[i + 1]) {
+                local++;
+            }
+        }
+        int[] bit = new int[n + 1];
+        int global = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            int lower = query(bit, a[i] + 1);
+            global += lower;
+            update(bit, a[i] + 1);
+        }
+        return global == local;
+    }
+
+    private int query(int[] bit, int i) {
+        int res = 0;
+        while (i > 0) {
+
+            res += bit[i];
+            i -= i & (-i);
+        }
+        return res;
+    }
+
+    private void update(int[] bit, int i) {
+        while (i < bit.length) {
+
+            bit[i]++;
+            i += i & (-i);
+        }
     }
 }
