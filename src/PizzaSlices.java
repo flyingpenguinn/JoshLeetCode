@@ -48,30 +48,30 @@ public class PizzaSlices {
     // convert to pick k non adjacent numbers to make a sum max
     // note we can't pick 0 and n-1 at the same time just like house robber II
     // so this is house robber with only n/3 chances problem and the houses are on a circle
+    private Integer[][][] dp;
+
     public int maxSizeSlices(int[] a) {
         int n = a.length;
-        return Math.max(rob(a, 0, n - 1, n / 3), rob(a, 1, n, n / 3));
+        dp = new Integer[n][n / 3 + 1][2];
+        return Math.max(pick(a, 0, 1, n / 3), pick(a, 1, 0, n / 3));
     }
 
-    private int rob(int[] a, int start, int end, int k) {
-        Integer[][] dp = new Integer[a.length][k + 1];
-        return dorob(a, start, end, k, dp);
-    }
-
-    private int dorob(int[] a, int i, int end, int k, Integer[][] dp) {
+    private int pick(int[] a, int i, int delta, int rem) {
         int n = a.length;
-        if (k < 0) {
+        if (i >= n - delta) {
+            return rem == 0 ? 0 : Integer.MIN_VALUE;
+        }
+        if (rem < 0) {
             return Integer.MIN_VALUE;
         }
-        if (i >= end) {
-            return k == 0 ? 0 : Integer.MIN_VALUE;
+        //  System.out.println(i+" "+rem+" "+delta);
+        if (dp[i][rem][delta] != null) {
+            return dp[i][rem][delta];
         }
-        if (dp[i][k] != null) {
-            return dp[i][k];
-        }
-        int rob = a[i] + dorob(a, i + 2, end, k - 1, dp);
-        int skip = dorob(a, i + 1, end, k, dp);
-        dp[i][k] = Math.max(rob, skip);
-        return dp[i][k];
+        int nosel = pick(a, i + 1, delta, rem);
+        int sel = a[i] + pick(a, i + 2, delta, rem - 1);
+        int rt = Math.max(nosel, sel);
+        dp[i][rem][delta] = rt;
+        return rt;
     }
 }
