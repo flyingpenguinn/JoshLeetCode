@@ -35,82 +35,97 @@ All strings consist of lowercase English letters.
 public class FindAllGoodStrings {
     // dp + kmp
     // have to use kmp because if we get a mismatch with evil we need kmp to "slide" to the next evil position to match with
-    private Integer[][][][] dp;
-    private int mod = 1000000007;
+    private long mod = 1000000007;
+    private Long[][][][] dp;
 
-    public int findGoodStrings(int n, String s1, String s2, String evil) {
-        dp = new Integer[n][2][2][evil.length()];
-        int[] nexts = nexts(evil);
-
-        return dof(n, s1, s2, 0, false, false, evil, 0, nexts);
+    public int findGoodStrings(int n, String s1, String s2, String e) {
+        dp = new Long[n][2][2][e.length()];
+        int[] nexts = nexts(e);
+        int rt = (int) solve(n, s1, s2, e, 0, 0, 0, 0, nexts, "");
+        return rt;
     }
 
-    private int dof(int n, String s1, String s2, int i, boolean fs1, boolean fs2, String evil, int j, int[] nexts) {
-        if (j == evil.length()) {
+    // i: cur index of the string we are creating
+    // j: 0 or 1, already good for s1 or not
+    // k: same for s2
+    // t: index to matchin evil
+    private long solve(int n, String s1, String s2, String e, int i, int j, int k, int t, int[] nexts, String cur) {
+
+        if (t == e.length()) {
             return 0;
         }
         if (i == n) {
-            return 1;
+            return 1L;
         }
-        int f1 = fs1 ? 1 : 0;
-        int f2 = fs2 ? 1 : 0;
-        if (dp[i][f1][f2][j] != null) {
-            return dp[i][f1][f2][j];
+        if (dp[i][j][k][t] != null) {
+            return dp[i][j][k][t];
         }
+        char c1 = s1.charAt(i);
+        char c2 = s2.charAt(i);
         long res = 0;
         for (char c = 'a'; c <= 'z'; c++) {
-            boolean nfs1 = fs1;
-            boolean nfs2 = fs2;
-            int pj = j;
-            int nj = 0;
-            // for example sdka vs ss. the 2nd s can match to 0, so next time we start from 1. so nj will =1
-            // if it's ssd vs sss, then we should start from ssd vs ss[x], next to match is this x against d, so nj would be =2
-            while (pj > 0 && c != evil.charAt(pj)) {
-                pj = nexts[pj - 1];
+            int nj = j;
+            int nk = k;
+            int nt = t;
+            // this part of sliding is almost the same as kmp
+            while (nt > 0 && e.charAt(nt) != c) {
+                nt = nexts[nt - 1];
             }
-            if (c == evil.charAt(pj)) {
-                nj = pj + 1;
+            if (e.charAt(nt) == c) {
+                nt++;
             }
-            boolean bad = false;
-            if (fs1 && fs2) {
-                // do nothing
-            } else if (fs1 && c <= s2.charAt(i)) {
-                nfs2 = c < s2.charAt(i);
-            } else if (fs2 && c >= s1.charAt(i)) {
-                nfs1 = c > s1.charAt(i);
-            } else if (c >= s1.charAt(i) && c <= s2.charAt(i)) {
-                nfs2 = c < s2.charAt(i);
-                nfs1 = c > s1.charAt(i);
+            if (j == 1 && k == 1) {
+                // we can freely choose s1 and s2, no change
+            } else if (j == 1) {
+                // can freely choose s1, but not s2
+                if (c < c2) {
+                    nk = 1;
+                } else if (c > c2) {
+                    continue;
+                }
+            } else if (k == 1) {
+                if (c > c1) {
+                    nj = 1;
+                } else if (c < c1) {
+                    continue;
+                }
             } else {
-                bad = true;
+                if (c < c1 || c > c2) {
+                    continue;
+                }
+                if (c < c2) {
+                    nk = 1;
+                }
+                if (c > c1) {
+                    nj = 1;
+                }
             }
-            if (!bad) {
-                res += dof(n, s1, s2, i + 1, nfs1, nfs2, evil, nj, nexts);
-                res %= mod;
-            }
+            res += solve(n, s1, s2, e, i + 1, nj, nk, nt, nexts, cur + c);
+            res %= mod;
         }
-        dp[i][f1][f2][j] = (int) res;
-        return dp[i][f1][f2][j];
+
+        dp[i][j][k][t] = res;
+        return res;
     }
 
-    // kmp next array
     private int[] nexts(String s) {
         int n = s.length();
-        int[] next = new int[n];
-        next[0] = 0;// length of the longest prefix: 0...next[i] -1 == the prefix. the suffix ends at i
+        int[] nexts = new int[n];
+        nexts[0] = 0;// length of the longest prefix: 0...next[i] -1 == the prefix. the suffix ends at i
         for (int i = 1; i < n; i++) {
             char c = s.charAt(i);
             // abaaabab, macthing at the last b
             // when we mismatch with pos j, we try out next[j-1] it's a shorter prefix but may give new hope
-            int j = next[i - 1];
+            int j = nexts[i - 1];
             while (j > 0 && c != s.charAt(j)) {
-                j = next[j - 1];
+                j = nexts[j - 1];
             }
             // if j==0 give a chance to match s[0]
             if (c == s.charAt(j)) {
-                next[i] = j + 1;
+                // if j==0 and equal, j would be 1
+                nexts[i] = j + 1;
             }
         }
-        return next;
+        return nexts;
     }
 }
