@@ -31,39 +31,53 @@ If the given node has no in-order successor in the tree, return null.
 It's guaranteed that the values of the tree are unique.
  */
 public class InorderSuccessorInBst {
-    // using stack here. we can doaway with a stack to traverse from the top again and determine
+    // Olgn to find, o1 space
     public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
-        Deque<TreeNode> st = new ArrayDeque<>();
-        TreeNode cur = root;
-        while (cur != null && cur != p) {
-            if (cur.val == p.val) {
-                break;
-            } else if (cur.val < p.val) {
-                st.push(cur);
-                cur = cur.right;
-            } else {
-                st.push(cur);
-                cur = cur.left;
-            }
-        }
-        if (cur == null) {
+        if (root == null || p == null) {
             return null;
         }
-        if (cur.right != null) {
-            cur = cur.right;
-            while (cur.left != null) {
-                cur = cur.left;
+        if (p.right != null) {
+            p = p.right;
+            while (p.left != null) {
+                p = p.left;
             }
-            return cur;
+            return p;
         } else {
-            while (!st.isEmpty()) {
-                if (st.peek().left == cur) {
-                    return st.peek();
+            TreeNode cur = root;
+            TreeNode parent = null;
+            TreeNode goodp = null; // last parent that goes to left child in the path
+            while (cur != null) {
+                if (parent != null && parent.left == cur) {
+                    goodp = parent;
+                }
+                if (cur == p) {
+                    break;
+                }
+                parent = cur;
+                if (cur.val < p.val) {
+                    cur = cur.right;
                 } else {
-                    cur = st.pop();
+                    cur = cur.left;
                 }
             }
+            if (cur == null) {
+                return null;
+            }
+            return goodp;
+        }
+    }
+}
+
+class InorderSuccessorBstRecursion{
+    public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+        if(root==null){
             return null;
+        }
+        if(root.val <= p.val){
+            return inorderSuccessor(root.right, p);
+        }else{
+            TreeNode left = inorderSuccessor(root.left, p);
+            return left==null? root: left;
         }
     }
 }
