@@ -32,8 +32,8 @@ public class LongestIncreasingPathInMatrix {
     /*
     The key observation is that the sequence is strictly increasing, so it can not have loops. So we have the following:
 
-longest(i,j) = longest increasing path from (i,j) to (k,l) + longest(k,l)
-where longest(i,j) is longest increasing path starting with (i,j).
+longest(i,j) = 1 + longest(k,l)
+where longest(i,j) is longest increasing path starting with (i,j),  k,l is i,j's neighbor and a[k][l]>a[i][j]
      */
 
     // dag, no circle!

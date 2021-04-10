@@ -33,6 +33,40 @@ Constraints:
 -10^5 <= nums[i] <= 10^5
  */
 public class ReverseSubarrayToMaximize {
+    public int maxValueAfterReverse(int[] a) {
+        int n = a.length;
+        int raw = 0;
+        int change = 0;
+        for (int i = 0; i + 1 < n; i++) {
+            raw += abs(a[i] - a[i + 1]);
+        }
+        int minmax = Integer.MAX_VALUE;
+        int maxmin = Integer.MIN_VALUE;
+        // any inner i can be abcd. abcd are all inner: no starting from 0 or n-1
+        for (int i = 0; i + 1 < n; i++) {
+            int curmax = max(a[i], a[i + 1]);
+            int curmin = min(a[i], a[i + 1]);
+            minmax = min(minmax, curmax);
+            maxmin = max(maxmin, curmin);
+        }
+        change = max(0, 2 * (maxmin - minmax));
+        // reverse 0...i
+        for (int i = 1; i < n; i++) {
+            int curdelta = -abs(a[i] - a[i - 1]) + abs(a[i] - a[0]);
+            change = max(change, curdelta);
+        }
+
+        // reverse i...n-1
+        for (int i = n - 2; i >= 0; i--) {
+            int curdelta = -abs(a[i] - a[i + 1]) + abs(a[i] - a[n - 1]);
+            change = max(change, curdelta);
+        }
+        return raw + change;
+    }
+
+}
+
+class ReverseSubarrayToMaximizeMinedp {
     /*
 
 https://leetcode.com/problems/reverse-subarray-to-maximize-array-value/discuss/489968/O(n)-Java-with-Mathematical-Proof
