@@ -32,37 +32,40 @@ Constraints:
  */
 public class CountAllValidPickupDeliveryOptions {
     private Long[][] dp;
+    private long mod = 1000000007;
 
     public int countOrders(int n) {
         dp = new Long[2 * n][n + 1];
-        return (int) doc(0, n, n);
+        long res = count(0, 0, n, 2 * n);
+        res %= mod;
+        return (int) res;
     }
 
-    // ith pick, and remaining pickups
-    private long doc(int i, int remp, long n) {
-        if (i == 2 * n) {
+    // ith position, could be a new order, or a pick up of old open one
+    // j: all orders so far
+    private long count(int i, int j, int n, int limit) {
+        if (i == limit) {
             return 1;
         }
-        long allrem = 2 * n - i;
-        long remd = allrem - remp;
-        if (remp < 0 || remd < 0) {
-            return 0;
+        if (dp[i][j] != null) {
+            return dp[i][j];
         }
-        if (dp[i][remp] != null) {
-            return dp[i][remp];
+        long way1 = 0;
+        long way2 = 0;
+        // we order a new one
+        if (j + 1 <= n) {
+            way1 = (n - j) * count(i + 1, j + 1, n, limit);
         }
-        long didp = n - remp;
-        long didd = n - remd;
-        long dop = remp * doc(i + 1, remp - 1, n);
-        // we can deliver on all didps but didd is already done so only do didp-didd
-        long dod = (didp - didd) * doc(i + 1, remp, n);
-        long rt = dop + dod;
+        // j is the overall order already there. i-j is those already picked up.
+        int pickedup = i - j;
+        if (j > 0) {
+            way2 = (j - pickedup) * count(i + 1, j, n, limit);
+        }
+        long rt = way1 + way2;
         rt %= mod;
-        dp[i][remp] = rt;
+        dp[i][j] = rt;
         return rt;
     }
-
-    private int mod = 1000000007;
 }
 
 class CountAllValidPickupDeliveryOptionsOneLiner {

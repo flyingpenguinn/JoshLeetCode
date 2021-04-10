@@ -43,64 +43,38 @@ There will be at most 10000 operations considering both recordTweet and getTweet
 public class TweetCountsPerFreq {
     // use buckets to simplify the projection!
     // can use a treemap to accelarate the start/end lookup
-    private static class TweetCounts {
+    class TweetCounts {
+
         private Map<String, List<Integer>> m = new HashMap<>();
 
+        private Map<String, Integer> ts = new HashMap<>();
+
         public TweetCounts() {
-
+            ts.put("minute", 60);
+            ts.put("hour", 60*60);
+            ts.put("day", 60*60*24);
         }
 
-        public void recordTweet(String tw, int time) {
-            m.computeIfAbsent(tw, k -> new ArrayList<>()).add(time);
+        public void recordTweet(String tweetName, int time) {
+            m.computeIfAbsent(tweetName, k-> new ArrayList<>()).add(time);
         }
 
-        public List<Integer> getTweetCountsPerFrequency(String freqstr, String tw, int s, int e) {
-            int freq = 60;
-            if ("day".equals(freqstr)) {
-                freq = 3600 * 24;
-            } else if ("hour".equals(freqstr)) {
-                freq = 3600;
-            }
-            List<Integer> times = m.getOrDefault(tw, new ArrayList<>());
-            Map<Integer, Integer> tm = new HashMap<>();
-            for (int i = 0; i < times.size(); i++) {
-                int v = times.get(i);
-                if (v >= s && v <= e) {
-                    int slot = (v - s) / freq;
-                    tm.put(slot, tm.getOrDefault(slot, 0) + 1);
+        public List<Integer> getTweetCountsPerFrequency(String freq, String tweetName, int startTime, int endTime) {
+            List<Integer> times = m.get(tweetName);
+            int unit = ts.get(freq);
+            int slots = (int)Math.ceil((endTime-startTime+1.0)/unit);
+            int[] res = new int[slots];
+            for(int time: times){
+                if(time>= startTime && time<=endTime){
+                    int slot = (time-startTime)/unit;
+                    res[slot]++;
                 }
             }
-            List<Integer> list = new ArrayList<>();
-            int endslot = (e - s) / freq;
-            for (int i = 0; i <= endslot; i++) {
-                list.add(tm.getOrDefault(i, 0));
+            List<Integer> rlist = new ArrayList<>();
+            for(int ri: res){
+                rlist.add(ri);
             }
-            return list;
+            return rlist;
         }
-    }
-
-    public static void main(String[] args) {
-        TweetCounts tweetCounts = new TweetCounts();
-        tweetCounts.recordTweet("t0", 857105800);
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("minute", "t0", 255428777, 255438544));
-
-        tweetCounts.recordTweet("tweet3", 0);
-        tweetCounts.recordTweet("tweet3", 60);
-        tweetCounts.recordTweet("tweet3", 10);                             // All tweets correspond to "tweet3" with recorded times at 0, 10 and 60.
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("minute", "tweet3", 0, 59)); // return [2]. The frequency is per minute (60 seconds), so there is one interval of time: 1) [0, 60> - > 2 tweets.
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("minute", "tweet3", 0, 60)); // return [2, 1]. The frequency is per minute (60 seconds), so there are two intervals of time: 1) [0, 60> - > 2 tweets, and 2) [60,61> - > 1 tweet.
-        tweetCounts.recordTweet("tweet3", 120);                            // All tweets correspond to "tweet3" with recorded times at 0, 10, 60 and 120.
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("hour", "tweet3", 0, 210));  // return [4]. The frequency is per hour (3600 seconds), so there is one interval of time: 1) [0, 211> - > 4 tweets.
-
-
-        tweetCounts.recordTweet("tweet0", 13);
-        tweetCounts.recordTweet("tweet1", 16);
-        tweetCounts.recordTweet("tweet2", 12);
-        tweetCounts.recordTweet("tweet3", 18);
-        tweetCounts.recordTweet("tweet4", 82);
-        tweetCounts.recordTweet("tweet3", 89);
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("day", "tweet0", 89, 9471)); // return [2]. The frequency is per minute (60 seconds), so there is one interval of time: 1) [0, 60> - > 2 tweets.
-        System.out.println(tweetCounts.getTweetCountsPerFrequency("hour", "tweet3", 13, 4024)); // return [2, 1]. The frequency is per minute (60 seconds), so there are two intervals of time: 1) [0, 60> - > 2 tweets, and 2) [60,61> - > 1 tweet.
-
     }
 }
