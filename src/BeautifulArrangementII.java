@@ -22,35 +22,25 @@ The n and k are in the range 1 <= k < n <= 104.
 public class BeautifulArrangementII {
     // jump around between 1...k+1,then just poll from the middle part, and the part that was originally beyond high
     public int[] constructArray(int n, int k) {
-        int[] r = new int[n];
-        r[0] = 1;
-        boolean plus = true;
-        int high = 1 + k;
-        int low = 2;
+        int[] a = new int[n];
+        a[0] = 1;
+        int j = 1+k;
+        int p = 2;
         int i = 1;
-        int ok = k;
-        while (i < n) {
-            if (k == 0) {
-                break;
-            } else {
-                if (plus) {
-                    r[i] = high--;
-                    plus = false;
-                } else {
-                    r[i] = low++;
-                    plus = true;
-                }
-                k--;
+        int rem = k;
+        for(; i<n && rem>0; i++){
+            if(i%2==0){
+                a[i] = p++;
+            }else{
+                a[i] = j--;
             }
-            i++;
+            rem--;
         }
-        while (low <= high) {
-            r[i++] = low++;
+        p = 1+k+1;
+        for(; i<n; i++){
+            a[i] = p++;
         }
-        for (int j = ok + 2; j <= n; j++) {
-            r[i++] = j;
-        }
-        return r;
+        return a;
     }
 
     public static void main(String[] args) {
