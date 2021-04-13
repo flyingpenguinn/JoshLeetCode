@@ -43,27 +43,35 @@ public class MaxNumberOccurenceOfSubstring {
 
     // never need to consider maxsize, just minsize is enough because we want the max occur substring...
     public int maxFreq(String s, int maxLetters, int minSize, int maxSize) {
-        int len = minSize;
         int n = s.length();
-        int max = 0;
+        int k = minSize;
         Map<String, Integer> m = new HashMap<>();
-        for (int i = 0; i + len - 1 < n; i++) {
-            String stub = s.substring(i, i + len);
-            if (count(stub) <= maxLetters) {
-                int nv = m.getOrDefault(stub, 0) + 1;
-                max = Math.max(max, nv);
-                m.put(stub, nv);
+        int res = 0;
+        Map<Character,Integer> cm= new HashMap<>();
+        // sliding window, ENDING at i
+        for(int i=0; i<n; i++){
+            update(cm, s.charAt(i),1);
+            if(i-k+1>=0 && cm.keySet().size()<=maxLetters){
+                String str = s.substring(i-k+1, i+1);
+                int nv = m.getOrDefault(str, 0)+1;
+                m.put(str, nv);
+                res = Math.max(res, nv);
+            }
+            if(i-k+1>=0){
+                update(cm, s.charAt(i-k+1), -1);
             }
         }
-        return max;
+        //   System.out.println(m);
+        return res;
     }
 
-    private int count(String s) {
-        Set<Character> set = new HashSet<>();
-        for (int i = 0; i < s.length(); i++) {
-            set.add(s.charAt(i));
+    private void update(Map<Character,Integer> m, char k,int d){
+        int nv = m.getOrDefault(k, 0)+d;
+        if(nv<=0){
+            m.remove(k);
+        }else{
+            m.put(k, nv);
         }
-        return set.size();
     }
 
     public static void main(String[] args) {
