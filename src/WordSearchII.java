@@ -31,64 +31,74 @@ public class WordSearchII {
     // use trie to build the dictionary then dfs every i,j on the board to see if they can form any word....
     // backtrack with a trie, On^2*L^4 note we go L on 4 directions,n=edge len
     private class Trie {
-        private String fullWord = null;
+        private char val;
         private Trie[] ch = new Trie[26];
+        private String fullword = null;
+
+        public Trie(char val) {
+            this.val = val;
+        }
     }
+
+    private Trie root = new Trie('*');
+
+    private void insert(String s) {
+        Trie p = root;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int cind = c - 'a';
+            if (p.ch[cind] == null) {
+                p.ch[cind] = new Trie(c);
+            }
+            p = p.ch[cind];
+        }
+        p.fullword = s;
+    }
+
+    private List<String> res = new ArrayList<>();
+    private int maxlen = 0;
 
     public List<String> findWords(char[][] a, String[] words) {
-        Trie root = new Trie();
-        for (String w : words) {
-            insert(root, w);
+        if (a == null || a.length == 0 || a[0].length == 0 || words.length == 0) {
+            return res;
         }
-        List<String> r = new ArrayList<>();
+        for (String w : words) {
+            insert(w);
+            maxlen = Math.max(maxlen, w.length());
+        }
         for (int i = 0; i < a.length; i++) {
             for (int j = 0; j < a[0].length; j++) {
-                Trie first = root.ch[a[i][j] - 'a'];
-                if (first != null) {
-                    dfs(a, i, j, first, r);
-                }
+                dfs(a, i, j, root, 0, maxlen);
             }
         }
-        return r;
-    }
-
-    private void insert(Trie root, String w) {
-        Trie p = root;
-        for (int i = 0; i < w.length(); i++) {
-            char c = w.charAt(i);
-            int cind = c - 'a';
-            Trie next = p.ch[cind];
-            if (next == null) {
-                next = p.ch[cind] = new Trie();
-            }
-            p = next;
-        }
-        p.fullWord = w;
-        // if two words end in the same trie node they are the same words
+        return res;
     }
 
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    private void dfs(char[][] a, int i, int j, Trie node, List<String> r) {
-        // a[i][j] == node == cur
-        if (node.fullWord != null) {
-            r.add(node.fullWord);
-            node.fullWord = null;
+    // check ij with p.ch. if p.ch is a word, then ij ends the word add to the list
+    private void dfs(char[][] a, int i, int j, Trie p, int l, int maxlen) {
+        if (l > maxlen) {
+            return;
         }
-        char orig = a[i][j];
-        a[i][j] = '-';
+        int cind = a[i][j] - 'a';
+        if (p.ch[cind] == null) {
+            return;
+        }
+        if (p.ch[cind].fullword != null) {
+            res.add(p.ch[cind].fullword);
+            p.ch[cind].fullword = null;
+            // only put each full words once
+        }
+        char old = a[i][j];
+        a[i][j] = '*';
         for (int[] d : dirs) {
             int ni = i + d[0];
             int nj = j + d[1];
-            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] != '-') {
-                char nc = a[ni][nj];
-                int ncind = nc - 'a';
-                Trie nnext = node.ch[ncind];
-                if (nnext != null) {
-                    dfs(a, ni, nj, nnext, r);
-                }
+            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] != '*') {
+                dfs(a, ni, nj, p.ch[cind], l + 1, maxlen);
             }
         }
-        a[i][j] = orig;
+        a[i][j] = old;
     }
 }

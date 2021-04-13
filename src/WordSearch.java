@@ -30,12 +30,16 @@ board and word consists only of lowercase and uppercase English letters.
 
 public class WordSearch {
     // O(m*n*4^l) where<l is the length
-    private int[][] dirs = {{-1,0}, {1,0}, {0, -1}, {0,1}};
     public boolean exist(char[][] a, String word) {
-        // check null or validate error out if needed. word non empty
-        for(int i=0; i<a.length;i++){
-            for(int j=0; j<a[0].length;j++){
-                if(word.charAt(0) == a[i][j] && doExist(a, i, j, word, 0)){
+        if (a == null || a.length == 0 || a[0].length == 0 || word.isEmpty()) {
+            return false;
+        }
+        int m = a.length;
+        int n = a[0].length;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                boolean good = dfs(a, i, j, word, 0);
+                if (good) {
                     return true;
                 }
             }
@@ -43,26 +47,30 @@ public class WordSearch {
         return false;
     }
 
-    // a ij matching k already
-    private boolean doExist(char[][] a, int i, int j, String word, int k){
-        if(k==word.length()-1){
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    // checking i, j against k. k is valid value
+    private boolean dfs(char[][] a, int i, int j, String word, int k) {
+        int m = a.length;
+        int n = a[0].length;
+        if (a[i][j] != word.charAt(k)) {
+            return false;
+        }
+        if (k == word.length() - 1) {
             return true;
         }
-        char original = a[i][j];
-        a[i][j]='-';
-        boolean good = false;
-        for(int[] d: dirs){
-            int ni = i+d[0];
-            int nj = j+d[1];
-            if(ni>=0 && ni<a.length && nj>=0 && nj<a[0].length && a[ni][nj] == word.charAt(k+1)){
-                if(doExist(a, ni, nj, word, k+1)){
-                    good = true;
-                    break;
+        char old = a[i][j];
+        a[i][j] = '*';
+        for (int[] d : dirs) {
+            int ni = i + d[0];
+            int nj = j + d[1];
+            if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] != '*') {
+                if (dfs(a, ni, nj, word, k + 1)) {
+                    return true;
                 }
             }
         }
-        a[i][j] = original;
-        return good;
+        a[i][j] = old;
+        return false;
     }
-
 }
