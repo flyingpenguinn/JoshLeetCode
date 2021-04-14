@@ -36,22 +36,16 @@ n == mat[i].length
  */
 public class MaxSideLenSquareIWthSumLess {
     // because it's all positive we can binary search the side length
+    // @reusable
     public int maxSideLength(int[][] a, int t) {
         int m = a.length;
         int n = a[0].length;
-        int[][] sum = new int[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                sum[i][j] = (i == 0 ? 0 : sum[i - 1][j]) + (j == 0 ? 0 : sum[i][j - 1]) - ((i == 0 || j == 0) ? 0 : sum[i - 1][j - 1]) + a[i][j];
-            }
-        }
-
-        int u = Math.min(m, n);
         int l = 1;
+        int u = Math.min(m, n);
+        int[][] sum = getsummatrix(a, m, n);
         while (l <= u) {
             int mid = l + (u - l) / 2;
             if (good(sum, mid, t)) {
-
                 l = mid + 1;
             } else {
                 u = mid - 1;
@@ -60,18 +54,39 @@ public class MaxSideLenSquareIWthSumLess {
         return u;
     }
 
-    private boolean good(int[][] sum, int l, int t) {
-        int m = sum.length;
-        int n = sum[0].length;
+    protected int[][] getsummatrix(int[][] a, int m, int n) {
+        int[][] sum = new int[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                int si = i - l + 1;
-                int sj = j - l + 1;
-                if (si >= 0 && sj >= 0) {
-                    int rsum = sum[i][j] - (si == 0 ? 0 : sum[si - 1][j]) - (sj == 0 ? 0 : sum[i][sj - 1]) + ((si == 0 || sj == 0) ? 0 : sum[si - 1][sj - 1]);
-                    if (rsum <= t) {
-                        return true;
-                    }
+                sum[i][j] = getsum(sum, i - 1, j) + getsum(sum, i, j - 1) - getsum(sum, i - 1, j - 1) + a[i][j];
+            }
+        }
+        return sum;
+    }
+
+
+    private int getsum(int[][] sum, int i, int j) {
+        if (i < 0 || j < 0) {
+            return 0;
+        }
+        return sum[i][j];
+    }
+
+
+    private int getsum(int[][] sum, int i, int j, int si, int sj) {
+        return getsum(sum, i, j) - getsum(sum, si - 1, j) - getsum(sum, i, sj - 1) + getsum(sum, si - 1, sj - 1);
+    }
+
+    private boolean good(int[][] sum, int mid, int t) {
+        int m = sum.length;
+        int n = sum[0].length;
+        for (int i = mid - 1; i < m; i++) {
+            for (int j = mid - 1; j < n; j++) {
+                int si = i - mid + 1;
+                int sj = j - mid + 1;
+                int cur = getsum(sum, i, j, si, sj);
+                if (cur <= t) {
+                    return true;
                 }
             }
         }
