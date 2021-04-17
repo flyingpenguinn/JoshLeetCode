@@ -67,98 +67,97 @@ There is only one character 'S', 'B' and 'T' in the grid.
 public class MinMovesBoxToLocation {
     // bfs the box, then for human use dfs to check if can reach the dedicated side...
     // player's positions should also be in the state...we may push box from one direction, then walk over, and then go from the other direction
+    // in seen array we record the box position and the direction we pushed so that next time we won't try the same position again. dont need to record the human position
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    private int[][] opps = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    private int[][] rdirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
     public int minPushBox(char[][] a) {
-// status: box r, box c, human r, human c,  steps, direction. note direction is used to make sure we can visit a cell from all 4 possible directions
-        int[] player = find(a, 'S');
-        int[] box = find(a, 'B');
-        if (player == null || box == null) {
-            return -1;
-        }
-        int[] status = new int[]{box[0], box[1], player[0], player[1], 0, 4};
-        return bfs(a, status);
-    }
-
-    private int[] find(char[][] a, char t) {
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[0].length; j++) {
-                if (a[i][j] == t) {
-                    return new int[]{i, j};
+        int m = a.length;
+        int n = a[0].length;
+        Deque<int[]> q = new ArrayDeque<>();
+        // box position, player position
+        int[] bp = null;
+        int[] sp = null;
+        int[] tp = null;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (a[i][j] == 'T') {
+                    tp = new int[]{i, j};
+                    a[i][j] = '.';
+                } else if (a[i][j] == 'B') {
+                    bp = new int[]{i, j};
+                    a[i][j] = '.';
+                } else if (a[i][j] == 'S') {
+                    sp = new int[]{i, j};
+                    a[i][j] = '.';
                 }
             }
         }
-        return null;
-    }
-
-    private int[] add(int[] p, int[] q) {
-        return new int[]{p[0] + q[0], p[1] + q[1]};
-    }
-
-    // s must be valid t may not be
-    private boolean goable(char[][] a, int[] box, int[] s, int[] t) {
-        if (!walkable(a, t[0], t[1])) {
-            return false;
-        }
-        if (s[0] == t[0] && s[1] == t[1]) {
-            return true;
-        }
-        boolean[][] v = new boolean[a.length][a[0].length];
-        boolean rt = dfs(a, box, s, t, v);
-        return rt;
-    }
-
-    // human walk
-    private boolean dfs(char[][] a, int[] box, int[] s, int[] t, boolean[][] v) {
-        v[s[0]][s[1]] = true;
-        if (s[0] == t[0] && s[1] == t[1]) {
-            return true;
-        }
-        for (int[] d : dirs) {
-            int ns0 = s[0] + d[0];
-            int ns1 = s[1] + d[1];
-            int[] np = new int[]{ns0, ns1};
-            if (walkable(a, ns0, ns1) && !Arrays.equals(np, box) && !v[ns0][ns1] && dfs(a, box, new int[]{ns0, ns1}, t, v)) {
-                return true;
-
-            }
-        }
-        return false;
-    }
-
-    // not checking box location
-    private boolean walkable(char[][] a, int i, int j) {
-        boolean rt = i >= 0 && i < a.length && j >= 0 && j < a[0].length && a[i][j] != '#';
-        return rt;
-    }
-
-    private int bfs(char[][] a, int[] st) {
-        Deque<int[]> q = new ArrayDeque<>();
-        q.offer(st);
-        boolean[][][] v = new boolean[a.length][a[0].length][5];
-        v[st[0]][st[1]][st[5]] = true;
+        // bp, player pos, and steps so far
+        q.offer(new int[]{bp[0], bp[1], sp[0], sp[1], 0});
+        boolean[][][] seen = new boolean[m][n][4];
+        // box locations and its push direction
         while (!q.isEmpty()) {
             int[] top = q.poll();
-            int step = top[4];
-            if (a[top[0]][top[1]] == 'T') {
-                return step;
+            int bi = top[0];
+            int bj = top[1];
+            int si = top[2];
+            int sj = top[3];
+            int steps = top[4];
+            if (bi == tp[0] && bj == tp[1]) {
+                return steps;
             }
-            int[] box = new int[]{top[0], top[1]};
-            int[] pt = new int[]{top[2], top[3]};
-            for (int j = 0; j < 4; j++) {
-                int[] pushbox = add(box, opps[j]);
-                if (!goable(a, box, pt, pushbox)) {
+            for (int k = 0; k < dirs.length; k++) {
+                int[] d = dirs[k];
+                int[] rd = rdirs[k];
+                int nbi = bi + d[0];
+                int nbj = bj + d[1];
+                if (!valid(a, nbi, nbj, m, n)) {
                     continue;
                 }
-                int[] nbox = add(box, dirs[j]);
-                int[] npt = new int[]{box[0], box[1]};
-                if (walkable(a, nbox[0], nbox[1]) && !v[nbox[0]][nbox[1]][j]) {
-                    v[nbox[0]][nbox[1]][j] = true;
-                    q.offer(new int[]{nbox[0], nbox[1], npt[0], npt[1], step + 1});
+                int nsi = bi + rd[0];
+                int nsj = bj + rd[1];
+                if (!valid(a, nsi, nsj, m, n)) {
+                    continue;
+                }
+                a[bi][bj] = '#'; // box not crossable
+                boolean[][] v = new boolean[m][n];
+                boolean doable = dfs(a, si, sj, nsi, nsj, v);
+                a[bi][bj] = '.';
+                if (doable) {
+                    if (seen[nbi][nbj][k]) {
+                        continue;
+                    }
+                    seen[nbi][nbj][k] = true;
+                    //human took over box position
+                    q.offer(new int[]{nbi, nbj, bi, bj, steps + 1});
                 }
             }
         }
         return -1;
+    }
+
+    private boolean valid(char[][] a, int i, int j, int m, int n) {
+        return i >= 0 && i < m && j >= 0 && j < n && a[i][j] != '#';
+    }
+
+    // we can never ever set a[si][sj] to # to mimic dfs. if we do that we may revisit cells we previously visited from another direction
+    private boolean dfs(char[][] a, int si, int sj, int ti, int tj, boolean[][] v) {
+        if (si == ti && sj == tj) {
+            return true;
+        }
+        int m = a.length;
+        int n = a[0].length;
+        v[si][sj] = true;
+        boolean good = false;
+        for (int[] d : dirs) {
+            int nsi = si + d[0];
+            int nsj = sj + d[1];
+            if (valid(a, nsi, nsj, m, n) && !v[nsi][nsj] && dfs(a, nsi, nsj, ti, tj, v)) {
+                good = true;
+                break;
+            }
+        }
+        return good;
     }
 }

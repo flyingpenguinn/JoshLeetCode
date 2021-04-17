@@ -39,25 +39,28 @@ public class MinSwapToGroupOnes {
     // how many zeros each window = ones has? we need to swap them out
     public int minSwaps(int[] a) {
         int n = a.length;
-        int ones = 0;
-        for(int i=0; i<n; i++){
-            if(a[i]==1){
-                ones++;
+        int window = 0;
+        for (int i = 0; i < n; i++) {
+            if (a[i] == 1) {
+                window++;
             }
         }
-        if(ones<=1 || ones==n){
+        if (window == 0) {
             return 0;
         }
-        int[] c = new int[2];
-        int min = n;
-        for(int i=0; i<n; i++){
-            c[a[i]]++;
-            int head = i-ones+1;
-            if(head>=0){
-                min = Math.min(min, c[0]);
-                c[a[head]]--;
+        int gaps = 0;
+        int res = Integer.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            if (a[i] == 0) {
+                gaps++;
+            }
+            if (i - window + 1 >= 0) {
+                res = Math.min(res, gaps);
+                if (a[i - window + 1] == 0) {
+                    gaps--;
+                }
             }
         }
-        return min;
+        return res;
     }
 }

@@ -51,17 +51,18 @@ public class Fibonacci {
 
 class FiboIterative {
     public int fib(int n) {
-        if (n <= 1) {
+        if(n<=0){
             return n;
         }
-        int a1 = 0;
-        int a2 = 1;
-        while (n > 1) {
-            int a3 = a1 + a2;
-            a1 = a2;
-            a2 = a3;
-            n--;
+        int a = 0;
+        int b = 1;
+        int i = 1;
+        while(i<n){
+            int na = b;
+            b = a+b;
+            a = na;
+            i++;
         }
-        return a2;
+        return b;
     }
 }
