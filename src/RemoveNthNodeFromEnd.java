@@ -18,23 +18,24 @@ Follow up:
 Could you do this in one pass?
  */
 public class RemoveNthNodeFromEnd {
-    // similar to get nth from back,but use .next.next
+    // similar to get nth from back
     public ListNode removeNthFromEnd(ListNode head, int n) {
         ListNode dummy = new ListNode(-1);
         dummy.next = head;
-        ListNode pre = dummy;
-        ListNode p = head;
-        while (n > 1) {
-            p = p.next;
+        ListNode q = head;
+        while (n > 0) {
+            if (q == null) {
+                throw new IllegalArgumentException();
+            }
+            q = q.next;
             n--;
         }
-        while (p.next != null) {
-            // move p to the end of the list
-            pre = pre.next;
+        ListNode p = dummy;
+        while (q != null) {
             p = p.next;
+            q = q.next;
         }
-        ListNode togo = pre.next;
-        pre.next = togo.next;
+        p.next = p.next.next;
         return dummy.next;
     }
 }

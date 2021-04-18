@@ -35,35 +35,35 @@ Note:
 public class NumberOfSubmatricesSumToTarget {
     // O(n3) worst case. this is one of the most frequently used ways to treat matrix!
     // similar to LC#363, and they are both similar to 2d max subarray sum problem
-    public int numSubmatrixSumTarget(int[][] a, int t) {
+    private int v(int[][] sum, int i, int j) {
+        return i < 0 || j < 0 ? 0 : sum[i][j];
+    }
+
+    public int numSubmatrixSumTarget(int[][] a, int target) {
         int m = a.length;
         int n = a[0].length;
-        int[][] p = new int[m][n];
+        int[][] sum = new int[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                p[i][j] = i == 0 ? a[i][j] : p[i - 1][j] + a[i][j];
+                sum[i][j] = v(sum, i - 1, j) + a[i][j];
             }
         }
-        int r = 0;
+        int res = 0;
         for (int i = 0; i < m; i++) {
             for (int j = i; j < m; j++) {
-                int psum = 0;
                 Map<Integer, Integer> map = new HashMap<>();
+                map.put(0, 1);
+                int csum = 0;
                 for (int k = 0; k < n; k++) {
-                    int cur = i == 0 ? p[j][k] : p[j][k] - p[i - 1][k];
-                    psum = k == 0 ? cur : psum + cur;
-                    if (psum == t) {
-                        r++;
-                    }
-                    int target = psum - t;
-                    int count = map.getOrDefault(target, 0);
-                    r += count;
-                    map.put(psum, map.getOrDefault(psum, 0) + 1);
+                    int cur = v(sum, j, k) - v(sum, i - 1, k);
+                    csum += cur;
+                    int count = map.getOrDefault(csum - target, 0);
+                    res += count;
+                    map.put(csum, map.getOrDefault(csum, 0) + 1);
                 }
-
             }
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {
