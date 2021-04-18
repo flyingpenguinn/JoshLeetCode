@@ -15,43 +15,44 @@ Here are some examples. Inputs are in the left-hand column and its corresponding
 1,1,5 → 1,5,1
  */
 public class NextPermutation {
-    // 1. find the first number i that is >i-1. if not found, sort
-    // 2. find the first number from n-1 that is >i-1. may be i, may be sth after i.
+    // 1. find the first number from n-1 that is >i-1. if not found, sort
+    // 2. find the first number from n-1 that is >the number the i-1th pos. may be i, may be sth after i.
     // 3. swap that number and i-1
     // 4. reverse everything from i to n-1
+    // if previous perm, then it's basically MinNumOpsToMakeStringSorted, convert > to < above
     public void nextPermutation(int[] a) {
         // validate input, null-> throw or return
         int n = a.length;
         int swap1 = -1; //index
-        for(int i=n-1; i>=1; i--){
-            if(a[i]>a[i-1]){
-                swap1= i-1;
+        for (int i = n - 1; i >= 1; i--) {
+            if (a[i] > a[i - 1]) {
+                swap1 = i - 1;
                 break;
             }
         }
-        if(swap1==-1){
+        if (swap1 == -1) {
             Arrays.sort(a);
             return;
         }
         int swap2 = -1; //index
-        for(int i=n-1; i>swap1; i--){
-            if(a[i] > a[swap1]){
+        for (int i = n - 1; i > swap1; i--) {
+            if (a[i] > a[swap1]) {
                 swap2 = i;
                 break;
             }
         }
         swap(a, swap1, swap2);
-        reverse(a, swap1+1, n-1);
+        reverse(a, swap1 + 1, n - 1);
     }
 
-    private void swap(int[] a, int i, int j){
+    private void swap(int[] a, int i, int j) {
         int tmp = a[i];
         a[i] = a[j];
         a[j] = tmp;
     }
 
-    private void reverse(int[] a, int i, int j){
-        while(i<j){
+    private void reverse(int[] a, int i, int j) {
+        while (i < j) {
             swap(a, i++, j--);
         }
     }

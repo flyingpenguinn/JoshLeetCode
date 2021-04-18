@@ -65,3 +65,48 @@ public class MinNumOpsToMakeStringSorted {
         return res;
     }
 }
+
+class MinOpsToMakeStringSortedSlow {
+    // just for the sake of debugging
+    public int makeStringSortedslow(String s) {
+        char[] sc = s.toCharArray();
+        int n = s.length();
+
+        int steps = 0;
+        while (true) {
+            System.out.println(new String(sc));
+            int ri = -1;
+            int rj = -1;
+            for (int i = 1; i < n; i++) {
+                if (sc[i] < sc[i - 1]) {
+                    ri = i;
+                    for (int j = i; j < n; j++) {
+                        if (sc[j] < sc[i - 1]) {
+                            rj = j;
+                        }
+                    }
+                }
+            }
+            if (ri == -1) {
+                return steps;
+            }
+            steps++;
+            swap(sc, ri - 1, rj);
+            reverse(sc, ri);
+        }
+    }
+
+
+    private void swap(char[] sc, int i, int j) {
+        char tmp = sc[i];
+        sc[i] = sc[j];
+        sc[j] = tmp;
+    }
+
+    private void reverse(char[] sc, int i) {
+        int j = sc.length - 1;
+        while (i < j) {
+            swap(sc, i++, j--);
+        }
+    }
+}
