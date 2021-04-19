@@ -16,83 +16,91 @@ Output: [[0,1],[1,0]]
 Explanation: The palindromes are ["battab","tabbat"]
  */
 public class PalindromePairs {
-    public List<List<Integer>> palindromePairs(String[] w) {
-        // palin + stub, store the reverses of the stub for later matching with a whole string
-        // or stub+palin, find stub from a reverse map of whole string
-
-        // rmd stores stubs without the starting palindromes, could be empty if whole string is palindrome, to match with a whole string
-        Map<String, List<Integer>> rmd = new HashMap<>();
-        // rm stores reversed full strings to match with a stub
-        Map<String, Integer> rm = new HashMap<>();
-        List<List<Integer>> r = new ArrayList<>();
-        int[][][] dp = new int[w.length][][];
-        for (int i = 0; i < w.length; i++) {
-            int n = w[i].length();
-            dp[i] = new int[n][n];
-            paline(w[i], dp[i]);
-            StringBuilder rsb = new StringBuilder(w[i]).reverse();
-            rm.put(rsb.toString(), i);
-            for (int j = 0; j < n; j++) {
-                rsb.deleteCharAt(n - 1 - j);
-                if (dp[i][0][j] == 1) {
-                    String str = rsb.toString();
-                    List<Integer> cur = rmd.getOrDefault(str, new ArrayList<>());
-                    cur.add(i);
-                    rmd.put(str, cur);
-                }
-            }
-        }
-
-        for (int i = 0; i < w.length; i++) {
-            if (rmd.containsKey(w[i])) {
-                for (int j : rmd.get(w[i])) {
-                    tol(i, j, r);
-                }
-            }
-            int n = w[i].length();
-            StringBuilder sb = new StringBuilder(w[i]);
-            for (int j = n; j >= 0; j--) {
-                if (j < n) {
-                    sb.deleteCharAt(j);
-                }
-                if (j == n || dp[i][j][n - 1] == 1) {
-                    String str = sb.toString();
-                    // str could be empty if the whole string is empty
-                    if (rm.containsKey(str)) {
-                        tol(i, rm.get(str), r);
-                    }
-                }
-            }
-        }
-        return r;
-    }
-
-    private void paline(String s, int[][] dp) {
-        int n = s.length();
-        for (int len = 1; len <= n; len++) {
-            for (int i = 0; i + len - 1 < n; i++) {
-                int j = i + len - 1;
-                if (len == 1) {
-                    dp[i][j] = 1;
-                } else if (len == 2) {
-                    dp[i][j] = s.charAt(i) == s.charAt(j) ? 1 : 0;
-                } else if (s.charAt(i) == s.charAt(j) && dp[i + 1][j - 1] == 1) {
-                    dp[i][j] = 1;
-                }
-            }
+    // two possibilities- ab vs cba. we handle
+    private class Trie{
+        private char val;
+        private Trie[] ch = new Trie[26];
+        private int word = -1;
+        private List<Integer> palins = new ArrayList<>();
+        public Trie(char v){
+            val = v;
         }
     }
 
+    private Trie root= new Trie('*');
 
-    void tol(Integer v1, Integer v2, List<List<Integer>> r) {
-        if (!v1.equals(v2)) {
-            List<Integer> cr = new ArrayList<>();
-            cr.add(v1);
-            cr.add(v2);
-            r.add(cr);
+    // palins means indexes that are palin from 0...i and node p represents i+1
+    private void insertTrie(String w, int index){
+        Trie p = root;
+        int n = w.length();
+        if(ispalin(w, 0, n-1)){
+            p.palins.add(index);
         }
+        for(int i=n-1; i>=0; i--){
+            char c = w.charAt(i);
+            int cind = c - 'a';
+            Trie next = p.ch[cind];
+            if(next == null){
+                next = p.ch[cind] = new Trie(c);
+            }
+            if(ispalin(w, 0, i-1)){
+                // covers empty string here
+                next.palins.add(index);
+            }
+            p = next;
+        }
+        p.word = index;
     }
 
+    public List<List<Integer>> palindromePairs(String[] ws) {
+        List<List<Integer>> res = new ArrayList<>();
+        int n = ws.length;
+        for(int i=0; i<n; i++){
+            String w = ws[i];
+            insertTrie(w, i);
+        }
+        for(int i=0; i<n; i++){
+            String w = ws[i];
+            Trie p = root;
+            boolean nofound = false;
+            for(int j=0; j<w.length(); j++){
+                int cind = w.charAt(j)-'a';
+                // abc vs ba. at node b on the right it has ba's index
+                if(ispalin(w, j, w.length()-1) && p.word != -1){
+                    addlist(res, i, p.word);
+                }
+                if(p.ch[cind] == null){
+                    nofound = true;
+                    break;
+                }else{
+                    p = p.ch[cind];
+                }
+            }
+            // if not nofound, ab vs cba. p is at b
+            if(!nofound){
+                for(int pa: p.palins){
+                    addlist(res, i, pa);
+                }
+            }
+        }
+        return res;
+    }
+
+    private boolean ispalin(String w, int i, int j){
+        while(i<j){
+            if(w.charAt(i++) != w.charAt(j--)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void addlist(List<List<Integer>> res, int x,int y){
+        if(x==y){
+            return;
+        }
+        res.add(List.of(x,y));
+    }
 
     public static void main(String[] args) {
         PalindromePairs pp = new PalindromePairs();
