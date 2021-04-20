@@ -66,34 +66,3 @@ public class SmallestRangeII {
         return res;
     }
 }
-
-class SmallestRangeIIAnotherWay {
-    // first all +, then we will only reduce the number
-    // note we break when we can't reduce a number further
-    public int smallestRangeII(int[] a, int k) {
-        TreeSet<int[]> ts = new TreeSet<>((x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0]) : Integer.compare(x[1], y[1]));
-        // must compare 1 too to avoid removing wrong element
-        int n = a.length;
-        for (int i = 0; i < n; i++) {
-            ts.add(new int[]{a[i] + k, 1});
-        }
-        // the only thing we will do is to reduce
-        int min = Integer.MAX_VALUE;
-        while (!ts.isEmpty()) {
-            int[] last = ts.last();
-            int[] first = ts.first();
-
-            //   System.out.println(Arrays.toString(first)+" "+Arrays.toString(last));
-            int diff = last[0] - first[0];
-            min = Math.min(min, diff);
-            ts.remove(last);
-            if (last[1] == 1) {
-                ts.add(new int[]{last[0] - 2 * k, 0});
-            } else {
-                // can't get smaller so have to stop
-                break;
-            }
-        }
-        return min;
-    }
-}
