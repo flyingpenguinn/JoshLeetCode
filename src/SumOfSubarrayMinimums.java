@@ -29,22 +29,36 @@ public class SumOfSubarrayMinimums {
     // contri= dp[j]+(i-j)*a[i]
     public int sumSubarrayMins(int[] a) {
         int n = a.length;
-        long sum = 0;
-        Deque<Integer> st = new ArrayDeque<>();
-        int[] dp = new int[n];
-        Deque<Integer> dq = new ArrayDeque<>();
+        int[] left = findlefts(a);
+        long[] dp = new long[n];
+        long res = 0;
         for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && a[st.peek()] >= a[i]) {
-                st.pop();
+            if (left[i] == -1) {
+                dp[i] = (i + 1) * a[i];
+            } else {
+                dp[i] = dp[left[i]] + (i - left[i]) * a[i];
             }
-            int j = st.isEmpty() ? -1 : st.peek();
+            dp[i] %= mod;
+            res += dp[i];
+            res %= mod;
+        }
+        return (int) res;
+    }
 
-            dp[i] = (j == -1 ? 0 : dp[j]) + (i - j) * a[i];
-            sum += dp[i];
-            sum %= mod;
+    // nearest small element on the left. the popped one is going to be assigned to i
+    // can also go from left to right and merge this stack stuff with dp assignment
+    private int[] findlefts(int[] a) {
+        Deque<Integer> st = new ArrayDeque<>();
+        int n = a.length;
+        int[] res = new int[n];
+        Arrays.fill(res, -1);
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.isEmpty() && a[st.peek()] > a[i]) {
+                res[st.pop()] = i;
+            }
             st.push(i);
         }
-        return (int) sum;
+        return res;
     }
 
     public static void main(String[] args) {

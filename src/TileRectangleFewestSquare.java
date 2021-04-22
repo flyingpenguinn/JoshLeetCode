@@ -41,62 +41,68 @@ import java.util.Map;
 public class TileRectangleFewestSquare {
     // use sweeping line to store current heights of cols
     // typical sweeping line dp to fill out rectangles
+
     private Map<Long, Integer> dp = new HashMap<>();
 
     public int tilingRectangle(int n, int m) {
-        if (m == n) {
-            return 1;
-        }
-        if (m < n) {
-            int tmp = n;
-            n = m;
-            m = tmp;
-        }
-        return dfs(m, n, new int[n]);
+        int[] st = new int[m];
+        return solve(st, n, m);
     }
 
-    private int dfs(int m, int n, int[] st) {
-        // m rows, n cols, m>n
-        long status = 0;
-        int mh = m;
-        int ms = -1;
-        int base = n + 1;
-        // st is the height of all columns after the last tiling. here we compute a status for the heights.
-        for (int i = 0; i < n; i++) {
-            status = status * base + st[i];
-            if (st[i] < mh) {
-                mh = st[i];
-                ms = i;
+    // just the states, no row number. we put one box a time
+    // optimization: each time we start from the tile with the biggest gap from the top
+    private int solve(int[] st, int n, int m) {
+        boolean bad = false;
+        int maxgap = 0;
+        for (int j = 0; j < st.length; j++) {
+            if (st[j] < n) {
+                bad = true;
+                maxgap = Math.max(maxgap, n - st[j]);
             }
         }
-        if (mh == m) { // all full
+        if (!bad) {
             return 0;
         }
-        if (dp.containsKey(status)) {
-            return dp.get(status);
+        long encoded = encocde(st, n + 1);
+        Integer cached = dp.get(encoded);
+        if (cached != null) {
+            return cached;
         }
-        // from the above we have got the column with the smallest height. now we calc how wide we can go. note the max side len of the square is limited
-        // by m-mh the height
-        int min = Integer.MAX_VALUE;
-        int me = ms;
-        int maxfit = m - mh;
-        while (me < n && st[me] == st[ms] && me - ms + 1 <= maxfit) {
-            me++;
-        }
-        // ms...me-1 can place a square of j-ms+1, we iterate on the possible squares we can put. note we must put square in the smallest height because
-        // we would have to fill this hole. but we may only need a smaller square
-        for (int j = ms; j < me; j++) {
-            // we fill from minstart to j
-            int[] nst = Arrays.copyOf(st, n);
-            int edge = j - ms + 1;
-            for (int k = ms; k <= j; k++) {
-                nst[k] += edge;
+        int j = 0;
+        int min = 1000000;
+        while (j < m) {
+            if (st[j] == n || n - st[j] < maxgap) {
+                j++;
+                continue;
             }
-            int cur = dfs(m, n, nst) + 1;
-            min = Math.min(min, cur);
+            int k = j;
+            while (k < m && st[j] == st[k]) {
+                k++;
+            }
+            // j...k-1 are the same
+            int maxlen = Math.min(k - j, n - st[j]);
+            // len within k-j and n-current height at j. try all length options
+            for (int len = 1; len <= maxlen; len++) {
+                int[] nst = Arrays.copyOf(st, m);
+                for (int l = j; l < j + len; l++) {
+                    // change from j to j+len-1 to be of height old len + len
+                    nst[l] += len;
+                }
+                int cur = 1 + solve(nst, n, m);
+                min = Math.min(cur, min);
+            }
+            break;
         }
-        dp.put(status, min);
+        dp.put(encoded, min);
         return min;
+    }
+
+    private long encocde(int[] list, int base) {
+        long status = 0;
+        for (int li : list) {
+            status = status * base + li;
+        }
+        return status;
     }
 
 
