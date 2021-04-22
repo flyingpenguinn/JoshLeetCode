@@ -1,60 +1,52 @@
 import base.ArrayUtils;
 
+import java.util.Arrays;
+
 
 public class KConcatenateMaxSubarraySum {
     // Note this is not similar to max circular subarray- in that problem we can deal with length ==n at most
-    private int mod = 1000000007;
+    private long mod = 1000000007;
     public int kConcatenationMaxSum(int[] a, int k) {
-        long allsum = allsum(a);
-        long kadne = kadne(a);
-        long maxprefix = maxprefix(a);
-        long maxsuffix = maxsuffix(a);
-        long max = 0;
-        if(allsum>=0){
-            long way1 = allsum*k;
-            long way2 = (k-2)*allsum + maxprefix+maxsuffix;
-            max = Math.max(way1, Math.max(way2, kadne));
+        int n = a.length;
+        long sum = getsum(a);
+        long cad = cadane(a);
+        long maxleft = max(a, 0, n, 1);
+        long maxright = max(a, n-1, -1, -1);
+        long maxlr = maxleft + maxright;
+        long rt = 0;
+        if(sum>=0){
+            rt = Math.max(sum*k, Math.max(cad, (k-2)*sum + maxlr));
         }else{
-            long way1 = maxprefix+maxsuffix;
-            max = Math.max(way1, kadne);
+            rt= Math.max(cad, k>=2? maxlr:0);
         }
-        return (int)(max%mod);
+        return (int)(rt%mod);
     }
 
-    private int allsum(int[] a){
-        int sum =0;
-        for(int i=0; i<a.length;i++){
-            sum += a[i];
-        }
-        return sum;
+    private long getsum(int[] a){
+        return Arrays.stream(a).sum();
     }
 
-    private int maxprefix(int[] a){
-        int sum = 0;
-        int max = Integer.MIN_VALUE;
-        for(int i=0; i<a.length;i++){
-            sum += a[i];
-            max = Math.max(max, sum);
-        }
-        return max;
-    }
-
-    private int maxsuffix(int[] a){
-        int sum = 0;
-        int max = Integer.MIN_VALUE;
-        for(int i=a.length-1; i>=0; i--){
-            sum += a[i];
-            max = Math.max(max, sum);
+    private long cadane(int[] a){
+        int n = a.length;
+        long cur = 0;
+        long max = 0; // allowing empty subarray, otherwise = -MAX
+        for(int i=0; i<n; i++){
+            if(cur<0){
+                cur = a[i];
+            }else{
+                cur += a[i];
+            }
+            max = Math.max(max, cur);
         }
         return max;
     }
 
-    private int kadne(int[] a){
-        int maxending = 0;
-        int max = 0;
-        for(int i=0; i<a.length;i++){
-            maxending = Math.max(maxending+a[i], a[i]);
-            max = Math.max(maxending, max);
+    private long max(int[] a, int l, int r, int d){
+        long max = 0;
+        long cur = 0;
+        for(int i=l; i!= r; i+=d){
+            cur += a[i];
+            max = Math.max(max, cur);
         }
         return max;
     }

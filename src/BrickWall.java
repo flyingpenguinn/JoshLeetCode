@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BrickWall {
-    // just find the most popular seam
+    // just find the most popular seam, n-this number is the least walls crossed
     public int leastBricks(List<List<Integer>> wall) {
         int rows = wall.size();
         // last of each row

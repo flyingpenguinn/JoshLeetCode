@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -42,17 +43,52 @@ Next
  */
 public class TriangleOfNumbers {
 
-    public int minimumTotal(List<List<Integer>> triangle) {
-        int rows = triangle.size();
-        List<Integer> dp = triangle.get(rows - 1);
-        for (int i = rows - 2; i >= 0; i--) {
-            List<Integer> row = triangle.get(i);
-            for (int j = 0; j <= i; j++) {
-                // choose from j and j+1
-                int vj = Math.min(dp.get(j), dp.get(j + 1)) + row.get(j);
-                dp.set(j, vj);
+    public int minimumTotal(List<List<Integer>> t) {
+        int n = t.size();
+        List<Integer> dp = new ArrayList<>();
+        for (int j = 0; j < t.get(n - 1).size(); j++) {
+            dp.add(t.get(n - 1).get(j));
+        }
+        int size = dp.size();
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j = 0; j < size - 1; j++) {
+                // because we go reverse it's j depending on j+1. we then need to go from 0
+                int cur = t.get(i).get(j) + Math.min(dp.get(j), dp.get(j + 1));
+                dp.set(j, cur);
             }
+            size--;
         }
         return dp.get(0);
+    }
+}
+
+class TriangleOfNumbersAnotherway {
+    // i going from 0 to n-1. note here j-1 is going to be overriden if we go from 0 to n-1, so we choose j to go from n-1 to 0
+    private final int Max = Integer.MAX_VALUE;
+
+    public int minimumTotal(List<List<Integer>> t) {
+        int levels = t.size();
+        List<Integer> dp = new ArrayList<>();
+        dp.add(t.get(0).get(0));
+        for (int i = 1; i < t.size(); i++) {
+// because we go forward it's j depending on j-1. we then have to go reverse for j
+            for (int j = t.get(i).size() - 1; j >= 0; j--) {
+                int cur = t.get(i).get(j);
+                int way1 = j == dp.size() ? Max : cur + dp.get(j);
+                int way2 = j == 0 ? Max : cur + dp.get(j - 1);
+                int curmin = Math.min(way1, way2);
+                if (j == dp.size()) {
+                    dp.add(curmin);
+                } else {
+                    dp.set(j, curmin);
+                }
+
+            }
+        }
+        int min = Max;
+        for (int j = 0; j < dp.size(); j++) {
+            min = Math.min(min, dp.get(j));
+        }
+        return min;
     }
 }

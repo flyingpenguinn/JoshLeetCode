@@ -20,16 +20,21 @@ Explanation: The previous array was [15,14,13,12].
  */
 
 public class MissingNumberInArithmeticProgression {
-    public int missingNumber(int[] arr) {
-        int n = arr.length;
-        int d1 = arr[1] - arr[0];
-        int d2 = arr[n - 1] - arr[n - 2];
-        int d = arr[1] > arr[0] ? Math.min(d1, d2) : Math.max(d1, d2);
+    public int missingNumber(int[] a) {
+        int n = a.length;
+        int diff1 = a[1] - a[0];
+        int diff2 = a[n - 1] - a[n - 2];
+        int diff = 0;
+        if (diff1 == diff2) {
+            diff = diff1;
+        } else {
+            diff = diff1 == diff2 * 2 ? diff2 : diff1;
+        }
         for (int i = 1; i < n; i++) {
-            if (arr[i] - arr[i - 1] != d) {
-                return arr[i - 1] + d;
+            if (a[i] - a[i - 1] != diff) {
+                return a[i - 1] + diff;
             }
         }
-        return arr[n - 1] + d;
+        return a[0]; // all eq, the first is fine. note there must be one number missing
     }
 }
