@@ -23,51 +23,55 @@ int(L) <= int(R)
  */
 public class SuperPalindromes {
 
-    // concact numbers to form palindromes, then check their squares to see if they are palindromes
-    public int superpalindromesInRange(String l, String r) {
-        int count = 0;
-        long ll = Long.valueOf(l);
-        long lr = Long.valueOf(r);
-        // sqrt(10^19) = 3,162,277,660
-        // so we will concact numbers up to this one. the biggest is the first half of it 31622
-        int sqrtlr = (int) Math.sqrt(lr);
-        String strlimit = String.valueOf(sqrtlr);
-        int limit = Integer.valueOf(strlimit.substring(0, strlimit.length() / 2 + 1));
-
-        for (int num = 1; num <= limit; num++) {
-            String cur = String.valueOf(num);
-            String reverse = new StringBuilder(cur).reverse().toString();
-            String palin1 = cur + reverse; // 12 -> 1221
-            String palin2 = cur + reverse.substring(1); // 12 -> 121
-            long p1 = Long.valueOf(palin1);
-            long p1sqaure = p1 * p1;
-            if (isGood(ll, lr, p1sqaure)) {
-                //   System.out.println(p1sqaure);
-                count++;
+    public int superpalindromesInRange(String left, String right) {
+        long lr = Long.valueOf(right);
+        long ll = Long.valueOf(left);
+        long sqrt = (int) Math.sqrt(lr)+1;
+        long half = half(sqrt);
+        int res = 0;
+        for(int i = 1; i<=half; i++){
+            String h1 = String.valueOf(i);
+            String h2 = reverse(h1);
+            String palin1 = h1+h2;
+            if(good(palin1, ll, lr)){
+                res++;
             }
-            long p2 = Long.valueOf(palin2);
-            long p2square = p2 * p2;
-            if (isGood(ll, lr, p2square)) {
-                //      System.out.println(p2square);
-                count++;
+            String palin2 = h1+h2.substring(1);
+            if(good(palin2, ll, lr)){
+
+                res++;
             }
         }
-        return count;
+        return res;
     }
 
-    private boolean isGood(long ll, long lr, long p1sqaure) {
-        return p1sqaure >= ll && p1sqaure <= lr && isPalin(String.valueOf(p1sqaure));
+    private boolean good(String str, long left, long right){
+        long num = Long.valueOf(str);
+        long sq = num*num;
+        boolean rt= ispalin(sq) && sq>=left && sq<=right;
+        return rt;
     }
 
-    private boolean isPalin(String s) {
-        int l = 0;
-        int u = s.length() - 1;
-        while (l < u) {
-            if (s.charAt(l++) != s.charAt(u--)) {
+    private boolean ispalin(long num){
+
+        String str = String.valueOf(num);
+        int i = 0;
+        int j = str.length()-1;
+        while(i<j){
+            if(str.charAt(i++) != str.charAt(j--)){
                 return false;
             }
         }
         return true;
+    }
+
+    private long half(long num){
+        String snum = String.valueOf(num);
+        return Long.valueOf(snum.substring(0, (snum.length())/2+1));
+    }
+
+    private String reverse(String s){
+        return new StringBuilder(s).reverse().toString();
     }
 
     public static void main(String[] args) {
@@ -95,11 +99,9 @@ class SuperPalindromeRecursion {
     private int[] choices = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     private void dfs(long l, long r, int limit, int i, long p1, long p2, long base) {
-
         if (i >= limit) {
             return;
         }
-
         for (int c : choices) {
             long cur = c == -1 ? p1 * base + p2 : (p1 * 10 + c) * base + p2;
             // System.out.println(cur+" "+p1+" "+p2+" "+base);
