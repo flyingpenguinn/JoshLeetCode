@@ -11,88 +11,118 @@ public class SortItemsByGroupRespectingDependencies {
     // make -1 groups extra standalone single member groups
     // topo sort groups first then within each group sort the items in the same manner
     // beware of empty groups and empty items, stil need to include them!
-    private Map<Integer, Set<Integer>> gg = new HashMap<>();
-    private Map<Integer, Map<Integer, Set<Integer>>> ig = new HashMap<>();
-
-    public int[] sortItems(int n, int m, int[] group, List<List<Integer>> beforeItems) {
-        int gindex = m;
-        for (int i = 0; i < n; i++) {
-            if (group[i] == -1) {
-                group[i] = gindex++;
-            }
-            gg.put(group[i], new HashSet<>());
+    public int[] sortItems(int n, int m, int[] group, List<List<Integer>> es) {
+        Map<Integer, Set<Integer>> gg = new HashMap<>();
+        Map<Integer, Set<Integer>> ig = new HashMap<>();
+        int[] i2g = new int[n];
+        Map<Integer, Set<Integer>> g2i = new HashMap<>();
+        for(int i=0; i<n; i++){
+            ig.put(i, new HashSet<>());
         }
-        for (int i = 0; i < n; i++) {
-            List<Integer> blist = beforeItems.get(i);
-            Map<Integer, Set<Integer>> items = ig.get(group[i]);
-            if (items == null) {
-                items = new HashMap<>();
-                ig.put(group[i], items);
+        findgroup(group, i2g, g2i,gg);
+        for(int i=0; i<es.size(); i++){
+            List<Integer> frs = es.get(i);
+            for(int fr: frs){
+                int to = i;
+                ig.computeIfAbsent(fr,k-> new HashSet<>()).add(to);
+                int fg = i2g[fr];
+                int tg = i2g[to];
+                gg.computeIfAbsent(fg,k-> new HashSet<>()).add(tg);
             }
-            Set<Integer> iset = new HashSet<>();
-            for (int b : blist) {
-                if (group[b] == group[i]) {
-                    iset.add(b);
-                }
-                if (group[b] != group[i]) {
-                    gg.computeIfAbsent(group[i], k -> new HashSet<>()).add(group[b]);
-                }
-            }
-            items.put(i, iset);
         }
-        List<Integer> gtopo = topo(gg);
-        if (gtopo == null) {
+        List<Integer> glist = topo(gg);
+        if(glist==null){
             return new int[0];
         }
         List<Integer> res = new ArrayList<>();
-        for (int g : gtopo) {
-            List<Integer> itopo = topo(ig.get(g));
-            if (itopo == null) {
+        for(int i=0; i<glist.size(); i++){
+            int gn = glist.get(i);
+            Map<Integer, Set<Integer>> subg = subg(gn, ig, g2i.get(gn), i2g);
+            List<Integer> ilist = topo(subg);
+            if(ilist == null){
                 return new int[0];
+            }else{
+                res.addAll(ilist);
             }
-            res.addAll(itopo);
         }
-        return toarray(res);
+        int[] rr = new int[n];
+        for(int i=0; i<n; i++){
+            rr[i] = res.get(i);
+        }
+        return rr;
     }
 
-    private int[] toarray(List<Integer> list) {
-        int[] res = new int[list.size()];
-        for (int i = 0; i < res.length; i++) {
-            res[i] = list.get(i);
-        }
-        return res;
-    }
-
-    private List<Integer> topo(Map<Integer, Set<Integer>> g) {
-        Map<Integer, Integer> st = new HashMap<>();
+    private List<Integer> topo(Map<Integer,Set<Integer>> g){
         List<Integer> res = new ArrayList<>();
-        for (int k : g.keySet()) {
-            if (!st.containsKey(k)) {
-                boolean good = dfs(g, k, st, res);
-                if (!good) {
+        Map<Integer,Integer> color = new HashMap<>();
+        for(int k: g.keySet()){
+            if(!color.containsKey(k)){
+                boolean bad = dfs(k, g, res, color);
+                if(bad){
                     return null;
                 }
             }
         }
+        Collections.reverse(res);
         return res;
     }
 
-    private boolean dfs(Map<Integer, Set<Integer>> g, int i, Map<Integer, Integer> st, List<Integer> res) {
-        st.put(i, 1);
-        for (int next : g.getOrDefault(i, new HashSet<>())) {
-            int nst = st.getOrDefault(next, 0);
-            if (nst == 1) {
-                return false;
-            } else if (nst == 0) {
-                boolean later = dfs(g, next, st, res);
-                if (!later) {
-                    return false;
+    // return bad or not
+    private boolean dfs(int i, Map<Integer, Set<Integer>> g, List<Integer> res, Map<Integer,Integer> color){
+        color.put(i, 1);
+        for(int ne: g.getOrDefault(i, new HashSet<>())){
+            if(ne==i){
+                continue;
+            }
+            if(!color.containsKey(ne)){
+                boolean later = dfs(ne, g, res, color);
+                if(later){
+                    return true;
+                }
+            }else if(color.get(ne) == 1){
+                return true;
+            }
+        }
+        color.put(i, 2);
+        res.add(i);
+        return false;
+    }
+
+    private Map<Integer, Set<Integer>> subg(int gn, Map<Integer,Set<Integer>> g, Set<Integer> nodes, int[] i2g){
+        Map<Integer, Set<Integer>> res = new HashMap<>();
+        for(int n: nodes){
+            res.put(n, new HashSet<>());
+            Set<Integer> nexts= g.getOrDefault(n, new HashSet<>());
+            for(int ne: nexts){
+                if(i2g[ne] == gn){
+                    res.get(n).add(ne);
                 }
             }
         }
-        st.put(i, 2);
-        res.add(i);
-        return true;
+        return res;
+    }
+
+    private void findgroup(int[] group, int[] i2g, Map<Integer, Set<Integer>> g2i,Map<Integer,Set<Integer>> gg){
+        int n = group.length;
+        int maxseen = 0;
+        for(int i=0; i<n; i++){
+            if(group[i] != -1){
+                int gn = group[i];
+                i2g[i] = gn;
+                maxseen = Math.max(maxseen, gn);
+                g2i.computeIfAbsent(gn,k-> new HashSet<>()).add(i);
+                gg.put(gn, new HashSet<>());
+            }
+        }
+        maxseen++;
+        for(int i=0; i<n;i++){
+            if(group[i] == -1){
+                i2g[i] = maxseen;
+                g2i.computeIfAbsent(maxseen, k-> new HashSet<>()).add(i);
+                gg.put(maxseen, new HashSet<>());
+                maxseen++;
+            }
+        }
     }
 
 
