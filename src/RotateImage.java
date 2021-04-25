@@ -54,7 +54,7 @@ public class RotateImage {
         // because it's n by n, we can transpose in place... otherwise need to new one
         int n = a.length;
         for (int i = 0; i < n; i++) {
-            for (int j = i; j < n; j++) { // from i! otherwise... numbers are transposed back to origin...
+            for (int j = i + 1; j < n; j++) { // from i! otherwise... numbers are transposed back to origin...
                 swap(a, i, j, j, i);
             }
         }
@@ -76,36 +76,5 @@ public class RotateImage {
         int tmp = a[i][j];
         a[i][j] = a[s][t];
         a[s][t] = tmp;
-    }
-}
-
-class RotateImageAnotherWay {
-
-    // keep swapping i,j to j,n-1-i
-    public void rotate(int[][] a) {
-        int n = a.length;
-        int start = 0;
-        int end = n - 1;
-        for (int i = 0; i < n; i++) {
-            for (int j = start; j < end; j++) {
-                int ni = i;
-                int nj = j;
-                do {
-                    int tmp = ni;
-                    ni = nj;
-                    nj = n - 1 - tmp;
-                    swap(a, i, j, ni, nj);
-                } while (ni != i || nj != j);
-            }
-            start++;
-            end--;
-        }
-
-    }
-
-    void swap(int[][] a, int i, int j, int ni, int nj) {
-        int tmp = a[i][j];
-        a[i][j] = a[ni][nj];
-        a[ni][nj] = tmp;
     }
 }
