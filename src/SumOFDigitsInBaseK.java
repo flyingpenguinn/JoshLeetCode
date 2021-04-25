@@ -1,11 +1,10 @@
 public class SumOFDigitsInBaseK {
     public int sumBase(int n, int k) {
-        String res = Integer.toString(n, k);
-        //     System.out.println(res);
-        int ri = 0;
-        for (int i = 0; i < res.length(); i++) {
-            ri += res.charAt(i) - '0';
+        int sum = 0;
+        while(n>0){
+            sum += n%k;
+            n/= k;
         }
-        return ri;
+        return sum;
     }
 }
