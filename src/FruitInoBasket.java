@@ -54,25 +54,18 @@ Note:
 public class FruitInoBasket {
     // revived leetcode practice from this problem in Jan 2019
     public int totalFruit(int[] a) {
-        // longest subarray with at most 2 distinct element
-        int low = 0;
-        int high = -1;
+        int n = a.length;
         Map<Integer, Integer> m = new HashMap<>();
-        int max = 0;
-        while (true) {
-            if (m.size() <= 2) {
-                max = Math.max(max, high - low + 1);
-                high++;
-                if (high == a.length) {
-                    break;
-                }
-                update(m, a[high], 1);
-            } else {
-                update(m, a[low], -1);
-                low++;
+        int res = 0;
+        int start = 0;
+        for (int i = 0; i < n; i++) {
+            update(m, a[i], 1);
+            while (m.keySet().size() > 2) {
+                update(m, a[start++], -1);
             }
+            res = Math.max(res, i - start + 1);
         }
-        return max;
+        return res;
     }
 
     private void update(Map<Integer, Integer> m, int k, int d) {

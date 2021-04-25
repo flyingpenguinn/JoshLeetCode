@@ -19,28 +19,21 @@ Explanation: T is "aa" which its length is 2.
 public class LongestSubstringWithAtmostKDistinctChars {
     // typical two pointer template...
     public int lengthOfLongestSubstringKDistinct(String s, int t) {
-        int low = 0;
-        int high = -1;
-        Map<Integer, Integer> m = new HashMap<>();
-        int r = 0;
-        while (true) {
-            if (m.size() <= t) {
-                high++;
-                if (high == s.length()) {
-                    r = Math.max(r, high - low); // dont forget here when it extends to the end
-                    break;
-                }
-                update(m, s.charAt(high), 1);
-            } else {
-                r = Math.max(r, high - low);
-                update(m, s.charAt(low), -1);
-                low++;
+        int n = s.length();
+        Map<Character, Integer> m = new HashMap<>();
+        int res = 0;
+        int start = 0;
+        for (int i = 0; i < n; i++) {
+            update(m, s.charAt(i), 1);
+            while (m.keySet().size() > t) {
+                update(m, s.charAt(start++), -1);
             }
+            res = Math.max(res, i - start + 1);
         }
-        return r;
+        return res;
     }
 
-    void update(Map<Integer, Integer> m, int k, int d) {
+    private void update(Map<Character, Integer> m, char k, int d) {
         int nv = m.getOrDefault(k, 0) + d;
         if (nv <= 0) {
             m.remove(k);

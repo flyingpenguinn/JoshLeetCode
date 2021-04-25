@@ -37,26 +37,16 @@ public class MaxConsecutiveOnesIII {
     // maintain a window of at most k zeros. same as question "max substring with at most k zeros..."
     public int longestOnes(int[] a, int k) {
         int n = a.length;
-        int low = 0;
-        int high = -1;
         int zeros = 0;
+        int start = 0;
         int max = 0;
-        while(true){
-            if(zeros<=k){
-                max = Math.max(max, high-low+1);
-                high++;
-                if(high==n){
-                    break;
-                }
-                if(a[high]==0){
-                    zeros++;
-                }
-            }else{
-                if(a[low]==0){
-                    zeros--;
-                }
-                low++;
+        for (int i = 0; i < n; i++) {
+            zeros += a[i] == 0 ? 1 : 0;
+            while (zeros > k) {
+                zeros -= a[start] == 0 ? 1 : 0;
+                start++;
             }
+            max = Math.max(max, i - start + 1);
         }
         return max;
     }
