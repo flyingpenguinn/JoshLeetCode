@@ -3,8 +3,6 @@ import java.util.Map;
 
 public class LongestSubstringWithAtLeastKRepeatingChar {
 
-        System.out.println(new LongestSubstringWithAtleastKRepeatingTwoPointer().longestSubstring("dbaaabcb", 3));
-}
     // in l...u, bad chars will never have a chance. we need to weed them out.
     // so we dig them out and recursion on smaller ones split by them
     // because we throw away one char at every level it's O(26n)
