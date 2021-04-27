@@ -25,36 +25,23 @@ arr[i] will be a permutation of [0, 1, ..., arr.length - 1].
 
  */
 public class MaxChunksToMakeSorted {
+    // using same code as II: max on the left is <= min on the right then we can sort this segment
     public int maxChunksToSorted(int[] a) {
-        // same code as II
         int n = a.length;
-        int[] min = new int[n];
-        for (int i = n - 1; i >= 0; i--) {
-            min[i] = (i == n - 1) ? a[i] : Math.min(min[i + 1], a[i]);
+        int[] right = new int[n];
+        // min on the right including self
+        right[n - 1] = a[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            right[i] = Math.min(right[i + 1], a[i]);
         }
-        int high = -1;
-        int low = 0;
-        int r = 1;
-        int cl = -1;
-        while (low < n && high < n) {
-            if (low == high + 1) {
-                high++;
-                cl = a[high];
-            } else {
-                int lf = high == n - 1 ? -1 : min[high + 1];
-                if (lf < cl) {
-                    // intersecting...
-                    high++;
-                    if (high < n) {
-                        cl = Math.max(cl, a[high]);
-                    }
-                } else {
-                    r++;
-                    low = high + 1;
-                    cl = -1;
-                }
+        int left = -1;
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            left = Math.max(left, a[i]);
+            if (i == n - 1 || left <= right[i + 1]) {
+                res++;
             }
         }
-        return r;
+        return res;
     }
 }

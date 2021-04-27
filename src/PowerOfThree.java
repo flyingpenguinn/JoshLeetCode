@@ -31,3 +31,15 @@ public class PowerOfThree {
 
     }
 }
+
+class PowerOfThreeWithLog {
+    public boolean isPowerOfThree(int n) {
+        if (n == 0) {
+            return false;
+        }
+        double log3 = Math.log(n) / Math.log(3);
+        int cur = (int) Math.round(log3); // need to round it to avoid 4.999999
+        long curpow = (long) Math.pow(3, cur);
+        return curpow == n;
+    }
+}

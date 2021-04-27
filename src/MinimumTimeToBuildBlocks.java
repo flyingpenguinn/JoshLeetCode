@@ -61,34 +61,38 @@ public class MinimumTimeToBuildBlocks {
 }
 
 class MinTimeToBuildBlocksDp {
+    private int Max = 1000000000;
     private Integer[][] dp;
-    public int minBuildTime(int[] a, int c) {
-        Arrays.sort(a);
-        int n = a.length;
-        dp= new Integer[n+1][n+1];
-        return domin(a, n-1, 1, c);
+    public int minBuildTime(int[] blocks, int split) {
+        int n = blocks.length;
+        Arrays.sort(blocks);
+        dp = new Integer[n][n];
+        return solve(blocks, split, n-1, 1);
     }
 
-    private int Max = 100000000;
-
-    private int domin(int[] a, int i, int w, int c){
-
-        if(w>=i+1){
-            // for quick calc and to avoid overflow the dp boundary
-            return a[i];
+    // worker doing work from i, we have j worker now
+    private int solve(int[] blocks, int split, int i, int j){
+        // we are done
+        if(i==-1){
+            return 0;
         }
-        if(w==0){
+        // not done but no worker any more
+        if(j<=0){
             return Max;
         }
-        if(dp[i][w]!= null){
-            return dp[i][w];
+        // we have i+1 works to do. if we have j workers, we can do in max (all work time ) = blocks[i]
+        if(j>=i+1){
+            return blocks[i];
         }
-        // only do one work, in case we want to split w-1 later
-        int dowork = Math.max(a[i], domin(a, i-1, w-1, c));
-        // we'd rather split all to get the best outcome
-        int split = domin(a, i, w*2, c)+c;
-        int rt= Math.min(dowork, split);
-        dp[i][w] = rt;
+        if(dp[i][j] != null){
+            return dp[i][j];
+        }
+        // 1 worker work on i, others face from i-1
+        int way1 = Math.max(blocks[i], solve(blocks, split, i-1, j-1));
+        // two worker split is as good as one worker split, so we let all split at the same time
+        int way2 = split + solve(blocks, split, i, j*2);
+        int rt = Math.min(way1, way2);
+        dp[i][j] = rt;
         return rt;
     }
 }

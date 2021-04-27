@@ -32,21 +32,22 @@ Note:
 S consists of lowercase letters only.
  */
 public class OrderlyQueue {
-    // when k>1, it means we can swap two element's positions
+    // when k>1, it means we can swap two element's positions. because we can always do cba->cab->abc-> bca as we can see we can reverse the first two chars
+    // with this we can reverse any two adjacent chars so it's as good as a free swapping
     public String orderlyQueue(String s, int k) {
-        char[] c = s.toCharArray();
-        if(k>1){
-            Arrays.sort(c);
-            return new String(c);
-        }else{
-            String min = s;
-            for(int i=0; i<s.length();i++){
-                s = s.substring(1)+s.substring(0,1);
-                if(s.compareTo(min)<0){
-                    min = s;
+        if (k > 1) {
+            char[] sc = s.toCharArray();
+            Arrays.sort(sc);
+            return new String(sc);
+        } else {
+            String res = s;
+            for (int i = 0; i < s.length(); i++) {
+                s = s.substring(1) + s.charAt(0);
+                if (res.compareTo(s) > 0) {
+                    res = s;
                 }
             }
-            return min;
+            return res;
         }
     }
 
