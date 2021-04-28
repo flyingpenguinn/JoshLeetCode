@@ -42,17 +42,17 @@ public class BitwiseOrOfSubarrays {
     // "last" is the fontier set. key insight is it will contain at most 32 values because it's the bitwise or result from 0....i-1
     // for each i. r0>=r1>=r2..>=ri-1 and each of them is at least 1 bit in diff. so there can be at most 32 different values for 32 bit integer
     public int subarrayBitwiseORs(int[] a) {
+        int n = a.length;
         Set<Integer> set = new HashSet<>();
         Set<Integer> last = new HashSet<>();
-        for (int i = 0; i < a.length; i++) {
-            Set<Integer> added = new HashSet<>();
-            added.add(a[i]);
-            for (int item : last) {
-                added.add((item | a[i]));
+        for(int i=0; i<n; i++){
+            Set<Integer> cur = new HashSet<>();
+            cur.add(a[i]);
+            for(int si:last){
+                cur.add(si| a[i]);
             }
-            //   System.out.println(added);
-            set.addAll(added);
-            last = added;
+            set.addAll(cur);
+            last = cur;
         }
         return set.size();
     }
