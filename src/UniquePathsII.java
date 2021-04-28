@@ -32,21 +32,25 @@ There are two ways to reach the bottom-right corner:
 2. Down -> Down -> Right -> Right
  */
 public class UniquePathsII {
-    public int uniquePathsWithObstacles(int[][] g) {
-        int m = g.length;
-        int n = g[0].length;
+    public int uniquePathsWithObstacles(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
         int[] dp = new int[n];
         for (int i = m - 1; i >= 0; i--) {
+
             for (int j = n - 1; j >= 0; j--) {
-                if (g[i][j] == 1) {
+                if (a[i][j] == 1) {
                     dp[j] = 0;
+                    continue;
+                }
+                if (i == m - 1 && j == n - 1) {
+                    dp[j] = 1;
+                } else if (i == m - 1) {
+                    dp[j] = dp[j + 1];
+                } else if (j == n - 1) {
+                    // dp[j] = dp[j];
                 } else {
-                    if (i == m - 1 && j == n - 1) {
-                        dp[j] = 1;
-                    } else {
-                        int right = j + 1 < n ? dp[j + 1] : 0;
-                        dp[j] += right;
-                    }
+                    dp[j] += dp[j + 1];
                 }
             }
         }
@@ -59,40 +63,28 @@ public class UniquePathsII {
     }
 }
 
-class UniquePathsIIMemoization {
-    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
-        int m = obstacleGrid.length;
-        if (m == 0) {
-            return 0;
+class UniquePathsII2DArray {
+    public int uniquePathsWithObstacles(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int[][] dp = new int[m][n];
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                if (a[i][j] == 1) {
+                    dp[i][j] = 0;
+                    continue;
+                }
+                if (i == m - 1 && j == n - 1) {
+                    dp[i][j] = 1;
+                } else if (i == m - 1) {
+                    dp[i][j] = dp[i][j + 1];
+                } else if (j == n - 1) {
+                    dp[i][j] = dp[i + 1][j];
+                } else {
+                    dp[i][j] = dp[i][j + 1] + dp[i + 1][j];
+                }
+            }
         }
-        int n = obstacleGrid[0].length;
-        dp = new int[m][n];
-        for (int i = 0; i < dp.length; i++) {
-            Arrays.fill(dp[i], -1);
-        }
-        return doUniquePath(obstacleGrid, 0, 0, m - 1, n - 1);
-    }
-
-    int[][] dp = null;
-
-    private int doUniquePath(int[][] obstacleGrid, int rs, int cs, int re, int ce) {
-        if (obstacleGrid[rs][cs] == 1) {
-            return 0;
-        }
-        if (rs == re && cs == ce) {
-            return 1;
-        }
-        if (dp[rs][cs] != -1) {
-            return dp[rs][cs];
-        }
-        int count = 0;
-        if (rs + 1 <= re) {
-            count += doUniquePath(obstacleGrid, rs + 1, cs, re, ce);
-        }
-        if (cs + 1 <= ce) {
-            count += doUniquePath(obstacleGrid, rs, cs + 1, re, ce);
-        }
-        dp[rs][cs] = count;
-        return count;
+        return dp[0][0];
     }
 }
