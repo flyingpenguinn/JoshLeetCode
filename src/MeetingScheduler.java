@@ -24,24 +24,30 @@ Input: slots1 = [[10,50],[60,120],[140,210]], slots2 = [[0,15],[60,70]], duratio
 Output: []
  */
 public class MeetingScheduler {
-    public List<Integer> minAvailableDuration(int[][] slots1, int[][] slots2, int duration) {
-        // check null and duration non negative
-        Arrays.sort(slots1, (x, y) -> Integer.compare(x[0], y[0]));
-        Arrays.sort(slots2, (x, y) -> Integer.compare(x[0], y[0]));
+    // similar to IntervalListIntersection. note we are moving the one with smaller ending if there is an intersection
+    public List<Integer> minAvailableDuration(int[][] a, int[][] b, int d) {
         int i = 0;
         int j = 0;
-        while (i < slots1.length && j < slots2.length) {
-            if (slots1[i][0] > slots2[j][1]) {
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        Arrays.sort(b, (x, y) -> Integer.compare(x[0], y[0]));
+        while (i < a.length && j < b.length) {
+            if (a[i][0] > b[j][1]) {
                 j++;
-            } else if (slots2[j][0] > slots1[i][1]) {
+            } else if (b[j][0] > a[i][1]) {
                 i++;
             } else {
-                int start = Math.max(slots1[i][0], slots2[j][0]);
-                int end = Math.min(slots1[i][1], slots2[j][1]);
-                if (end - start >= duration) {
-                    return List.of(start, start + duration);
+                int start = Math.max(a[i][0], b[j][0]);
+                int end = Math.min(a[i][1], b[j][1]);
+                if (end - start >= d) {
+                    return List.of(start, start + d);
+                } else {
+                    if (a[i][1] > b[j][1]) {
+                        // move the slot with smaller end
+                        j++;
+                    } else {
+                        i++;
+                    }
                 }
-                i++;
             }
         }
         return new ArrayList<>();

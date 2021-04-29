@@ -25,41 +25,38 @@ nums is a non decreasing array.
  */
 public class FindFirstLastInSortedArray {
     public int[] searchRange(int[] a, int t) {
-        if (a == null) {
-            return new int[0];
-        }
-        int p1 = binarySearch(a, t, 0);
-        int p2 = binarySearch(a, t, 1);
-        return new int[]{p1, p2};
+        int start = binary(a, t, true);
+        int end = binary(a, t, false);
+        return new int[]{start, end};
     }
 
-    private int binarySearch(int[] a, int t, int mode) {
-        // 0=> first, we need l if that equals
-        // 1=> last, we need u if that equals
+    private int binary(int[] a, int t, boolean start) {
+        int n = a.length;
         int l = 0;
-        int u = a.length - 1;
+        int u = n - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a[mid] < t) {
-                l = mid + 1;
-            } else if (a[mid] > t) {
+            if (a[mid] > t) {
                 u = mid - 1;
+            } else if (a[mid] < t) {
+                l = mid + 1;
             } else {
-                if (mode == 0) {
+                if (start) {
                     u = mid - 1;
-                } else if (mode == 1) {
-                    l = mid + 1;
                 } else {
-                    return mid;
+                    l = mid + 1;
                 }
             }
         }
-        if (mode == 0 && l < a.length && a[l] == t) {
+        // if no == check then first >=
+        if (start && l >= 0 && l <= n - 1 && a[l] == t) {
             return l;
-        } else if (mode == 1 && u >= 0 && a[u] == t) {
+            // if no == check then first <=
+        } else if (!start && u >= 0 && u <= n - 1 && a[u] == t) {
             return u;
+        } else {
+            return -1;
         }
-        return -1;
     }
 
     private boolean inRange(int[] a, int l) {
