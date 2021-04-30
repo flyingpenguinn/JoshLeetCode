@@ -61,47 +61,14 @@ public class MaxFreqStack {
     }
 
     static class FreqStack {
-        // use the fact that whatever is coming later must be popped first. so we just need to record their arrival timing
-        // keep freq at insertion time + insertion time into a pq
-        private Map<Integer, Integer> freq = new HashMap<>();
-        private PriorityQueue<int[]> ts = new PriorityQueue<>((x, y) -> x[1] == y[1] ? Integer.compare(y[2], x[2]) : Integer.compare(y[1], x[1]));
-        // value, freq and last appearance time
-        // dont need another stack here to keep track of each element: they are already in treeset
-
-
-        public FreqStack() {
-
-        }
-
-        // late arrivers will trump early comers anyway
-        int time = 0;
-
-        public void push(int x) {
-            freq.put(x, freq.getOrDefault(x, 0) + 1);
-            ts.add(new int[]{x, freq.get(x), time});
-            time++;
-        }
-
-        public int pop() {
-            int[] first = ts.poll();
-            int rt = first[0];
-            int nv = freq.get(rt) - 1;
-            if (nv > 0) {
-                freq.put(rt, nv);
-            } else {
-                freq.remove(rt);
-            }
-            return rt;
-        }
-    }
-
-    static class FreqStackO1 {
+        // we know the next freq in line: must be current ones -1
         // keep the elements in the old freq's stack map!
+        // freq-> stack positions
         private Map<Integer, Deque<Integer>> m = new HashMap<>();
         private Map<Integer, Integer> f = new HashMap<>();
         private int maxfreq = 0;
 
-        public FreqStackO1() {
+        public FreqStack() {
 
         }
 

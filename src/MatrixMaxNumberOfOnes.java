@@ -38,23 +38,21 @@ public class MatrixMaxNumberOfOnes {
     // analyze the positions in the first m*m matrix.
     // every 1 here can have other 1s "independent from" its position. we want max numbers of such 1s from the first square
     // use the first sl*sl as a template to "influence" other such squares
-    public int maximumNumberOfOnes(int w, int h, int sl, int maxOnes) {
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> y[0] - x[0]);
-        // count, i, j
+    public int maximumNumberOfOnes(int w, int h, int sl, int maxones) {
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
         for (int i = 0; i < sl; i++) {
             for (int j = 0; j < sl; j++) {
-                int xcount = (int) Math.ceil((w - i + 0.0) / sl);
-                // 1s in similar positions as this one in other sl*sl that is not overlapping with the current one
-                int ycount = (int) Math.ceil((h - j + 0.0) / sl);
-                int count = xcount * ycount;
-                pq.offer(new int[]{count, i, j});
+                int rows = (int) Math.ceil((h - i) * 1.0 / sl);
+                // rows of allowed 1s
+                int cols = (int) Math.ceil((w - j) * 1.0 / sl);
+                // in each row there are cols of allowed 1s
+                pq.offer(rows * cols);
             }
         }
         int res = 0;
-        while (!pq.isEmpty() && maxOnes > 0) {
-            int[] top = pq.poll();
-            res += top[0];
-            maxOnes--;
+        while (!pq.isEmpty() && maxones > 0) {
+            res += pq.poll();
+            maxones--;
         }
         return res;
     }
