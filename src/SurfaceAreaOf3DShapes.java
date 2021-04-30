@@ -37,25 +37,24 @@ Note:
  */
 public class SurfaceAreaOf3DShapes {
     // count he parts where this cell is bigger than neighbors
+    private int[][] dirs = {{-1,0}, {1,0}, {0,-1}, {0,1}};
     public int surfaceArea(int[][] a) {
         int m = a.length;
         int n = a[0].length;
         int res = 0;
-        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 0) {
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                if(a[i][j]==0){
                     continue;
                 }
                 res += 2;
-                for (int[] d : dirs) {
-                    int ni = i + d[0];
-                    int nj = j + d[1];
-                    if (ni < 0 || ni >= m || nj < 0 || nj >= n) {
+                for(int[] d: dirs){
+                    int ni = i+d[0];
+                    int nj = j+d[1];
+                    if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj] < a[i][j]){
+                        res += a[i][j]- a[ni][nj];
+                    }else if(ni<0 || ni>=m || nj<0 || nj>=n){
                         res += a[i][j];
-                    } else {
-                        // if < then 0 can't over subtract
-                        res += Math.max(a[i][j] - a[ni][nj], 0);
                     }
                 }
             }

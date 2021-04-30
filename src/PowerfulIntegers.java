@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /*
 LC#970
@@ -38,29 +35,22 @@ Note:
 0 <= bound <= 10^6
  */
 public class PowerfulIntegers {
-    public List<Integer> powerfulIntegers(int a, int b, int bound) {
-        Set<Integer> r = new HashSet<>();
-        int av = -1;
-
-        while (true) {
-            int nav = (av == -1) ? 1 : av * a;
-            if (nav == av || nav >= bound) {
-                break;
-            }
-            av = nav;
-            int bv = -1;
-
-            while (true) {
-                int nbv = (bv == -1) ? 1 : bv * b;
-                if (nbv == bv || nbv + av > bound) {
+    public List<Integer> powerfulIntegers(int x, int y, int bound) {
+        Set<Integer> res = new HashSet<>();
+        for (int i = 1; i <= bound; i *= x) {
+            for (int j = 1; j <= bound && i + j <= bound; j *= y) {
+                res.add(i + j);
+                if (y == 1) {
+                    // traps. ==1 will cause infinite loops
                     break;
                 }
-                bv = nbv;
-                r.add(av + bv);
+            }
+            if (x == 1) {
+                break;
             }
         }
-        List<Integer> lr = new ArrayList<>(r);
-        // Collections.sort(lr);
-        return lr;
+        List<Integer> rl = new ArrayList<>(res);
+        Collections.sort(rl);
+        return rl;
     }
 }

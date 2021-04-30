@@ -61,76 +61,59 @@ Constraints:
 At most 200000 calls will be made to push, pop, and popAtStack.
  */
 public class DinnerPlateStacks {
-    // no need to remove removed ones: middle ones keep their id and tail ones will be reused via pq.peek()>=size
-    public static void main(String[] args) {
+    class DinnerPlates {
 
-        DinnerPlates d = new DinnerPlates(2);  // Initialize with capacity = 2
-        String ins = "push,push,push,push,push,push,push,push,popAtStack,popAtStack,popAtStack,popAtStack,push,push,push,push,push,push,push,push,pop,pop,pop,pop";
-        String item = "[471],[177],[1],[29],[333],[154],[130],[333],[1],[0],[2],[0],[165],[383],[267],[367],[53],[373],[388],[249],[],[],[],[]";
-        String[] inssplit = ins.split(",");
-        String[] itemsplit = item.split(",");
-        for (int i = 0; i < inssplit.length; i++) {
+        private TreeSet<Integer> nonfull = new TreeSet<>();  // has cap but not full
+        private TreeSet<Integer> nonempty = new TreeSet<>(); // has cap not 0
+        private Map<Integer, Deque<Integer>> sm = new HashMap<>();
+        private int cap = 0;
+        private int cur = 0; // next stack to push in
+        // in the beginning it's as if all left to 0 are full so we start with 0
 
-            if (inssplit[i].equals("push")) {
-                d.push(toInt(itemsplit[i]));
-            } else if (inssplit[i].equals("pop")) {
-                System.out.println(d.pop());
-            } else if (inssplit[i].equals("popAtStack")) {
-                System.out.println(d.popAtStack(toInt(itemsplit[i])));
+        public DinnerPlates(int capacity) {
+            this.cap = capacity;
+        }
+
+        public void push(int val) {
+            if (nonfull.isEmpty()) {
+                Deque<Integer> pushed = new ArrayDeque<>();
+                pushed.add(val);
+                sm.put(cur, pushed);
+                nonempty.add(cur);
+                if (cap > 1) {
+                    nonfull.add(cur);
+                }
+                cur++;
+            } else {
+                int leftmost = nonfull.first();
+                Deque<Integer> st = sm.get(leftmost);
+                st.push(val);
+                if (st.size() == cap) {
+                    nonfull.remove(leftmost);
+                }
+                nonempty.add(leftmost);
             }
         }
-    }
 
-    private static Integer toInt(String s) {
-        return Integer.valueOf(s.substring(1, s.length() - 1));
-    }
-}
-
-class DinnerPlates {
-
-    private List<Deque<Integer>> dqs= new ArrayList<>();
-    private TreeSet<Integer> nf = new TreeSet<>();
-    private TreeSet<Integer> ne = new TreeSet<>();
-    private int cap = 0;
-    public DinnerPlates(int capacity) {
-        cap = capacity;
-    }
-
-    public void push(int val) {
-        int index = -1;
-        if(nf.isEmpty()){
-            Deque<Integer> dq = new ArrayDeque<>();
-            dqs.add(dq);
-            index = dqs.size()-1;
-            nf.add(index);  // any new stack is not full to start with. we may take that away later...
-        }else{
-            index = nf.first();
+        public int pop() {
+            if (nonempty.isEmpty()) {
+                return -1;
+            }
+            int rightmost = nonempty.last();
+            return popAtStack(rightmost);
         }
-        dqs.get(index).push(val);
-        if(dqs.get(index).size() == cap){
-            nf.remove(index);
-        }
-        ne.add(index);
-        // System.out.println(dqs);
-    }
 
-    public int pop() {
-        if(ne.isEmpty()){
-            return -1;
+        public int popAtStack(int index) {
+            Deque<Integer> st = sm.get(index);
+            if (st==null || st.isEmpty()) {
+                return -1;
+            }
+            int rt = st.pop();
+            if (st.isEmpty()) {
+                nonempty.remove(index);
+            }
+            nonfull.add(index);
+            return rt;
         }
-        int max = ne.last();
-        return popAtStack(max);
-    }
-
-    public int popAtStack(int index) {
-        if(index>= dqs.size() || dqs.get(index).isEmpty()){
-            return -1;
-        }
-        int rt = dqs.get(index).pop();
-        if(dqs.get(index).isEmpty()){
-            ne.remove(index);
-        }
-        nf.add(index);
-        return rt;
     }
 }
