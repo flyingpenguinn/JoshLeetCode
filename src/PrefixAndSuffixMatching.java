@@ -26,76 +26,58 @@ prefix, suffix have lengths in range [0, 10].
 words[i] and prefix, suffix queries consist of lowercase letters only.
  */
 public class PrefixAndSuffixMatching {
-    // make it suffix+"#"+prefix. we can quickly insert this into trie
-    public static void main(String[] args) {
-        String[] ws = {"abc", "ab"};
-        WordFilter wf = new WordFilter(ws);
-        wf.f("ab", "");
-    }
-}
+    class WordFilter {
 
-class WordFilter {
-
-    class Trie {
-        char c;
-        Trie[] ch = new Trie[27];
-        int maxw = 0;
-
-        public Trie(char c) {
-            this.c = c;
-        }
-
-        void insert(String s, int i, int w) {
-            int n = s.length();
-            maxw = Math.max(maxw, w);
-            if (i == n) {
-                return;
-            }
-            char c = s.charAt(i);
-            int cind = cind(c);
-            Trie next = ch[cind];
-            if (next == null) {
-                next = ch[cind] = new Trie(c);
-            }
-            next.insert(s, i + 1, w);
-        }
-
-        int find(String s, int i) {
-            int n = s.length();
-            if (i == n) {
-                return maxw;
-            }
-
-            char c = s.charAt(i);
-            int cind = cind(c);
-            if (ch[cind] == null) {
-                return -1;
-            }
-            return ch[cind].find(s, i + 1);
-        }
-
-        int cind(char c) {
-            return c == '#' ? 26 : c - 'a';
-        }
-    }
-
-    Trie root = new Trie('-');
-
-    public WordFilter(String[] words) {
-        for (int i = 0; i < words.length; i++) {
-            String w = words[i] + "#" + words[i];
-            int n = w.length();
-            for (int j = 0; j <= n; j++) {
-                // till n to allow empty suffix
-                // we can start with j elegantly, no need to substring
-                root.insert(w, j, i);
+        private class Trie{
+            private char val;
+            private int index = -1;
+            private Trie[] ch = new Trie[27];
+            public Trie(char val){
+                this.val = val;
             }
         }
-    }
 
-    public int f(String prefix, String suffix) {
-        String tofind = suffix + "#" + prefix;
-        return root.find(tofind, 0);
+        private Trie root = new Trie('*');
+
+        private void insert(String word, int index){
+            Trie p = root;
+            for(int i=0; i<word.length(); i++){
+                char c = word.charAt(i);
+                int cind = c-'a';
+                Trie next = p.ch[cind];
+                if(next==null){
+                    next = p.ch[cind] = new Trie(c);
+                }
+                next.index = index;
+                p = next;
+            }
+        }
+
+        public WordFilter(String[] words) {
+            for(int i = 0; i<words.length; i++){
+                for(int j=words[i].length()-1; j>=0; j--){
+                    String toinsert = words[i].substring(j)+"{"+words[i];
+                    insert(toinsert, i);
+                }
+            }
+        }
+
+        private int find(String word){
+            Trie p = root;
+            for(int i=0; i<word.length(); i++){
+                int cind = word.charAt(i)-'a';
+                if(p.ch[cind] == null){
+                    return -1;
+                }
+                p = p.ch[cind];
+            }
+            return p.index;
+        }
+
+        public int f(String prefix, String suffix) {
+            int found = find(suffix+"{"+prefix);
+            return found;
+        }
     }
 }
 
