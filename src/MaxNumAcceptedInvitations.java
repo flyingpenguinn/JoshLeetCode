@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MaxNumAcceptedInvitations {
+    // Hungarian algorithm for max match in bipartite graph
     public int maximumInvitations(int[][] a) {
         int m = a.length;
         int n = a[0].length;
