@@ -24,28 +24,29 @@ s contains only lowercase English letters.
  */
 public class LastSubstringLexicographicalOrder {
     // duval algo. rule out impossible as r
-    // if l+m > r+m, then we know l+ any in [0...m] > r+ any in [0...m], so anything from r to r+m won't be qualified as starting point. so we skip them
-    // if l+m < r+m, then we know similarly anything between l...any in [0...m] < r+ any in [0...m] so i should be i+m+1.
-    // also anything before r was "defeated" already so we can jump to the max
-    public String lastSubstring(String s) {
-        char[] a = s.toCharArray();
-        int n = a.length;
+    // if l+m > r+m, then we know given r+ any in [0...m] there is a bigger l+ any in [0...m] > it, so anything from r to r+m won't be qualified as starting point. so we skip them
+    // note l+m can be bigger than l yes but we will figure it out later
+    // if l+m < r+m, then we know similarly anything between l...any in [0...m] < r+ any in [0...m] so i should be l+m+1.
+    // but anything before r is already defeated by this l, so we can move further
+    public String lastSubstring(String input) {
         int l = 0;
         int r = 1;
-        int m = 0;
-        while (r + m < n) {
-            if (a[l + m] == a[r + m]) {
-                m++;
-            } else if (a[l + m] > a[r + m]) {
-                r = r + m + 1;
-                m = 0;
+        int i = 0;
+        int n = input.length();
+        char[] s = input.toCharArray();
+        while (l + i < n && r + i < n) {
+            if (s[l + i] == s[r + i]) {
+                i++;
+            } else if (s[l + i] > s[r + i]) {
+                r = r + i + 1;
+                i = 0;
             } else {
-                l = Math.max(l + m + 1, r);
+                l = Math.max(l + i + 1, r);
                 r = l + 1;
-                m = 0;
+                i = 0;
             }
         }
-        return s.substring(l);
+        return input.substring(l);
     }
 
 

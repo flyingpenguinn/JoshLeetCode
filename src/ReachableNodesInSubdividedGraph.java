@@ -1,9 +1,6 @@
 import base.ArrayUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /*
 LC#882
@@ -53,54 +50,42 @@ public class ReachableNodesInSubdividedGraph {
     private int Max = 10000000;
 
     public int reachableNodes(int[][] es, int m, int n) {
-        Map<Integer, Integer>[] g = new HashMap[n];
-        for (int i = 0; i < n; i++) {
-            g[i] = new HashMap<>();
+        int[][] g = new int[n][n];
+        List<Integer>[] ng = new ArrayList[n];
+        for(int i=0; i<n; i++){
+            ng[i] = new ArrayList<>();
         }
-        for (int[] e : es) {
-            int start = e[0];
-            int end = e[1];
-            int nodes = e[2];
-            g[start].put(end, nodes);
-            g[end].put(start, nodes);
+        for(int[] e: es){
+            int v1 = e[0];
+            int v2 = e[1];
+            g[v1][v2] = g[v2][v1] = e[2];
+            ng[v1].add(v2);
+            ng[v2].add(v1);
         }
         int[] dist = new int[n];
         Arrays.fill(dist, Max);
-        dist[0] = 0;
         boolean[] done = new boolean[n];
-        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[1], y[1]));
-        // node id, dist, sort by dist
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x,y)-> Integer.compare(x[1], y[1]));
         pq.offer(new int[]{0, 0});
+        dist[0] = 0;
         int res = 0;
-        while (!pq.isEmpty()) {
+        while(!pq.isEmpty()){
             int[] top = pq.poll();
-            int i = top[0];
-            int d = top[1];
-
-            if (done[i]) {
+            int v = top[0];
+            if(done[v]){
                 continue;
             }
-            res++; // the node itself. note we must do after done to avoid double countinue
-            done[i] = true;
-            Map<Integer, Integer> nexts = g[i];
-            for (int next : nexts.keySet()) {
-                int edge = nexts.get(next);
-                int nd = edge + d + 1;
-                // dist to reach the next node
-                if (nd <= m) {
-                    if (dist[next] > nd) {
-                        // we could have reached next earlier so checking here. we need to add the remnants on the edge regardelss of this check
-                        dist[next] = nd;
-                        pq.offer(new int[]{next, nd});
-                    }
-                    // consumed this edge
-                    g[next].remove(i);
-                    res += edge;
-                } else {
-                    int walked = m - d;
-                    // note how many we can walk in reverse
-                    g[next].put(i, edge - walked);
-                    res += walked;
+            res++;
+            done[v] = true;
+            int cd = top[1];
+            for(int nv: ng[v]){
+                int w = g[v][nv];
+                int visited = Math.min(m-cd, w);
+                res += visited;
+                g[nv][v] -= visited;
+                int nd = cd+visited+1;
+                if(nd<=m && dist[nv]>nd){
+                    pq.offer(new int[]{nv, nd});
                 }
             }
         }

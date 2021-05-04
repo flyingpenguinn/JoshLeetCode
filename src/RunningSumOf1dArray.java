@@ -28,11 +28,12 @@ Constraints:
 -10^6 <= nums[i] <= 10^6
  */
 public class RunningSumOf1dArray {
+    // note the O(1) space usage
     public int[] runningSum(int[] a) {
-        int[] sum = new int[a.length];
-        for (int i = 0; i < a.length; i++) {
-            sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
+        int n = a.length;
+        for(int i=1; i<n; i++){
+            a[i] += a[i-1];
         }
-        return sum;
+        return a;
     }
 }

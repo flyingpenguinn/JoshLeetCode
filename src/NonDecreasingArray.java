@@ -17,23 +17,25 @@ Note: The n belongs to [1, 10,000].
 public class NonDecreasingArray {
     public boolean checkPossibility(int[] a) {
         int n = a.length;
-        boolean changed = false;
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i + 1 < n; i++) {
             if (a[i] > a[i + 1]) {
-                if (changed) {
-                    return false;
-                } else if (i == 0) {
-                    a[i] = a[i + 1];
-                    changed = true;
-                } else if (a[i + 1] < a[i - 1]) {
-                    // can't lower a[i], have to increase i+1
-                    a[i + 1] = a[i];
-                    changed = true;
+                // a[i] must >= a[i-1] >= earlier already so as long as a[i+1] is a good fit we can do this change
+                // and this is better than raising a[i+1] as it reduces later risks
+                if (i == 0 || a[i + 1] >= a[i - 1]) {
+                    return nondec(a, i + 1);
                 } else {
-                    // lower a[i] if allowed
-                    a[i] = a[i + 1];
-                    changed = true;
+                    a[i + 1] = a[i];
+                    return nondec(a, i + 1);
                 }
+            }
+        }
+        return true;
+    }
+
+    private boolean nondec(int[] a, int i) {
+        for (; i + 1 < a.length; i++) {
+            if (a[i] > a[i + 1]) {
+                return false;
             }
         }
         return true;
