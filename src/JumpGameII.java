@@ -20,44 +20,45 @@ Note:
 You can assume that you can always reach the last index.
  */
 public class JumpGameII {
-    // think of it as a bfs problem for min unweighted path. curend represent the end of current layer.
+    // think of it as finding smallest number of segment to cover a range problem: similar to min taps to water garden problem
+    // it's also a bfs problem where we find the shortest path
     public int jump(int[] a) {
-        int curend = 0;
-        int nextend = 0;
         int n = a.length;
-        int jumps = 0;
-        for (int i = 0; i < n - 1; i++) {
-            // i can be reached in jumps steps
-            nextend = Math.max(nextend, i + a[i]);
-            if (i == curend) {
-                // System.out.println("curend => "+curend);
-                jumps++;
-                curend = nextend;
-                nextend = 0;
+        int res = 0;
+        int start = -1;
+        int end = 0;
+        for (int i = 0; i < n && end < n - 1; i++) {
+            if (i <= start) {
+                end = Math.max(end, i + a[i]);
+            } else if (i > end) {
+                // bad
+                break;
+            } else {
+                // i<=end, but i>start
+                res++;
+                start = end;
+                end = i + a[i];
             }
         }
-        return jumps;
+        return res;
     }
 
 }
 
 // accepted but shamefully
 class JumpGameIIDp {
-    int Max = 1000000;
+    private int Max = 10000000;
 
     public int jump(int[] a) {
         int n = a.length;
         int[] dp = new int[n];
-        Arrays.fill(dp, Max);
         dp[n - 1] = 0;
         for (int i = n - 2; i >= 0; i--) {
-            if (i + 1 < n - 1 && a[i] == a[i + 1] + 1) {
-                dp[i] = dp[i + 1];
-            } else {
-                for (int j = i + 1; j <= i + a[i] && j < n; j++) {
-                    dp[i] = Math.min(dp[j] + 1, dp[i]);
-                }
+            int cur = Max;
+            for (int j = 1; j <= a[i] && i + j < n; j++) {
+                cur = Math.min(cur, dp[i + j]);
             }
+            dp[i] = 1 + cur;
         }
         return dp[0];
     }

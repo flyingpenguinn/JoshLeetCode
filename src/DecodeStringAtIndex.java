@@ -41,44 +41,25 @@ S starts with a letter.
 The decoded string is guaranteed to have less than 2^63 letters.
  */
 public class DecodeStringAtIndex {
-    public String decodeAtIndex(String s, long k) {
-        int n = s.length();
-        Deque<long[]> st = new ArrayDeque<>();
-        // index of the digit, and the length at that digit
-        st.push(new long[]{-1, 0});
-        for(int i=0; i<=n; i++){
-            char c = i==n?'1':s.charAt(i);
-            if(!Character.isDigit(c)){
-                continue;
-            }
-            long cd = c-'0';
-            long curlen = i-st.peek()[0]-1;
-            long lastlen = st.peek()[1];
-            long newlen = (lastlen+curlen)*cd;
-            st.push(new long[]{i, newlen});
-            if(newlen>=k){
-                break;
-            }
-        }
-        while(!st.isEmpty()){
-            long i = st.pop()[0];
-            long lastlen = st.peek()[1];
-            long lasti = st.peek()[0];
-            long curlen = i-lasti-1;
-            long seg = lastlen+curlen;
-            k = scale(k, seg);
-            // which part is k landing on: in lastlen, or after lastlen in curlen area
-            if(k>lastlen){
-                // here curlen wont be 0 because if so seg == lastlen and we know k <=seg
-                return s.charAt((int)(lasti+k-lastlen))+"";
-            }
-            // otherwise, we need to find k in lastlen, so let it pop and continue
-        }
-        return "";
+    public String decodeAtIndex(String s, int k) {
+        return String.valueOf(solve(s.toCharArray(), k, 0, 0));
     }
 
-    private long scale(long a, long b){
-        long rt = a%b;
-        return rt==0? b: rt;
+    private char solve(char[] s, long k, int i, long len) {
+        if (Character.isLetter(s[i])) {
+            if (len + 1 == k) {
+                return s[i];
+            }
+            return solve(s, k, i + 1, len + 1);
+        } else {
+            int times = s[i] - '0';
+            if (k > len * times) {
+                return solve(s, k, i + 1, len * times);
+            } else {
+                int mod = (int) (k % len);
+                int index = mod == 0 ? (int) (len) : mod; // key!
+                return solve(s, index, 0, 0);
+            }
+        }
     }
 }

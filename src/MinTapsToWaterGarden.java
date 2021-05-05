@@ -66,22 +66,21 @@ public class MinTapsToWaterGarden {
             taps[i][1] = i + a[i];
         }
         Arrays.sort(taps, (x, y) -> Integer.compare(x[0], y[0]));
-        //  System.out.println(Arrays.deepToString(taps));
-        int start = Math.max(taps[0][0], 0);
-        int end = taps[0][1];
-        if (start > 0) {
-            return -1;
-        }
-        int res = 1;
-        for (int i = 1; i < tapCount & end < n; i++) {
-            if (taps[i][0] <= start) {
+        int start = -1;
+        int end = 0;
+        int res = 0;
+        for (int i = 0; i < tapCount & end < n; i++) {
+            int cstart = Math.max(0, taps[i][0]);
+            int cend = taps[i][1];
+            if (cstart <= start) {
                 end = Math.max(end, taps[i][1]);
-            } else if (taps[i][0] > end) {
+            } else if (cstart > end) {
                 break;
             } else {
+                // cstart> start, but <=end. the old end is now start. the new end is cend
                 res++;
                 start = end;
-                end = taps[i][1];
+                end = cend;
             }
         }
         return end >= n ? res : -1;
