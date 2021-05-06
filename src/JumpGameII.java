@@ -24,25 +24,24 @@ public class JumpGameII {
     // it's also a bfs problem where we find the shortest path
     public int jump(int[] a) {
         int n = a.length;
+        int start = 0;
+        int end = a[0];
         int res = 0;
-        int start = -1;
-        int end = 0;
-        for (int i = 0; i < n && end < n - 1; i++) {
-            if (i <= start) {
-                end = Math.max(end, i + a[i]);
-            } else if (i > end) {
-                // bad
-                break;
-            } else {
-                // i<=end, but i>start
+        for(int i=1; i<n; i++){
+            int cstart = i;
+            int cend = i+a[i];
+            if(cstart<=start){
+                end = Math.max(end, cend);
+            }else if(cstart>end){
+                // bad case
+            }else{
                 res++;
                 start = end;
-                end = i + a[i];
+                end = cend;
             }
         }
         return res;
     }
-
 }
 
 // accepted but shamefully

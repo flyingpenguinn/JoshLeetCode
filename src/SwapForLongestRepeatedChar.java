@@ -40,65 +40,35 @@ text consist of lowercase English characters only.
  */
 public class SwapForLongestRepeatedChar {
     // find max window where max char happens all the time, or gap-1 time and we can find a good swap target outside current window
-    public int maxRepOpt1(String text) {
-        char[] a = text.toCharArray();
-        int n = a.length;
-        int[][] chars = new int[26][2];
-        for (int i = 0; i < 26; i++) {
-            chars[i][0] = n + 1;
-            chars[i][1] = -1;
+    public int maxRepOpt1(String str) {
+        char[] s = str.toCharArray();
+        int n = s.length;
+        int[] count = new int[26];
+        for(int i=0; i<n; i++){
+            count[s[i]-'a']++;
         }
-        for (int i = 0; i < n; i++) {
-            int cind = a[i] - 'a';
-            chars[cind][0] = Math.min(chars[cind][0], i);
-            chars[cind][1] = Math.max(chars[cind][1], i);
-        }
-        Map<Integer, Integer> m = new HashMap<>();
-        int low = 0;
-        int high = -1;
+        int[] wc = new int[26];
+        int start = 0;
         int res = 0;
-        while (true) {
-            int gap = high - low + 1;
-            int mc = maxcount(m);
-            if (mc == gap || ((mc == gap - 1) && canswap(m, gap - 1, low, high, chars))) {
-                res = Math.max(res, gap);
-                high++;
-                if (high == n) {
-                    break;
-                }
-                int cind = a[high] - 'a';
-                update(m, cind, 1);
-            } else {
-                update(m, a[low] - 'a', -1);
-                low++;
+        for(int i=0; i<n; i++){
+            wc[s[i]-'a']++;
+            while(!doable(s, i-start+1, wc, count)){
+                wc[s[start]-'a']--;
+                start++;
             }
+            res = Math.max(res, i-start+1);
         }
         return res;
     }
 
-    private int maxcount(Map<Integer, Integer> m) {
-        int max = 0;
-        for (int v : m.values()) {
-            max = Math.max(max, v);
-        }
-        return max;
-    }
-
-    private void update(Map<Integer, Integer> m, int k, int d) {
-        int nv = m.getOrDefault(k, 0) + d;
-        if (nv <= 0) {
-            m.remove(k);
-        } else {
-            m.put(k, nv);
-        }
-    }
-
-    private boolean canswap(Map<Integer, Integer> m, int v, int low, int high, int[][] chars) {
-        for (int k : m.keySet()) {
-            if (m.get(k) == v) {
-                if (chars[k][0] < low || chars[k][1] > high) {
-                    return true;
-                }
+    private boolean doable(char[] s, int len, int[] wc, int[] count){
+        int n = s.length;
+        for(int j=0; j<26; j++){
+            if(wc[j]==len){
+                return true;
+            }
+            if(wc[j] +1 == len && count[j] - wc[j]>=1 ){
+                return true;
             }
         }
         return false;
