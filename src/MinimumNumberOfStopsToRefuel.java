@@ -50,32 +50,31 @@ Note:
  */
 public class MinimumNumberOfStopsToRefuel {
     // as if we can save previous stops for later credits...
-    public int minRefuelStops(int t, int sf, int[][] a) {
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
-        int tank = sf;
-        int r = 0;
-        int i = 0; // next station's index
-        int pos = 0;
+    public int minRefuelStops(int t, int start, int[][] a) {
+        Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
+        int f = start;
         int n = a.length;
-        while (i <= n) {
-            int cost = (i == n) ? t - pos : a[i][0] - pos;
-            tank -= cost;
-            while (!pq.isEmpty() && tank < 0) {
-                tank += pq.poll();
-                r++;
+        int pos = 0;
+        int j = 0;
+        int res = 0;
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        while (pos < t) {
+            int next = j == n ? t : a[j][0];
+            int dist = next - pos;
+            while (!pq.isEmpty() && f < dist) {
+                res++;
+                f += pq.poll();
             }
-            if (tank < 0) {
-                // tank empty but we are still not able to go to dest
+            if (f < dist) {
                 return -1;
             }
-            // we can reach i, so add i's fuel to pq and move on
-            if (i < n) {
-                pq.offer(a[i][1]);
-                pos = a[i][0];
+            f -= dist;
+            if (j < n) {
+                pq.offer(a[j++][1]);
             }
-            i++;
+            pos = next;
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {

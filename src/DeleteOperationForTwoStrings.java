@@ -13,37 +13,31 @@ The length of given words won't exceed 500.
 Characters in given words can only be lower-case letters.
  */
 public class DeleteOperationForTwoStrings {
-    // basically edit distance...
-    int[][] dp;
-
+    private Integer[][] dp;
     public int minDistance(String w1, String w2) {
-        char[] s = w1.toCharArray();
-        char[] t = w2.toCharArray();
-        dp = new int[s.length][t.length];
-        for (int i = 0; i < dp.length; i++) {
-            Arrays.fill(dp[i], -1);
-        }
-        return dom(s, t, 0, 0);
+        dp = new Integer[w1.length()][w2.length()];
+        return solve(w1, w2, 0, 0);
     }
 
-
-    int dom(char[] s, char[] t, int i, int j) {
-        if (i == s.length) {
-            return t.length - j;
+    private int solve(String w1, String w2, int i, int j){
+        if(i==w1.length() && j==w2.length()){
+            return 0;
         }
-        if (j == t.length) {
-            return s.length - i;
+        else if(i==w1.length()){
+            return w2.length()-j;
+        }else if(j==w2.length()){
+            return w1.length()-i;
         }
-        if (dp[i][j] != -1) {
+        if(dp[i][j]!= null){
             return dp[i][j];
         }
-        if (s[i] == t[j]) {
-            dp[i][j] = dom(s, t, i + 1, j + 1);
-        } else {
-            int d1 = 1 + dom(s, t, i + 1, j);
-            int d2 = 1 + dom(s, t, i, j + 1);
-            dp[i][j] = Math.min(d1, d2);
+        int rt = 0;
+        if(w1.charAt(i)==w2.charAt(j)){
+            rt= solve(w1, w2, i+1, j+1);
+        }else{
+            rt = Math.min(solve(w1, w2, i+1, j), solve(w1, w2, i, j+1))+1;
         }
-        return dp[i][j];
+        dp[i][j] = rt;
+        return rt;
     }
 }
