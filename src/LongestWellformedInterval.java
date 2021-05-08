@@ -15,33 +15,25 @@ public class LongestWellformedInterval {
     // so longest-> start from tail. shortest-> start from head. and either mono increase or decrease queue
     public int longestWPI(int[] hours) {
         int n = hours.length;
-        Deque<Integer> stack = new ArrayDeque<>();
-        int[] sum = new int[n];
-        for (int i = 0; i < n; i++) {
-            sum[i] = (i == 0 ? 0 : sum[i - 1]) + (hours[i] > 8 ? 1 : -1);
-        }
-
-        // make mono stack
-        for (int i = 0; i < n; i++) {
-            if (!stack.isEmpty() && sum[i] >= sum[stack.peek()]) {
-                // if big and later, throw away
-                continue;
-            }
-            stack.push(i);
-        }
+        int sum = 0;
+        int[] sums = new int[n];
+        Deque<Integer> dq = new ArrayDeque<>();
         int max = 0;
-        for (int i = n - 1; i >= 0; i--) {
-            if (sum[i] > 0) {
+        for (int i = 0; i < n; i++) {
+            sum += hours[i] > 8 ? 1 : -1;
+            if (sum > 0) {
                 max = Math.max(max, i + 1);
             }
-            // pop up self
-            if (!stack.isEmpty() && stack.peek() == i) {
-                stack.pop();
+            sums[i] = sum;
+            if (dq.isEmpty() || sums[i] < sums[dq.peekLast()]) {
+                dq.offerLast(i);
             }
-            while (!stack.isEmpty() && sum[stack.peek()] < sum[i]) {
-                // this item in stack become useless as later is would only form a smaller range
-                int diff = i - stack.pop();
-                max = Math.max(max, diff);
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            // covered -1 case earlier
+            while (!dq.isEmpty() && sums[i] - sums[dq.peekLast()] > 0) {
+                int last = dq.pollLast();
+                max = Math.max(max, i - last);
             }
         }
         return max;
@@ -53,49 +45,36 @@ public class LongestWellformedInterval {
     }
 }
 
-class LongestWellformedIntervalStack {
-    // can't do direct binary search: 1 may work, 2 may not, 3 may work again. it doesnt have monotonic feature
-    // but if we turn hours to 1 and 0, then it becomes finding
-    // 2*(sumi-sumj) > i-j, 2*sumi-i > 2*sumj-j
-    // and now we find the smallest j for each 2*sumi-i. to do so we make a mono decreasing list and do binary search to find the first index that is < given number
-    // we can also use the deque solution above to find longest j so that 2*sumj-j < 2*sumi-i
-    public int longestWPI(int[] a) {
-        int n = a.length;
-        int[] na = new int[n];
-        List<int[]> l = new ArrayList<>();
-        int sum = 0;
-        int max = 0;
+class LongestWellformedIntervalHashMap {
+    // if >, all good
+    // if <=0, if this is a new low, do nothing
+    // otherwise if now sum = x, it must have come from 0...x-1....x because we +1 or -1 every time.
+    // x-2 must be worse than x-1 as we want "longest" x-1 is on the left of x-2
+    public int longestWPI(int[] hours) {
+        int n = hours.length;
+        int[] a = new int[n];
         for (int i = 0; i < n; i++) {
-            int vi = a[i] > 8 ? 1 : 0;
-            sum += vi;
-            int t = 2 * sum - i;
-            if (2 * sum > (i + 1)) {
-                max = Math.max(max, i + 1);
-            }
-            int index = binarySearchFirstSmaller(l, t);
-            if (index != -1) {
-                max = Math.max(max, i - l.get(index)[1]);
-            }
-            if (l.isEmpty() || t < l.get(l.size() - 1)[0]) {
-                l.add(new int[]{t, i});
-            }
+            a[i] = hours[i] > 8 ? 1 : -1;
         }
-        return max;
-    }
-
-    // binary search in a reversed array
-    private int binarySearchFirstSmaller(List<int[]> a, int t) {
-        int l = 0;
-        int u = a.size() - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a.get(mid)[0] < t) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
+        int[] sum = new int[n];
+        for (int i = 0; i < n; i++) {
+            sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
         }
-        int rt = l >= a.size() ? -1 : l;
-        return rt;
+        Map<Integer, Integer> m = new HashMap<>();
+        m.put(0, -1);
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            if (sum[i] > 0) {
+                res = Math.max(res, i + 1);
+                continue;
+            }
+            int needed = sum[i] - 1;
+            Integer j = m.get(needed);
+            if (j != null) {
+                res = Math.max(res, i - j);
+            }
+            m.putIfAbsent(sum[i], i);
+        }
+        return res;
     }
 }

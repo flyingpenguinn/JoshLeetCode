@@ -4,17 +4,18 @@ import java.util.Arrays;
 import java.util.TreeMap;
 
 public class PutBoxesIntoWarehouse {
-    // basically take big to small boxes and try to stuff them into the warehouse from the left
-    public int maxBoxesInWarehouse(int[] bx, int[] wh) {
-        int p1 =0;
-        int p2 = wh.length-1;
-        Arrays.sort(bx);
+    // smaller box would block large box so we find the biggest fitting box for a given warehouse from the big to small box
+    public int maxBoxesInWarehouse(int[] b, int[] w) {
+        Arrays.sort(b);
+        int i = b.length-1;
+        int j = 0;
         int res = 0;
-        for(int i = bx.length-1;i>=0 && p1<=p2;i--){
-            if(bx[i] <= wh[p1]){
-                p1++;
+        while(i>=0 && j<w.length){
+            if(b[i]<=w[j]){
                 res++;
+                j++;
             }
+            i--;;
         }
         return res;
     }
