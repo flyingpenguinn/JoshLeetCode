@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LargestColorValueInADirectedGraph {
+    // don't know how to merge the colors in each i? just put the color we want to trace as j in the dp formula!
     public int largestPathValue(String colors, int[][] edges) {
         int n = colors.length();
         List<Integer>[] g = new ArrayList[n];
