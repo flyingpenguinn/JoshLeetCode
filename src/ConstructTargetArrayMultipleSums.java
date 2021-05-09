@@ -43,24 +43,31 @@ N == target.length
 public class ConstructTargetArrayMultipleSums {
     // the last operation must be on the max number. so use a pq to trace it
     public boolean isPossible(int[] a) {
-        PriorityQueue<Long> pq = new PriorityQueue<>(Collections.reverseOrder());
         int n = a.length;
-        long sum = 0L;
-        for (int i = 0; i < a.length; i++) {
+        long sum = 0;
+        PriorityQueue<Long> pq = new PriorityQueue<>(Collections.reverseOrder());
+        for (int i = 0; i < n; i++) {
             sum += a[i];
             pq.offer(Long.valueOf(a[i]));
         }
-        while (sum != n) {
-            long max = pq.poll();
-            long other = sum - max;
-            if (max <= 0 || max <= other || other == 0) {
+        while (!pq.isEmpty() && sum > n) {
+            long top = pq.poll();
+            long other = sum - top;
+            if (top <= other || other == 0) {
+                // other == 0 means this number is the only one here but sum >n so we are doomed
+                // if top <= other we had no way to come to this top
                 return false;
             }
-            long nmax = other == 1 ? 1 : max % other;
-            pq.offer(nmax);
-            sum -= (max - nmax);
+            // use % to get the remnant. for example 3 vs 19 we can get 19%3=1 in the end
+            long orig = top % other;
+            if (orig == 0) {
+                // if it's 3 vs 9 we know we can get to 3
+                orig = other;
+            }
+            pq.offer(orig);
+            sum -= (top - orig);
         }
-        return pq.poll() == 1; // must be all 1s if max ==1 and sum == n. this can rule out 2,0
+        return sum == n;
     }
 
     public static void main(String[] args) {

@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class DistinctNumbersInSubarray {
     public int[] distinctNumbers(int[] a, int k) {
         int n = a.length;

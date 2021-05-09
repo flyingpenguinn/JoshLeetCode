@@ -32,10 +32,11 @@ public class LargestRectangleInHistogram {
                 lasti = st.peek()[0];
                 int lasth = st.peek()[1];
                 int cur = lasth * (i - lasti);
-                // from lasti as starting point to i-1 all >=lasth, can for a rect
+                // from lasti as starting point to i-1 all >=lasth, can form a rect
                 res = Math.max(res, cur);
                 st.pop();
             }
+            // to later bars it's as if there is a ch at lasti
             st.push(new int[]{lasti, ch});
         }
         st.pop();
