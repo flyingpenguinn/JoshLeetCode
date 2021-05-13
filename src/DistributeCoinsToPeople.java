@@ -41,21 +41,26 @@ Constraints:
  */
 public class DistributeCoinsToPeople {
     // O(n)
-    public int[] distributeCandies(int c, int n) {
-        int allrounds = (int) ((Math.sqrt(1.0 + 8.0 * c) - 1) / 2.0);
-        int round = allrounds / n; // how many rounds where everyone gets a candy
-        int mod = allrounds % n; // 0..mod-1 will get an extra round
-        int rem = c - allrounds * (allrounds + 1) / 2; // mod will get the remaining
-        int[] res = new int[n];
-        for (int i = 0; i < n; i++) {
-            int cr = i < mod ? round + 1 : round;
-            if (cr > 0) {
-                // for each item it's arithmatic sequence with a1 = i+1 and d = n
-                res[i] = cr * (i + 1) + cr * (cr - 1) * n / 2; // n*a1+n(n-1)*d/2.
-            }
+    public int[] distributeCandies(int n, int k) {
+        int rounds = (int)(Math.sqrt(1.0 + 8.0 * n) - 1) / 2;
+        // these are full rounds where everyone will get their candies in i+1, i+1+n... manner
+        int rem = n - (rounds * (rounds + 1) / 2); // candy the last person will get
+        int cutoff = rounds % k; // if mod = 3, it's i=3 that we start to lose the last round of candy
+        int times = rounds / k; // this is the number of full rounds where all k people are covered
+        int[] res = new int[k];
+        for (int i = 0; i < k; i++)
+        {
+            int curtime = times + (i<cutoff? 1: 0);
+            res[i] = sum(i + 1, curtime, k);
         }
-        res[mod] += rem;
+        res[cutoff] += rem;
         return res;
+    }
+
+    // arithmetic sequence, given a1, n, and d
+    private int sum(int a1, int n, int d)    {
+        int an = a1 + (n - 1) * d;
+        return (a1 + an) * n / 2;
     }
 
     public static void main(String[] args) {
