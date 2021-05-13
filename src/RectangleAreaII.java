@@ -32,7 +32,8 @@ public class RectangleAreaII {
 
     public int rectangleArea(int[][] a) {
         // keep a sorted list of currently live pending edges
-        // key insigt: till next x, all live edges generate areas because there is nothing in between. hence for each edge, first calc what we have last time till this line by last len* diff on x.
+        // key insigt: till next x, all live edges generate areas because there is nothing in between.
+        // hence for each edge, first calc what we have last time till this line by last len* diff on x. note it's actually lastx...x-1 so len = x-lastx
         // then if it's entering edge, add and merge with current edges. the merge is similar to interval merging problem
         // if it's leaving edge, remove it from live edge list
         int n = a.length;
