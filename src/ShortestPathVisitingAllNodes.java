@@ -33,7 +33,6 @@ public class ShortestPathVisitingAllNodes {
     // typical bfs with state!
     // state is where we are + the visited state. if we come back to a node but we didnt visit any new node, we'd discard that thought
     // actually similar to LC#1293 shortest path with obstacle eliminated/ we add extra state to differentiate them: it's obstacles there and status here
-    // note in #1293, in one path it won't have duplicated nodes. but in this problem duplications may occur. however it doesnt matter as we added state to rule out dupes
     public int shortestPathLength(int[][] a) {
         int n = a.length;
         // node, state, dist
