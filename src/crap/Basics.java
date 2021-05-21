@@ -6,16 +6,29 @@ import java.util.List;
 
 public class Basics {
 
-    public static void main(String[] args) {
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        Iterator<Integer> it = list.iterator();
-        while(it.hasNext()){
-            if(it.next() == 1){
-                it.remove();
-            }
+    private static abstract class Transaction{
+        public Transaction(){
+            logTransaction();
         }
+
+        protected abstract void logTransaction();
+    }
+
+    private static class BuyTransaction extends Transaction{
+        private int value = 5;
+        protected void logTransaction(){
+            System.out.println("im buying "+value);
+        }
+    }
+
+    private static class SellTransaction extends Transaction{
+        protected void logTransaction(){
+            System.out.println("im selling");
+        }
+    }
+    public static void main(String[] args) {
+        BuyTransaction buyTransaction = new BuyTransaction();
+        SellTransaction sellTransaction = new SellTransaction();
+        System.out.println(buyTransaction+" "+sellTransaction);
     }
 }
