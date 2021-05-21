@@ -26,54 +26,37 @@ Input: N = 21, K = 17, W = 10
 Output: 0.73278
  */
 public class New21Game {
-    // dp with a twist to get accumulated dp values in O1
-    // note the definition of dp[i]: it is the prob of getting i at some point.
-    // note when
-    public double new21Game(int n, int k, int w) {
-        double[] dp = new double[n + 1];
+    public double new21Game(int n, int k, int mp) {
+// each i is contributed by max(1, i-mp)...min(i-1, k-1)
+        if(n==0){
+            return k==0? 1: 0;
+        }
+        if(k==0){
+            return 1;
+        }
+        // dp [i] is the chance of hitting i
+        // stop at k, so the most we can get is k-1+mp = k+mp-1
+        double[] dp = new double[k+mp];
         double res = 0;
         double sum = 0;
-        for (int i = 0; i <= n; i++) {
-            if (i == 0) {
-                dp[i] = 1;
-            } else {
-                dp[i] = sum / w;
+        for(int i=1; i<=k+mp-1; i++){
+            // for i it's controlled by i-mp...i-1
+            dp[i] = sum*1.0/mp;
+            if(i<=mp){
+                // i <= mp then the number itself can be achieved
+                dp[i] += 1.0/mp;
             }
-            if (i >= k) {
-                // if >= it won't leave this number
+            if(i>=k && i<=n){
+                // if >=k we stop drawing so it will stay there
                 res += dp[i];
-            } else {
-                // only draw number when i <k
+            }
+            if(i<k){
+                //if i==k already we can't contribute
                 sum += dp[i];
             }
-            if (i - w >= 0) {
-                // i-w will be out of range for i+1 so drop it
-                sum -= dp[i - w];
-            }
-        }
-        return res;
-    }
-
-}
-
-class New21GameTLE {
-    // raw form without optimization to on. note the way we filter bad i-j data and res+= dp[i]. also dp[0]=1. these are crucial
-    public double new21Game(int n, int k, int w) {
-        double[] dp = new double[n + 1];
-        // dp[i] is the prob of getting i at some point. note when we get >=k we stop so these becomes the final prob too..
-        double res = 0;
-        for (int i = 0; i <= n; i++) {
-            if (i == 0) {
-                dp[i] = 1.0;  // !
-            } else {
-                for (int j = 1; j <= w; j++) {
-                    if (i - j >= 0 && i - j < k) {  // !only <k can we try to get here. if i-j is already >k we stop
-                        dp[i] += dp[i - j] / w;
-                    }
-                }
-            }
-            if (i >= k) {
-                res += dp[i];
+            if(i-mp>=0){
+                // take out the too old i-mp
+                sum -= dp[i-mp];
             }
         }
         return res;
