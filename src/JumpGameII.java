@@ -31,10 +31,12 @@ public class JumpGameII {
             int cstart = i;
             int cend = i+a[i];
             if(cstart<=start){
+                // cutting the parts < start that's useless. we treat as if they all start at start, find the biggest end
                 end = Math.max(end, cend);
             }else if(cstart>end){
                 // bad case
             }else{
+                // > start, but <=end. we ignore the parts that is <=end because end will be the new start
                 res++;
                 start = end;
                 end = cend;
