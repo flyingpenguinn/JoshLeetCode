@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -6,27 +8,33 @@ public class VideoStitching {
     // similar to watering garden problem
     public int videoStitching(int[][] a, int t) {
         int n = a.length;
-        if (n == 0) {
-            return -1;
-        }
         Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
-        int start = Math.max(a[0][0], 0);
-        int end = a[0][1];
-        if (start > 0) { // don't forget to check the starter!
-            return -1;
-        }
-        int res = 1;
-        for (int i = 1; i < n && end < t; i++) {
-            if (a[i][0] <= start) {
-                end = Math.max(end, a[i][1]);
-            } else if (a[i][0] > end) {
+        return minIntervalCoverage(a, t, n);
+    }
+
+    protected int minIntervalCoverage(int[][] a, int t, int n) {
+        int start = -1;
+        int end = 0;
+        int res = 0;
+        for (int i = 0; i < n && end < t; i++) {
+            int cstart = a[i][0];
+            int cend = a[i][1];
+            if (cstart <= start) {
+                end = Math.max(end, cend);
+            } else if (cstart > end) {
                 break;
             } else {
-                res++;
-                start = end; // we are looking for cover from the end so ignore the portions before it
-                end = a[i][1];
+                if(cend >end) {
+                    res++;
+                    start = end; // we are looking for cover from the end so ignore the portions before it
+                    end = cend;
+                }
             }
         }
         return end >= t ? res : -1;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new VideoStitching().videoStitching(ArrayUtils.read("[[17,18],[25,26],[16,21],[3,3],[19,23],[1,5],[0,2],[9,20],[5,17],[8,10]]"), 15));
     }
 }

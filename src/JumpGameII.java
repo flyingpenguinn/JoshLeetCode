@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.Arrays;
 
 /*
@@ -24,25 +26,30 @@ public class JumpGameII {
     // it's also a bfs problem where we find the shortest path
     public int jump(int[] a) {
         int n = a.length;
-        int start = 0;
-        int end = a[0];
+        // similar to minIntervalCoverage defined in VideoStitching
+        int start = -1;
+        int end = 0;
         int res = 0;
-        for(int i=1; i<n; i++){
+        for (int i = 0; i < n && end < n - 1; i++) {
             int cstart = i;
-            int cend = i+a[i];
-            if(cstart<=start){
-                // cutting the parts < start that's useless. we treat as if they all start at start, find the biggest end
+            int cend = i + a[i];
+            if (cstart <= start) {
                 end = Math.max(end, cend);
-            }else if(cstart>end){
+            } else if (cstart > end) {
                 // bad case
-            }else{
-                // > start, but <=end. we ignore the parts that is <=end because end will be the new start
-                res++;
-                start = end;
-                end = cend;
+            } else {
+                if (cend > end) {
+                    res++;
+                    start = end;
+                    end = cend;
+                }
             }
         }
         return res;
+    }
+
+    public static void main(String[] args) {
+        new JumpGameII().jump(ArrayUtils.read1d("[2,3,1,1,4]"));
     }
 }
 
