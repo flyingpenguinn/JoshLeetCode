@@ -31,88 +31,92 @@ Notes:
 0 <= grid[i][j] <= 1.
  */
 public class MakeLargeIsland {
-    // union find, count each segment we see on a 0 only once
-    private int code(int r, int c, int n) {
-        return r * n + c;
+     // make sure we use set to dedupe, and handle only 1 case
+    // especially handle only 1 without other merging case
+    private int[][] dirs = {{-1, 0}, {0, -1},{1,0},  {0,1}};
+    private int code(int x, int y, int n){
+        return n*x+y;
     }
 
-    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private int find(int[] pa, int i){
+        if(pa[i]==-1){
+            return i;
+        }
+        int rt = find(pa, pa[i]);
+        pa[i] = rt;
+        return rt;
+    }
+
+    private int unions(int[] pa, int[] size, int i, int j){
+        int ai = find(pa, i);
+        int aj = find(pa, j);
+        if(ai==aj){
+            return size[ai];
+        }
+        int rt = 0;
+        if(size[ai]< size[aj]){
+            pa[ai] = aj;
+            size[aj] += size[ai];
+            rt = size[aj];
+        }else{
+            pa[aj] = ai;
+            size[ai] += size[aj];
+            rt = size[ai];
+        }
+        return rt;
+    }
 
     public int largestIsland(int[][] a) {
-        if (a == null || a.length == 0 || a[0].length == 0) {
-            return 0;
-        }
         int m = a.length;
         int n = a[0].length;
-        int[] pa = new int[m * n];
-        int[] size = new int[m * n];
-        int max = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 1) {
-                    int code = code(i, j, n);
-                    init(pa, size, code);
-                    int merged = 1;
-                    if (i - 1 >= 0 && a[i - 1][j] == 1) {
-                        merged = union(pa, size, code, code(i - 1, j, n));
+        int[] pa = new int[m*n];
+        Arrays.fill(pa, -1);
+        int[] size = new int[m*n];
+        Arrays.fill(size, 1);
+        int res = 0;
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                if(a[i][j]==0){
+                    continue;
+                }
+                res = Math.max(res, 1);
+                // don't forget this to handle only 1
+                int cij = code(i, j, n);
+                for(int k = 0; k<2; k++){
+                    // only need the first 2 for left and upper
+                    int[] d = dirs[k];
+                    int ni = i+d[0];
+                    int nj = j+d[1];
+                    if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj]==1){
+                        int cnij = code(ni, nj, n);
+                        int merged= unions(pa, size, cij, cnij);
+                        res = Math.max(res, merged);
                     }
-                    if (j - 1 >= 0 && a[i][j - 1] == 1) {
-                        merged = union(pa, size, code, code(i, j - 1, n));
-                    }
-                    max = Math.max(max, merged);
                 }
             }
         }
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 0) {
-                    Set<Integer> comps = new HashSet<>();
-                    // note we have to use a set here because the elements can belong to the same component
-                    for (int[] d : dirs) {
-                        int ni = i + d[0];
-                        int nj = j + d[1];
-                        if (ni >= 0 && ni < m && nj >= 0 && nj < n && a[ni][nj] == 1) {
-                            comps.add(find(pa, code(ni, nj, n)));
-                            //NEVER EVER use pa array directly, always use find
-                        }
-                    }
-                    int res = 1; // count in this turned 0 too!
-                    for (int k : comps) {
-                        res += size[k];
-                    }
-                    max = Math.max(max, res);
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                if(a[i][j]==1){
+                    continue;
                 }
+                Set<Integer> ones = new HashSet<>();
+                for(var d: dirs){
+                    int ni = i+d[0];
+                    int nj = j+d[1];
+                    if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj]==1){
+                        int cnij = code(ni, nj, n);
+                        ones.add(find(pa, cnij ));
+                    }
+                }
+                int cur = 1;
+                for(int one: ones){
+                    cur += size[one];
+                }
+                res = Math.max(res, cur);
             }
         }
-        return max;
-    }
-
-    private void init(int[] pa, int[] size, int k) {
-        pa[k] = k;
-        size[k] = 1;
-    }
-
-    // size of the new merged component
-    private int union(int[] pa, int[] size, int k1, int k2) {
-        int p1 = find(pa, k1);
-        int p2 = find(pa, k2);
-        if (p1 != p2) {
-            pa[p1] = p2;
-            size[p2] += size[p1];
-        }
-        return size[p2];
-    }
-
-    private int find(int[] pa, int k) {
-        int p = pa[k];
-        if (p == k) {
-            return p;
-        } else {
-            int rt = find(pa, p);
-            pa[k] = rt;
-            return rt;
-        }
+        return res;
     }
 
     public static void main(String[] args) {
