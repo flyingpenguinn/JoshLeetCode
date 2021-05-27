@@ -32,42 +32,30 @@ Note:
 public class SubstringWithKDifferentIntegers {
     // == k => ?<=k - <=k-1
     public int subarraysWithKDistinct(int[] a, int k) {
-        return findanswer(a, k) - findanswer(a, k - 1);
+        return atmost(a, k)- atmost(a, k-1);
     }
 
-
-    //<=k distinct numbers
-    // note it's hard to calc exactly == k because when we do low++ we dont know how many low...<high are actually == k
-    protected int findanswer(int[] a, int k) {
+    private int atmost(int[] a, int k){
+        if(k==0){
+            return 0;
+        }
         int n = a.length;
-        int low = 0;
-        int high = -1;
-        Map<Integer, Integer> m = new HashMap<>();
-        int r = 0;
-        while (true) {
-            if (m.keySet().size() <= k) {
-                // low...high, low+1.... high... high...high
-                r += high - low + 1;
-                high++;
-                if (high == n) {
-                    break;
+        int start = 0;
+        Map<Integer,Integer> m = new HashMap<>();
+        int res = 0;
+        for(int i=0; i<n; i++){
+            m.put(a[i], m.getOrDefault(a[i], 0)+1);
+            while(m.size()>k){
+                m.put(a[start], m.get(a[start])-1);
+                if(m.get(a[start])==0){
+                    m.remove(a[start]);
                 }
-                update(m, a[high], 1);
-            } else {
-                // low...high-1
-                update(m, a[low++], -1);
+                start++;
             }
+            // start...i good, have at most k chars
+            res += i-start+1;
         }
-        return r;
-    }
-
-    private void update(Map<Integer, Integer> m, int k, int nd) {
-        int nv = m.getOrDefault(k, 0) + nd;
-        if (nv <= 0) {
-            m.remove(k);
-        } else {
-            m.put(k, nv);
-        }
+        return res;
     }
 
     public static void main(String[] args) {
