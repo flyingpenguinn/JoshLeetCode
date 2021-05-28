@@ -49,7 +49,6 @@ public class InsertDeleteGetrandomWithDuplicate {
 
     }
 }
-
 class RandomizedCollection {
 
     private Map<Integer, Set<Integer>> pm = new HashMap<>();
@@ -76,8 +75,8 @@ class RandomizedCollection {
     /**
      * Removes a value from the collection. Returns true if the collection contained the specified element.
      */
-    public boolean remove(int val) {
-        Set<Integer> set1 = pm.get(val);
+    public boolean remove(int v1) {
+        Set<Integer> set1 = pm.get(v1);
         if (set1 == null || set1.isEmpty()) {
             // dont forget empty processing
             return false;
@@ -85,15 +84,30 @@ class RandomizedCollection {
         int p2 = list.size() - 1;
         int v2 = list.get(p2);
         Set<Integer> set2 = pm.get(v2);
-        int p1 = pm.get(val).iterator().next();
-        swap(list, p1, p2); // dont forget swapping it!
-        set2.remove(p2);
-        if (val != v2) {
-            set2.add(p1);
-            set1.remove(p1);
+        if(v1==v2){
+            removeLast(list);
+            removeFromMap(pm, v2, p2);
+            return true;
         }
-        list.remove(list.size() - 1);
+        int p1 = pm.get(v1).iterator().next();
+        swap(list, p1, p2); // dont forget swapping it!
+        removeFromMap(pm, v1, p1);
+        set2.add(p1);// must add first otherwise we may be adding on a deleted set
+        removeFromMap(pm, v2, p2);
+        removeLast(list);
         return true;
+    }
+
+    private void removeFromMap( Map<Integer,Set<Integer>> pm, int key, int val){
+        Set<Integer> cur = pm.get(key);
+        cur.remove(val);
+        if(cur.isEmpty()){
+            pm.remove(key);
+        }
+
+    }
+    private void removeLast(List<Integer> list){
+        list.remove(list.size()-1);
     }
 
     private void swap(List<Integer> list, int i, int j) {
