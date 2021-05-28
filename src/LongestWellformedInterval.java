@@ -73,6 +73,7 @@ class LongestWellformedIntervalHashMap {
             if (j != null) {
                 res = Math.max(res, i - j);
             }
+            // note down the first occurrence
             m.putIfAbsent(sum[i], i);
         }
         return res;

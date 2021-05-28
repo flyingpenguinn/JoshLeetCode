@@ -42,6 +42,8 @@ public class ShortestSubarrayWithSumAtleastK {
  if shortest <=k, mono decrease queue, scan from the back
  if longest >=k, mono decrease queue and we scan from the BACK and compare with the tail of the queue so as to gain the "longest" possible for each tail
  if longest <=k, mono increase but scan from the back
+
+ note this is similar to "longest well informed interval"
  */
 
     public int shortestSubarray(int[] a, int k) {
@@ -51,7 +53,6 @@ public class ShortestSubarrayWithSumAtleastK {
         for (int i = 0; i < n; i++) {
             sum[i] = (i == 0 ? 0 : sum[i - 1]) + a[i];
             if (sum[i] >= k) {
-                //  System.out.println(i);
                 min = Math.min(min, i + 1);
             }
         }
@@ -81,46 +82,3 @@ public class ShortestSubarrayWithSumAtleastK {
     }
 }
 
-class ShortestSubarrayWithSumAtleastKBinarySearch {
-    // similar to longest well performing interval
-    public int shortestSubarray(int[] a, int k) {
-        int n = a.length;
-        int sum = 0;
-        int min = n + 1;
-        List<Integer> l = new ArrayList<>();
-        List<Integer> inds = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            sum += a[i];
-            if (sum >= k) {
-                min = Math.min(min, i + 1);
-            }
-            int index = binarySearchLastNoBigger(l, sum - k);
-            if (index != -1) {
-                int len = i - inds.get(index);
-                min = Math.min(min, len);
-            }
-            // as candidate i, if big and appear early, no reason to keep it. so l is increasing
-            while (!l.isEmpty() && l.get(l.size() - 1) >= sum) {
-                l.remove(l.size() - 1);
-                inds.remove(inds.size() - 1);
-            }
-            l.add(sum);
-            inds.add(i);
-        }
-        return min > n ? -1 : min;
-    }
-
-    private int binarySearchLastNoBigger(List<Integer> a, int t) {
-        int l = 0;
-        int u = a.size() - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a.get(mid) <= t) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
-            }
-        }
-        return u;
-    }
-}
