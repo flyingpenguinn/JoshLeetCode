@@ -1,39 +1,26 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MaxErasureValue {
-    // all positive so we can do two pointer...when we move low we know any smaller high won't do it
+    // all positive so we can do two pointer...when start is in good position we know it's the max we can get for subarray ending at i
     public int maximumUniqueSubarray(int[] a) {
-        int low = 0;
-        int high = -1;
-        Map<Integer, Integer> m = new HashMap<>();
-        int sum = 0;
-        int max = 0;
-        while (true) {
-            if (m.size() == high - low + 1) {
-                max = Math.max(max, sum);
-                high++;
-                if (high == a.length) {
-                    break;
-                }
-                update(m, a[high], 1);
-                sum += a[high];
-
-            } else {
-                update(m, a[low], -1);
-                sum -= a[low];
-                low++;
+        int n = a.length;
+        int[] psum = new int[n];
+        for (int i = 0; i < n; i++) {
+            psum[i] = (i == 0 ? 0 : psum[i - 1]) + a[i];
+        }
+        Set<Integer> seen = new HashSet<>();
+        int start = 0;
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            while (seen.contains(a[i])) {
+                seen.remove(a[start++]);
             }
+            seen.add(a[i]);
+            res = Math.max(res, psum[i] - (start == 0 ? 0 : psum[start - 1]));
         }
-        return max;
-    }
-
-    private void update(Map<Integer, Integer> m, int k, int d) {
-        int nv = m.getOrDefault(k, 0) + d;
-        if (nv <= 0) {
-            m.remove(k);
-        } else {
-            m.put(k, nv);
-        }
+        return res;
     }
 }
