@@ -18,7 +18,8 @@ The answer with the calculation error less than 10-5 will be accepted.
  */
 public class MaxAvgSumArrayII {
     // from avg to subarray sum: (a[i]+...a[j])/(j-i+1) >= m => (ai-m) + ...+(a[j]-m)>=0
-    // hence converting to whether there is an suabarray sum >=0. doable in O(n) time
+    // hence converting to whether there is an suabarray sum >=0 and length >=k doable in O(n) time.
+    // note this is a doable problem, not longest subarray problem(which requires mono deque)
     // note if certain double is good, anything <= it will be ok too, as we check if there is a subarray length>=k that can do >=0.
     // so we binary search on the mid value
     public double findMaxAverage(int[] a, int k) {
