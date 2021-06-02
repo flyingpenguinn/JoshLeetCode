@@ -25,7 +25,7 @@ The number of edges in the graph will not exceed 32000.
 Each graph[i] will be a sorted list of different integers, chosen within the range [0, graph.length - 1].
  */
 public class FindEventualSafeStates {
-    int[] dp;
+    private int[] dp;
 
     public List<Integer> eventualSafeNodes(int[][] graph) {
         int n = graph.length;
@@ -37,28 +37,36 @@ public class FindEventualSafeStates {
         }
         List<Integer> r = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            if (dp[i] == 1) {
+            if (dp[i] == 2) {
                 r.add(i);
             }
         }
         return r;
     }
 
+    // 0: not visited
+    // 1: visiting
+    // 2: visited, good
+    // 3: visited, bad
     private void dfs(int i, int[][] graph) {
-        dp[i] = 3;
+        dp[i] = 1;
+        boolean bad = false;
         for (int j : graph[i]) {
-            if (dp[j] == 3) {
-                dp[i] = 2;
-                return;
+            if (dp[j] == 1) {
+                bad = true;
+                break;
             } else if (dp[j] == 0) {
                 dfs(j, graph);
-            }
-            if (dp[j] == 2) {
+                if(dp[j]==3){
+                    bad = true;
+                    break;
+                }
+            } else if (dp[j] == 3) {
                 // if one non terminal it's non terminal
-                dp[i] = 2;
+                dp[i] = 3;
                 return;
             }
         }
-        dp[i] = 1;
+        dp[i] = bad? 3:2;
     }
 }

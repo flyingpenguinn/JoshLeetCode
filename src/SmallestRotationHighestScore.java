@@ -43,40 +43,35 @@ public class SmallestRotationHighestScore {
     // but the first number thrown to the last will give us n-1-a[i] which is >=0 for sure. we need to +(i+1) to make sure the raised bar won't impact it
     public int bestRotation(int[] a) {
         int n = a.length;
-        int res = 0;
-        int resk = 0;
-        Map<Integer, Integer> m = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            update(m, i - a[i], 1);
-            if (i >= a[i]) {
-                res++;
+        Map<Integer,Integer> gaps = new HashMap<>();
+        int cur = 0;
+        for(int i=0; i<n; i++){
+            gaps.put(i-a[i], gaps.getOrDefault(i-a[i], 0)+1);
+            if(i-a[i]>=0){
+                cur++;
             }
         }
-        int cur = res;
-        for (int i = 0; i < n; i++) {
-            // moving a[i], last round we were using i as bar.
-            // this round using i+1 as bar after moving a[i]
-            cur -= m.getOrDefault(i, 0);
-            update(m, i - a[i], -1);
-            update(m, n - 1 - a[i] + (i + 1), 1);
-            // note the +(i+1) is to make sure we are fair with this new diff
-            cur++;
-            if (cur > res) {
-                res = cur;
-                resk = (i + 1);
+        // initially all >=0
+        int max = cur;
+        int maxi = 0;
+        //    cout<<"round 0 "<<cur<<endl;
+        for(int i=1; i<n; i++){
+            // at round i, i-1 stuff are bad
+            cur -= gaps.getOrDefault(i-1, 0);
+            int replaced = n-1-a[i-1]+i;
+            gaps.put(replaced, gaps.getOrDefault(replaced, 0)+1);
+            if(replaced>=i){
+                cur++;
+            }
+            //     cout<<"round "<<i<<" "<<cur<<endl;
+            if(cur>max){
+                max = cur;
+                maxi = i;
             }
         }
-        return resk;
+        return maxi;
     }
 
-    private void update(Map<Integer, Integer> m, int k, int d) {
-        int nv = m.getOrDefault(k, 0) + d;
-        if (nv <= 0) {
-            m.remove(k);
-        } else {
-            m.put(k, nv);
-        }
-    }
 
     public static void main(String[] args) {
         System.out.println(new SmallestRotationHighestScore().bestRotation(ArrayUtils.read1d("[2, 3, 1, 4, 0]")));

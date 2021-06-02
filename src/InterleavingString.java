@@ -14,25 +14,32 @@ Output: false
 public class InterleavingString {
     // whether s3 of length i+j can be formed by interleaving i chars from s1 and j chars from s2
     // note we dont need another k for s3 since s3 index = s1 index + s2 index
-    public boolean isInterleave(String s1, String s2, String s3) {
 
-        int m = s1.length();
-        int n = s2.length();
-        if (s3.length() != m + n) {
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int s1n = s1.length();
+        int s2n = s2.length();
+        int s3n = s3.length();
+        boolean[][] dp = new boolean[s2n+1][s3n+1];
+        if(s3n != s1n + s2n){
             return false;
         }
-        // dpij: i...m-1 and j..n-1 can interleave
-        boolean[][] dp = new boolean[m + 1][n + 1];
-
-        for (int i = m; i >= 0; i--) {
-            for (int j = n; j >= 0; j--) {
-                if (i == m && j == n) {
-                    dp[i][j] = true;
+        for(int j=0; j<=s2n; j++){
+            dp[j][s3n%2] = true;
+        }
+        for(int k=s3n-1; k>=0; k--){
+            for(int j = s2n; j>=0; j--){
+                int  i = k-j;
+                if(i<0 || i>s1n){
                     continue;
                 }
-                boolean withi = i < m && s3.charAt(i + j) == s1.charAt(i) && dp[i + 1][j];
-                boolean withj = j < n && s3.charAt(i + j) == s2.charAt(j) && dp[i][j + 1];
-                dp[i][j] = withi || withj;
+                boolean rt = false;
+                if(i<s1n && s1.charAt(i)== s3.charAt(k)){
+                    rt = dp[j][(k+1)%2];
+                }
+                if(j<s2n && s2.charAt(j)==s3.charAt(k)){
+                    rt = rt || dp[j+1][(k+1)%2];
+                }
+                dp[j][k%2] = rt;
             }
         }
         return dp[0][0];
@@ -46,42 +53,31 @@ public class InterleavingString {
 
 class InterleavingStringMemoization {
     // no need k for pos in s3. k=i+j all the time
-    int[][] dp;
-
+    private int[][] dp;
     public boolean isInterleave(String s1, String s2, String s3) {
-        if (s3.length() != s1.length() + s2.length()) {
+        if(s3.length() != s1.length() + s2.length()){
             return false;
         }
-        dp = new int[s1.length() + 1][s2.length() + 1];
-        return doi(s1, s2, s3, 0, 0);
+        dp = new int[s2.length()+1][s3.length()];
+        return solve(0, 0, s1, s2, s3);
     }
 
-    boolean doi(String s1, String s2, String s3, int i, int j) {
-        if (i == s1.length() && j == s2.length()) {
+    private boolean solve(int j,int k, String s1, String s2, String s3){
+        if(k==s3.length()){
             return true;
         }
-        if (dp[i][j] != 0) {
-            return dp[i][j] == 1;
+        if(dp[j][k] != 0){
+            return dp[j][k]==1;
         }
-        char c1 = i == s1.length() ? '*' : s1.charAt(i);
-        char c2 = j == s2.length() ? '*' : s2.charAt(j);
-        char c3 = s3.charAt(i + j);
-        if (c3 == c1) {
-            boolean rt = doi(s1, s2, s3, i + 1, j);
-            if (rt) {
-                dp[i][j] = 1;
-                return true;
-            }
+        int  i = k-j;
+        boolean rt = false;
+        if(i<s1.length() && s1.charAt(i) == s3.charAt(k)){
+            rt = solve(j, k+1, s1, s2, s3);
         }
-        // no else. could match both
-        if (c3 == c2) {
-            boolean rt = doi(s1, s2, s3, i, j + 1);
-            if (rt) {
-                dp[i][j] = 1;
-                return true;
-            }
+        if(j<s2.length() && s2.charAt(j)==s3.charAt(k)){
+            rt = rt || solve(j+1, k+1, s1, s2,s3);
         }
-        dp[i][j] = 2;
-        return false;
+        dp[j][k] = rt? 1: 2;
+        return rt;
     }
 }
