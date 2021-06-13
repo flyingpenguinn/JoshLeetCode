@@ -16,90 +16,57 @@ Output: [[0,1],[1,0]]
 Explanation: The palindromes are ["battab","tabbat"]
  */
 public class PalindromePairs {
-    // two possibilities- ab vs cba. we handle
-    private class Trie{
-        private char val;
-        private Trie[] ch = new Trie[26];
-        private int word = -1;
-        private List<Integer> palins = new ArrayList<>();
-        public Trie(char v){
-            val = v;
+    // if i and j can be together it's either i's rear part is palin and j is the reverse of prefix
+    // or i's starting part is palin and j is the reverse of suffix, concatted before i
+    public List<List<Integer>> palindromePairs(String[] words) {
+        int n = words.length;
+        Map<String,Integer> m = new HashMap<>();
+        for(int i=0; i<words.length; i++){
+            m.put(words[i], i);
         }
-    }
-
-    private Trie root= new Trie('*');
-
-    // palins means indexes that are palin from 0...i and node p represents i+1
-    private void insertTrie(String w, int index){
-        Trie p = root;
-        int n = w.length();
-        if(ispalin(w, 0, n-1)){
-            p.palins.add(index);
-        }
-        for(int i=n-1; i>=0; i--){
-            char c = w.charAt(i);
-            int cind = c - 'a';
-            Trie next = p.ch[cind];
-            if(next == null){
-                next = p.ch[cind] = new Trie(c);
-            }
-            if(ispalin(w, 0, i-1)){
-                // covers empty string here
-                next.palins.add(index);
-            }
-            p = next;
-        }
-        p.word = index;
-    }
-
-    public List<List<Integer>> palindromePairs(String[] ws) {
         List<List<Integer>> res = new ArrayList<>();
-        int n = ws.length;
         for(int i=0; i<n; i++){
-            String w = ws[i];
-            insertTrie(w, i);
-        }
-        for(int i=0; i<n; i++){
-            String w = ws[i];
-            Trie p = root;
-            boolean nofound = false;
-            for(int j=0; j<w.length(); j++){
-                int cind = w.charAt(j)-'a';
-                // abc vs ba. at node b on the right it has ba's index
-                if(ispalin(w, j, w.length()-1) && p.word != -1){
-                    addlist(res, i, p.word);
-                }
-                if(p.ch[cind] == null){
-                    nofound = true;
-                    break;
-                }else{
-                    p = p.ch[cind];
+            String word = words[i];
+            int wn = word.length();
+            for(int j=wn; j>=0; j--){
+                // start from wn, allowing empty
+                if(ispalin(word, j, wn-1)){
+                    //get reverse of 0...j-1
+                    String sub = word.substring(0, j);
+                    int k= process(sub, m, res);
+                    if(k!= -1 && k!= i){
+                        res.add(List.of(i, k));
+                    }
                 }
             }
-            // if not nofound, ab vs cba. p is at b
-            if(!nofound){
-                for(int pa: p.palins){
-                    addlist(res, i, pa);
+            for(int j=0; j<wn; j++){
+                if(ispalin(word, 0, j)){
+                    String sub = word.substring(j+1, wn);
+                    int k = process(sub, m, res);
+                    if(k!= -1 && k!= i){
+                        res.add(List.of(k,i));
+                    }
                 }
             }
         }
         return res;
     }
 
-    private boolean ispalin(String w, int i, int j){
-        while(i<j){
-            if(w.charAt(i++) != w.charAt(j--)){
-                return false;
-            }
-        }
-        return true;
+    private int process(String sub, Map<String, Integer> m, List<List<Integer>> res){
+        StringBuilder rsub = new StringBuilder(sub);
+        String rsubstr = rsub.reverse().toString();
+        return m.getOrDefault(rsubstr, -1);
     }
 
-    private void addlist(List<List<Integer>> res, int x,int y){
-        if(x==y){
-            return;
+    private boolean ispalin(String w, int i, int j){
+        while(i<j){
+            if(w.charAt(i) != w.charAt(j)){
+                return false;
+            }
+            i++;
+            j--;
         }
-        res.add(List.of(x,y));
+        return true;
     }
 
     public static void main(String[] args) {
