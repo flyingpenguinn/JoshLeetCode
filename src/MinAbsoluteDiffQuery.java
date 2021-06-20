@@ -87,8 +87,8 @@ class MinAbsoluteDiffBinarySearch {
 }
 
 class MaxAbsoluteDiff {
-    // Tarjan's algo for rmq
-    public int[] minDifference(int[] a, int[][] queries) {
+    // if it's max absolute diff, use Tarjan's algo for rmq
+    public int[] maxDifference(int[] a, int[][] queries) {
         int n = a.length;
         int[][] dpmin = new int[n + 1][18];
         int[][] dpmax = new int[n + 1][18];
