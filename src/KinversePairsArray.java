@@ -27,71 +27,32 @@ Note:
 The integer n is in the range [1, 1000] and k is in the range [0, 1000].
  */
 public class KinversePairsArray {
-    int Mod = 1000000007;
-
-    //@SILU always find ways to cache formulas like dp[i][j]+dp[i][j-1]+...dp[i][j-k+1]
-    // usually by diff between j and j-1
-    public int kInversePairs(int n, int k) {
-        long[][] dp = new long[n + 1][k + 1];
-
-        long[] pre = new long[k + 1];
-        long[] cur = new long[k + 1];
-
-        for (int i = 0; i <= n; i++) {
-            for (int j = 0; j <= k; j++) {
-                int allpairs = i * (i - 1) / 2;
-                if (allpairs < j) {
-                    dp[i][j] = 0;
-                } else if (allpairs == j) {
-                    dp[i][j] = 1;
-                } else if (j == 0) {
-                    dp[i][j] = 1;
-                } else {
-                    // dp[i][j]= dp[i-1][j]+dp[i-1][j-1]+dp[i-1]j-2]...dp[i-1][j-i+1]
-                    // dp[i][j+1] = dp[i-1][j+1]+dp[i-1][j]+....+dp[i-1][j+1-i+1]
-
-                    // dp[i][j+1] = dp[i][j]+dp[i-1][j+1]-dp[i-1][j-i+1]
-                    long minus = (j - i >= 0) ? dp[i - 1][j - i] : 0;
-                    dp[i][j] = dp[i][j - 1] + dp[i - 1][j] - minus;
-                    dp[i][j] = (dp[i][j] + Mod) % Mod;
-                }
-
-
-            }
-        }
-        return (int) dp[n][k];
-    }
-}
-
-
-class KinversePairsMine {
-    // or another way: use prefix sum
+    // for permutation counting, usually consider max number and how to place it!
+    // dp(i, j) = sum of dp(i-1,(j-(i-1))+...dp(i-1, j)). with n nums we have n-1 inversions at most
+    // num of perms with max number as i
     long Mod = 1000000007;
 
     public int kInversePairs(int n, int k) {
         long[][] dp = new long[n + 1][k + 1];
-        // 1 number, 0 pair is the only possibility
-
-        // dp[i][k] = dp[i-1][k]+ dp[i-1][k-1]+dp[i-1][k-2]+.....dp[i-1][k-i+1];
         long[] psum = new long[k + 1];
-        long[] csum = new long[k + 1];
         for (int i = 1; i <= n; i++) {
-            for (int t = 0; t <= k; t++) {
-                if (t > i * (i - 1) / 2) {
-                    dp[i][t] = 0;
-                } else if (t == 0) {
-                    dp[i][t] = 1;
-                } else {
-                    // if t-i <0 then we have nothing to chop from, just the whole prefix array
-                    long before = t - i < 0 ? 0 : psum[t - i];
-                    dp[i][t] = (psum[t] - before + Mod) % Mod;
+            long[] csum = new long[k + 1];
+            for (int j = 0; j <= k; j++) {
+                int maxinv = i * (i - 1) / 2;
+                if (j == 0) {
+                    dp[i][j] = 1;
+                } else if (j <= maxinv) {
+                    dp[i][j] = psum[j] - (j < i ? 0 : psum[j - i]);
                 }
-                csum[t] = (t == 0 ? 0 : csum[t - 1]) + dp[i][t];
-                csum[t] %= Mod;
+                dp[i][j] %= Mod;
+                if (dp[i][j] < 0) {
+                    dp[i][j] += Mod;
+                }
+                csum[j] += dp[i][j];
+                csum[j] %= Mod;
             }
             psum = csum;
-            csum = new long[k + 1];
         }
-        return (int) (dp[n][k] % Mod);
+        return (int) (dp[n][k]);
     }
 }
