@@ -29,66 +29,53 @@ The length of S will be in the range [1, 1000].
 Each character S[i] will be in the set {'a', 'b', 'c', 'd'}.
  */
 public class CountDifferentPalindromeSubsequence {
-    // Let dp(i, j) be the answer for the string T = S[i][j] including the empty sequence. The answer is the number of unique characters in T,
-    // plus palindromes of the form "a_a", "b_b", "c_c", and "d_d", where "_" represents zero or more characters.
-    // note the gists are
-    // 1. separate single digits and a_a
-    // 2. always count in empty string until we - it in the end
-    // note we count empty str so -1 in the end
-    // can use left/right array to accelerate the j/k look up
-    // O(4*n^2)
-
-    long[][] dp;
+    // the palins between i and j is the sum of those end in a and b and c and d, and use the outmost a, b,c,d...
+    // axxxxxa the number of UNIQUE palin here is the number of palin in xxxx plus a and aa. if there is an aaa inside, then we can form aaa outside too
+    // despite the inner whiles, still o(n^2) because we dont process those ni, nj
+    private long[][] dp;
+    private long mod = 1000000007;
 
     public int countPalindromicSubsequences(String s) {
         int n = s.length();
-
         dp = new long[n][n];
         for (int i = 0; i < n; i++) {
             Arrays.fill(dp[i], -1);
         }
-        long rt = doc(0, n - 1, s);
-        rt = (rt - 1) % Mod; // - empty string in the end
-        return (int) rt;
+        return (int) solve(0, n - 1, s);
     }
 
 
-    private long doc(int l, int u, String s) {
-        if (l > u) {
-            return 1;
+    private long solve(int i, int j, String s) {
+        if (i > j) {
+            return 0;
         }
-        if (dp[l][u] != -1) {
-            return dp[l][u];
+        if (dp[i][j] != -1) {
+            return dp[i][j];
         }
-        Set<Character> set = new HashSet<>();
-        for (int i = l; i <= u; i++) {
-            set.add(s.charAt(i));
-            if (set.size() == 4) {
-                break;
+        int res = 0;
+        for (char c = 'a'; c <= 'd'; c++) {
+            int ni = i;
+            int nj = j;
+            while (ni <= nj && s.charAt(ni) != c) {
+                ni++;
             }
+            while (ni <= nj && s.charAt(nj) != c) {
+                nj--;
+            }
+            if (ni > nj) {
+                continue;
+            } else if (ni == nj) {
+                // just single ones contribute 1 point
+                res += 1;
+            } else {
+                long later = solve(ni + 1, nj - 1, s);
+                res += later + 2; // count in a and aa. we are "elevating" internal ones (if any) with one more a and aa so we need to compensate
+            }
+            res %= mod;
         }
-        long rt = 1 + set.size();
-        for (int i = 0; i < 4; i++) {
-            int j = l;
-            while (j <= u && s.charAt(j) - 'a' != i) {
-                j++;
-            }
-            int k = u;
-            while (k >= j && s.charAt(k) - 'a' != i) {
-                k--;
-            }
-            if (j < k) {
-                // <, we dont process single digits
-                long inner = doc(j + 1, k - 1, s);
-                rt += inner;
-                // inner bccb, bbb, b b + the outside single b
-            }
-        }
-        dp[l][u] = rt % Mod;
-        return rt;
+        dp[i][j] = res;
+        return res;
     }
-
-    long Mod = 1000000007;
 
     public static void main(String[] args) {
         System.out.println(new CountDifferentPalindromeSubsequence().countPalindromicSubsequences("bccb"));

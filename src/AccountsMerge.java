@@ -27,147 +27,63 @@ The length of accounts[i][j] will be in the range [1, 30].
  */
 public class AccountsMerge {
 
+    private Map<String, String> m = new HashMap<>();
+    private Map<String, String> pa = new HashMap<>();
+
     // union find: when two people have common email draw an edge between them
-    // note we just need to merge with one of the same family member
+    // note we just need to merge with one of the same family member: i.e. link i with i-1
     public List<List<String>> accountsMerge(List<List<String>> accounts) {
-        int n = accounts.size();
-        Map<Integer, List<Integer>> graph = new HashMap<>();
-        Map<String, Integer> mail2holder = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            List<String> ac = accounts.get(i);
-            for (int j = 1; j < ac.size(); j++) {
-                String mail = ac.get(j);
-                if (mail2holder.containsKey(mail)) {
-                    Integer other = mail2holder.get(mail);
-                    graph.computeIfAbsent(i, key -> new ArrayList<>()).add(other);
-                    graph.computeIfAbsent(other, key -> new ArrayList<>()).add(i);
+
+        for (List<String> acct : accounts) {
+            String name = acct.get(0);
+            for (int i = 1; i < acct.size(); i++) {
+                String email = acct.get(i);
+                m.put(email, name);
+                make(email);
+                if (i - 1 >= 1) { // must be from 1. 0 is the name
+                    unions(email, acct.get(i - 1));
                 }
-                mail2holder.put(mail, i);
             }
         }
-        int[] pa = new int[n];
-        for (int i = 0; i < n; i++) {
-            pa[i] = i;
+        Map<String, List<String>> res = new HashMap<>();
+        for (String mail : pa.keySet()) {
+            String ans = find(mail);
+            res.computeIfAbsent(ans, key -> new ArrayList<>()).add(mail);
         }
-        for (int i = 0; i < n; i++) {
-            List<Integer> con = graph.getOrDefault(i, new ArrayList<>());
-            for (int j : con) {
-                union(pa, i, j);
-            }
+        List<List<String>> rr = new ArrayList<>();
+        for (String headMail : res.keySet()) {
+            List<String> list = res.get(headMail);
+            Collections.sort(list);
+            String name = m.get(headMail);
+            list.add(0, name);
+            rr.add(list);
         }
-        Map<Integer, Set<String>> res = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            int parent = find(pa, i);
-            for (int j = 1; j < accounts.get(i).size(); j++) {
-                res.computeIfAbsent(parent, k -> new HashSet<>()).add(accounts.get(i).get(j));
-            }
-        }
-
-        List<List<String>> r = new ArrayList<>();
-        for (int k : res.keySet()) {
-            List<String> withname = new ArrayList<>();
-            withname.add(accounts.get(k).get(0));
-            List<String> mails = new ArrayList<>(res.get(k));
-            Collections.sort(mails);
-            withname.addAll(mails);
-            r.add(withname);
-        }
-        return r;
+        return rr;
     }
 
-    void union(int[] pa, int i, int j) {
-
-        int pi = find(pa, i);
-        int pj = find(pa, j);
-        if (pi != pj) {
-            pa[pi] = pj;
+    private void make(String s) {
+        if (!pa.containsKey(s)) { // avoid dupe
+            pa.put(s, s);
         }
     }
 
-    int find(int[] pa, int i) {
-        if (pa[i] == i) {
-            return i;
-        } else {
-            int rt = find(pa, pa[i]);
-            pa[i] = rt;
-            return rt;
+    private String find(String s) {
+        if (pa.get(s).equals(s)) {
+            return s;
         }
+        String rt = find(pa.get(s));
+        pa.put(s, rt);
+        return rt;
     }
 
-
-    public static void main(String[] args) {
-
-        System.out.println(new AccountsMerge().accountsMerge(Lists.stringToLists("[[John,johnsmith@mail.com,john_newyork@mail.com],[John,johnsmith@mail.com,john00@mail.com],[Mary,mary@mail.com],[John,johnnybravo@mail.com]]")));
+    private void unions(String s, String t) {
+        String as = find(s);
+        String at = find(t);
+        if (as.equals(at)) {
+            return;
+        }
+        pa.put(as, at);
     }
+
 }
 
-class AccountsMergeDfs {
-    // easier to implement. mind the duplicated emails...
-
-    public List<List<String>> accountsMerge(List<List<String>> accts) {
-        // check null error out if needed
-        Map<Integer,Set<Integer>> g = buildGraph(accts);
-        Set<Integer> seen = new HashSet<>();
-        List<List<String>> r = new ArrayList<>();
-        for(int i=0; i<accts.size(); i++){
-            if(!seen.contains(i)){
-                List<Integer> comp = dfs(accts,i, g, seen);
-                List<String> compSol = buildSol(comp, accts,i);
-                r.add(compSol);
-            }
-        }
-        return r;
-    }
-
-    private Map<Integer,Set<Integer>> buildGraph(List<List<String>> accts){
-        // mail to last seen id of accounts
-        Map<String, Integer> m2Id = new HashMap<>();
-        Map<Integer,Set<Integer>> g = new HashMap<>();
-        for(int i = 0; i<accts.size(); i++){
-            List<String> detail = accts.get(i);
-            for(int j=1; j<detail.size(); j++){
-                String mail = detail.get(j);
-                if(m2Id.containsKey(mail)){
-                    int other = m2Id.get(mail);
-                    // bidirectional connection
-                    g.computeIfAbsent(i, k-> new HashSet<>()).add(other);
-                    g.computeIfAbsent(other, k-> new HashSet<>()).add(i);
-                }
-                m2Id.put(mail, i);
-            }
-        }
-        return g;
-    }
-
-    private List<String> buildSol(List<Integer> comp,List<List<String>> accts, int i ){
-        List<String> compSol = new ArrayList<>();
-        compSol.add(accts.get(i).get(0));
-        // all same emails map to same name
-        Set<String> emails = new HashSet<>();
-        // emails may have duplications
-        for(int index: comp){
-            for(int j=1; j<accts.get(index).size(); j++){
-                emails.add(accts.get(index).get(j));
-            }
-        }
-        List<String> sortedMail = new ArrayList<>(emails);
-        Collections.sort(sortedMail);
-        compSol.addAll(sortedMail);
-        return compSol;
-    }
-
-
-    private List<Integer> dfs(List<List<String>> accts, int i, Map<Integer,Set<Integer>> g, Set<Integer> seen){
-        seen.add(i);
-        List<Integer> r = new ArrayList<>();
-        r.add(i);
-        Set<Integer> nexts = g.getOrDefault(i, new HashSet<>());
-        for(int ne: nexts){
-            if(!seen.contains(ne)){
-                List<Integer> nr = dfs(accts, ne, g, seen);
-                r.addAll(nr);
-            }
-        }
-        return r;
-    }
-}
