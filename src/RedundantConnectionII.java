@@ -34,12 +34,12 @@ The size of the input 2D-array will be between 3 and 1000.
 Every integer represented in the 2D-array will be between 1 and N, where N is the size of the input array.
  */
 public class RedundantConnectionII {
-    // case 1: sb has 2 parent, no cycle.
-    // case 2: has cycle, everyone has one parent (a perfect cycle)
-    // case 3: both 2 parents and a cycle. the cycle is on the 2-parent node. we should remove the later edge that both forms the cycle, and casues 2 parents
+    // case 1: sb has 2 parent, no cycle.  this is like an extra edge to another node not in ancestry
+    // case 2: has cycle, everyone has one parent (a perfect cycle)  this is like an extra edge to the root
+    // case 3: both 2 parents and a cycle. the cycle is on the 2-parent node. we should remove the later edge that both forms the cycle, and casues 2 parents. this is like an extra edge to non root ancestry
     // note we can't simply remove edges that makes a node 2-parent: it could be an innocent edge.
     // if we remove an innocent edge but it still forms cycle, problem is with the other edge that we didnt remove, but pointed to the same end node
-    int[] p;
+    private int[] p;
 
     public int[] findRedundantDirectedConnection(int[][] es) {
         int n = es.length;
