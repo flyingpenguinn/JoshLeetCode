@@ -10,11 +10,6 @@ public class FancySequence {
     // when we +, we add on inc
     // when we *, we multi on multi and inc alike
     // when we have append, we note down the multi and add value till it. we will later negate it from the accumulated values
-    // if there is no append,
-    // for each idx, it's raw*multi+inc.
-    // when we +, we add on inc
-    // when we *, we multi on multi and inc alike
-    // when we have append, we note down the multi and add value till it. we will later negate it from the accumulated values
     // only trick is multi might be too big for long. so we use mod inverse for / under mod situation
     class Fancy {
         private List<Integer> list = new ArrayList<>();
@@ -27,7 +22,6 @@ public class FancySequence {
         public Fancy() {
 
         }
-
 
         // if we ever meet newly added value we try to negate by taking the current add/muti out
         public void append(int val) {
@@ -53,18 +47,19 @@ public class FancySequence {
                 return -1;
             }
             long raw = list.get(idx);
-            long oldmulti = multis.get(idx);
-            long cmulti = multi * modInverse((int) oldmulti, mod);
+            long oldmulti = multis.get(idx); // when we insert this number, we multied to this point
+            long cmulti = multi * modInverse((int) oldmulti, mod); // now we multied to multi, so this number has been through all later as multi/oldmulti. we use mod inverse to do divide
             cmulti %= mod;
-            long oldadd = adds.get(idx);
+            long oldadd = adds.get(idx); // we added to oldadd when we inserted idx
             long cadd = add - cmulti * oldadd;
+            // ((oldadd+xxx)*yyy+zzz)*ppp+ttt.... we want to get rid of oldadd*yyy*ppp*... but keep the rest as they are what's added on top of the old value.
+            // we want to get the value as if oldadd = the raw value. so we make it 0 first then use cmulti
             cadd %= mod;
             if (cadd < 0) {
                 cadd += mod;
             }
             // (c*mold+aold)*mnew+anew. to get anew we do a-aold*mnew
             long rt = raw * cmulti + cadd;
-
             int res = (int) (rt % mod);
             return res;
         }
@@ -74,31 +69,26 @@ public class FancySequence {
         private int modInverse(int a, int m) {
             int m0 = m;
             int y = 0, x = 1;
-
-            if (m == 1)
+            if (m == 1) {
                 return 0;
-
+            }
             while (a > 1) {
                 // q is quotient
                 int q = a / m;
-
                 int t = m;
-
                 // m is remainder now, process
                 // same as Euclid's algo
                 m = a % m;
                 a = t;
                 t = y;
-
                 // Update x and y
                 y = x - q * y;
                 x = t;
             }
-
             // Make x positive
-            if (x < 0)
+            if (x < 0) {
                 x += m0;
-
+            }
             return x;
         }
     }

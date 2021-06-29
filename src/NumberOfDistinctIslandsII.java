@@ -1,4 +1,5 @@
 import base.ArrayUtils;
+import javafx.util.Pair;
 
 import java.util.*;
 
@@ -47,15 +48,16 @@ Note: The length of each dimension in the given grid does not exceed 50.
  */
 
 public class NumberOfDistinctIslandsII {
-    // make signature: list of points, of each island
+    // make signature: list of points, of each island. use D4 to quickly generate all cases. we then sort all possible cases's signature and use the smallest to represent the whole group
+    // java's pair is read only...
 
     class Point implements Comparable<Point> {
-        int r;
-        int c;
+        int x;
+        int y;
 
-        public Point(int r, int c) {
-            this.r = r;
-            this.c = c;
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
 
         @Override
@@ -63,157 +65,101 @@ public class NumberOfDistinctIslandsII {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Point point = (Point) o;
-            return r == point.r &&
-                    c == point.c;
+            return x == point.x &&
+                    y == point.y;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(r, c);
+            return Objects.hash(x, y);
         }
 
         @Override
         public int compareTo(Point o) {
-            return o.r == this.r ? Integer.compare(this.c, o.c) : Integer.compare(this.r, o.r);
+            return x != o.x ? Integer.compare(x, o.x) : Integer.compare(y, o.y);
         }
     }
 
-    Set<List<Point>> seen = new HashSet<>();
-    int r = 0;
+    private final int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private final int[][] shifts = {{-1, 1}, {1, 1}, {-1, -1}, {1, -1}};
+    private final Set<List<Point>> islands = new HashSet<>();
 
-    public int numDistinctIslands2(int[][] a) {
-        int m = a.length;
-        int n = a[0].length;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (a[i][j] == 1) {
-                    List<int[]> cur = new ArrayList<>();
-                    dfs(a, i, j, cur);
-                    hashcur(cur);
+    public void dfs(int[][] g, int i, int j, List<Point> comp) {
+        comp.add(new Point(i, j));
+        g[i][j] = 2;
+        for (var d : dirs) {
+            int ni = i + d[0];
+            int nj = j + d[1];
+            if (ni >= 0 && ni < g.length && nj >= 0 && nj < g[0].length && g[ni][nj] == 1) {
+                dfs(g, ni, nj, comp);
+            }
+        }
+    }
+
+    void populate(List<List<Point>> res, int lhs, int rhs, int base) {
+
+        for (int i = 0; i < 4; i++) {
+            var sh = shifts[i];
+            int nx = lhs * sh[0];
+            int ny = rhs * sh[1];
+            if (res.size() == base + i) {
+                res.add(new ArrayList<>());
+            }
+            res.get(base + i).add(new Point(nx, ny));
+            // base is 0 or 4
+        }
+
+    }
+
+    private List<Point> norm(List<Point> comp) {
+        List<List<Point>> res = new ArrayList<>();
+        for (var p : comp) {
+            int x = p.x;
+            int y = p.y;
+            populate(res, x, y, 0);
+            populate(res, y, x, 4);
+        }
+        // calc relative position to the top left corner
+        for (var list : res) {
+            Collections.sort(list);
+            int keyadj = list.get(0).x;
+            int vadj = list.get(0).y;
+            list.set(0, new Point(0, 0));
+            for (int j = 1; j < list.size(); j++) {
+                list.get(j).x -= keyadj;
+                list.get(j).y -= vadj;
+            }
+        }
+        // then the first among the 8 possible changes is the one
+        res.sort((x, y) -> {
+            // x and y must be of the same length as they represent the same group of points
+            for (int i = 0; i < x.size(); i++) {
+                int v = x.get(i).compareTo(y.get(i));
+                if (v != 0) {
+                    return v;
+                }
+            }
+            return 0;
+        });
+        return res.get(0);
+    }
+
+    int numDistinctIslands2(int[][] g) {
+        for (int i = 0; i < g.length; i++) {
+            for (int j = 0; j < g[0].length; j++) {
+                if (g[i][j] == 1) {
+                    List<Point> comp = new ArrayList<>();
+                    dfs(g, i, j, comp);
+                    List<Point> norms = norm(comp);
+                    //     print(norms);
+                    islands.add(norms);
                 }
             }
         }
-        return r;
-    }
-
-    private void hashcur(List<int[]> cur) {
-        int rs = Integer.MAX_VALUE;
-        int re = Integer.MIN_VALUE;
-        int cs = Integer.MAX_VALUE;
-        int ce = Integer.MIN_VALUE;
-        for (int[] c : cur) {
-            rs = Math.min(rs, c[0]);
-            re = Math.max(re, c[0]);
-            cs = Math.min(cs, c[1]);
-            ce = Math.max(ce, c[1]);
-        }
-        Set<List<Point>> curset = new HashSet<>();
-
-        // 0d
-        List<Point> s1 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = p[0] - rs;
-            int pc = p[1] - cs;
-            s1.add(new Point(pr, pc));
-        }
-
-        Collections.sort(s1);
-        if (seen.contains(s1)) {
-            return;
-        }
-        curset.add(s1);
-        // 180d
-        List<Point> s2 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = re - p[0];
-            int pc = ce - p[1];
-            s2.add(new Point(pr, pc));
-        }
-        Collections.sort(s2);
-        if (seen.contains(s2)) {
-            return;
-        }
-        curset.add(s2);
-        // y reflection
-        List<Point> s3 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = p[0] - rs;
-            int pc = ce - p[1];
-            s3.add(new Point(pr, pc));
-        }
-        Collections.sort(s3);
-        if (seen.contains(s3)) {
-            return;
-        }
-        curset.add(s3);
-        // 90d
-        List<Point> s4 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = p[1] - cs;
-            int pc = re - p[0];
-            s4.add(new Point(pr, pc));
-        }
-        Collections.sort(s4);
-        if (seen.contains(s4)) {
-            return;
-        }
-        curset.add(s4);
-
-        // 270d
-        List<Point> s5 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = ce - p[1];
-            int pc = p[0] - rs;
-            s5.add(new Point(pr, pc));
-        }
-        Collections.sort(s5);
-        if (seen.contains(s5)) {
-            return;
-        }
-        curset.add(s5);
-        // x reflection
-        List<Point> s6 = new ArrayList<>();
-        for (int i = 0; i < cur.size(); i++) {
-            int[] p = cur.get(i);
-            int pr = re - p[0];
-            int pc = p[1] - cs;
-            s6.add(new Point(pr, pc));
-        }
-        Collections.sort(s6);
-        if (seen.contains(s6)) {
-            return;
-        }
-        curset.add(s6);
-        seen.addAll(curset);
-        r++;
-
-    }
-
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
-
-    private void dfs(int[][] a, int i, int j, List<int[]> cur) {
-        cur.add(new int[]{i, j});
-        a[i][j] = -1;
-        for (int[] d : dirs) {
-            int ni = i + d[0];
-            int nj = j + d[1];
-            if (ni >= 0 && ni < a.length && nj >= 0 && nj < a[0].length && a[ni][nj] == 1) {
-                dfs(a, ni, nj, cur);
-            }
-        }
+        return islands.size();
     }
 
     public static void main(String[] args) {
-        System.out.println(new NumberOfDistinctIslandsII().numDistinctIslands2(ArrayUtils.read("[[0,1,0,0,0,0,1,0,0,0,1,0,1,1,0],[0,0,0,0,1,1,0,0,1,1,0,1,1,1,1],[0,1,1,1,0,1,0,0,1,1,0,0,1,0,0],[0,1,0,0,0,0,0,1,0,1,1,0,1,0,0],[0,0,0,1,0,0,0,0,0,1,1,1,0,0,1],[0,1,1,0,0,0,0,1,0,0,1,0,1,0,0],[0,0,0,0,1,0,1,1,1,1,1,0,0,1,1],[1,1,0,0,1,1,1,0,0,1,1,1,0,0,0],[1,1,1,0,0,0,1,1,0,0,1,0,0,0,1],[1,0,0,0,1,1,1,1,0,0,0,1,0,0,1]]")));
-        System.out.println(new NumberOfDistinctIslandsII().numDistinctIslands2(ArrayUtils.read("[[1,1,0,0,0],[1,0,0,0,1],[1,0,0,0,1],[0,0,0,1,1]]")));
-
-        System.out.println(new NumberOfDistinctIslandsII().numDistinctIslands2(ArrayUtils.read("[[1,1,1,0,0],[1,0,0,0,1],[0,1,0,0,1],[0,1,1,1,0]]")));
-
         System.out.println(new NumberOfDistinctIslandsII().numDistinctIslands2(ArrayUtils.read("[[1,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,1]]")));
 
 
