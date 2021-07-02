@@ -1,79 +1,60 @@
 import base.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MinTimeKVirusSpread {
-// WA yet...
+// can't submit yet...
 
-    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
-    private int Max = 1000000000;
-    private double EPS = 0.01;
+
+    private int Max = 1000000010;
+
 
     public int minDayskVariants(int[][] a, int k) {
         int n = a.length;
-        long sx = 0;
-        long sy = 0;
-        for (int[] ai : a) {
-            sx += ai[0];
-            sy += ai[1];
-        }
-        long px = sx / n;
-        long py = sy / n;
-        int l = 1;
-        int u = Max;
-        while (l <= u) {
-            // days
-            int mid = l + (u - l) / 2;
-            int virus = getvirus(px, py, a, mid);
-            if (virus >= k) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
+        int[] dp = new int[1 << n];
+        Arrays.fill(dp, Max);
+        int res = Max;
+        for (int st = 1; st < (1 << n); st++) {
+            int covered = Integer.bitCount(st);
+            if (covered == 1) {
+                dp[st] = 0;
+                continue;
             }
-        }
-        return l;
-    }
-
-    // how many virus we can get at most after mid days
-    private int getvirus(long px, long py, int[][] a, int mid) {
-        int virus = count(px, py, a, mid);
-        double len = Max;
-        while (len > EPS) {
-            boolean found = false;
-            for (int dx = -30; dx <=30; dx++) {
-                for (int dy = -30; dy <= 30; dy++) {
-                    long nx = (long) (px + dx * len);
-                    long ny = (long) (py + dy * len);
-                    int nvirus = count(nx, ny, a, mid);
-                    if (nvirus > virus) {
-                        virus = nvirus;
-                        px = nx;
-                        py = ny;
-                        found = true;
-                    }
+            // from k-1 1s to k ones. flip one of the 1 bits, see how we go from pst to st
+            for (int i = 0; i < n; i++) {
+                if (((st >> i) & 1) != 1) {
+                    continue;
                 }
+                int pst = st ^ (1 << i);
+                int minDays = Max;
+                // i is flipped. j is in pst. in order to get k points covered, we need to allow some point between i and j to be covered.
+                for (int j = 0; j < n; j++) {
+                    if (((pst >> j) & 1) != 1) {
+                        continue;
+                    }
+                    int days = getdays(a, i, j);
+                    minDays = Math.min(minDays, days);
+                }
+                dp[st] = Math.min(dp[st], Math.max(dp[pst], minDays));
             }
-            if (!found) {
-                len /= 2.0;
-            }
-        }
-        return virus;
-    }
-
-    private int count(long px, long py, int[][] a, long t) {
-        int res = 0;
-        for (int[] ai : a) {
-            long cur =  (Math.abs(px - ai[0]) + Math.abs(py - ai[1]));
-            if (cur  <= t) {
-                ++res;
+            if (covered >= k) {
+                res = Math.min(res, dp[st]);
             }
         }
         return res;
     }
 
+    private int getdays(int[][] a, int i, int j) {
+        int dx = Math.abs(a[i][0] - a[j][0]);
+        int dy = Math.abs(a[i][1] - a[j][1]);
+        return (dx + dy + 1) / 2;
+    }
+
     public static void main(String[] args) {
+        System.out.println(new MinTimeKVirusSpread().minDayskVariants(ArrayUtils.read("[[0,0],[2,0],[0,2]]"), 3));
         System.out.println(new MinTimeKVirusSpread().minDayskVariants(ArrayUtils.read("[[45,78],[34,6],[94,59]]"), 2));
     }
 }
