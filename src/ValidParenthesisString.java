@@ -27,7 +27,8 @@ public class ValidParenthesisString {
             if (maxLeft < 0) {
                 return false;
             }
-            minLeft = Math.max(minLeft, 0);  // in a valid parenthesis string left can't go below 0 at any time. so <0 is not a valid option
+            minLeft = Math.max(minLeft, 0);
+            // in a valid parenthesis string left can't go below 0 at any time. so <0 is not a valid option. we are basically making some * as empty or ( so that min is back to >=0
         }
         return minLeft == 0;
     }

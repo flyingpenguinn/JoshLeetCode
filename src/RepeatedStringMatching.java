@@ -16,18 +16,33 @@ The length of A and B will be between 1 and 10000.
  */
 public class RepeatedStringMatching {
     public int repeatedStringMatch(String a, String b) {
-        // b must be of type (s2stub)s1s2s1s2...s2(s1stub), where a is s1s2, for a to be able to match with it. so at least this number
-        // +2 for the two stubs
-        // can be improved further if we do kmp
-        int times = b.length() / a.length() + 2;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i <= times; i++) {
-            sb.append(a);
-            if (sb.toString().indexOf(b) != -1) {
-                return i;
-            }
+        // b must be of type (a end)aaaa(a start), where a is s1s2, for a to be able to match with it. we find the start of "a" segments
+        // mind we may not have aaaa, only end/start part, or a is good already so not even end/start part
+        if (a.indexOf(b) != -1) {
+            return 1;
         }
-        return -1;
+        String da = a + a;
+        if (da.indexOf(b) != -1) {
+            return 2;
+        }
+        int first = b.indexOf(a);
+        if (first == -1) {
+            return -1;
+        }
+        int i = first;
+        int cnt = 0;
+        while (i < b.length() && b.startsWith(a, i)) {
+            i += a.length();
+            cnt++;
+        }
+        String front = b.substring(0, first);
+        String end = b.substring(i, b.length());
+        if (!a.startsWith(end) || !a.endsWith(front)) {
+            return -1;
+        }
+        cnt += front.isEmpty() ? 0 : 1;
+        cnt += end.isEmpty() ? 0 : 1;
+        return cnt;
     }
 
 
