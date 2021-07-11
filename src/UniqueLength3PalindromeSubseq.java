@@ -1,35 +1,33 @@
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class UniqueLength3PalindromeSubseq {
+    // for each char, first and last pos. then count unique chars in between
     public int countPalindromicSubsequence(String s) {
         int n = s.length();
+        int[] first = new int[26];
+        Arrays.fill(first, -1);
+        int[] last = new int[26];
+        for (int i = 0; i < n; i++) {
+            int cind = s.charAt(i) - 'a';
+            if (first[cind] == -1) {
+                first[cind] = i;
+            }
+            last[cind] = i;
+        }
         int res = 0;
-        for (int j = 0; j < 26; j++) {
-            Set<Integer> seen = new HashSet<>();
-            Set<Integer> confirmed = new HashSet<>();
-            int found = 0;
-            for (int i = 0; i < n; i++) {
-                int cind = s.charAt(i) - 'a';
-                if (cind == j) {
-                    if (found == 0) {
-                        found++;
-                    } else {
-                        found++;
-                        confirmed.addAll(seen);
-                        seen = new HashSet<>();
-                    }
-                } else if (found > 0) {
-                    seen.add(cind);
-                }
+        for (int i = 0; i < 26; i++) {
+            if (first[i] == -1) {
+                continue;
             }
-            if (found >= 3) {
-                confirmed.add(j);
+            Set<Character> seen = new HashSet<>();
+            for (int j = first[i]+1; j <= last[i]-1; j++) {
+                seen.add(s.charAt(j));
             }
-            if (found >= 2) {
-                //   System.out.println(j+" "+seen);
-                res += confirmed.size();
-            }
+            int cur = seen.size();
+            res += cur;
+
         }
         return res;
     }

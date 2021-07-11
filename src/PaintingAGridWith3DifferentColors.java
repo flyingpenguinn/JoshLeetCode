@@ -1,4 +1,5 @@
 public class PaintingAGridWith3DifferentColors {
+    // borderline dp. maintain the state of the last m (at most 5) grids. here we use base 3. can also use base 4 and make 2 digits corresponding to 1 grid.
     private int m = 0;
     private int n = 0;
     private Long[][][] dp;
