@@ -1,3 +1,10 @@
+import base.TreeNode;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class MergeBstToCreateSingleBst {
     private List<Integer> topo = new ArrayList<>();
     private boolean bad = false;
