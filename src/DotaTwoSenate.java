@@ -44,28 +44,29 @@ The length of the given string will in the range [1, 10,000].
  */
 public class DotaTwoSenate {
 
-    // simulation. don't really need a pq, queue is enough. include "round" in the queue. early rounders come in first
+    // simulation. live ones live to the next round. we build round into index using +n technique
     public String predictPartyVictory(String s) {
-
-        Deque<int[]> rq = new ArrayDeque<>();
-        Deque<int[]> dq = new ArrayDeque<>();
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == 'R') {
-                rq.add(new int[]{i, 1});
+        int n = s.length();
+        Deque<Integer> qd = new ArrayDeque<>();
+        Deque<Integer> qr = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c == 'R') {
+                qr.offer(i);
             } else {
-                dq.add(new int[]{i, 1});
+                qd.offer(i);
             }
         }
-        // one polled out a time so On
-        while (!rq.isEmpty() && !dq.isEmpty()) {
-            int[] rnext = rq.poll();
-            int[] dnext = dq.poll();
-            if (rnext[1] < dnext[1] || (rnext[1] == dnext[1] && rnext[0] < dnext[0])) {
-                rq.offer(new int[]{rnext[0], rnext[1] + 1});
+        while (!qd.isEmpty() && !qr.isEmpty()) {
+            if (qd.peek() < qr.peek()) {
+                qr.poll();
+                qd.offer(qd.poll() + n);
+                // + n to make sure it's > any of this round's candidates
             } else {
-                dq.offer(new int[]{dnext[0], dnext[1] + 1});
+                qd.poll();
+                qr.offer(qr.poll() + n);
             }
         }
-        return rq.isEmpty() ? "Dire" : "Radiant";
+        return qd.isEmpty() ? "Radiant" : "Dire";
     }
 }
