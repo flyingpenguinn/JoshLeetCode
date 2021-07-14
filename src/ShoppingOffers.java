@@ -40,49 +40,43 @@ You are not allowed to buy more items than you want, even if that would lower th
 
 public class ShoppingOffers {
     // similar to coin change, but on a higher dimension. note we can use each item more than onece and combine them, so can't do a linear scan
-    Map<List<Integer>, Integer>[] dp;
+    private HashMap<List<Integer>, Integer> dp = new HashMap<>();
 
     public int shoppingOffers(List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
-        dp = new HashMap[special.size()];
-        for (int i = 0; i < dp.length; i++) {
-            dp[i] = new HashMap<>();
-        }
-        return dos(0, price, special, needs);
+        int count = needs.stream().reduce(0, (x, y) -> x + y);
+        return solve(price, special, needs, count);
     }
 
-    private int dos(int i, List<Integer> price, List<List<Integer>> special, List<Integer> needs) {
-        int n = special.size();
-        if (i == n) {
-            int r = 0;
-            for (int j = 0; j < needs.size(); j++) {
-                int count = needs.get(j);
-                r += price.get(j) * count;
+    private int solve(List<Integer> price, List<List<Integer>> special, List<Integer> needs, int count) {
+        if (count == 0) {
+            return 0;
+        }
+        if (dp.containsKey(needs)) {
+            return dp.get(needs);
+        }
+        int n = needs.size();
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            res += needs.get(i) * price.get(i);
+        }
+        for (var sp : special) {
+            List<Integer> newneeds = new ArrayList<>(needs);
+            int newcount = count;
+            boolean bad = false;
+            for (int i = 0; i < n; i++) {
+                if (sp.get(i) > newneeds.get(i)) {
+                    bad = true;
+                    break;
+                }
+                newneeds.set(i, newneeds.get(i) - sp.get(i));
+                newcount -= sp.get(i);
             }
-            return r;
-        }
-        Integer ch = dp[i].get(needs);
-        if (ch != null) {
-            return ch;
-        }
-        int nopick = dos(i + 1, price, special, needs);
-        List<Integer> newneeds = new ArrayList<>(needs);
-        boolean cant = false;
-        List<Integer> sp = special.get(i);
-        int spp = sp.get(sp.size() - 1);
-        for (int j = 0; j < sp.size() - 1; j++) {
-            if (sp.get(j) > needs.get(j)) {
-                cant = true;
-            } else {
-                newneeds.set(j, needs.get(j) - sp.get(j));
+            if (!bad) {
+                int cur = sp.get(n) + solve(price, special, newneeds, newcount);
+                res = Math.min(res, cur);
             }
         }
-        int pick = Integer.MAX_VALUE;
-        if (!cant) {
-            // we go i not i+1 because we can use this item many times
-            pick = spp + dos(i, price, special, newneeds);
-        }
-        int rt = Math.min(pick, nopick);
-        dp[i].put(needs, rt);
-        return rt;
+        dp.put(needs, res);
+        return res;
     }
 }
