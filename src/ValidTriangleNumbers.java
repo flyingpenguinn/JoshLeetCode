@@ -25,13 +25,14 @@ public class ValidTriangleNumbers {
             int j = i + 1;
             int k = j + 1;
             while (j < n) {
+                while (k < j + 1) {
+                    k++;
+                }
                 while (k < n && a[k] - a[j] < a[i]) {
                     k++;
                 }
                 // j+1...k-1 are good
-                if (j < k) { // must check this to avoid -1
-                    r += k - j - 1;
-                }
+                r += k - j - 1;
                 j++;
             }
         }
@@ -45,33 +46,3 @@ public class ValidTriangleNumbers {
     }
 }
 
-class ValidTriangleNumbersBinarySearch {
-    public int triangleNumber(int[] a) {
-        Arrays.sort(a);
-        int n = a.length;
-        int r = 0;
-        for(int i=0; i<n;i++){
-            for(int j=i+1; j<n;j++){
-                int index = bsfirstsmaller(a, j+1, n-1, a[i]+a[j]);
-                // from j+1...index;
-                // System.out.println(index+" "+j);
-                r+= index-j;
-            }
-        }
-        return r;
-    }
-
-    int bsfirstsmaller(int[] a, int l, int u, int t){
-        while(l<=u){
-            int mid = l+(u-l)/2;
-            if(a[mid]<t){
-                l = mid+1;
-            }else{
-                u = mid-1;
-            }
-        }
-        //System.out.println(t+" "+u);
-        return u;
-    }
-
-}

@@ -27,10 +27,12 @@ Note:
 The integer n is in the range [1, 1000] and k is in the range [0, 1000].
  */
 public class KinversePairsArray {
-    // for permutation counting, usually consider max number and how to place it!
-    // dp(i, j) = sum of dp(i-1,(j-(i-1))+...dp(i-1, j)). with n nums we have n-1 inversions at most
-    // num of perms with max number as i
-    long Mod = 1000000007;
+    // given 1....n-1, we have dp[n-1][k] ways
+    // dp[n][k] = dp[n-1][k] -> put n at the last, n
+    // dp[n-1][k-1]-> put n at the n-1...thus forming k
+    // dp[n-1][k-2] -> put n at the n-2 th
+    // dp[n-1][k-(n-1)] -> put n at the first. note if(k-n-1)<=0 then it would be starting from 0
+    private long Mod = 1000000007;
 
     public int kInversePairs(int n, int k) {
         long[][] dp = new long[n + 1][k + 1];
@@ -38,17 +40,16 @@ public class KinversePairsArray {
         for (int i = 1; i <= n; i++) {
             long[] csum = new long[k + 1];
             for (int j = 0; j <= k; j++) {
-                int maxinv = i * (i - 1) / 2;
                 if (j == 0) {
                     dp[i][j] = 1;
-                } else if (j <= maxinv) {
+                } else {
                     dp[i][j] = psum[j] - (j < i ? 0 : psum[j - i]);
                 }
                 dp[i][j] %= Mod;
                 if (dp[i][j] < 0) {
                     dp[i][j] += Mod;
                 }
-                csum[j] += dp[i][j];
+                csum[j] = (j == 0 ? 0 : csum[j - 1]) + dp[i][j];
                 csum[j] %= Mod;
             }
             psum = csum;
