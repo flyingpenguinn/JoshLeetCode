@@ -38,82 +38,77 @@ public class ThreeEqualParts {
     // then 0s at the end of the 3rd number decides the number itself, if they can be equal
     // note after counting 0s and 1s, we need to verify they are really equal
     public int[] threeEqualParts(int[] a) {
-        int allones = 0;
         int n = a.length;
-        int[] bad = new int[] { -1, -1};
-        for(int i=0; i<n; i++){
-            allones += a[i];
-        }
-        if(allones%3!= 0){
-            return bad;
-        }
-        if(allones==0){
-            return new int[]{0, n-1};
-        }
-        int t = allones/3;
-        int rz = 0;
-        for(int i=n-1; i>=0 && a[i]==0; i--){
-            rz++;
-        }
-        int[] res = new int[2];
         int ones = 0;
-        int i = 0;
-        int times = 0;
-        while(i<n && times<2){
-            if(a[i]==1){
-                ones++;
-                if(ones==t){
-                    res[times] = i+rz+1;
-                    // calculating num2 and 3 starting point. will convert to num1 end later for res[0]
-                    times++;
-                    ones = 0;
-                    i += rz+1;
-                }else{
-                    i++;
-                }
-            }else{
-                i++;
-            }
+        int[] bad = new int[]{-1, -1};
+        for (int i = 0; i < n; i++) {
+            ones += a[i];
         }
-        if(times<2){
+        if (ones % 3 != 0) {
             return bad;
         }
-        while(i<n){
-            if(a[i]==1){
-                ones++;
-            }
-            i++;
+        if (ones == 0) {
+            return new int[]{0, 2};
         }
-        if(ones==t){
-            if(good(res,a)){
-                // convert res[0] to num1 end
-                return new int[]{res[0]-1, res[1]};
-            }
+        int t1 = ones / 3;
+        int i = n - 1;
+        while (i >= 0 && a[i] == 0) {
+            i--;
+        }
+        int t0 = n - 1 - i;
+        int s2 = find(a, 0, t1, t0);
+        if (s2 == -1) {
+            return bad;
+        }
+        int s3 = find(a, s2, t1, t0);
+        if (s3 == -1) {
+            return bad;
+        }
+        if (eq(a, 0, s2, s3)) {
+            return new int[]{s2 - 1, s3};
         }
         return bad;
     }
 
-    private boolean good(int[] res, int[] a){
+    int find(int[] a, int st, int t1, int t0) {
+        int i = st;
         int n = a.length;
-        int i = 0;
-        int j = res[0];
-        int k = res[1];
-        while(i<n && a[i]==0){
+        while (i < n && a[i] == 0) {
             i++;
         }
-        while(j<n && a[j]==0){
-            j++;
+        while (i < n && t1 > 0) {
+            t1 -= a[i];
+            i++;
         }
-        while(k<n && a[k]==0){
-            k++;
+        while (i < n && t0 > 0 && a[i] == 0) {
+            t0--;
+            i++;
         }
-        while(i<res[0] && j<res[1] && k<n){
-            if(a[i]!= a[j] || a[j] != a[k] || a[k]!= a[i]){
+        // note there could be no enough 0 at the end for one segment
+        if (t0 > 0) {
+            return -1;
+        }
+        return i;
+    }
+
+    boolean eq(int[] a, int i1, int i2, int i3) {
+        int n = a.length;
+        while (i1 < i2 && a[i1] == 0) {
+            i1++;
+        }
+        while (i2 < i3 && a[i2] == 0) {
+            i2++;
+        }
+        while (i3 < n && a[i3] == 0) {
+            i3++;
+        }
+        while (i1 < i2 && i2 < i3 && i3 < n) {
+            if (a[i1] != a[i2] || a[i2] != a[i3] || a[i1] != a[i3]) {
                 return false;
             }
-            i++;
-            j++;
-            k++;
+            i1++;
+            i2++;
+            i3++;
         }
         return true;
     }
