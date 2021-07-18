@@ -21,37 +21,34 @@ You may not alter the values in the list's nodes, only nodes itself may be chang
 public class ReverseNodesInKGroup {
     // concat cur head to last tail
     public ListNode reverseKGroup(ListNode head, int k) {
-        ListNode ptail = new ListNode(-1);
-        ListNode dummy = ptail;
-        ListNode p = head;
-        ListNode q = head;
-        // reverse q to p
-        while (q != null) {
-            int movek = k;
-            while (p != null && movek > 1) {
+        ListNode dummy = new ListNode(-1);
+        ListNode newHead = head;
+        ListNode lastTail = dummy;
+        while (true) {
+            ListNode p = newHead;
+            int rem = k;
+            while (p != null && rem > 0) {
                 p = p.next;
-                movek--;
+                --rem;
             }
-            if (p == null) {
-                // not long enough,keep the same
-                ptail.next = q;
+            if (rem > 0) {
+                lastTail.next = newHead;
+                //lastTail pointing to null
                 break;
             }
-            // reverse q to p
             ListNode pre = null;
-            ListNode oldq = q;
-            // pnext is going to be overridden...so need a placeholder
-            ListNode nextstart = p.next;
-            while (q != nextstart) {
-                ListNode qn = q.next;
-                q.next = pre;
-                pre = q;
-                q = qn;
+            p = newHead;
+            rem = k;
+            while (rem > 0) {
+                ListNode next = p.next;
+                p.next = pre;
+                pre = p;
+                p = next;
+                --rem;
             }
-            ptail.next = pre;
-            q = nextstart;
-            p = nextstart;
-            ptail = oldq;
+            lastTail.next = pre;
+            lastTail = newHead;
+            newHead = p;
         }
         return dummy.next;
     }
