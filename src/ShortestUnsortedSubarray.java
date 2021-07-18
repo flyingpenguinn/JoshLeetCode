@@ -17,9 +17,8 @@ Then length of the input array is in range [1, 10,000].
 The input array may contain duplicates, so ascending order here means <=.
  */
 public class ShortestUnsortedSubarray {
-    // the last one has smaller left to it, and is the last one from left to right
-    // the first one has bigger to it, and is the last one from right to left
-
+    // there is a smaller one on the right. the last of such is the start, right to left
+    // there is a bigger  one on the left. the  last of such is the end, left to right
     public int findUnsortedSubarray(int[] a) {
         int n = a.length;
         int start = -1;
