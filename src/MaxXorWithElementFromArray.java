@@ -20,12 +20,12 @@ public class MaxXorWithElementFromArray {
         int j = 0;
         for (int i = 0; i < qn; i++) {
             while (j < n && a[j] <= q2[i][1]) {
-                insert(root, a[j]);
+                insert(a[j]);
                 j++;
             }
             int cur = -1;
             if (j > 0) {
-                cur = find(root, q2[i][0]);
+                cur = find(q2[i][0]);
             }
 //            System.out.println(q2[i][0]+" "+cur);
             q2[i][3] = cur;
@@ -50,7 +50,7 @@ public class MaxXorWithElementFromArray {
 
     private Trie root = new Trie(-1);
 
-    private void insert(Trie t, int num) {
+    private void insert(int num) {
         Trie p = root;
         for (int j = 31; j >= 0; j--) {
             int dig = ((num >> j) & 1);
@@ -61,7 +61,7 @@ public class MaxXorWithElementFromArray {
         }
     }
 
-    private int find(Trie t, int num) {
+    private int find(int num) {
         int res = 0;
         Trie p = root;
         for (int j = 31; j >= 0; j--) {
