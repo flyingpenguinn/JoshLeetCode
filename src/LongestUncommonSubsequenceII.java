@@ -20,6 +20,8 @@ The length of the given list will be in the range of [2, 50].
  */
 public class LongestUncommonSubsequenceII {
     // the result must be a full string, hence just check if it's sub of any given string
+    // if an str is not a subseq, then adding more chars makes it more unsub
+    // if an str is a sub, then all its substring is a sub
     public int findLUSlength(String[] strs) {
         int max = -1;
         Map<String, Integer> m = new HashMap<>();
