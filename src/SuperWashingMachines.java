@@ -93,35 +93,34 @@ class SuperWashMachineAnotherWay {
         if (sum % n != 0) {
             return -1;
         }
-        int t = sum / n;
-        int max = 0;
-        int psum = 0;
+
+        int unit = sum / n;
+        int csum = 0;
+        int res = 0;
+        int[] left = new int[n];
+
         for (int i = 0; i < n; i++) {
-            psum += a[i];
-            if (a[i] > t) {
-                int delta = a[i] - t;
-                // left not enough, need more to pass from the right.
-                // note we'd better spend all of a[i] to the left in this case because right is good
-                if (psum < t * (i + 1)) {
-                    delta += t * (i + 1) - psum;
-                }
-                max = Math.max(delta, max);
-            }
+            csum += a[i];
+            int unitsum = unit * (i + 1);
+            left[i] = Math.abs(unitsum - csum);
         }
-        psum = 0;
+        csum = 0;
+        int[] right = new int[n];
         for (int i = n - 1; i >= 0; i--) {
-            psum += a[i];
-            if (a[i] > t) {
-                int delta = a[i] - t;
-                // right not enough, need to pass from the left
-                // note we'd better spend a[i] on the right because left is fine
-                if (psum < t * (n - i)) {
-                    delta += t * (n - i) - psum;
-                }
-                max = Math.max(delta, max);
-            }
+            csum += a[i];
+            int unitsum = unit * (n - i);
+            right[i] = Math.abs(unitsum - csum);
         }
-        return max;
+        for (int i = 0; i < n; i++) {
+            int cur1 = left[i];
+            int cur2 = right[i];
+            int cmax = Math.max(cur1, cur2);
+            if (a[i] > unit) {
+                cmax = Math.max(cmax, a[i] - unit);
+            }
+            res = Math.max(res, cmax);
+        }
+        return res;
     }
 
 }
