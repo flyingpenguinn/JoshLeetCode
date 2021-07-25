@@ -1,9 +1,4 @@
-import base.ArrayUtils;
-import crap.Crap;
-
-import java.util.Arrays;
 import java.util.Random;
-import java.util.TreeMap;
 
 /*
 
@@ -41,45 +36,46 @@ The input is two lists: the subroutines called and their arguments. Solution's c
 public class RandomPointNonOverlappingRect {
 
     static class Solution {
-        // add areas together say 3,4,5=> 3,7,12 then pick a number between 1 and 12. then find first that is >= the number we picked
-        private int[] a;
-        private int sum = 0;
+        private int[] sum;
+        private int[][] rts;
         private int n;
-        private int[][] rs;
+        private Random rand = new Random();
 
-        public Solution(int[][] rs) {
-            this.rs = rs;
-            n = rs.length;
-            a = new int[n];
+        public Solution(int[][] rects) {
+            n = rects.length;
+            rts = rects;
+            sum = new int[n];
             for (int i = 0; i < n; i++) {
-                a[i] = (i == 0 ? 0 : a[i - 1]) + (rs[i][3] - rs[i][1] + 1) * (rs[i][2] - rs[i][0] + 1);
+                // note the area covered needs +1
+                int dx = rects[i][2] - rects[i][0] + 1;
+                int dy = rects[i][3] - rects[i][1] + 1;
+                sum[i] = dx * dy;
             }
-            sum = a[n - 1];
+            for (int i = 1; i < n; i++) {
+                sum[i] += sum[i - 1];
+            }
         }
 
-        private Random ran = new Random();
-
         public int[] pick() {
-            int picked = ran.nextInt(sum) + 1;
-            // 1... sum
+            int all = sum[n - 1];
+            int cand = rand.nextInt(all) + 1;
+            // 1..all
             int l = 0;
             int u = n - 1;
-            // find first a[i]>=picked
             while (l <= u) {
                 int mid = l + (u - l) / 2;
-                if (a[mid] < picked) {
-                    l = mid + 1;
-                } else {
+                if (sum[mid] >= cand) {
                     u = mid - 1;
+                } else {
+                    l = mid + 1;
                 }
             }
-            // l is first >=
-            // randomly pick in l
-            int dy = rs[l][3] - rs[l][1] + 1;
-            int dx = rs[l][2] - rs[l][0] + 1;
-            int randy = ran.nextInt(dy) + rs[l][1];
-            int randx = ran.nextInt(dx) + rs[l][0];
-            return new int[]{randx, randy};
+            // first rs[i]>=cand
+            int dx = rts[l][2] - rts[l][0] + 1;
+            int dy = rts[l][3] - rts[l][1] + 1;
+            int candx = rand.nextInt(dx);
+            int candy = rand.nextInt(dy);
+            return new int[]{rts[l][0] + candx, rts[l][1] + candy};
         }
     }
 }
