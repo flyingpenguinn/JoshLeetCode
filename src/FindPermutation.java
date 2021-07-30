@@ -40,28 +40,7 @@ The input string will only contain the character 'D' and 'I'.
 The length of input string is a positive integer and will not exceed 10,000
  */
 public class FindPermutation {
-    // cut to DDD..I seqs,I is local min. each DD...I is a reversed segment
-    public int[] findPermutation(String s) {
-        char[] cs = s.toCharArray();
-        int n = cs.length;
-        int min = 1;
-        int[] r = new int[n + 1];
-        for (int i = 0; i <= n; i++) {
-            if (i == n || cs[i] == 'I') {
-                r[i] = min++;
-                int j = i - 1;
-                while (j >= 0 && cs[j] == 'D') {
-                    r[j] = min++;
-                    j--;
-                }
-            }
-        }
-        return r;
-    }
-}
-
-class FindPermutationReverse {
-    // another way where we use reverse
+    // reverse every first D to first I
     public int[] findPermutation(String s) {
         int n = s.length();
         int[] r = new int[n + 1];
@@ -88,5 +67,9 @@ class FindPermutationReverse {
             i++;
             j--;
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new FindPermutation().findPermutation("DIDI"));
     }
 }

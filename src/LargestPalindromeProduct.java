@@ -64,6 +64,6 @@ public class LargestPalindromeProduct {
     }
 
     public static void main(String[] args) {
-        System.out.println(new LargestPalindromeProduct().largestPalindrome(9));
+        System.out.println(new LargestPalindromeProduct().largestPalindrome(8));
     }
 }

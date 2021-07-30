@@ -27,30 +27,22 @@ Note:
 public class BeautifulArray {
     // think about merging the two n/2 results to form n
     public int[] beautifulArray(int n) {
-        return find(n);
-    }
-
-    // two 1,2,3 => one half 2*a[i]-1, the other 2*a[i], can merge out 1,2,3,4,5,6
-    // we put the even one after odd one. between the groups, there can be no odd+even = even = a[k]*2. within the groups, we know beauty holds after arithmetic operations
-    private int[] find(int n) {
         if (n == 1) {
             return new int[]{1};
         }
-        if (n == 2) {
-            return new int[]{1, 2};
+        int half = n / 2;
+        int[] p1 = beautifulArray(half);
+        int[] p2 = beautifulArray(n - half);
+        int[] res = new int[n];
+        int ri = 0;
+        // the shroter one *2. if half might be > n/2 then it's the first part *2-1
+        for (int i = 0; i < p1.length; i++) {
+            res[ri++] = p1[i] * 2;
         }
-        int p1n = (n + 1) / 2;
-        int[] p1 = find(p1n);
-        int p2n = n - p1n;
-        int[] p2 = find(p2n);
-        int[] rt = new int[n];
-        for (int i = 0; i < p1n; i++) {
-            rt[i] = 2 * p1[i] - 1;
+        for (int i = 0; i < p2.length; i++) {
+            res[ri++] = p2[i] * 2 - 1;
         }
-        for (int i = p1n; i < n; i++) {
-            rt[i] = 2 * p2[i - p1n];
-        }
-        return rt;
+        return res;
     }
 
     public static void main(String[] args) {

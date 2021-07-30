@@ -29,7 +29,7 @@ Output: false
 public class WordBreak {
     // note the different complexities of the three solutions.
 
-    // Osn*len of dict*len of word.= Osn* size of dict
+    // Osn^2*len of dict
     public boolean wordBreak(String s, List<String> dict) {
         int n = s.length();
         boolean[] dp = new boolean[n + 1];
@@ -46,7 +46,7 @@ public class WordBreak {
 }
 
 class WordBreakAnotherDp {
-    // using memoization, O(sn*min(sn,len of word)^2).  if we use a trie we can reduce to Osn^2
+    // using memoization, O(sn^3).  if we use a trie we can reduce to Osn^2
     public boolean wordBreak(String s, List<String> wordDict) {
         Set<String> wset = new HashSet<>();
         int n = 0;

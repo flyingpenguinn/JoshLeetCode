@@ -33,33 +33,35 @@ Explanation:
 public class ConvexPolygon {
     // cross product sign is the same (either >=0 or <=0
     // sign could be ==0! so mind the tricky logic. also mind the first and last point
-    public boolean isConvex(List<List<Integer>> p) {
-        int[][] rp = new int[p.size()][2];
-        for (int i = 0; i < p.size(); i++) {
-            rp[i][0] = p.get(i).get(0);
-            rp[i][1] = p.get(i).get(1);
-        }
-        return doi(rp);
-    }
-
-    private boolean doi(int[][] p) {
-        long last = 0;
-        int n = p.length;
-        for (int i = 0; i < n; i++) {
-            int[] p0 = p[(i - 1 + n) % n];
-            int[] p1 = p[i];
-            int[] p2 = p[(i + 1) % n];
-            int[] a = new int[]{p2[0] - p1[0], p2[1] - p1[1]};
-            int[] b = new int[]{p1[0] - p0[0], p1[1] - p0[1]};
-            // a1b2- b1a2 is the value of the cross product
-            int cur = a[0] * b[1] - b[0] * a[1];
-            if (last == 0) {
-                last = cur;
-            } else if (last * cur < 0) {
+    public boolean isConvex(List<List<Integer>> a) {
+        int n = a.size();
+        boolean seenNeg = false;
+        boolean seenPos = false;
+        List<Integer> vec1 = vec(a.get(0), a.get(1));
+        for (int i = 1; i <= n; i++) {
+            int j = i % n;
+            int k = (i + 1) % n;
+            List<Integer> vec2 = vec(a.get(j), a.get(k));
+            int cross = crossProduct(vec1, vec2);
+            if (cross < 0) {
+                seenNeg = true;
+            } else if (cross > 0) {
+                seenPos = true;
+            }
+            if (seenNeg && seenPos) {
                 return false;
             }
+            vec1 = vec2;
         }
         return true;
+    }
+
+    private List<Integer> vec(List<Integer> x, List<Integer> y) {
+        return List.of(y.get(0) - x.get(0), y.get(1) - x.get(1));
+    }
+
+    private int crossProduct(List<Integer> x, List<Integer> y) {
+        return x.get(0) * y.get(1) - x.get(1) * y.get(0);
     }
 
     public static void main(String[] args) {
