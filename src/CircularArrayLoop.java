@@ -37,6 +37,7 @@ Follow up:
 Could you solve it in O(n) time complexity and O(1) extra space complexity?
  */
 public class CircularArrayLoop {
+    // similar to "find evventual safe state"
     // 3 possibilities: different sign, same position, or found a loop
     // first 2 are not loop. we return and mark immediately if there is no hope to form a loop. if we ever found a loop we return true
     public boolean circularArrayLoop(int[] a) {
@@ -81,5 +82,54 @@ public class CircularArrayLoop {
         System.out.println(new CircularArrayLoop().circularArrayLoop(ArrayUtils.read1d("[2,-1,1,2,2]")));
         System.out.println(new CircularArrayLoop().circularArrayLoop(ArrayUtils.read1d("[-1,2]")));
         System.out.println(new CircularArrayLoop().circularArrayLoop(ArrayUtils.read1d("[-2,1,-1,-2,-2]")));
+    }
+}
+
+class CircularArrayLoopGraph{
+    // space complexity not o1 but you get the point
+    // if the path is not all positive or negative we exit early because we are not gonna find circle there
+    public boolean circularArrayLoop(int[] a) {
+        int n = a.length;
+        int[] g = new int[n];
+        for(int i=0; i<n; i++){
+            int ni = (a[i]+i) %n;
+            if(ni<0){
+                ni += n;
+            }
+            g[i] = ni;
+        }
+        int[] st = new int[n];
+        for(int i=0; i<n; i++){
+            if(st[i]==2){
+                continue;
+            }else if(st[i]==0){
+                boolean cycle = dfs(g, a, st, i);
+                if(cycle){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(int[] g, int[] a, int[] st, int i){
+        st[i] = 1;
+        int ne = g[i];
+        boolean rt = false;
+        if(ne ==i){
+            st[i] = 2;
+        }
+        else if(st[ne] == 1){
+            return true;
+        }
+        else if(st[ne] == 0 && sign(a[ne]) == sign(a[i])){
+            rt= dfs(g, a, st, ne);
+        }
+        st[i] = 2;
+        return rt;
+    }
+
+    private int sign(int t){
+        return t>0? 1: -1;
     }
 }

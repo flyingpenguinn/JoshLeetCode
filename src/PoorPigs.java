@@ -20,37 +20,15 @@ Any given bucket can be sampled an infinite number of times (by an unlimited num
  */
 public class PoorPigs {
 
-    /*
-    if we have only one chance, then we convert a to binary, then make it an n bit binary number
-    1st pig drinks those binary == 0 at the 1st digit
-    2nd pig drinks those binary == 0 at the 2nd digit...
-    ...
-    nth pig drinks those binary == 0 at the nth digit
-    if any of them die we know that digit is a 0. otherwise it's a 1.
-    we will then know the number because we know every digit of the binary form
-
-    so, if we have more than one try = floor(c/b), we use a try+1 base rather than base of 2
-    in the 1st round, pigs drink binary == 0 at their digits
-    in the 2nd round, pigs drink binary == 1 at their digits
-    ...
-    in the try th round, pigs drink try-1 at their digits
-    so if any of them die, we know which number it is on that digit
-    if none of them die, we know the digit == try
-   */
-    public int poorPigs(int a, int b, int c) {
-        int base = c / b + 1;
-        int cur = 1;
-        int res = 0;
-        // cur-1: res digits, using base, we can get to this number
-        // a-1: we are numbering buckets from 0 to a-1
-        while (cur - 1 < a - 1) {
-            cur *= base;
-            res++;
+    // encode buckets with base = values. each pig try out value from 1 to values. if not die, that bit is 0
+    // we use i pigs, corresponding to i bits of the number. so values^i>=buckets is the answer
+    public int poorPigs(int buckets, int minutesToDie, int minutesToTest) {
+        int values = minutesToTest/minutesToDie+1;
+        for(int i=0; i<=buckets;i++){
+            if(Math.pow(values, i)>=buckets){
+                return i;
+            }
         }
-        return res;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new PoorPigs().poorPigs(1000, 15, 60));
+        return -1;
     }
 }

@@ -32,7 +32,7 @@ Same with other integers chosen by the first player, the second player will alwa
  */
 public class CanIwin {
     // t included in st,no need to cache
-    int[] dp;
+    private int[] dp;
 
     public boolean canIWin(int n, int t) {
         if (t == 0) {

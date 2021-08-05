@@ -1,60 +1,72 @@
 import base.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class MinTimeKVirusSpread {
-// can't submit yet...
-
-
-    private int Max = 1000000010;
-
-
-    public int minDayskVariants(int[][] a, int k) {
-        int n = a.length;
-        int[] dp = new int[1 << n];
-        Arrays.fill(dp, Max);
-        int res = Max;
-        for (int st = 1; st < (1 << n); st++) {
-            int covered = Integer.bitCount(st);
-            if (covered == 1) {
-                dp[st] = 0;
-                continue;
+    private boolean good(int[][] points, long day, int k) {
+        int n = points.length;
+        TreeMap<Long, TreeMap<Long, Long>> lines = new TreeMap<>(); // map is sorted by the key automatically (so no need for sorted)
+        for (int i = 0; i < n; i++) {
+            long x = points[i][0];
+            long y = points[i][1];
+            long lbx = x;
+            long lby = y - day;
+            long ubx = x - day;
+            long uby = y;
+            update(lines, lbx + lby, lby - lbx, 1);
+            update(lines, ubx + uby, uby - ubx + 1, -1);
+            lbx = x + day;
+            lby = y;
+            ubx = x;
+            uby = y + day;
+            update(lines, lbx + lby + 1, lby - lbx, -1);
+            update(lines, ubx + uby + 1, uby - ubx + 1, 1);
+        }
+        TreeMap<Long, Long> r = new TreeMap<>();
+        for (Long k1 : lines.keySet()) {
+            Map<Long, Long> m = lines.get(k1);
+            for (long k2 : m.keySet()) {
+                update(r, k2, m.get(k2));
             }
-            // from k-1 1s to k ones. flip one of the 1 bits, see how we go from pst to st
-            for (int i = 0; i < n; i++) {
-                if (((st >> i) & 1) != 1) {
-                    continue;
+
+            long c = 0;
+            for (Long v : r.values()) {
+                c += v;
+                if (c >= k) {
+                    return true;
                 }
-                int pst = st ^ (1 << i);
-                int minDays = Max;
-                // i is flipped. j is in pst. in order to get k points covered, we need to allow some point between i and j to be covered.
-                for (int j = 0; j < n; j++) {
-                    if (((pst >> j) & 1) != 1) {
-                        continue;
-                    }
-                    int days = getdays(a, i, j);
-                    minDays = Math.min(minDays, days);
-                }
-                dp[st] = Math.min(dp[st], Math.max(dp[pst], minDays));
-            }
-            if (covered >= k) {
-                res = Math.min(res, dp[st]);
             }
         }
-        return res;
+        return false;
     }
 
-    private int getdays(int[][] a, int i, int j) {
-        int dx = Math.abs(a[i][0] - a[j][0]);
-        int dy = Math.abs(a[i][1] - a[j][1]);
-        return (dx + dy + 1) / 2;
+    public int minDayskVariants(int[][] points, int k) {
+        long l = 0;
+        long u = 1000000000;
+        while (l <= u) {
+            long middle = l + (u - l) / 2;
+            if (good(points, middle, k)) {
+                u = middle - 1;
+            } else l = middle + 1;
+        }
+        return (int) l;
+    }
+
+
+    private void update(TreeMap<Long, Long> m, long k, long d) {
+        long nv = m.getOrDefault(k, 0L) + d;
+        m.put(k, nv);
+    }
+
+    private void update(TreeMap<Long, TreeMap<Long, Long>> m, long k1, long k2, int d) {
+        TreeMap<Long, Long> inner = m.getOrDefault(k1, new TreeMap<>());
+        long nv = inner.getOrDefault(k2, 0L) + d;
+        inner.put(k2, nv);
+        m.put(k1, inner);
     }
 
     public static void main(String[] args) {
-        System.out.println(new MinTimeKVirusSpread().minDayskVariants(ArrayUtils.read("[[0,0],[2,0],[0,2]]"), 3));
-        System.out.println(new MinTimeKVirusSpread().minDayskVariants(ArrayUtils.read("[[45,78],[34,6],[94,59]]"), 2));
+        System.out.println(new MinTimeKVirusSpread().minDayskVariants(ArrayUtils.read("[[1,1],[6,1]]"), 2));
     }
+
 }
