@@ -60,3 +60,62 @@ public class SerializeAndDeserializeBst {
     }
 }
 
+class SerializeAndDeserializeBstAlt {
+    // use stack to get next bigger. the right tree starts with next bigger so that we can catch it in O1 time
+    private void dfs(TreeNode root, StringBuilder cur) {
+        if (root == null) {
+            return;
+        }
+        if (cur.length() > 0) {
+            cur.append(",");
+        }
+        cur.append(root.val);
+        dfs(root.left, cur);
+        dfs(root.right, cur);
+    }
+
+    private TreeNode gen(String[] preorder, int i, int j, int[] nextb) {
+        if (i > j) {
+            return null;
+        }
+        int root = Integer.valueOf(preorder[i]);
+        TreeNode proot = new TreeNode(root);
+        int k = nextb[i] == -1 ? j + 1 : nextb[i];
+        TreeNode left = gen(preorder, i + 1, k - 1, nextb);
+        TreeNode right = gen(preorder, k, j, nextb);
+        proot.left = left;
+        proot.right = right;
+        return proot;
+    }
+
+    private int[] getnext(String[] v) {
+        Deque<Integer> st = new ArrayDeque<>();
+        int n = v.length;
+        int[] res = new int[n];
+        Arrays.fill(res, -1);
+        for (int i = 0; i < n; i++) {
+            while (!st.isEmpty() && Integer.valueOf(v[st.peek()])< Integer.valueOf(v[i])) {
+                res[st.pop()] = i;
+            }
+            st.push(i);
+        }
+        return res;
+    }
+
+    public String serialize(TreeNode root) {
+        StringBuilder res = new StringBuilder();
+        dfs(root, res);
+        return res.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if(data.isEmpty()){
+            return null;
+        }
+        String[] preorder = data.split(",");
+        int[] nextb = getnext(preorder);
+        return gen(preorder, 0, preorder.length - 1, nextb);
+    }
+}
+
