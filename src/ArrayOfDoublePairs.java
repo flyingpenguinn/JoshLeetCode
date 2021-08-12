@@ -1,4 +1,4 @@
-import java.util.TreeMap;
+import java.util.*;
 
 /*
 LC#954
@@ -36,55 +36,38 @@ public class ArrayOfDoublePairs {
     // try to fill smallest number first. can use two pointers too
     public boolean canReorderDoubled(int[] a) {
         int n = a.length;
-        TreeMap<Integer, Integer> pos = new TreeMap<>();
-        TreeMap<Integer, Integer> neg = new TreeMap<>();
-        int zeros = 0;
+        Map<Integer, Integer> m = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            if (a[i] > 0) {
-                pos.put(a[i], pos.getOrDefault(a[i], 0) + 1);
-            } else if (a[i] < 0) {
-                neg.put(a[i], neg.getOrDefault(a[i], 0) + 1);
-            } else {
-                zeros++;
+            update(m, a[i], 1);
+        }
+        List<Integer> li = new ArrayList<>();
+        for (int ai : a) {
+            li.add(ai);
+        }
+        // sort by abs. can't make -1 -> 1 because -1 *2 1= 2
+        Collections.sort(li, (x, y) -> Integer.compare(Math.abs(x.intValue()), Math.abs(y.intValue())));
+        for (int i = 0; i < n; i++) {
+            int cv = li.get(i);
+            int nv = 2 * cv;
+            //    System.out.println(cv+" "+nv);
+            if (!m.containsKey(cv)) {
+                continue;
             }
-        }
-        // need special logic for 0!
-        if (zeros % 2 == 1) {
-            return false;
-        }
-        while (!pos.isEmpty()) {
-            int t = pos.firstKey();
-
-            if (!hastwotimes(t, pos)) {
+            if (!m.containsKey(nv)) {
                 return false;
             }
-            reduce(t, pos);
-            reduce(2 * t, pos);
+            update(m, cv, -1);
+            update(m, nv, -1);
         }
-        while (!neg.isEmpty()) {
-            int t = neg.lastKey();
-
-            if (!hastwotimes(t, neg)) {
-                return false;
-            }
-            reduce(t, neg);
-            reduce(2 * t, neg);
-        }
-        // must be all emptied
-        return neg.isEmpty() && pos.isEmpty();
-
+        return true;
     }
 
-    boolean hastwotimes(int t, TreeMap<Integer, Integer> m) {
-        return m.containsKey(2 * t);
-    }
-
-    void reduce(int t, TreeMap<Integer, Integer> m) {
-        int cc = m.get(t);
-        if (cc == 1) {
-            m.remove(t);
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
         } else {
-            m.put(t, cc - 1);
+            m.put(k, nv);
         }
     }
 }

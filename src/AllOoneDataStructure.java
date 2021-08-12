@@ -61,8 +61,8 @@ public class AllOoneDataStructure {
 
 class AllOne {
     // we can maintain a sorted list in o1 time if it's a linked list and we only add/dec by 1
-    // different from lfu cache: there is no remove there! so when we are evicting, the smallest is always freq = 1. not an optoin here
-    // becaues we could jump from freq 4 to 1
+    // different from lfu cache: there is no remove there! so when we are evicting, the smallest is always the newly inserted one with freq = 1. not an optoin here
+    // becaues we could be removing freq= 1 element. the next min is 4 and we won't know
     private class Node {
 
         public Node(int val) {
