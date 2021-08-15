@@ -24,6 +24,7 @@ Note:
 public class SubarrayProductLessthanK {
     // note in this problem when low>high, prod could still >=k so we need to add that special check
     // this solution counts subarrays ENDING at high
+    // sliding window find max template
     public int numSubarrayProductLessThanK(int[] a, int k) {
         if (k == 0) {
             return 0;
