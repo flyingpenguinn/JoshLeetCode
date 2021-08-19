@@ -26,33 +26,33 @@ Output: "0"
 Explanation: Remove all the digits from the number and it is left with nothing which is 0.
  */
 public class RemoveKDigits {
-    // pay attention to the dealing of >=limit (n-k numbers total) ! once we reached limit, cut the number short
-    public String removeKdigits(String num, int k) {
-        char[] s = num.toCharArray();
-        int n = s.length;
-        if (k >= n) {
-            return "0";
-        }
-        Deque<Integer> st = new ArrayDeque<>();
-        int oldk = k;
-        for (int i = 0; i < n; i++) {
-            int v = s[i] - '0';
-            while (!st.isEmpty() && k > 0 && st.peekLast() > v) {
-                // must be >, otherwise we throw away good eq numbers and give the bigger numbers after v another chance
+    // get rid of bigger numbers in front of cur if possible
+    // if still can remove,remove from the back.
+    // drop leading 0s
+    public String removeKdigits(String s, int k) {
+        int n = s.length();
+        Deque<Character> st = new ArrayDeque<>();
+        for(int i=0; i<n ; ++i){
+            while(!st.isEmpty() && st.peekLast() > s.charAt(i) && k>0){
+                // st increasing, get rid of the back
                 st.pollLast();
-                k--;
+                --k;
             }
-            st.offerLast(s[i] - '0');
+            st.offerLast(s.charAt(i));
         }
-        StringBuilder sb = new StringBuilder();
-        int len = Math.min(n - oldk, st.size());
-        while (!st.isEmpty() && st.peekFirst() == 0) {
+        // st is increasing, so from the back
+        while(k>0){
+            st.pollLast();
+            --k;
+        }
+        while(!st.isEmpty() && st.peekFirst()=='0'){
             st.pollFirst();
         }
-        while (!st.isEmpty() && sb.length() < len) {
-            sb.append(st.pollFirst());
+        StringBuilder res = new StringBuilder();
+        while(!st.isEmpty()){
+            res .append(st.pollFirst());
         }
-        return sb.length() == 0 ? "0" : sb.toString();
+        return res.length()==0? "0": res.toString();
     }
 
     public static void main(String[] args) {
