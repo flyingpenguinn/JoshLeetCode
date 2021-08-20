@@ -65,46 +65,95 @@ rectangles = [
 Return false. Because two of the rectangles overlap with each other.
  */
 public class PerfectRectangle {
-    // checking overlaps efficiently...
-    public boolean isRectangleCover(int[][] a) {
+    // line sweep. given each x, check if ys overlap
+    private class Ends {
+        int y1;
+        int y2;
+        int index;
 
-        int blx = Integer.MAX_VALUE;
-        int rtx = Integer.MIN_VALUE;
-        int bly = Integer.MAX_VALUE;
-        int rty = Integer.MIN_VALUE;
-        int sumarea = 0;
-        int n = a.length;
-        for (int i = 0; i < n; i++) {
-            blx = Math.min(blx, a[i][0]);
-            bly = Math.min(bly, a[i][1]);
-            rtx = Math.max(rtx, a[i][2]);
-            rty = Math.max(rty, a[i][3]);
-            sumarea += (a[i][3] - a[i][1]) * (a[i][2] - a[i][0]);
+        public Ends(int y1, int y2, int index) {
+            this.y1 = y1;
+            this.y2 = y2;
+            this.index = index;
+
         }
-        int area = (rty - bly) * (rtx - blx);
-        if (area != sumarea) {
-            return false;
-        }
-        Arrays.sort(a, (x, y) -> x[1] != y[1] ? Integer.compare(x[1], y[1]) : Integer.compare(x[0], y[0]));
-        return !overlap(a);
     }
 
-    private boolean overlap(int[][] a) {
-        int n = a.length;
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                if (a[j][1] >= a[i][3]) {
-                    break;
-                } else if (a[j][0] >= a[i][2]) {
-                    continue;
-                } else if (a[j][2] <= a[i][0]) {
-                    continue;
-                } else {
-                    return true;
-                }
-            }
+    private class Line {
+        int x;
+        Ends y;
+        int type;
+
+        public Line(int x, Ends y, int type) {
+            this.x = x;
+            this.y = y;
+            this.type = type;
         }
-        return false;
+    }
+
+    private int Max = 1000000000;
+
+    public boolean isRectangleCover(int[][] rectangles) {
+        List<Line> lines = new ArrayList<>();
+        int lowy = Max;
+        int highy = -Max;
+        for (int i = 0; i < rectangles.length; ++i) {
+            int[] rect = rectangles[i];
+            int x = rect[0];
+            int y = rect[1];
+            int a = rect[2];
+            int b = rect[3];
+            lines.add(new Line(x, new Ends(y, b, i), 0));
+            lines.add(new Line(a, new Ends(y, b, i), 1));
+            lowy = Math.min(lowy, y);
+            highy = Math.max(highy, b);
+        }
+        Collections.sort(lines, (l1, l2) -> l1.x != l2.x ? Integer.compare(l1.x, l2.x) : Integer.compare(l2.type, l1.type)); // remove first
+        int i = 0;
+        int n = lines.size();
+        TreeSet<Ends> lineset = new TreeSet<>((l1, l2) -> {
+            if (l1.y1 != l2.y1) {
+                return Integer.compare(l1.y1, l2.y1);
+            } else if (l1.y2 != l2.y2) {
+                return Integer.compare(l1.y2, l2.y2);
+            } else {
+                return Integer.compare(l1.index, l2.index);
+            }
+        });
+        while (i < n) {
+            int j = i;
+            while (j < n && lines.get(j).x == lines.get(i).x) {
+                if (lines.get(j).type == 1) {
+                    lineset.remove(lines.get(j).y);
+                } else {
+                    lineset.add(lines.get(j).y);
+                }
+                ++j;
+            }
+            if (j == n) {
+                // last line...must be empty
+                return lineset.isEmpty();
+            }else if(lineset.isEmpty()){
+                return false;
+            }
+            Iterator<Ends> it = lineset.iterator();
+            int lastend = lineset.first().y1;
+            if (lastend != lowy) {
+                return false;
+            }
+            while (it.hasNext()) {
+                Ends cur = it.next();
+                if (lastend != cur.y1) {
+                    return false;
+                }
+                lastend = cur.y2;
+            }
+            if (lastend != highy) {
+                return false;
+            }
+            i = j;
+        }
+        return true;
     }
 
     public static void main(String[] args) {
