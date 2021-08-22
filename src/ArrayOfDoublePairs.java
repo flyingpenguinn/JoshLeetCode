@@ -49,7 +49,6 @@ public class ArrayOfDoublePairs {
         for (int i = 0; i < n; i++) {
             int cv = li.get(i);
             int nv = 2 * cv;
-            //    System.out.println(cv+" "+nv);
             if (!m.containsKey(cv)) {
                 continue;
             }
