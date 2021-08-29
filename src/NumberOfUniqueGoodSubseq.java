@@ -1,4 +1,6 @@
 public class NumberOfUniqueGoodSubseq {
+    // similar to 940 distinct subsequences II
+    // note we dont count 0 itself. we treat 0 as empty. then add the single 0 at the end
     private int Mod = 1000000007;
 
     public int numberOfUniqueGoodSubsequences(String binary) {
