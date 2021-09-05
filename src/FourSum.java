@@ -72,7 +72,8 @@ public class FourSum {
 
 class FourSumMapBased {
     // do a two sum on n^2 pairs. n^2*k^2 in avg, n^4 in the worst case
-// sort the list to avoid duplicated numbers.but even without sorting, we won't give duplicated indexes (no index 1 2 vs 2 1)
+    // sort the list to avoid duplicated numbers.but even without sorting, we won't give duplicated indexes (no index 1 2 vs 2 1)
+    // if we only need number of quadruples, this is optimal as it's n^2
     public List<List<Integer>> fourSum(int[] a, int t) {
         // check null error out if needed
 

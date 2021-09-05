@@ -1,46 +1,15 @@
-import base.ArrayUtils;
-import base.Lists;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.*;
+public class GcdSortOfArray {
+    // similar to LargestComponentSizeByCommonFactor
+    private Map<Integer, Integer> pm = new HashMap<>();// prime factor to its representative
+    private  Map<Integer, Integer> parent = new HashMap<>();
+    private  Map<Integer, Integer> size = new HashMap<>();
+    private boolean[] isp;
 
-/*
-LC#952
-Given a non-empty array of unique positive integers A, consider the following graph:
-
-There are A.length nodes, labelled A[0] to A[A.length - 1];
-There is an edge between A[i] and A[j] if and only if A[i] and A[j] share a common factor greater than 1.
-Return the size of the largest connected component in the graph.
-
-
-
-Example 1:
-
-Input: [4,6,15,35]
-Output: 4
-
-Example 2:
-
-Input: [20,50,9,63]
-Output: 2
-
-Example 3:
-
-Input: [2,3,6,7,4,12,21,39]
-Output: 8
-
-Note:
-
-1 <= A.length <= 20000
-1 <= A[i] <= 100000
- */
-public class LargestComponentSizeByCommonFactor {
-    // don't really need to deal with prime factors only: we can process every a[i] and skip the prime check i on j and other
-    Map<Integer, Integer> pm = new HashMap<>();// prime factor to its representative
-    Map<Integer, Integer> parent = new HashMap<>();
-    Map<Integer, Integer> size = new HashMap<>();
-    boolean[] isp;
-
-    public int largestComponentSize(int[] a) {
+    public boolean gcdSort(int[] a) {
         int n = a.length;
         int max = 0;
         for (int i = 0; i < n; i++) {
@@ -50,6 +19,7 @@ public class LargestComponentSizeByCommonFactor {
         }
         getprimes(max);
         for (int i = 0; i < n; i++) {
+
             if (pm.keySet().contains(a[i])) {
                 processprime(a[i], a[i]);
             } else {
@@ -67,14 +37,27 @@ public class LargestComponentSizeByCommonFactor {
                 }
             }
         }
-        int r = 0;
-        for (int k : parent.keySet()) {
-            if(parent.get(k)==k) {
-                int cur = size.get(k);
-                r = Math.max(r, cur);
+        int[] sorted = Arrays.copyOf(a, n);
+        Arrays.sort(sorted);
+        for(int i=0; i<n; ++i){
+            int num1 = sorted[i];
+            int num2 = a[i];
+            //  System.out.println(num1+"  vs "+num2);
+            if(find(num1) != find(num2)){
+                // no way we can swap j to position i
+                return false;
             }
         }
-        return r;
+        return true;
+    }
+
+    private boolean issorted(int[] sorted) {
+        for(int i=1; i<sorted.length;++i){
+            if(sorted[i]<sorted[i-1]){
+                return false;
+            }
+        }
+        return true;
     }
 
     protected void processprime(int v, int prime) {
@@ -130,9 +113,5 @@ public class LargestComponentSizeByCommonFactor {
             parent.put(a, rt);
             return rt;
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new LargestComponentSizeByCommonFactor().largestComponentSize(ArrayUtils.read1d("[83,99,39,11,19,30,31]")));
     }
 }
