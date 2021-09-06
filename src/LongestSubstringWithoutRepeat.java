@@ -28,37 +28,24 @@ https://leetcode.com/problems/longest-substring-without-repeating-characters/
 public class LongestSubstringWithoutRepeat {
     // formulaic two pointers solution
     public int lengthOfLongestSubstring(String s) {
-        int h = -1;
-        int l = 0;
-        Map<Character, Integer> map = new HashMap<>();
-        int max = 0;
-        while (true) {
-            if (map.size() == h - l + 1) {
-                max = Math.max(max, h - l + 1);
-                h++;
-                if (h == s.length()) {
-                    break;
-                }
-                update(map, s.charAt(h), 1);
-            } else {
-                update(map, s.charAt(l++), -1);
+        int j = 0;
+        int n = s.length();
+        int[] counter = new int[256];
+        // j..i-1 is good
+        int res = 0;
+        for(int i=0; i<n; ++i){
+            char c = s.charAt(i);
+            ++counter[c];
+            // only possible violator is c
+            while(counter[c]>1){
+                --counter[s.charAt(j++)];
             }
+            res = Math.max(res, i-j+1);
         }
-        return max;
+        return res;
     }
 
-    void update(Map<Character, Integer> map, char k, int v) {
-        if (v == 0) {
-            return;
-        }
-        int nv = map.getOrDefault(k, 0) + v;
-        ;
-        if (nv <= 0) {
-            map.remove(k);
-        } else {
-            map.put(k, nv);
-        }
-    }
+
 
     public static void main(String[] args) {
         System.out.println(new LongestSubstringWithoutRepeat().lengthOfLongestSubstring("cdd"));
