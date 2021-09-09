@@ -26,9 +26,7 @@ Output: "0"
 Explanation: Remove all the digits from the number and it is left with nothing which is 0.
  */
 public class RemoveKDigits {
-    // get rid of bigger numbers in front of cur if possible
-    // if still can remove,remove from the back.
-    // drop leading 0s
+    // using the same template as createmaxnumbers
     public String removeKdigits(String s, int k) {
         int n = s.length();
         Deque<Character> st = new ArrayDeque<>();
@@ -53,15 +51,6 @@ public class RemoveKDigits {
             res .append(st.pollFirst());
         }
         return res.length()==0? "0": res.toString();
-    }
-
-    public static void main(String[] args) {
-
-        System.out.println(new RemoveKDigits().removeKdigits("9999999999991", 8));
-        System.out.println(new RemoveKDigits().removeKdigits("43214321", 4));
-        System.out.println(new RemoveKDigits().removeKdigits("10", 1));
-        System.out.println(new RemoveKDigits().removeKdigits("5337", 2));
-
     }
 }
 
