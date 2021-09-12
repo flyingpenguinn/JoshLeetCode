@@ -75,7 +75,7 @@ public class ReachableNodesInSubdividedGraph {
             if(done[v]){
                 continue;
             }
-            res++;
+            res++; // must do this after done check to avoid duplicated nodes
             done[v] = true;
             int cd = top[1];
             for(int nv: ng[v]){
