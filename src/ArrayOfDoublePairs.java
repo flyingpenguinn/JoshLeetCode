@@ -48,14 +48,14 @@ public class ArrayOfDoublePairs {
         Collections.sort(li, (x, y) -> Integer.compare(Math.abs(x.intValue()), Math.abs(y.intValue())));
         for (int i = 0; i < n; i++) {
             int cv = li.get(i);
-            int nv = 2 * cv;
             if (!m.containsKey(cv)) {
                 continue;
             }
+            update(m, cv, -1);
+            int nv = 2 * cv;
             if (!m.containsKey(nv)) {
                 return false;
             }
-            update(m, cv, -1);
             update(m, nv, -1);
         }
         return true;
