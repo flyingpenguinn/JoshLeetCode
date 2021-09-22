@@ -33,47 +33,48 @@ arr[i] contains only lower case English letters.
  */
 public class MaxLenConcatStringUniqueChars {
 
-    // can skip strings with duplicated chars to make it even faster
-    Map<Integer, Map<BitSet, Integer>> dp = new HashMap<>();
-
-    public int maxLength(List<String> arr) {
-        BitSet used = new BitSet(26);
-        return dp(0, arr, used);
-    }
-
-    private int dp(int i, List<String> a, BitSet used) {
-        if (i == a.size()) {
-            return used.cardinality();
-        }
-        Map<BitSet, Integer> cm = dp.getOrDefault(i, new HashMap<>());
-        Integer cached = cm.get(used);
-        if (cached != null) {
-            return cached;
-        }
-        String cur = a.get(i);
-        boolean good = true;
-        BitSet nused = (BitSet) used.clone();
-        for (int j = 0; j < cur.length(); j++) {
-            int bit = cur.charAt(j) - 'a';
-            if (nused.get(bit)) {
-                good = false;
-                break;
+    public int maxLength(List<String> a) {
+        int n = a.size();
+        int res = 0;
+        List<Integer> code = new ArrayList<>();
+        Set<Integer> exc = new HashSet<>();
+        for (int i = 0; i < n; ++i) {
+            String ai = a.get(i);
+            int cc = 0;
+            for (int j = 0; j < ai.length(); ++j) {
+                int dig = (1 << (ai.charAt(j) - 'a'));
+                if ((cc & dig) != 0) {
+                    exc.add(i);
+                    break;
+                } else {
+                    cc |= dig;
+                }
             }
-            nused.set(bit);
+            code.add(cc);
         }
-        int rt = dp(i + 1, a, used);
-        if (good) {
-            int with = dp(i + 1, a, nused);
-            rt = Math.max(with, rt);
-
+        for (int st = 0; st < (1 << n); ++st) {
+            int cur = 0;
+            boolean bad = false;
+            int len = 0;
+            for (int i = 0; i < n; ++i) {
+                if (((st >> i) & 1) == 1) {
+                    if (exc.contains(i)) {
+                        bad = true;
+                        break;
+                    }
+                    len += a.get(i).length();
+                    if ((cur & code.get(i)) != 0) {
+                        bad = true;
+                        break;
+                    } else {
+                        cur |= code.get(i);
+                    }
+                }
+            }
+            if (!bad) {
+                res = Math.max(res, len);
+            }
         }
-        cm.put(used, rt);
-        dp.put(i, cm);
-        return rt;
-    }
-
-    public static void main(String[] args) {
-        String[] input = {"yy", "bkhwmpbiisbldzknpm"};
-        System.out.println(new MaxLenConcatStringUniqueChars().maxLength(Arrays.asList(input)));
+        return res;
     }
 }
