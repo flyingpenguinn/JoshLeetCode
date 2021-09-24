@@ -22,7 +22,7 @@ public class AvgHeightOfBuildingInSegment {
         while(i<lines.size()){
             int x = lines.get(i)[0];
             int j=i;
-            while(j<lines.size() && lines.get(j)[0] == lines.get(i)[0]){
+            while(j<lines.size() && lines.get(j)[0] == lines.get(i)[0]){i
                 if(lines.get(j)[2]==0){
                     ++items;
                     sum += lines.get(j)[1];

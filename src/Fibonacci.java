@@ -56,12 +56,14 @@ class FiboIterative {
         }
         int a = 0;
         int b = 1;
-        int i = 1;
-        while(i<n){
-            int na = b;
-            b = a+b;
-            a = na;
-            i++;
+        if(n==0){
+            return n;
+        }
+        // i means what b's value is standing for
+        for(int i=1; i<n; ++i){
+            int nb = a+b;
+            a=b;
+            b=nb;
         }
         return b;
     }

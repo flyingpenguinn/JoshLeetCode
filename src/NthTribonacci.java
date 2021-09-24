@@ -28,25 +28,19 @@ The answer is guaranteed to fit within a 32-bit integer, ie. answer <= 2^31 - 1.
  */
 public class NthTribonacci {
     public int tribonacci(int n) {
-        int n0 = 0;
-        int n1 = 1;
-        int n2 = 1;
-        if (n == 0) {
-            return n0;
+        int a = 0;
+        int b = 1;
+        int c = 1;
+        if(n<=1){
+            return n;
         }
-        if (n == 1) {
-            return n1;
+        // i means what c's value is standing for
+        for(int i=2; i<n; ++i){
+            int nc = a+b+c;
+            a=b;
+            b=c;
+            c=nc;
         }
-        if (n == 2) {
-            return n2;
-        }
-        while (n >= 3) {
-            int sum = n0 + n1 + n2;
-            n0 = n1;
-            n1 = n2;
-            n2 = sum;
-            n--;
-        }
-        return n2;
+        return c;
     }
 }
