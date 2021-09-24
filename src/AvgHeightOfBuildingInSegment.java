@@ -1,51 +1,40 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class AvgHeightOfBuildingInSegment {
+    // similar to meeting room 2. but here we need to output each segment
     public int[][] averageHeightOfBuildings(int[][] a) {
-        int n = a.length;
-        List<int[]> lines = new ArrayList<>();
-        for(int i=0; i<n; ++i){
-            lines.add(new int[]{a[i][0], a[i][2], 0});
-            lines.add(new int[]{a[i][1], a[i][2], 1});
+        Map<Integer, Integer> h = new HashMap<>();
+        Map<Integer, Integer> c = new HashMap<>();
+        for (int[] ai : a) {
+            int s = ai[0];
+            int e = ai[1];
+            h.put(s, h.getOrDefault(s, 0) + ai[2]);
+            h.put(e, h.getOrDefault(e, 0) - ai[2]);
+            c.put(s, c.getOrDefault(s, 0) + 1);
+            c.put(e, c.getOrDefault(e, 0) - 1);
         }
-        Collections.sort(lines, (x, y)-> {
-            return Integer.compare(x[0], y[0]);
-        });
-        int i = 0;
-        int lastx = -1;
+        int ch = 0;
+        int cc = 0;
         int lastlen = 0;
-        int sum = 0;
-        int items = 0;
+        int lastx = -1;
         List<int[]> res = new ArrayList<>();
-        while(i<lines.size()){
-            int x = lines.get(i)[0];
-            int j=i;
-            while(j<lines.size() && lines.get(j)[0] == lines.get(i)[0]){i
-                if(lines.get(j)[2]==0){
-                    ++items;
-                    sum += lines.get(j)[1];
-                }else{
-                    --items;
-                    sum -= lines.get(j)[1];
-                }
-                ++j;
-            }
-            i=j;
-            int clen = items==0? 0: sum/items;
-            if(clen != lastlen){
-                if(lastlen >0){
-                    // no ins
+        for (int x : h.keySet()) {
+            int hdelta = h.get(x);
+            int itemdelta = c.getOrDefault(x, 0);
+            ch += hdelta;
+            cc += itemdelta;
+            int cur = cc == 0 ? 0 : ch / cc;
+            if (cur != lastlen) {
+                if (lastlen > 0) {
                     res.add(new int[]{lastx, x, lastlen});
                 }
+                lastlen = cur;
                 lastx = x;
-                lastlen = clen;
             }
         }
         int[][] rr = new int[res.size()][3];
-        for(i=0; i<res.size(); ++i){
-            for(int j=0; j<3; ++j){
+        for (int i = 0; i < res.size(); ++i) {
+            for (int j = 0; j < 3; ++j) {
                 rr[i][j] = res.get(i)[j];
             }
         }
