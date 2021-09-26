@@ -2,6 +2,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ScoreOfStudentsSolvingMathExpressions {
+    // just a change on "different ways to add parenthesis"
     private Set<Integer>[][] dp;
     public int scoreOfStudents(String s, int[] answers) {
         int n = s.length();

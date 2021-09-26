@@ -1,4 +1,5 @@
 public class GridGame {
+    // note there are only 2 rows
     public long gridGame(int[][] a) {
         int n = a[0].length;
         long sum0 = 0;
