@@ -16,47 +16,43 @@ Note:
 Because the range might be a large number, the low and high numbers are represented as string.
  */
 public class StrobogrammaticNumberIII {
-    // use bigger allowed and eq allowed to filter bad numbers
     // O(5^n/2) at most
     // no string needed at all!
-    private int[] dig = {0, 1, 8, 6, 9};
-    private int[] mdig = {0, 1, 8, 9, 6};
     private int res = 0;
-    private long llow = 0;
-    private long lhigh = 0;
-
-    private void countsame(int i, int len) {
-        docountsame(0, len, 0, 0, 1);
+    private int[] middles = {0, 1, 8};
+    private int[] m = {0, 1, -1, -1, -1, -1, 9, -1, 8, 6};
+    public int strobogrammaticInRange(String low, String high) {
+        dfs(0, 0, 1, Long.valueOf(low), Long.valueOf(high));
+        return res;
     }
 
-    private void docountsame(int i, int len, long cur1, long cur2, long base) {
-        if (i > len / 2) {
-            return;
-        }
-        int start = i == 0 ? 1 : 0;   // 0, 1, 8. if i==0 then we shoudlnt put 0
-        for (int j = start; j < 3; j++) {
-            long curnum = cur1 * (base * 10) + dig[j] * base + cur2;
-            if (curnum >= llow && curnum <= lhigh) {
-                res++;
+    private void dfs(long first, long second, long base, long low, long high){
+        for(int mi: middles){
+            if(first==0 && mi==0){
+                // avoid double counting 0 here and later
+                continue;
+            }
+            long cur = first*base*10+mi*base+second;
+            if(cur>=low && cur<=high){
+                ++res;
             }
         }
-        // actually getting 0 once here
-        long curnum = cur1 * base + cur2;
-        if (curnum >= llow && curnum <= lhigh) {
-            res++;
+        long cur = first*base+second;
+        if(cur>=low && cur<=high){
+            ++res;
         }
-        for (int j = start; j < 5; j++) {
-            docountsame(i + 1, len, cur1 * 10 + dig[j], mdig[j] * base + cur2, base * 10);
+        if(cur>high){
+            return;
         }
-    }
-
-    public int strobogrammaticInRange(String low, String high) {
-        lhigh = Long.valueOf(high);
-        llow = Long.valueOf(low);
-        if (lhigh < llow) {
-            return 0;
+        for(int i=0; i<10; ++i){
+            if(m[i]==-1){
+                continue;
+            }
+            if(first==0 && i==0){
+                // avoid adding 0 to 0, there is only one 0
+                continue;
+            }
+            dfs(first*10+i, m[i]*base+second, base*10, low, high);
         }
-        countsame(0, high.length());
-        return res;
     }
 }
