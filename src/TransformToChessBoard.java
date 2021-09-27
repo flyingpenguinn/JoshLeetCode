@@ -46,93 +46,54 @@ board[i][j] will be only 0s or 1s.
 public class TransformToChessBoard {
     public int movesToChessboard(int[][] a) {
         int n = a.length;
-        // either the same as row 0 or its flip
-        int[] rev = flip(a[0]);
-        for(int i=1; i<n; i++){
-            if(!Arrays.equals(a[i], a[0]) && !Arrays.equals(a[i], rev)){
+        // each row is either same or mirror of row 0
+        for(int i=0; i<n; ++i){
+            for(int j=0; j<n; ++j){
+                if((a[0][0]^a[i][0]^a[0][j]^a[i][j])==1){
+                    return -1;
+                }
+            }
+        }
+        // we only need to check row 0 and col because other row/cols are either the same or mirror
+        int row1s = 0;
+        int col1s = 0;
+        int misr = 0; // how many of row 0 or col 0 are misplaced, assuming it's 10101...
+        int misc = 0;
+        for(int i=0; i<n; ++i){
+            row1s += a[0][i];
+            col1s += a[i][0];
+            // assuming we want it 1010..., how many are misplaced
+            // note if it ends up 0101, misplaced = n- this number
+            if(a[0][i] == i%2){
+                misr++;  // end result will be misr/2
+            }
+            if(a[i][0] == i%2){
+                misc++;
+            }
+        }
+        if(n%2==0){
+            if(row1s != n/2 || col1s != n/2){
+                return -1;
+            }
+        }else{
+            // could be 101 or 010
+            if(row1s <n/2 || row1s > n/2+1 || col1s <n/2 || col1s> n/2+1){
                 return -1;
             }
         }
-        // 1 in row 0 and col 0 must be within range
-        int r0 = countRow(a, 0);
-        int c0 = countCol(a, 0);
-        if(n%2==0 && (r0 != n/2 || c0 != n/2)){
-            return -1;
-        }else if(n%2==1 && (r0 >n/2+1 || r0<n/2)){
-            return -1;
-        }else if(n%2==1 && (c0 >n/2+1 || c0<n/2)){
-            return -1;
-        }
         if(n%2==0){
-            // note the first col may not start with because it may not be the real first col at all. hence we try either way
-            int minRow = Math.min(calcRow(a, 0), calcRow(a, 1));
-            int minCol = Math.min(calcCol(a, 0), calcCol(a, 1));
-            return minRow + minCol;
+            // when n is even it could be 0101 or 1010, so pick the samller setup
+            misr = Math.min(misr, n-misr);
+            misc = Math.min(misc, n-misc);
         }else{
-            // here we know what the first row and col should be given there are more 1 than 0 or vice versa
-            return calcRow(a, r0-n/2) + calcCol(a, c0-n/2);
-        }
-    }
-
-    private int[] flip(int[] row){
-        int n = row.length;
-        int[] res = new int[n];
-        for(int j=0; j<n; j++){
-            res[j] = row[j]^1;
-        }
-        return res;
-    }
-
-    private int countRow(int[][] a, int i){
-        int res = 0;
-        for(int j=0; j<a[i].length; j++){
-            res += a[i][j];
-        }
-        return res;
-    }
-
-    private int countCol(int[][] a, int j){
-        int res = 0;
-        for(int i=0; i<a.length; i++){
-            res += a[i][j];
-        }
-        return res;
-    }
-
-    private int calcRow(int[][] a, int should){
-        int n = a.length;
-        int cres = 0;
-        for(int j=0; j<n; j++){
-            if(a[0][j] != should){
-                cres++;
+            if(row1s == n/2){
+                // we assumed 1010, but should be 0101
+                misr = n-misr;
             }
-            should ^= 1;
-        }
-        return cres/2;
-    }
-
-    private int calcCol(int[][] a, int should){
-        int n = a.length;
-        int rres = 0;
-        for(int i=0; i<n; i++){
-            if(a[i][0] != should){
-                rres++;
+            if(col1s == n/2){
+                misc = n-misc;
             }
-            should ^= 1;
         }
-        return rres/2;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,1,1,0],[0,1,1,0],[1,0,0,1],[1,0,0,1]]")));
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,1,1],[1,0,0],[1,0,0]]")));
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,0,1,0,1,1],[1,1,0,1,0,0],[1,1,0,1,0,0],[0,0,1,0,1,1],[1,1,0,1,0,0],[0,0,1,0,1,1]]")));
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1,0,0],[0,1,1],[1,0,0]]")));
-
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0,0,1,1],[1,1,0,0],[0,1,0,1],[1,0,1,0]]")));
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1,1,0],[0,0,1],[0,0,1]]")));
-
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[0, 1], [1, 0]]")));
-        System.out.println(new TransformToChessBoard().movesToChessboard(ArrayUtils.read("[[1, 0], [1, 0]]")));
+        return (misr+misc)/2;
     }
 }
