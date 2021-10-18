@@ -36,7 +36,6 @@ public class MinimumGap {
         }
         int min = a[0];
         int max = a[0];
-        ;
         for (int i = 1; i < n; i++) {
             min = Math.min(min, a[i]);
             max = Math.max(max, a[i]);
@@ -45,10 +44,10 @@ public class MinimumGap {
             return 0;
         }
         int groups = n + 1;
-        int bsize = (int) Math.ceil((max - min) * 1.0 / groups);
-        int[] bmax = new int[groups + 1];
+        int bsize = (int) Math.ceil((max - min + 1) * 1.0 / groups);
+        int[] bmax = new int[groups];
         Arrays.fill(bmax, -1);
-        int[] bmin = new int[groups + 1];
+        int[] bmin = new int[groups];
         Arrays.fill(bmin, Integer.MAX_VALUE);
         for (int i = 0; i < n; i++) {
             int bi = (a[i] - min) / bsize;
@@ -57,7 +56,7 @@ public class MinimumGap {
         }
         int pm = bmax[0];
         int maxgap = 0;
-        for (int k = 1; k <= groups; k++) {
+        for (int k = 1; k < groups; k++) {
             if (bmax[k] == -1) {
                 // empty
                 continue;
