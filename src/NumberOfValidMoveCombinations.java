@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.HashSet;
+
 public class NumberOfValidMoveCombinations {
     // 0: rook, queen, bishop
     int[][][] dirs = {
