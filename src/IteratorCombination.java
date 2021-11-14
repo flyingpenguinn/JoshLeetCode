@@ -30,68 +30,53 @@ There will be at most 10^4 function calls per test.
 It's guaranteed that all calls of the function next are valid.
  */
 public class IteratorCombination {
-    static class CombinationIterator {
-        int[] cur;
-        char[] cs;
-        boolean cached = true;
+    class CombinationIterator {
+        private int n;
+        private String s;
+        private int[] dig;
+        int chars = 0;
+        boolean done = false;
 
-
-        public CombinationIterator(String characters, int combinationLength) {
-            cs = characters.toCharArray();
-            cur = new int[combinationLength];
-            for (int i = 0; i < combinationLength; i++) {
-                cur[i] = i;
+        public CombinationIterator(String str, int len) {
+            this.s = str;
+            n = len;
+            chars = s.length();
+            dig = new int[n];
+            for (int i = 0; i < n; ++i) {
+                dig[i] = i;
             }
         }
 
-        // basically a +1
         public String next() {
-            if (cached) {
-                cached = false;
-                return output(cur);
+            StringBuilder res = new StringBuilder();
+            for (int i = 0; i < n; ++i) {
+                res.append(s.charAt(dig[i]));
             }
-            int n = cur.length;
-            int cn = cs.length;
-            for (int i = n - 1; i >= 0; i--) {
-                int fromBack = n - 1 - i;
-                // cur[n-] has limit as cn-1
-                // cur[n-2] has limit as cn-2
-                if (cur[i] < cn - 1 - fromBack) {
-                    cur[i]++;
-                    for (int j = i + 1; j < n; j++) {
-                        cur[j] = cur[j - 1] + 1;
+            if (dig[n - 1] + 1 < chars) {
+                ++dig[n - 1];
+            } else {
+                int carry = 1;
+                int i = n - 1;
+                for (; i >= 0; --i) {
+                    dig[i] += carry;
+                    if (chars - dig[i] >= n - i) {
+                        break;
                     }
-                    return output(cur);
+                }
+                if (i == -1) {
+                    done = true;
+                } else {
+                    ++i;
+                    for (; i < n; ++i) {
+                        dig[i] = dig[i - 1] + 1;
+                    }
                 }
             }
-            return null;
-        }
-
-        private String output(int[] cur) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < cur.length; i++) {
-                sb.append(cs[cur[i]]);
-            }
-            return sb.toString();
+            return res.toString();
         }
 
         public boolean hasNext() {
-            if (cached) {
-                return true;
-            }
-            String next = next();
-            if (next != null) {
-                cached = true;
-            }
-            return next != null;
+            return !done;
         }
-    }
-
-    public static void main(String[] args) {
-        CombinationIterator iterator = new CombinationIterator("chpqi", 3); // creates the iterator.
-        while (iterator.hasNext()) {
-            System.out.println(iterator.next());
-        }
-
     }
 }
