@@ -43,11 +43,9 @@ public class SecondMinTimeToReachDestination {
             }
             int nct = ct+time;
             for(int ne: g[cx]){
-                //   cout<<"checking "<<cx<<" -> "<<ne<<endl;
                 TreeSet<Integer> neq= dist[ne];
                 if(neq.size()<2){
                     neq.add(nct);
-                    //     cout<<"pushing "<<ne<<" "<<nct<<endl;
                     pq.offer(new Node(ne, nct));
                 }else{
                     // ==2

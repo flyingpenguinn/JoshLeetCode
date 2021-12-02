@@ -33,7 +33,6 @@ public class MaxNumberOfTasksToAssignWorkers {
                         bad = true;
                         break;
                     }
-                    //    cout << "found " << tasks[i] << " " << *found << endl;
                     wm.remove(found);
                     --rem;
                 }

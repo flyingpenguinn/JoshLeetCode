@@ -54,7 +54,6 @@ public class SmallestRotationHighestScore {
         // initially all >=0
         int max = cur;
         int maxi = 0;
-        //    cout<<"round 0 "<<cur<<endl;
         for(int i=1; i<n; i++){
             // at round i, i-1 stuff are bad
             cur -= gaps.getOrDefault(i-1, 0);
@@ -63,7 +62,6 @@ public class SmallestRotationHighestScore {
             if(replaced>=i){
                 cur++;
             }
-            //     cout<<"round "<<i<<" "<<cur<<endl;
             if(cur>max){
                 max = cur;
                 maxi = i;

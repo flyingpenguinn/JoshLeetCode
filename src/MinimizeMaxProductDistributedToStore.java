@@ -19,7 +19,6 @@ public class MinimizeMaxProductDistributedToStore {
     }
 
     private boolean cando(int[] a, long n, long t){
-        //  cout<<t<<endl;
         long res = 0;
         for(int i=0; i<a.length; ++i){
             long stores = (int) Math.ceil(a[i]*1.0/t);
