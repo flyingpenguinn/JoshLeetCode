@@ -20,30 +20,26 @@ Output: 17
 Explanation: One 1 at depth 3, one 4 at depth 2, and one 6 at depth 1; 1*3 + 4*2 + 6*1 = 17.
  */
 public class NestedListWeightII {
-    // 1x + 2y + 3z = (3 + 1) * (x + y + z) - (3x + 2y + z);
-    // alternatively can use a map but this is more clever...
-    public int depthSumInverse(List<NestedInteger> nestedList) {
-        int[] res = dfs(nestedList, 1);
-        return (res[2] + 1) * res[1] - res[0];
+    // sigma v*(maxd-depth+1) = sigma v*(maxd+1) - sigma (v*depth), so we calc the two parts separately
+    private int sum = 0;
+    private int sumd = 0;
+    private int maxd = 0;
+
+    public int depthSumInverse(List<NestedInteger> list) {
+        dfs(list, 1);
+        return sum * (maxd + 1) - sumd;
     }
 
-    // weited sum, flat sum, and max depth
-    // current level is d. all the items in this list share the same depth
-    private int[] dfs(List<NestedInteger> list, int d) {
-        int weighted = 0;
-        int flat = 0;
-        int maxd = d; // at this leel the height is at least d already- if this is a leaf
-        for (NestedInteger nl : list) {
-            if (nl.isInteger()) {
-                weighted += nl.getInteger() * d;
-                flat += nl.getInteger();
+    void dfs(List<NestedInteger> list, int depth) {
+        maxd = Math.max(maxd, depth);
+        for (NestedInteger ni : list) {
+            if (!ni.isInteger()) {
+                dfs(ni.getList(), depth + 1);
             } else {
-                int[] next = dfs(nl.getList(), d + 1);
-                weighted += next[0];
-                flat += next[1];
-                maxd = Math.max(maxd, next[2]);
+                int v = ni.getInteger();
+                sum += v;
+                sumd += v * depth;
             }
         }
-        return new int[]{weighted, flat, maxd};
     }
 }
