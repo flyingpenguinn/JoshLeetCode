@@ -52,7 +52,8 @@ public class MedianOfTwoSortedArrays {
             return Math.min(a[la], b[lb]);
         }
 
-        int cuta = Math.min(k / 2, ua - la + 1);
+        int mida = la+(ua-la)/2;
+        int cuta = Math.min(mida-la+1, k);
         int cutb = k - cuta;
         int ma = la + cuta - 1;
         int mb = lb + cutb - 1;
