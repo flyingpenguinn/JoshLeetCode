@@ -1,6 +1,4 @@
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /*
 LC#1153
@@ -30,57 +28,25 @@ Note:
 Both str1 and str2 contain only lowercase English letters.
  */
 public class StringTransformIntoAnother {
-    // must have one unused char....
-    boolean cycle = false;
-    int[] m = new int[26];
-    int[] st = new int[26];
+    // if we need a mapping then we need at least one free char to spare
+    private Map<Character, Character> g = new HashMap<>();
+    private Set<Character> seen = new HashSet<>();
 
-    public boolean canConvert(String s, String t) {
-        if (s.length() != t.length()) {
-            return false;
-        }
-        Arrays.fill(m, -1);
-        for (int i = 0; i < s.length(); i++) {
-            int sind = s.charAt(i) - 'a';
-            int tind = t.charAt(i) - 'a';
-            if (m[sind] != -1 && m[sind] != tind) {
+    public boolean canConvert(String str1, String str2) {
+        int n = str1.length();
+        boolean needtemp = false;
+        for (int i = 0; i < n; ++i) {
+            char c1 = str1.charAt(i);
+            char c2 = str2.charAt(i);
+            if (g.containsKey(c1) && g.get(c1) != c2) {
                 return false;
             }
-            m[sind] = tind;
-        }
-        Set<Integer> mapped = new HashSet<>();
-        for (int i = 0; i < 26; i++) {
-            if (m[i] != -1) {
-                mapped.add(m[i]);
+            g.put(c1, c2);
+            if (c1 != c2) {
+                needtemp = true;
             }
+            seen.add(c2);
         }
-        if (mapped.size() < 26) {
-            return true;
-        }
-        for (int i = 0; i < 26; i++) {
-            if (st[i] == 0 && m[i] != -1) {
-                dfs(i);
-            }
-        }
-
-        return !cycle;
-    }
-
-    private void dfs(int i) {
-        if (cycle) {
-            return;
-        }
-        st[i] = 1;
-        int j = m[i];
-        if (j == -1 || j == i) {
-            return;
-        }
-        if (st[j] == 1) {
-            cycle = true;
-            return;
-        } else if (st[j] == 0) {
-            dfs(j);
-        }
-        st[i] = 2;
+        return !needtemp || seen.size() < 26;
     }
 }
