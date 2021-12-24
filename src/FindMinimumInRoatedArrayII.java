@@ -25,37 +25,32 @@ public class FindMinimumInRoatedArrayII {
     // note the structure is similar: check which part mid is in first then decide the two directions. note the < not <=
     public int findMin(int[] a) {
         int n = a.length;
-        int l = 0;
-        int u = n - 1;
-        while (l < u) {
-            int mid = l + (u - l) / 2;
-            if (a[l] == a[mid] && a[mid] == a[u]) {
-                // when all equal like
-                // 3,3,2,[3],3,3,3 or 3,3,[3],2,3,3
-                // hard to tell which part mid is in
-                int min = a[l];
-                for (int i = l + 1; i < n; i++) {
+        int l=0;
+        int u=n-1;
+        while(l<=u){
+            int mid = l+(u-l)/2;
+            if(a[l] == a[mid] && a[mid]==a[u]){
+                int min = a[0];
+                for(int i=1; i<n; ++i){
                     min = Math.min(min, a[i]);
                 }
                 return min;
             }
-            if (a[mid] >= a[l]) {
-                // bigger part
-                if (a[l] < a[u]) {
-                    // can't be <=: 1,2,0,1. gist is even if a[l] <=a[mid] and a[mid] <=a[u] it may not be a sorted one
-                    return a[l];
-                } else {
-                    l = mid + 1;
-                }
-            } else {
-                if ((mid == l || a[mid] < a[mid - 1]) && (mid == u || a[mid] <= a[mid + 1])) {
-                    // can't be a[mid] <= a[mid-1] otherwise we will return in an equal stream. because there are unequal numbers the min must be either a[l] or < its predecessor
-                    return a[mid];
-                } else {
-                    u = mid - 1;
-                }
+            if(a[l]<a[u]){
+                return a[l];
+            }
+            else if((mid==0 || a[mid]<a[mid-1])
+                    && (mid==n-1 || a[mid]<=a[mid+1])){
+                // key: min must < on the left it could <= on the right
+                return a[mid];
+            }
+            else if(a[l]>a[mid]){
+                // a[l]>a[mid] means mid is on the smaller side on the right
+                u = mid-1;
+            }else{
+                l = mid+1;
             }
         }
-        return a[l];
+        return -1;
     }
 }

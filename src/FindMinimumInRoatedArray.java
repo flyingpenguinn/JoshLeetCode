@@ -19,27 +19,23 @@ Output: 0
  */
 public class FindMinimumInRoatedArray {
     public int findMin(int[] a) {
+        int n = a.length;
         int l = 0;
         int u = a.length - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (l == u) {
+            if(a[l]<=a[u]){
+                return a[l];
+            }
+            else if((mid==0 || a[mid]<a[mid-1])
+                    && (mid==n-1 || a[mid]<=a[mid+1])){
+                // key: min must < on the left it could <= on the right
                 return a[mid];
-            } else if (a[l] > a[mid]) {
-                // mid in 2nd half
-                if (a[mid] < a[mid - 1]) {
-                    return a[mid];
-                } else {
-                    u = mid - 1;
-                }
-            } else {
-                // mid in first half
-                if (a[mid] <= a[u]) {
-                    // and there is no 2nd halfmid
-                    return a[l];
-                } else {
-                    l = mid + 1;
-                }
+            }
+            else if(a[l]>a[mid]){
+                u = mid-1;
+            }else{
+                l = mid+1;
             }
         }
         return -1;

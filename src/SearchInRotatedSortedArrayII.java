@@ -40,21 +40,21 @@ public class SearchInRotatedSortedArrayII {
                 return false;
             } else {
                 // rest is the same as search iin rotated sorted array I
-                if (a[mid] >= a[l]) {
-                    // mid in bigger part
-                    if (t >= a[l] && t <= a[mid]) {
-                        // t is on the left between a[l] and a[mid]
-                        u = mid - 1;
-                    } else {
-                        // t<a[l] or t>a[mid]. we go to the right part. t could be in the bigger part but > a[mid], or in the smaller part
+                if (a[mid] == t) {
+                    return true;
+                } else if (a[l] > a[mid]) { // mid in 2nd half the smaller one
+                    if (t > a[mid] && t <= a[u]) {
+                        // t is in the same one
                         l = mid + 1;
+                    } else {
+                        u = mid - 1;
                     }
-                } else {
-                    // mid in smaller part
-                    if (t >= a[mid] && t <= a[u]) {
-                        l = mid + 1;
-                    } else {
+                } else { // mid in first half the bigger one
+                    if (t < a[mid] && t >= a[l]) {
+                        // t is in the same one
                         u = mid - 1;
+                    } else {
+                        l = mid + 1;
                     }
                 }
             }
