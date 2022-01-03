@@ -51,12 +51,8 @@ public class FindTheCelebrity {
             }
         }
         for (int i = 0; i < n; i++) {
-            if (i == cand) {
-                continue;
-            } else {
-                if (defeated(cand, i)) {
-                    return -1;
-                }
+            if (i != cand && defeated(cand, i)) {
+                return -1;
             }
         }
         return cand;
