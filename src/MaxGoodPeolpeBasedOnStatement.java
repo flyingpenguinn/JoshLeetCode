@@ -1,3 +1,6 @@
+import java.util.HashSet;
+import java.util.Set;
+
 public class MaxGoodPeolpeBasedOnStatement {
     public int maximumGood(int[][] a) {
         int n = a.length;
