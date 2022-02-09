@@ -37,6 +37,7 @@ On the input ships is only given to initialize the map internally. You must solv
 public class NumberOfShipsInRectangle {
     // cut till it's single point and decide.
     // note we always give mx/my to the point that has the old 0,0 in a four-grid matrix
+    // if in doubt, just need to make 0,0 and 1,1 work
     static class Sea {
         public boolean hasShips(int[] topRight, int[] bottomLeft) {
             if (bottomLeft[0] > topRight[0] || bottomLeft[1] > topRight[1]) {
@@ -47,36 +48,34 @@ public class NumberOfShipsInRectangle {
     }
 
 
-    int ships = 0;
+    public int countShips(Sea sea, int[] topRight, int[] bottomLeft) {
+        int b0 = bottomLeft[0];
+        int b1 = bottomLeft[1];
+        int t0 = topRight[0];
+        int t1 = topRight[1];
 
-    public int countShips(Sea sea, int[] tr, int[] bl) {
-        find(sea, tr, bl);
-        return ships;
-    }
+        if (b0 > t0 || b1 > t1) {
+            return 0;
+        }
+        if (b0 == t0 && b1 == t1) {
+            return sea.hasShips(topRight, bottomLeft) ? 1 : 0;
+        }
 
-    private void find(Sea sea, int[] tr, int[] bl) {
-        if (ships >= 10) {
-            return;
+        if (!sea.hasShips(topRight, bottomLeft)) {
+            return 0;
         }
-        if (bl[0] > tr[0] || bl[1] > tr[1]) {
-            return;
-        }
-        if (bl[0] == tr[0] && bl[1] == tr[1]) {
-            if (sea.hasShips(tr, bl)) {
-                ships++;
-            }
-            return;
-        }
-        boolean has = sea.hasShips(tr, bl);
-        if (!has) {
-            return;
-        }
-        int mx = (tr[0] + bl[0]) / 2;
-        int my = (tr[1] + bl[1]) / 2;
-        find(sea, new int[]{mx, my}, bl);
-        find(sea, new int[]{mx, tr[1]}, new int[]{bl[0], my + 1});
-        find(sea, tr, new int[]{mx + 1, my + 1});
-        find(sea, new int[]{tr[0], my}, new int[]{mx + 1, bl[1]});
+
+        int mid0 = (b0 + t0) / 2;
+        int mid1 = (b1 + t1) / 2;
+        int[] tr1 = new int[]{mid0, mid1};
+        int[] bt1 = bottomLeft;
+        int[] tr2 = new int[]{mid0, t1};
+        int[] bt2 = new int[]{b0, mid1 + 1};
+        int[] tr3 = new int[]{t0, mid1};
+        int[] bt3 = new int[]{mid0 + 1, b1};
+        int[] tr4 = topRight;
+        int[] bt4 = new int[]{mid0 + 1, mid1 + 1};
+        return countShips(sea, tr1, bt1) + countShips(sea, tr2, bt2) + countShips(sea, tr3, bt3) + countShips(sea, tr4, bt4);
     }
 
     public static void main(String[] args) throws IOException {

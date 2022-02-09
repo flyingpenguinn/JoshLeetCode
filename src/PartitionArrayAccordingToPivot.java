@@ -2,30 +2,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PartitionArrayAccordingToPivot {
+    // only need counter to know
+    // mind this is not the same as sort color: othewrise if we swap we can't guarantee relative orders
     public int[] pivotArray(int[] nums, int pivot) {
         int n = nums.length;
-        List<Integer> sm = new ArrayList<>();
-        List<Integer> eq = new ArrayList<>();
-        List<Integer> bg = new ArrayList<>();
+        int sm = 0;
+        int eq = 0;
         for (int ai : nums) {
             if (ai < pivot) {
-                sm.add(ai);
+                ++sm;
             } else if (ai == pivot) {
-                eq.add(ai);
-            } else {
-                bg.add(ai);
+                ++eq;
             }
         }
         int[] res = new int[n];
-        int ri = 0;
-        for (int ai : sm) {
-            res[ri++] = ai;
-        }
-        for (int ai : eq) {
-            res[ri++] = ai;
-        }
-        for (int ai : bg) {
-            res[ri++] = ai;
+        int si = 0;
+        int ei = sm;
+        int bi = sm + eq;
+        for (int ai : nums) {
+            if (ai < pivot) {
+                res[si++] = ai;
+            } else if (ai == pivot) {
+                res[ei++] = ai;
+            } else {
+                res[bi++] = ai;
+            }
         }
         return res;
     }

@@ -2,41 +2,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MinCostToSetCookingTime {
-    private int res = (int) (1e9);
-
+    private int Max = (int)2e9;
+    // either exact minutes, or min-1, sec + 60
+    // mind the cases where we need to pad seconds: only when min is non empty, and min is allowed to be empty
     public int minCostSetTime(int startAt, int moveCost, int pushCost, int targetSeconds) {
-        List<Integer> nums = new ArrayList<>();
-        dfs(startAt, moveCost, pushCost, targetSeconds, 0, nums);
-        return res;
+        int minutes = targetSeconds/60;
+        int seconds = targetSeconds % 60;
+        return Math.min(count(startAt, moveCost, pushCost, minutes, seconds), count(startAt, moveCost, pushCost, minutes-1, seconds+60));
     }
 
-    private void dfs(int i, int m, int p, int t, int cur, List<Integer> nums) {
-
-        List<Integer> copied = new ArrayList<>();
-        for (int k = 1; k <= 4 - nums.size(); ++k) {
-            copied.add(0);
+    private int count(int st, int mc, int pc, int min, int sec){
+        if(min<0 || min>99 || sec <0 || sec>99){
+            return Max;
         }
-        for (int ni : nums) {
-            copied.add(ni);
+        String ms = min==0?"":String.valueOf(min);
+        // min can be single digits. seconds only need to be padded when min is not empty
+        String ss = String.valueOf(sec);
+        if(!ms.isEmpty() && ss.length()==1){
+            ss = "0" + ss;
         }
-        int mins = copied.get(0) * 10 + copied.get(1);
-        int seconds = copied.get(2) * 10 + copied.get(3);
-        int curtime = mins * 60 + seconds;
-        if (curtime == t) {
-            res = Math.min(res, cur);
-            return;
-        } else if (curtime > t) {
-            return;
+        int cur = st;
+        int res = 0;
+        for(int i=0; i<ms.length(); ++i){
+            int cind = ms.charAt(i)-'0';
+            if(cind != cur){
+                res += mc;
+            }
+            res += pc;
+            cur = cind;
         }
-        if (nums.size() == 4) {
-            return;
+        for(int i=0; i<ss.length(); ++i){
+            int cind = ss.charAt(i)-'0';
+            if(cind != cur){
+                res += mc;
+            }
+            res += pc;
+            cur = cind;
         }
-
-        for (int j = 0; j <= 9; ++j) {
-            int mc = i == j ? 0 : m;
-            nums.add(j);
-            dfs(j, m, p, t, cur + mc + p, nums);
-            nums.remove(nums.size() - 1);
-        }
+        return res;
     }
 }
