@@ -1,4 +1,4 @@
-public class RemoveAllOnesWithRowsAndColumnsFlip {
+public class RemoveAllOnesWithRowsAndColFlipsII {
     private Integer[] dp;
     public int removeOnes(int[][] a) {
         int m = a.length;
