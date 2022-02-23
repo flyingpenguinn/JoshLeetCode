@@ -6,7 +6,7 @@ public class CountWaysToBuildRoomInAntColony {
     // we get results from subtrees... Rs1, Rs2...
     // but they can interleave. among all n-1 subtree nodes, we have (n-1)! ways to permute them. but Ns1, Ns2... nodes' orders are fixed
     // so we end up having Rcur = ((Ncur-1)!/Ns1*Ns2...) * Rs1*Rs2...
-    // then the trick is to use (b/a) % m  = b*a mod inverse m to get the mod result
+    // then the trick is to use (b/a) % m  = b*(a mod inverse m) to get the mod result
 
     private final int Mod = 1000000007;
     private int[] children;
