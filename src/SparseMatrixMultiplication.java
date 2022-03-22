@@ -28,7 +28,7 @@ AB = | -1 0 3 | x | 0 0 0 | = | -7 0 3 |
                   | 0 0 1 |
  */
 public class SparseMatrixMultiplication {
-    // aij*bjk so iterate on i,j, and b's row hashmaps. note we dont need a hashmap for a
+    // cik = sigma (aij*bjk) so iterate on i,j, and b's row hashmaps. note we dont need a hashmap for a
     public int[][] multiply(int[][] a, int[][] b) {
         // non null, valid, a col == b row
         Map<Integer, List<Integer>> bm = new HashMap<>();
