@@ -30,11 +30,10 @@ public class SearchBst {
         if (root.val == val) {
             return root;
         }
-        TreeNode lr = searchBST(root.left, val);
-        if (lr != null) {
-            return lr;
+        if(root.val < val){
+            return searchBST(root.right, val);
+        }else{
+            return searchBST(root.left, val);
         }
-        TreeNode rr = searchBST(root.right, val);
-        return rr;
     }
 }

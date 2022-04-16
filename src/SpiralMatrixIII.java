@@ -40,4 +40,8 @@ public class SpiralMatrixIII {
 
         return res;
     }
+
+    public static void main(String[] args) {
+        System.out.println(new SpiralMatrixIII().spiralMatrixIII(1, 4, 0, 0));
+    }
 }
