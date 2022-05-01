@@ -40,23 +40,28 @@ The input string will only contain the character 'D' and 'I'.
 The length of input string is a positive integer and will not exceed 10,000
  */
 public class FindPermutation {
-    // reverse every first D to first I
+    // reverse every first D to first I after it
     public int[] findPermutation(String s) {
         int n = s.length();
-        int[] r = new int[n + 1];
-        for (int i = 0; i < r.length; i++) {
-            r[i] = i + 1;
+        int[] res = new int[n+1];
+        for(int i=0; i<=n; ++i){
+            res[i] = i+1;
         }
-        int start = 0;
-        for (int i = 1; i <= n; i++) {
-            // think of last one at index n as an I
-            if ((i == n || s.charAt(i) == 'I') && s.charAt(i - 1) != 'I') {
-                reverse(r, start, i);
-            } else if (i < n && s.charAt(i) == 'D' && s.charAt(i - 1) != 'D') {
-                start = i;
+        int i = 0;
+        while(i<n){
+            if(s.charAt(i)=='I'){
+                ++i;
+                continue;
             }
+            int j = i+1;
+            while(j<n && s.charAt(j)=='D'){
+                ++j;
+            }
+            // i...j-1
+            reverse(res, i, j);
+            i=j;
         }
-        return r;
+        return res;
     }
 
     void reverse(int[] a, int i, int j) {

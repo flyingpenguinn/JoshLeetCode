@@ -34,31 +34,42 @@ Can you solve it in O(N) time and O(1) space?
 public class BackspaceStringComparison {
     // can also go backward and count the #s
     public boolean backspaceCompare(String s, String t) {
-        char[] c1 = s.toCharArray();
-        int p1 = 0;
-        for (int i = 0; i < c1.length; i++) {
-            if (c1[i] == '#') {
-                p1 = p1 == 0 ? 0 : p1 - 1;
-            } else {
-                c1[p1++] = c1[i];
+        int sn = s.length();
+        int tn = t.length();
+        int i = sn-1;
+        int j = tn-1;
+        int counts = 0;
+        int countt = 0;
+        while(i>=0 || j>=0){
+            while(i>=0 && (counts>0 || s.charAt(i)=='#')){
+                if(s.charAt(i)=='#'){
+                    ++counts;
+                }else if(counts>0){
+                    --counts;
+                }
+                --i;
             }
-        }
-        char[] c2 = t.toCharArray();
-        int p2 = 0;
-        for (int i = 0; i < c2.length; i++) {
-            if (c2[i] == '#') {
-                p2 = p2 == 0 ? 0 : p2 - 1;
-            } else {
-                c2[p2++] = c2[i];
+            while(j>=0 && (countt>0 || t.charAt(j)=='#')){
+                if(t.charAt(j)=='#'){
+                    ++countt;
+                }else if(countt>0){
+                    --countt;
+                }
+                --j;
             }
-        }
-        while (p1 - 1 >= 0 && p2 - 1 >= 0) {
-            if (c1[p1 - 1] != c2[p2 - 1]) {
+            char si = i==-1? '*': s.charAt(i);
+            char sj = j==-1? '*': t.charAt(j);
+            if(si!=sj){
                 return false;
             }
-            p1--;
-            p2--;
+            --i;
+            --j;
         }
-        return p1 == p2;
+        return i<0 && j<0;
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(new BackspaceStringComparison().backspaceCompare("nzp#o#g", "b#nzp#o#g"));
     }
 }
