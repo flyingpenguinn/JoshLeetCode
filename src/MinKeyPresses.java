@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class MinKeyPresses {
     public int minimumKeypresses(String s) {
         int n = s.length();
