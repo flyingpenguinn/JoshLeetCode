@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /*
 
@@ -21,56 +18,33 @@ Output: [[1,2],[3,10],[12,16]]
 Explanation: Because the new interval [4,8] overlaps with [3,5],[6,7],[8,10].
  */
 public class InsertInterval {
-    // On, because we may change the return array...
-    public int[][] insert(int[][] a, int[] ni) {
-        List<int[]> r = new ArrayList<>();
-        int n = a.length;
-        if (n == 0) {
-            r.add(ni);
-            return toarray(r);
+    public int[][] insert(int[][] ints, int[] t) {
+        TreeMap<Integer, Integer> tm = new TreeMap<>();
+        for (int[] it : ints) {
+            tm.put(it[0], it[1]);
         }
-        if (ni[1] < a[0][0]) {
-            r.add(ni);
-            addall(a, r, n, 0);
-            return toarray(r);
+        int start = t[0];
+        int end = t[1];
+        var next = tm.floorEntry(start);
+        if (next == null) {
+            next = tm.higherEntry(start);
         }
-        if (ni[0] > a[n - 1][1]) {
-            addall(a, r, n, 0);
-            r.add(ni);
-            return toarray(r);
-        }
-        int[] merged = ni;
-        for (int i = 0; i < n; i++) {
-            if (a[i][1] < ni[0]) {
-                r.add(a[i]);
-            } else if (a[i][0] > ni[1]) {
-                if (merged != null) {
-                    r.add(merged);
-                    merged = null;
-                    addall(a, r, n, i);
-                    break;
-                }
-            } else {
-                merged = new int[]{Math.min(a[i][0], merged[0]), Math.max(a[i][1], merged[1])};
+        int nstart = start;
+        int nend = end;
+        while (next != null && next.getKey() <= end) {
+            if (next.getValue() >= start) {
+                nstart = Math.min(nstart, next.getKey());
+                nend = Math.max(nend, next.getValue());
+                tm.remove(next.getKey());
             }
+            next = tm.higherEntry(next.getKey());
         }
-        if (merged != null) {
-            r.add(merged);
+        tm.put(nstart, nend);
+        int[][] res = new int[tm.size()][2];
+        int ri = 0;
+        for (int k : tm.keySet()) {
+            res[ri++] = new int[]{k, tm.get(k)};
         }
-        return toarray(r);
-    }
-
-    private void addall(int[][] a, List<int[]> r, int n, int from) {
-        for (int i = from; i < n; i++) {
-            r.add(a[i]);
-        }
-    }
-
-    int[][] toarray(List<int[]> input) {
-        int[][] r = new int[input.size()][2];
-        for (int i = 0; i < input.size(); i++) {
-            r[i] = input.get(i);
-        }
-        return r;
+        return res;
     }
 }
