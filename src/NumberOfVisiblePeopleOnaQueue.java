@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -19,6 +21,11 @@ public class NumberOfVisiblePeopleOnaQueue {
         }
 
         return res;
+    }
+
+    public static void main(String[] args) {
+        NumberOfVisiblePeopleOnaQueueFromRight np = new NumberOfVisiblePeopleOnaQueueFromRight();
+        System.out.println(np.canSeePersonsCount(ArrayUtils.read1d("[10,6,8,5,11,9]")));
     }
 }
 
