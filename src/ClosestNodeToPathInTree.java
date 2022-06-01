@@ -75,35 +75,6 @@ public class ClosestNodeToPathInTree {
         return dist;
     }
 
-    private int lca(int v1, int v2) {
-        if(v1==v2){
-            return v1;
-        }
-        return dolca(0, v1, v2, -1);
-    }
-
-    private int dolca(int i, int v1, int v2, int p) {
-        if(i==v1 || i==v2){
-            return i;
-        }
-        List<Integer> cand = new ArrayList<>();
-        for(int ne: tree.getOrDefault(i, new ArrayList<>())){
-            if(ne==p){
-                continue;
-            }
-            if(dolca(ne, v1, v2, i) != -1){
-                cand.add(ne);
-            }
-        }
-        if(cand.size()==2){
-            return i;
-        }else if(cand.size()==1){
-            return cand.get(0);
-        }else{
-            return -1;
-        }
-    }
-
     public static void main(String[] args) {
         System.out.println(Arrays.toString(new ClosestNodeToPathInTree().closestNode(7, ArrayUtils.read("[[0,1],[0,2],[0,3],[1,4],[2,5],[2,6]]"), ArrayUtils.read("[[5,3,4],[5,3,6]]"))));
     }
