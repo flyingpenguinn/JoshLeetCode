@@ -18,25 +18,23 @@ Explanation: t is "aabbb" which its length is 5.
  */
 public class LongestSubstringWithAtmostTwoDistinctChars {
     public int lengthOfLongestSubstringTwoDistinct(String s) {
-        int h = -1;
-        int l = 0;
-        Map<Character, Integer> map = new HashMap<>();
-        int max = 0;
-        while (true) {
-            if (map.size() <= 2) {
-                max = Math.max(max, h - l + 1);
-
-                h++;
-                if (h == s.length()) {
-                    break;
-                }
-                update(map, s.charAt(h), 1);
-            } else {
-                update(map, s.charAt(l++), -1);
+        int n = s.length();
+        Map<Character,Integer> m = new HashMap<>();
+        int t = 2;
+        int j = 0;
+        int res = 0;
+        // j...i-1 good, now trying i
+        for(int i=0; i<n; ++i){
+            char c = s.charAt(i);
+            update(m, c, 1);
+            while(m.size()>t){
+                update(m, s.charAt(j++), -1);
             }
-
+            // now j...i good
+            int cur = i-j+1;
+            res = Math.max(cur, res);
         }
-        return max;
+        return res;
     }
 
     void update(Map<Character, Integer> map, char k, int v) {
@@ -44,7 +42,6 @@ public class LongestSubstringWithAtmostTwoDistinctChars {
             return;
         }
         int nv = map.getOrDefault(k, 0) + v;
-        ;
         if (nv <= 0) {
             map.remove(k);
         } else {
