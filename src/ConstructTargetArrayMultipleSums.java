@@ -44,6 +44,9 @@ public class ConstructTargetArrayMultipleSums {
     // the last operation must be on the max number. so use a pq to trace it
     public boolean isPossible(int[] a) {
         int n = a.length;
+        if(n==1){
+            return a[0]==1;
+        }
         long sum = 0;
         PriorityQueue<Long> pq = new PriorityQueue<>(Collections.reverseOrder());
         for (int i = 0; i < n; i++) {
@@ -53,8 +56,7 @@ public class ConstructTargetArrayMultipleSums {
         while (!pq.isEmpty() && sum > n) {
             long top = pq.poll();
             long other = sum - top;
-            if (top <= other || other == 0) {
-                // other == 0 means this number is the only one here but sum >n so we are doomed
+            if (top <= other ) {
                 // if top <= other we had no way to come to this top
                 return false;
             }
