@@ -6,25 +6,16 @@ public class MinHourOfTrainingToWin {
             esum += ei;
         }
         int engap = Math.max(0, esum + 1 - initialEnergy);
-        int l = 0;
-        int u = (int) 1e4;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            int ce = initialExperience + mid;
-            boolean good = true;
-            for (int i = 0; i < n; ++i) {
-                if (ce <= experience[i]) {
-                    good = false;
-                    break;
-                }
-                ce += experience[i];
+        int sum = initialExperience;
+        int exgap = 0;
+        for (int exi : experience) {
+            if (sum < exi + 1) {
+                int delta = exi + 1 - sum;
+                sum += delta;
+                exgap += delta;
             }
-            if (good) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
+            sum += exi;
         }
-        return engap + l;
+        return engap + exgap;
     }
 }
