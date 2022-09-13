@@ -36,48 +36,35 @@ The next byte is a continuation byte which starts with 10 and that's correct.
 But the second continuation byte does not start with 10, so it is invalid.
  */
 public class Utf8Validation {
+
     public boolean validUtf8(int[] a) {
         int n = a.length;
-        int k = 0;
-        while (k < n) {
-            int b1 = a[k];
-            int c = 0;
-            // from 7: least 8 digits!
-            for (int i = 7; i >= 0; i--) {
-                if (((b1 >> i) & 1) == 0) {
-                    break;
+        int count = 0;
+        for (int i = 0; i < n; ++i) {
+            int t = a[i];
+            if (count != 0) {
+                if ((t >> 6) != 0b10) {
+                    return false;
                 } else {
-                    c++;
-                    if (c > 4) {
-                        return false;
-                    }
+                    --count;
                 }
-            }
-            if (c == 1) {
-                // can't be 10
-                return false;
-            }
-            if (c == 0) {
-                // 0 represents 1
-                c = 1;
-            }
-            if (k + c - 1 >= n) {
-                // can't be over this array
-                return false;
-            }
-            for (int i = k + 1; i <= k + c - 1; i++) {
-                // later ones must start with 10
-                if (((a[i] >> 7 & 1) != 1) || ((a[i] >> 6) & 1) != 0) {
+            } else {
+                if ((t >> 3) == 0b11110) {
+                    count = 3;
+                } else if ((t >> 4) == 0b1110) {
+                    count = 2;
+                } else if ((t >> 5) == 0b110) {
+                    count = 1;
+                } else if ((t >> 7) == 1) {
                     return false;
                 }
             }
-            k += c;
         }
-        return true;
+        return count == 0;
     }
 
     public static void main(String[] args) {
-        System.out.println(new Utf8Validation().validUtf8(ArrayUtils.read1d("197, 130, 1")));
-        System.out.println(new Utf8Validation().validUtf8(ArrayUtils.read1d("234, 140, 4")));
+        System.out.println(new Utf8Validation().validUtf8(ArrayUtils.read1d("237")));
+
     }
 }
