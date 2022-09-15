@@ -44,7 +44,7 @@ public class ArrayOfDoublePairs {
         for (int ai : a) {
             li.add(ai);
         }
-        // sort by abs. can't make -1 -> 1 because -1 *2 1= 2
+        // sort by abs. note we want -4 to appear after -2 so must be abs sorting
         Collections.sort(li, (x, y) -> Integer.compare(Math.abs(x.intValue()), Math.abs(y.intValue())));
         for (int i = 0; i < n; i++) {
             int cv = li.get(i);
