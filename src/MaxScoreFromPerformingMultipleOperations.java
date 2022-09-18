@@ -24,3 +24,20 @@ public class MaxScoreFromPerformingMultipleOperations {
         return rt;
     }
 }
+
+
+class MaxScoreFromPerforming2 {
+    // alternatively, dp using classic space saving technique and note i can never be bigger than k!
+    public int maximumScore(int[] a, int[] b) {
+        int[][] dp = new int[a.length + 1][2];
+        for (int k = b.length - 1; k >= 0; --k) {
+            for (int i = Math.min(a.length - 1, k); i >= 0; --i) {
+                int j = a.length - 1 - (k - i);
+                int way1 = a[i] * b[k] + dp[i + 1][(k + 1) % 2];
+                int way2 = a[j] * b[k] + dp[i][(k + 1) % 2];
+                dp[i][(k % 2)] = Math.max(way1, way2);
+            }
+        }
+        return dp[0][0];
+    }
+}
