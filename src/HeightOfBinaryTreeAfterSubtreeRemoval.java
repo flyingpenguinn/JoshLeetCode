@@ -2,82 +2,54 @@ import base.TreeNode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 public class HeightOfBinaryTreeAfterSubtreeRemoval {
-    // TODO: there are better approaches using longest and 2nd longest
-    private class Node {
-        int val;
-        Node left;
-        Node right;
-        int lheight;
-        int rheight;
-        int height;
-
-        Node div;
-        boolean isdivleft;
-
-        public Node(int val) {
-            this.val = val;
-        }
-    }
-
-    private Map<Integer, Node> vm = new HashMap<>();
-
+    private Map<Integer, PriorityQueue<int[]>> m = new HashMap<>();
+    private Map<Integer, Integer> dm = new HashMap<>();
     public int[] treeQueries(TreeNode root, int[] queries) {
-        TreeNode fr = new TreeNode(-1);
-        fr.left = root;
-        dfs(fr, fr, true);
-
+        // the contribution to depth is the depth itself + height.
+        // we only need to keep top 2 of the heights for the same depth
+        int allhigh = dfs(root, 0)-1;
         int[] res = new int[queries.length];
-        for (int i = 0; i < queries.length; ++i) {
+        for(int i=0; i<queries.length; ++i){
             int q = queries[i];
-            Node qn = vm.get(q);
-            res[i] = find(qn) - 2;
+            int cd = dm.get(q);
+            PriorityQueue<int[]> pq = m.get(cd);
+            int[] top = pq.poll();
+            if(pq.isEmpty()){
+                res[i] = allhigh-top[0];
+            }else if(pq.peek()[1] == q){
+                // peek is the smaller one
+
+                int diff = pq.peek()[0] - top[0];
+                res[i] = allhigh - diff;
+
+
+            }else{
+                res[i] = allhigh;
+            }
+            pq.offer(top);
         }
         return res;
     }
 
-    private int find(Node n) {
-        int diff = n.height;
-        while (n.val != -1) {
-            Node div = n.div;
-            int nheight = 0;
-            if (n.isdivleft) {
-                nheight = Math.max(div.lheight - diff, div.rheight);
-            } else {
-                nheight = Math.max(div.rheight - diff, div.lheight);
-            }
-            diff = Math.max(div.lheight, div.rheight) - nheight;
-            if (diff == 0) {
-                break;
-            }
-            n = div;
+    // return height, pass in depth
+    private int dfs(TreeNode root, int d) {
+        if (root == null) {
+            return 0;
         }
-        return vm.get(-1).height - diff;
-    }
-
-
-    private Node dfs(TreeNode n, TreeNode div, boolean isdivleft) {
-        if (n == null) {
-            Node nullnode = new Node(-1);
-            return nullnode;
+        dm.put(root.val, d);
+        int lh = dfs(root.left, d + 1);
+        int rh = dfs(root.right, d + 1);
+        int ch = Math.max(lh, rh) + 1;
+        PriorityQueue<int[]> pq = m.getOrDefault(d, new PriorityQueue<>((x, y) -> Integer.compare(x[0], y[0])));
+        pq.offer(new int[]{ch, root.val}); // height, value
+        if (pq.size() > 2) {
+            pq.poll();
         }
-        TreeNode leftdiv = n.right != null ? n : div;
-        boolean flagleftdiv = n.right != null ? true : isdivleft;
-        TreeNode rightdiv = n.left != null ? n : div;
-        boolean flagrightdiv = n.left != null ? false : isdivleft;
-        Node cur = new Node(n.val);
-        vm.put(n.val, cur);
-        Node left = dfs(n.left, leftdiv, flagleftdiv);
-        Node right = dfs(n.right, rightdiv, flagrightdiv);
+        m.put(d, pq);
 
-        cur.left = left;
-        cur.right = right;
-        cur.lheight = left.height;
-        cur.rheight = right.height;
-        cur.height = Math.max(cur.lheight, cur.rheight) + 1;
-        cur.div = vm.get(div.val);
-        cur.isdivleft = isdivleft;
-        return cur;
+        return ch;
     }
 }
