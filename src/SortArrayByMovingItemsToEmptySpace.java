@@ -10,7 +10,7 @@ public class SortArrayByMovingItemsToEmptySpace {
     }
 
     private int solve(int[] a, int s) {
-        // if 0 is not in the right pos, move it to the right pos.
+        // if 0 is not in the right pos, swap it with the number that should be there
         // then find the first misplaced value, swap it with 0, rinse and repeat from this number onward. any number <this number must have been placed correctly
         int n = a.length;
         int[] npos = new int[n];
@@ -44,6 +44,6 @@ public class SortArrayByMovingItemsToEmptySpace {
     }
 
     public static void main(String[] args) {
-        System.out.println(new SortArrayByMovingItemsToEmptySpace().sortArray(ArrayUtils.read1d("[1,2,3,4,5,7,8,0,9,6]")));
+        System.out.println(new SortArrayByMovingItemsToEmptySpace().sortArray(ArrayUtils.read1d("[]")));
     }
 }
