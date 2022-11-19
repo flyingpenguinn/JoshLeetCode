@@ -4,104 +4,68 @@ import java.util.*;
 
 
 public class ErectTheFence {
-    // gift wrapping algo
-    // cross product >0 means ac on ab's left, so use c instead of b
-    // handling colinear by trying to extend to the farthest and incluce all points on the line
-    class Point {
-        int x;
-        int y;
+    // graham scan
+    public int[][] outerTrees(int[][] trees) {
+        if (trees.length <= 3)
+            return trees;
+        Arrays.sort(trees, (a, b) -> {
+            if (a[0] == b[0]) {
+                return a[1] - b[1];
+            } else {
+                return a[0] - b[0];
+            }
+        });
 
-        public Point(int x, int y) {
-            this.x = x;
-            this.y = y;
+        List<int[]> lower = new ArrayList<>();
+        List<int[]> upper = new ArrayList<>();
+
+        for (int[] tree : trees) {
+            while (lower.size() >= 2 && compare(lower.get(lower.size() - 2), lower.get(lower.size() - 1), tree) > 0) {
+                lower.remove(lower.size() - 1);
+            }
+
+            while (upper.size() >= 2 && compare(upper.get(upper.size() - 2), upper.get(upper.size() - 1), tree) < 0) {
+                upper.remove(upper.size() - 1);
+            }
+
+            lower.add(tree);
+            upper.add(tree);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Point point = (Point) o;
-            return x == point.x &&
-                    y == point.y;
+        Set<int[]> set = new HashSet<>();
+        for (int[] l : lower) {
+            set.add(l);
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
+        for (int[] u : upper) {
+            set.add(u);
         }
+
+        int[][] result = new int[set.size()][2];
+
+        int index = 0;
+        for (int[] s : set) {
+            result[index++] = s;
+        }
+
+        return result;
     }
 
-    public int[][] outerTrees(int[][] points) {
-        Set<Point> result = new HashSet<>();
+    // < 0: clockwise
+    // > 0: counterclockwise
+    // == 0 : collinear
+    private int compare(int[] p1, int[] p2, int[] p3) {
+        int x1 = p1[0];
+        int y1 = p1[1];
+        int x2 = p2[0];
+        int y2 = p2[1];
+        int x3 = p3[0];
+        int y3 = p3[1];
 
-        // Find the leftmost point
-        Point first = new Point(points[0][0], points[0][1]);
-        int firstIndex = 0;
-        for (int i = 1; i < points.length; i++) {
-            if (points[i][0] < first.x) {
-                first = new Point(points[i][0], points[i][1]);
-                firstIndex = i;
-            }
-        }
-        result.add(first);
-
-        Point cur = first;
-        int curIndex = firstIndex;
-        do {
-            Point next = new Point(points[0][0], points[0][1]);
-            int nextIndex = 0;
-            for (int i = 1; i < points.length; i++) {
-                if (i == curIndex) {
-                    continue;
-                }
-                Point pi = new Point(points[i][0], points[i][1]);
-                int cross = crossProductLength(cur, next, pi);
-                if (nextIndex == curIndex || cross > 0 ||
-                        // Handle collinear points
-                        (cross == 0 && distance(pi, cur) > distance(next, cur))) {
-                    next = pi;
-                    nextIndex = i;
-                }
-            }
-            // Handle collinear points
-            for (int i = 0; i < points.length; i++) {
-                if (i == curIndex) continue;
-                Point pi = new Point(points[i][0], points[i][1]);
-                int cross = crossProductLength(cur, pi, next);
-                if (cross == 0) {
-                    result.add(pi);
-                }
-            }
-            cur = next;
-            curIndex = nextIndex;
-
-        } while (curIndex != firstIndex);
-        int[][] r = new int[result.size()][2];
-        int rp = 0;
-        for (Point k : result) {
-            r[rp][0] = k.x;
-            r[rp][1] = k.y;
-            rp++;
-        }
-        return r;
-    }
-
-    private int crossProductLength(Point A, Point B, Point C) {
-        // Get the vectors' coordinates.
-        int ABx = B.x - A.x;
-        int ABy = B.y - A.y;
-        int ACx = C.x - A.x;
-        int ACy = C.y - A.y;
-
-        // Calculate the Z coordinate of the cross product.
-        return (ABx * ACy - ABy * ACx);
-    }
-
-    private int distance(Point p1, Point p2) {
-        return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
+        return (y3 - y2) * (x2 - x1) - (y2 - y1) * (x3 - x2);
     }
 
     public static void main(String[] args) {
-        System.out.println(new ErectTheFence().outerTrees(ArrayUtils.read("[[1,1],[0,0], [0,1], [1,0]]")));
+        System.out.println(new ErectTheFence().outerTrees(ArrayUtils.read("[[2,2],[2,0],[2,4],[3,3],[4,2]]")));
     }
 }
