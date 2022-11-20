@@ -30,18 +30,23 @@ public class BasicCalculator {
     Deque<Character> ops = new ArrayDeque<>();
 
     public int calculate(String s) {
-        if (s.startsWith("-")) {
-            return calculate("0" + s);
+        if(s.charAt(0)=='-'){
+            return calculate("0"+s);
         }
-        char[] cs = s.toCharArray();
-        int n = cs.length;
+        int n = s.length();
+        StringBuilder ns = new StringBuilder();
+        for(int i=0; i<n; ++i){
+            if(s.charAt(i) != ' '){
+                ns.append(s.charAt(i));
+            }
+        }
+        char[] cs = ns.toString().toCharArray();
+        n = cs.length;
         int i = 0;
 
         while (i < n) {
             char c = cs[i];
-            if (c == ' ') {
-                i++;
-            } else if (Character.isDigit(c)) {
+            if (Character.isDigit(c)) {
                 int j = i;
                 long cur = 0;
                 while (j < n && Character.isDigit(cs[j])) {
@@ -51,21 +56,19 @@ public class BasicCalculator {
                 i = j;
             } else if (c == '(') {
                 if (i + 1 < n && cs[i + 1] == '-') {
-                    // (-7)
-                    int j = i + 2;
-                    long cur = 0;
-                    while (Character.isDigit(cs[j]) && cs[j] != ')') {
-                        cur = cur * 10 + (cs[j++] - '0');
-                    }
-                    nums.push(-cur);
-                    i = j + 1; // after )
+                    ops.push('[');
+                    i+=2;
                 } else {
                     ops.push(c);
                     i++;
                 }
             } else if (c == ')') {
-                while (!ops.isEmpty() && ops.peek() != '(') {
+                while (!ops.isEmpty() && ops.peek() != '(' && ops.peek() != '[') {
                     calconce();
+                }
+                if(!ops.isEmpty() && ops.peek() == '['){
+                    long top = nums.pop();
+                    nums.push(-top);
                 }
                 ops.pop(); // pop the (
                 i++;
@@ -87,19 +90,16 @@ public class BasicCalculator {
     }
 
     private boolean shouldcalc(char c) {
-        // 1+2+3-> 1+2 first
-        // 1-2-3-> 1-2 first
-        // 1*2+3-> 1*2 first
-        // 1-2*3=> dont know, need to wait for 2*3 to play out
         if (ops.isEmpty()) {
             return false;
         }
         char top = ops.peek();
-        if (top == '(') { // otherwise it would be a true and we cant calc (
+        if (top == '(' || top=='[') { // otherwise it would be a true and we cant calc (
             return false;
         }
         return true;
     }
+
 
     private void calconce() {
         long n2 = nums.pop(); //note to flip
@@ -112,5 +112,9 @@ public class BasicCalculator {
             rt = n1 - n2;
         }
         nums.push(rt);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new BasicCalculator().calculate("-(3-(-(4+5)))"));
     }
 }
