@@ -40,29 +40,25 @@ All arithmetic subsequence slices are:
 [2,6,10]
  */
 public class ArithmeticSlicesII {
-    // j..i i's contri == every j's count of diff d,  + len==2 and diff == d ones
+    //dp array has all the len=2s. so we need that +1 in dp array
+    // when we add res we take the -1 at each j because we are counting an extra len =2 in dp, and we need to deduct that
     public int numberOfArithmeticSlices(int[] a) {
         int n = a.length;
-        Map<Long, Integer>[] m = new HashMap[n];
-        Map<Long, Integer>[] tm = new HashMap[n];
-
-        int r = 0;
-        for (int i = 0; i < n; i++) {
-            m[i] = new HashMap<>();
-            tm[i] = new HashMap<>();
-            long la = 0l + a[i];
-            for (int j = i - 1; j >= 0; j--) {
-                long d = la - a[j];
-                int cur = m[j].getOrDefault(d, 0);
-                int three = tm[j].getOrDefault(d, 0);
-                cur += three;
-                if (cur > 0) {
-                    m[i].put(d, m[i].getOrDefault(d, 0) + cur);
+        Map<Integer, Map<Long, Long>> dp = new HashMap<>();
+        long res = 0;
+        for (int i = 0; i < n; ++i) {
+            for (int j = i - 1; j >= 0; --j) {
+                long diff = 0L + a[i] - a[j];
+                long dpv = 1;
+                if (dp.containsKey(j)) {
+                    dpv = dp.get(j).getOrDefault(diff, 0L) + 1;
                 }
-                r += cur;
-                tm[i].put(d, tm[i].getOrDefault(d, 0) + 1);
+                Map<Long, Long> cm = dp.getOrDefault(i, new HashMap<>());
+                cm.put(diff, cm.getOrDefault(diff, 0L) + dpv);
+                dp.put(i, cm);
+                res += dpv - 1;
             }
         }
-        return r;
+        return (int) res;
     }
 }
