@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PossibleBipartition {
-    // whether it is two colorable...
+    // whether it is two colorable...note we must work on an undirected graph
     int[] st;
     boolean good = true;
     List<Integer>[] g;
