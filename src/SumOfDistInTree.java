@@ -26,54 +26,50 @@ equals 1 + 1 + 2 + 2 + 2 = 8.  Hence, answer[0] = 8, and so on.
 Note: 1 <= N <= 10000
  */
 public class SumOfDistInTree {
-    // we try to calculate this node's value based on parent's
-    Map<Integer, Set<Integer>> tree = new HashMap<>();
-    // we wnat the subtree size, not the immediate children size, so can't use tree.get().size()
-    Map<Integer, Integer> subsize = new HashMap<>();
-    int[] r;
+    // count nodes based on results of the parent
+    private Map<Integer, Set<Integer>> g = new HashMap<>();
+    int[] counts;
+    int[] dists;
 
-    public int[] sumOfDistancesInTree(int n, int[][] es) {
-        for (int[] e : es) {
-            tree.computeIfAbsent(e[0], k -> new HashSet<>()).add(e[1]);
-            tree.computeIfAbsent(e[1], k -> new HashSet<>()).add(e[0]);
+    public int[] sumOfDistancesInTree(int n, int[][] edges) {
+        counts = new int[n];
+        dists = new int[n];
+        for (int[] e : edges) {
+            g.computeIfAbsent(e[0], k -> new HashSet<>()).add(e[1]);
+            g.computeIfAbsent(e[1], k -> new HashSet<>()).add(e[0]);
         }
-        int[] dfsres = dfs(0, -1);
-        r = new int[n];
-        dfsdist(0, dfsres[0] + dfsres[1], dfsres[1], -1);
-        return r;
+        dfs(0, -1);
+        dfsres(0, -1);
+        return dists;
     }
 
-    // all dists, node counts
-    // note when we traverse non cyclic undirected tree we should remember parent not to step on it again
-    int[] dfs(int i, int p) {
-        int[] res = new int[]{0, 0};
-        for (int next : tree.getOrDefault(i, new HashSet<>())) {
-            if (next == p) {
+    void dfs(int i, int pa) {
+        // get the raw dist purely based on subtree results
+        int curdist = 0;
+        int curcount = 1;
+        for (int ne : g.getOrDefault(i, new HashSet<>())) {
+            if (ne == pa) {
                 continue;
             }
-            int[] cur = dfs(next, i);
-            res[0] += cur[1] + cur[0];
-            res[1] += cur[1];
+            dfs(ne, i);
+            curdist += counts[ne] + dists[ne];
+            curcount += counts[ne];
         }
-        res[1] += 1;
-        subsize.put(i, res[1]);
-        return res;
+        dists[i] = curdist;
+        counts[i] = curcount;
     }
 
-    void dfsdist(int i, int dist, int allnodes, int p) {
-        int size = subsize.get(i);
-        r[i] = dist + allnodes - 2 * size;
-        for (int next : tree.getOrDefault(i, new HashSet<>())) {
-            if (next == p) {
+    void dfsres(int i, int pa) {
+        int n = counts.length;
+        for (int ne : g.getOrDefault(i, new HashSet<>())) {
+            if (ne == pa) {
                 continue;
             }
-            dfsdist(next, r[i], allnodes, i);
+            // for each sub node ne, it's the parent dist
+            // - nodes in its own subtree, as all of them gets -1
+            // + all nodes above itself, because each of them gets +1
+            dists[ne] = dists[i] - counts[ne] + (n - counts[ne]);
+            dfsres(ne, i);
         }
-    }
-
-    public static void main(String[] args) {
-        //      int[][] edges = ArrayUtils.read("[[0,1],[0,2],[2,3],[2,4],[2,5],[3,6],[3,7],[4,8],[5,9]]");
-        int[][] edges = ArrayUtils.read("[[0,1],[0,2],[2,3],[2,4],[2,5],[3,6],[3,7],[4,8],[5,9]]");
-        System.out.println(Arrays.toString(new SumOfDistInTree().sumOfDistancesInTree(10, edges)));
     }
 }
