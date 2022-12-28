@@ -26,34 +26,18 @@ public class DominoAndTromino {
     int Mod = 1000000007;
 
     // dp[i] = dp[i-1]+dp[i-2]+2* (dp[i-3] + dp(i-4)+...dp(1)
-    /*example of 5:
+    // so dp[i] = 2*dp[i-1]+dp[i-3]. we can get this via subtracting dp[i] and dp[i-1]
 
-
-    XXYYZ
-    XKKZZ
-
-    example of 6:
-
-    XXYYZZ
-    XKKJJZ
-
-     */
     public int numTilings(int n) {
-        // another way of thinking:
-        // dpi - dpi-1 = dpi-1- dpi-3
-        // => dpi = 2*dpi-1 - dpi-3
-
-        long[] dp = new long[n + 1];
-        dp[0] = 1;
-        long sum = 2;
-        for (int i = 1; i <= n; i++) {
-            long cur = (sum - (i < 1 ? 0 : dp[i - 1]) - (i < 2 ? 0 : dp[i - 2])) % Mod;
-            if (cur < 0) {
-                cur += Mod;
-            }
-            dp[i] = cur;
-            sum += 2 * dp[i];
-            sum %= Mod;
+        int nn = Math.max(4, n+1);
+        long[] dp = new long[nn];
+        long mod = (long) (1e9+7);
+        dp[1] = 1;
+        dp[2] = 2;
+        dp[3] = 5;
+        for(int i=4; i<=n; ++i){
+            dp[i] = 2*dp[i-1]+dp[i-3];
+            dp[i] %= mod;
         }
         return (int) dp[n];
     }
