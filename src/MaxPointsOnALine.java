@@ -36,57 +36,82 @@ NOTE: input types have been changed on April 15, 2019. Please reset to default c
 
 public class MaxPointsOnALine {
 
-    // group by starting point and k. k is gcded to avoid double precision problem
-    // handle the case of multi occurrence of points by counting them and adding to the final result in one shot
-    // note map may not contain accurate data for each point but that's fine
+    // group by starting point and k. k is a fraction and gcded to avoid double precision problem
+    // for each starting point calculate and group k
 
-    public int maxPoints(int[][] points) {
-        int n = points.length;
-        Map<String, Integer> map = new HashMap<>();
-        int max = 0;
-        for (int i = 0; i < n; i++) {
-            map.clear();
-            int ic = 1;
-            int maxi = 0;
-            for (int j = i + 1; j < n; j++) {
-                if (same(points[i], points[j])) {
-                    ic++;
-                    continue;
-                }
-                int[] ks = getk(points[i], points[j]);
-                String ck = tokey(points[i][0], points[i][1], ks[0], ks[1]);
-                int cc = map.getOrDefault(ck, 0) + 1;
-                map.put(ck, cc);
-                maxi = Math.max(maxi, cc);
-                // it's ok to just store
+
+    private class Frac {
+        int x;
+        int y;
+        int INF = (int) 2e9;
+
+        public Frac(int x, int y) {
+
+            if (x != 0 && y != 0) {
+                int gcd = gcd(Math.abs(x), Math.abs(y)); // gcd must be abs
+                x /= gcd;
+                y /= gcd;
             }
-            maxi += ic;
-            max = Math.max(max, maxi);
+            // deal with sign so that neg sign is only on x
+            if (x < 0 && y < 0) {
+                x = -x;
+                y = -y;
+            } else if (x > 0 && y < 0) {
+                x = -x;
+                y = -y;
+            }
+            this.x = x;
+            this.y = y;
         }
-        return max;
-    }
 
-    private boolean same(int[] p1, int[] p2) {
-        return p1[0] == p2[0] && p1[1] == p2[1];
-    }
+        private int gcd(int a, int b) {
+            if (a < b) {
+                return gcd(b, a);
+            }
+            //a>b
+            return b == 0 ? a : gcd(b, a % b);
+        }
 
-    private String tokey(int i, int j, int k, int m) {
-        return i + "," + j + "," + k + "," + m;
-    }
+        @Override
+        public int hashCode() {
+            if (x == 0) {
+                return INF;
+            }
+            if (y == 0) {
+                return 0;
+            }
+            return (int) (x * 1e5 + y);
+        }
 
-    private int[] getk(int[] p1, int[] p2) {
-        int dy = p2[1] - p1[1];
-        int dx = p2[0] - p1[0];
-        if (dx == 0) {
-            return new int[]{0, 0};
-        } else {
-            int gcd = gcd(dy, dx);
-            return new int[]{dx / gcd, dy / gcd};
+        @Override
+        public boolean equals(Object other) {
+            Frac o = (Frac) other;
+            return x * o.y == y * o.x;
+        }
+
+        @Override
+        public String toString() {
+            return "Frac [x=" + x + " y=" + y + "]";
         }
     }
 
-    private int gcd(int dy, int dx) {
-        return dx == 0 ? dy : gcd(dx, dy % dx);
+    public int maxPoints(int[][] a) {
+        int n = a.length;
+        int res = 0;
+        for (int i = 0; i < n; ++i) {
+            int cur = 0;
+            Map<Frac, Integer> m = new HashMap<>();
+            for (int j = i + 1; j < n; ++j) {
+                int dy = a[i][1] - a[j][1];
+                int dx = a[i][0] - a[j][0];
+                Frac cd = new Frac(dx, dy);
+                int nv = m.getOrDefault(cd, 0) + 1;
+                cur = Math.max(cur, nv);
+                m.put(cd, nv);
+            }
+            res = Math.max(res, cur + 1);
+        }
+        return res;
     }
 
     public static void main(String[] args) {
