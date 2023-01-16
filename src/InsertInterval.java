@@ -18,33 +18,29 @@ Output: [[1,2],[3,10],[12,16]]
 Explanation: Because the new interval [4,8] overlaps with [3,5],[6,7],[8,10].
  */
 public class InsertInterval {
-    public int[][] insert(int[][] ints, int[] t) {
-        TreeMap<Integer, Integer> tm = new TreeMap<>();
-        for (int[] it : ints) {
-            tm.put(it[0], it[1]);
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        int n = intervals.length;
+        int i = 0;
+        List<int[]> res = new ArrayList<>();
+        while (i < n && intervals[i][1] < newInterval[0]) {
+            res.add(intervals[i]);
+            ++i;
         }
-        int start = t[0];
-        int end = t[1];
-        var next = tm.floorEntry(start);
-        if (next == null) {
-            next = tm.higherEntry(start);
+        int[] toadd = new int[]{newInterval[0], newInterval[1]};
+        while (i < n && intervals[i][0] <= newInterval[1]) {
+            toadd[0] = Math.min(toadd[0], intervals[i][0]);
+            toadd[1] = Math.max(toadd[1], intervals[i][1]);
+            ++i;
         }
-        int nstart = start;
-        int nend = end;
-        while (next != null && next.getKey() <= end) {
-            if (next.getValue() >= start) {
-                nstart = Math.min(nstart, next.getKey());
-                nend = Math.max(nend, next.getValue());
-                tm.remove(next.getKey());
-            }
-            next = tm.higherEntry(next.getKey());
+        res.add(toadd);
+        while (i < n) {
+            res.add(intervals[i]);
+            ++i;
         }
-        tm.put(nstart, nend);
-        int[][] res = new int[tm.size()][2];
-        int ri = 0;
-        for (int k : tm.keySet()) {
-            res[ri++] = new int[]{k, tm.get(k)};
+        int[][] rres = new int[res.size()][2];
+        for (i = 0; i < res.size(); ++i) {
+            rres[i] = res.get(i);
         }
-        return res;
+        return rres;
     }
 }
