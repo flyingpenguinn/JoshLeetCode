@@ -46,7 +46,8 @@ public class CountNumberOfGoodSubsequences {
         return res;
     }
 
-    // n! / k!
+    // n! /( k!*(n-k)!)
+    // a/b mod n = a mod n * modinverse(b) mod n
     private long combi(int n, int k) {
         if (n < k) {
             return 0;
