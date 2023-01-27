@@ -65,7 +65,7 @@ public class ConfusingNumberII {
             return;
         }
         for (int k : map.keySet()) {
-            if (i == 0 && k == 0 && len > 1) {
+            if (i == 0 && k == 0 ) {
                 continue;
             }
             dfs(i + 1, len, cur * 10 + k, n);
