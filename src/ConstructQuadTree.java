@@ -122,62 +122,43 @@ public class ConstructQuadTree {
     public Node construct(int[][] g) {
         int m = g.length;
         int n = g[0].length;
-        return dfs(g, 0, 0, m - 1, n - 1);
+        return solve(g, 0, m - 1, 0, n - 1);
     }
 
-    Node dfs(int[][] g, int tlr, int tlc, int brr, int brc) {
-        if (tlr == brr && tlc == brc) {
-            return new Node(g[tlr][tlc] == 1, true);
+    private Node solve(int[][] a, int r1, int r2, int c1, int c2) {
+        if (r1 == r2 && c1 == c2) {
+            boolean val = (a[r1][c1] == 1);
+            return new Node(val, true);
         }
-        if (tlr > brr || tlc > brc) {
-            return null;
-        }
-        int mr = (tlr + brr) / 2;
-        int mc = (tlc + brc) / 2;
-        Boolean v = null;
-
-        List<Node> list = new ArrayList<>();
-        Node bl = dfs(g, mr + 1, tlc, brr, mc);
-        list.add(bl);
-        // key: top left takes in mr, mc. the trick is to see which part takes in 0,0 in a four-grid problem
-        Node tl = dfs(g, tlr, tlc, mr, mc);
-        list.add(tl);
-        Node tr = dfs(g, tlr, mc + 1, mr, brc);
-        list.add(tr);
-        Node br = dfs(g, mr + 1, mc + 1, brr, brc);
-        list.add(br);
-        boolean[] r = diff(list);
-        if (r[0]) {
-            return new Node(r[1], true);
-        } else {
-            return new Node(true, false, tl, tr, bl, br);
-        }
-    }
-
-    // gist of the algo is how we define upper level from lower level results
-    // if we have a non leaf as children then it's non leaf.
-    // otherwise if all leaves the result needs to be of one value
-    private boolean[] diff(List<Node> list) {
-        Boolean v = null;
-        for (Node n : list) {
-            if (n != null) {
-                if (!n.isLeaf) {
-                    return new boolean[]{false, true};
-                } else if (v == null) {
-                    v = n.val;
-                } else if (n.val != v) {
-                    return new boolean[]{false, true};
-                }
+        int rmid = r1 + (r2 - r1) / 2;
+        int cmid = c1 + (c2 - c1) / 2;
+        Node tl = solve(a, r1, rmid, c1, cmid);
+        Node bl = solve(a, rmid + 1, r2, c1, cmid);
+        Node tr = solve(a, r1, rmid, cmid + 1, c2);
+        Node br = solve(a, rmid + 1, r2, cmid + 1, c2);
+        boolean val = false;
+        boolean isLeaf = false;
+        if (tl.isLeaf && tr.isLeaf && bl.isLeaf && br.isLeaf) {
+            if (tl.val && tr.val && bl.val && br.val) {
+                isLeaf = true;
+                val = true;
+            } else if (!tl.val && !tr.val && !bl.val && !br.val) {
+                isLeaf = true;
+                val = false;
             }
         }
-        return new boolean[]{true, v};
+        if (isLeaf) {
+            return new Node(val, isLeaf);
+        } else {
+            return new Node(val, isLeaf, tl, tr, bl, br);
+        }
     }
 
 
     public static void main(String[] args) {
         ConstructQuadTree cqt = new ConstructQuadTree();
-        //cqt.construct(ArrayUtils.read("[[0,1],[1,0]]"));
-        cqt.construct(ArrayUtils.read("[[0,0,0,0],[1,1,1,1],[0,0,0,0], [1,1,1,1]]"));
+        cqt.construct(ArrayUtils.read("[[0,1],[1,0]]"));
+        //  cqt.construct(ArrayUtils.read("[[0,0,0,0],[1,1,1,1],[0,0,0,0], [1,1,1,1]]"));
         //cqt.construct(ArrayUtils.read("[[0,0,0,0],[0,0,0,0],[1,1,1,1],[1,1,1,1]]"));
         //cqt.construct(ArrayUtils.read("[[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0]]"));
 
