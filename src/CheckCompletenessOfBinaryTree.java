@@ -33,49 +33,25 @@ Note:
 The tree will have between 1 and 100 nodes.
  */
 public class CheckCompletenessOfBinaryTree {
-    // dfs way!  null is either on h or h-1. once we met a null on h-1 we know the last row is done. shouldnt see null there. can only see null on h-1 after that
-    private boolean alllast = false;
-    // met all last level nodes. note we meet every level left to right
-    private int h = 0;
+    // complete binary tree = if we index the tree it fully occupies 1 to n without null
+    private int nodes = 0;
 
     public boolean isCompleteTree(TreeNode root) {
+        nodes = count(root);
         return dfs(root, 1);
     }
 
-    private boolean dfs(TreeNode n, int level) {
-
-        if (n == null) {
-            if (h == 0) {
-                h = level;
-            } else if (level < h) {
-                alllast = true;
-                // we should have seen all null level nodes
-            }
-            return level == h - (alllast ? 1 : 0);
-// if we havent seen all null level then h, otherwise h-1
-        }
-        return dfs(n.left, level + 1) && dfs(n.right, level + 1);
+    private int count(TreeNode n) {
+        return n == null ? 0 : 1 + count(n.left) + count(n.right);
     }
-}
 
-class CheckCompletenessCounter {
-    // once we see null it's all null afterwards
-    public boolean isCompleteTree(TreeNode root) {
-        LinkedList<TreeNode> q = new LinkedList<>();
-        q.offer(root);
-        boolean seen = false;
-        while (!q.isEmpty()) {
-            TreeNode top = q.poll();
-            if (top == null) {
-                seen = true;
-            } else {
-                if (seen) {
-                    return false;
-                }
-                q.offer(top.left);
-                q.offer(top.right);
-            }
+    private boolean dfs(TreeNode n, int cur) {
+        if (n == null) {
+            return cur > nodes;
         }
-        return true;
+        if (cur > nodes) {
+            return false;
+        }
+        return dfs(n.left, 2 * cur) && dfs(n.right, 2 * cur + 1);
     }
 }
