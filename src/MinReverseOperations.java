@@ -37,33 +37,25 @@ public class MinReverseOperations {
             int i = top[0];
             int cd = top[1];
             int nd = cd + 1;
-            // calculate min index
-            int min = 0;
-            int max = 0;
-            if (i < k - 1) {
-                min = (k - 1) - i;
-            } else {
-                min = i - k + 1;
-            }
+            // calculate left and right boundary
+            int l1 = Math.max(0, i - k + 1);
+            int r1 = l1 + k - 1;
+            int left = r1 - (i - l1);
 
-            // calculate max index
-            int ri = (n - 1) - i;
-            if (ri < k - 1) {
-                max = (k - 1) - ri;
-            } else {
-                max = ri - k + 1;
-            }
-            max = (n - 1) - max;
-            set = min % 2 == 0 ? even : odd;
+            int r2 = Math.min(n - 1, i + k - 1);
+            int l2 = r2 - k + 1;
+            int right = l2 + (r2 - i);
 
-            Integer ne = set.ceiling(min);
+            set = left % 2 == 0 ? even : odd;
+
+            Integer ne = set.ceiling(left);
 
             // add all values in range to the queue and remove from set
-            while (ne != null && ne <= max) {
+            while (ne != null && ne <= right) {
                 dist[ne] = nd;
                 dq.offer(new int[]{ne, nd});
                 set.remove(ne);
-                ne = set.ceiling(min);
+                ne = set.ceiling(left);
             }
         }
         for (int i = 0; i < n; ++i) {
