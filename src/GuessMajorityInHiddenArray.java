@@ -10,140 +10,49 @@ public class GuessMajorityInHiddenArray {
         // Returns the length of the array
         public int length();
     }
+
     // figure out the layout of the first 4 then use that to deduce the later ones
     class Solution {
         public int guessMajority(ArrayReader reader) {
             int n = reader.length();
-            int first4 = reader.query(0, 1, 2, 3);
-            int v0234 = reader.query(0, 2, 3, 4);
-            int v1234 = reader.query(1, 2, 3, 4);
-            int v0134 = reader.query(0, 1, 3, 4);
-            int c0 = 0;
-            int cn0 = 0;
-            int indexn0 = -1;
-            if (first4 == 4) {
-                c0 = 4;
-                for (int i = 4; i < n; i++) {
-                    int cur = reader.query(0, 1, 2, i);
-                    if (cur == 4) {
-                        c0++;
-                    } else {
-                        if (indexn0 == -1) {
-                            indexn0 = i;
-                        }
-                        cn0++;
-                    }
-                }
-            } else if (first4 == 2) {
-                if (v0234 == v1234) {
-                    // 0==1, check 2
-                    int same0 = -1;
-                    if (v0134 == v1234) {
-                        // 0==1==2
-                        indexn0 = 3;
-                        same0 = 2;
-                    } else {
-                        // or 0==1==3
-                        indexn0 = 2;
-                        same0 = 3;
-                    }
-                    c0 = 3;
-                    cn0 = 1;
-                    // 0,1
-                    for (int i = 4; i < n; i++) {
-                        int cur = reader.query(0, 1, same0, i);
-                        if (cur == 4) {
-                            c0++;
-                        } else {
-                            cn0++;
-                        }
-                    }
+            int v3 = reader.query(0, 1, 2, 3);
+            int v4 = reader.query(0, 1, 2, 4);
+            //    System.out.println(v3+" "+v4);
+            int count3 = (v3 == v4) ? 2 : 1;
+            int i3 = 3;
+            int count4 = (v3 == v4) ? 0 : 1;
+            int i4 = 4; // if 3 and 4 are different, this will be changed later anyway
+            for (int i = 5; i < n; ++i) {
+                int cv = reader.query(0, 1, 2, i);
+                if (cv == v3) {
+                    //      System.out.println(i +" goes with 3");
+                    ++count3;
+                    i3 = i;
                 } else {
-                    if (v1234 == v0134) {
-                        // 0==2==3, 1 is the outlier
-                        c0 = 3;
-                        cn0 = 1;
-                        indexn0 = 1;
-                        // 0,1
-                        for (int i = 4; i < n; i++) {
-                            int cur = reader.query(0, 2, 3, i);
-                            if (cur == 4) {
-                                c0++;
-                            } else {
-                                cn0++;
-                            }
-                        }
-                    } else {
-                        // 0 is the outlier.1==2==3
-                        c0 = 1;
-                        indexn0 = 1;
-                        cn0 = 3;
-                        // 0,1
-                        for (int i = 4; i < n; i++) {
-                            int cur = reader.query(1, 2, 3, i);
-                            if (cur == 4) {
-                                cn0++;
-                            } else {
-                                c0++;
-                            }
-                        }
-                    }
-                }
-            } else {
-                // 2 vs 2
-                if (v0234 == v1234) {
-                    // 0==1, 2==3
-                    c0 = 2;
-                    cn0 = 2;
-                    indexn0 = 2;
-                    // 0,1
-                    for (int i = 4; i < n; i++) {
-                        int cur = reader.query(0, 1, 2, i);
-                        if (cur == 2) {
-                            c0++;
-                        } else {
-                            // would be ==0
-                            cn0++;
-                        }
-                    }
-                } else {
-                    if (v0134 == v1234) {
-                        // 0==2, 1==3
-                        c0 = 2;
-                        cn0 = 2;
-                        indexn0 = 1;
-                        // 0,1
-                        for (int i = 4; i < n; i++) {
-                            int cur = reader.query(0, 1, 2, i);
-                            if (cur == 2) {
-                                c0++;
-                            } else {
-                                // would be ==0
-                                cn0++;
-                            }
-                        }
-                    } else {
-                        // 0==3, 1==2
-                        c0 = 2;
-                        cn0 = 2;
-                        indexn0 = 1;
-                        // 0,3
-                        for (int i = 4; i < n; i++) {
-                            int cur = reader.query(0, 2, 3, i);
-                            if (cur == 2) {
-                                c0++;
-                            } else {
-                                // would be ==0
-                                cn0++;
-                            }
-                        }
-                    }
+                    //       System.out.println(i +" goes with 4");
+                    ++count4;
+                    i4 = i;
                 }
             }
-            if (c0 > cn0) {
-                return 0;
-            } else if (c0 < cn0) {
-                return indexn0;
+            //   System.out.println(count3+" "+count4);
+            int target = reader.query(0, 1, 2, 4);
+            int[][] rem = new int[][]{{1, 2, 3, 4}, {0, 2, 3, 4}, {0, 1, 3, 4}};
+            for (int i = 0; i < rem.length; ++i) {
+                int[] r = rem[i];
+                if (reader.query(r[0], r[1], r[2], r[3]) == target) {
+                    //         System.out.println(i +" goes with 3");
+                    ++count3;
+                    i3 = i;
+                } else {
+                    ++count4;
+                    //        System.out.println(i +" goes with 4");
+                    i4 = i;
+                }
+            }
+            if (count3 > count4) {
+                return i3;
+            } else if (count3 < count4) {
+                return i4;
             } else {
                 return -1;
             }
