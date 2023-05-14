@@ -1,72 +1,52 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MaxScoreAfterNOperations {
     // subset enumerations
-    private Integer[][] dp;
-    private List<Integer>[] subs;
-    private List<Integer>[] twos;
-
     public int maxScore(int[] a) {
         int n = a.length;
-        dp = new Integer[1 << n][n + 1];
-        subs = new ArrayList[1 << n];
-        twos = new ArrayList[1 << n];
-        for (int i = 0; i < (1 << n); i++) {
-            subs[i] = new ArrayList<>();
-            twos[i] = new ArrayList<>();
+        int[][] dp = new int[n][1 << n];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
         }
-        for (int i = 0; i < (1 << n); i++) {
-            if (Integer.bitCount(i) == 2) {
-                for (int j = 0; j < n; j++) {
-                    if (((i >> j) & 1) == 1) {
-                        twos[i].add(a[j]);
-                    }
-                }
-            }
-        }
-        for (int st = 0; st < (1 << n); st++) {
-            for (int nst = st - 1; nst >= 0; ) {
-                int selected = st - nst;
-                if (!twos[selected].isEmpty()) {
-                    subs[st].add(nst);
-                }
-
-                if (nst == 0) {
-                    break;
-                } else {
-                    nst = (nst - 1) & st;
-                }
-            }
-        }
-        return solve(a, (1 << n) - 1, 1);
+        return solve(a, 0, 0, dp);
     }
 
-    private int solve(int[] a, int st, int i) {
-
+    private int solve(int[] a, int k, int st, int[][] dp) {
         int n = a.length;
-        if (st == 0) {
+        if (k == n) {
             return 0;
         }
-        if (dp[st][i] != null) {
-            return dp[st][i];
+        if (dp[k][st] != -1) {
+            return dp[k][st];
         }
         int res = 0;
-        for (int nst : subs[st]) {
-            int selected = st - nst;
-            List<Integer> nums = twos[selected];
-            int cur = i * gcd(nums.get(0), nums.get(1)) + solve(a, nst, i + 1);
-            res = Math.max(res, cur);
+        for (int i = 0; i < n; ++i) {
+            if (((st >> i) & 1) == 1) {
+                continue;
+            }
+            for (int j = i + 1; j < n; ++j) {
+                if (((st >> j) & 1) == 1) {
+                    continue;
+                }
+                int gv = gcd(a[i], a[j]);
+                int cur = gv * (k + 1);
+                int nst = st;
+                nst |= (1 << i);
+                nst |= (1 << j);
+                int cres = cur + solve(a, k + 1, nst, dp);
+                res = Math.max(res, cres);
+            }
         }
-        dp[st][i] = res;
+        dp[k][st] = res;
         return res;
     }
 
     private int gcd(int a, int b) {
-        if (a < b) {
-            return gcd(b, a);
+        if (b == 0) {
+            return a;
         }
-        return b == 0 ? a : gcd(b, a % b);
-
+        return gcd(b, a % b);
     }
 }
