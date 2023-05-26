@@ -54,7 +54,7 @@ public class New21Game {
                 //if i==k already we can't contribute
                 sum += dp[i];
             }
-            if(i-mp>=0){
+            if(i-mp>=1){
                 // take out the too old i-mp
                 sum -= dp[i-mp];
             }
