@@ -1,40 +1,42 @@
-public class StoneGameII {
-    // m useless, directly use x
-    int[][] dp;
+import java.util.Arrays;
 
+public class StoneGameII {
+    // get the max diff between a and b
     public int stoneGameII(int[] a) {
         int n = a.length;
-        dp = new int[n][n];
-        int[] right = new int[n + 1];
-        for (int i = n - 1; i >= 0; i--) {
-            right[i] = (i == n - 1 ? 0 : right[i + 1]) + a[i];
+        int[][] dp = new int[n][n + 1];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(dp[i], -1);
         }
-        return dom(a, 0, 2, right);
+        int sum = 0;
+        for (int ai : a) {
+            sum += ai;
+        }
+        int diff = solve(a, 0, 1, dp);
+        int got = (sum + diff) / 2;
+        return got;
     }
 
-    int dom(int[] a, int s, int x, int[] right) {
+    private int solve(int[] a, int i, int j, int[][] dp) {
         int n = a.length;
-        if (s == n) {
+        if (i == n) {
             return 0;
         }
-        if (s + x >= n) {
-            x = n - s;
+        if (dp[i][j] != -1) {
+            return dp[i][j];
         }
-        if (dp[s][x] != 0) {
-            return dp[s][x];
+        int end = Math.min(n, i + 2 * j);
+        int diff = 0;
+        int res = Integer.MIN_VALUE;
+        for (int k = i; k < end; k++) {
+            int x = k - i + 1;
+            diff += a[k];
+            // a score - (b score - a score) == diff of a and b
+            int later = solve(a, k + 1, Math.max(x, j), dp);
+            int cur = diff - later;
+            res = Math.max(res, cur);
         }
-        int max = 0;
-        int ss = 0;
-        for (int i = 0; i < x && i + s < n; i++) {
-            ss += a[i + s];
-            int nx = Math.max(x, 2 * (i + 1));
-            int later = dom(a, i + s + 1, nx, right);
-            int rem = right[i + s + 1];
-            int cap = rem - later + ss;
-            //  System.out.println("s="+s+" i="+i+" "+" rem="+rem+" cap="+cap);
-            max = Math.max(max, cap);
-        }
-        dp[s][x] = max;
-        return max;
+        dp[i][j] = res;
+        return res;
     }
 }
