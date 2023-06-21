@@ -1,41 +1,45 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class MinCostToMakeArrayEqual {
+class MinCostToMakeArrayEqual {
+    // we scan from the first to the last and figure out the value for current one based on what we already have
+    public long minCost(int[] ia, int[] ib) {
+        int n = ia.length;
+        long[][] a = new long[n][2];
+        for (int i = 0; i < n; ++i) {
+            a[i][0] = ia[i];
+            a[i][1] = ib[i];
+        }
 
-    public long minCost(int[] a, int[] cost) {
+        Arrays.sort(a, (x, y) -> Long.compare(x[0], y[0]));
 
-        int n = a.length;
-        int[][] input = new int[n][2];
+        long afteraccu = 0;
+        long aftercostsum = 0;
         for (int i = 0; i < n; ++i) {
-            input[i][0] = a[i];
-            input[i][1] = cost[i];
+            afteraccu += a[i][0] * a[i][1];
+            aftercostsum += a[i][1];
         }
-        Arrays.sort(input, (x, y) -> Integer.compare(x[0], y[0]));
+
+        long beforeaccu = 0;
+        long beforecostsum = 0;
+        long res = (long) 2e18;
+
         for (int i = 0; i < n; ++i) {
-            a[i] = input[i][0];
-            cost[i] = input[i][1];
-        }
-        long[] costrsum = new long[n + 1];
-        costrsum[n - 1] = cost[n - 1];
-        for (int i = n - 2; i >= 0; --i) {
-            costrsum[i] = 1L * costrsum[i + 1] + cost[i];
-        }
-        long[] rsum = new long[n + 1];
-        rsum[n - 1] = 1L * a[n - 1] * cost[n - 1];
-        for (int i = n - 2; i >= 0; --i) {
-            rsum[i] = rsum[i + 1] + 1L * a[i] * cost[i];
-        }
-        long lsum = 0;
-        long lcsum = 0;
-        long res = (long) 1e18;
-        for (int i = 0; i < n; ++i) {
-            long p1 = a[i] * lcsum - lsum;
-            long p2 = rsum[i + 1] - 1L * a[i] * costrsum[i + 1];
-            long cur = p1 + p2;
+            afteraccu -= a[i][0] * a[i][1];
+            aftercostsum -= a[i][1];
+
+            long beforesum = a[i][0] * beforecostsum - beforeaccu;
+            long aftersum = afteraccu - aftercostsum * a[i][0];
+
+            long cur = beforesum + aftersum;
             res = Math.min(res, cur);
-            lsum += 1L * a[i] * cost[i];
-            lcsum += cost[i];
+
+            beforeaccu += a[i][0] * a[i][1];
+            beforecostsum += a[i][1];
         }
+
         return res;
     }
 }
