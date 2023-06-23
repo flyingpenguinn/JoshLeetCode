@@ -1,47 +1,29 @@
 import base.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
 public class LongestArithmeticSubsequence {
     // dp variable choice: it would be much better to choose "prev" index than "diff" when diff could be big
-    int[][] dp;
-
+    private int Max = 600;
     public int longestArithSeqLength(int[] a) {
-        dp = new int[a.length][a.length];
-        return longest(a, 0);
-    }
-
-    private int longest(int[] a, int i) {
-        if (i == a.length) {
-            return 0;
+        int n = a.length;
+        int[][] dp = new int[n][Max*2];
+        for(int i=0; i<n; ++i){
+            Arrays.fill(dp[i], 1);
         }
-        int l = longest(a, i + 1);
-        for (int j = i + 1; j < a.length; j++) {
-            int cur = 1 + longest(a, j, i);
-            l = Math.max(l, cur);
-        }
-        return l;
-    }
-
-    private int longest(int[] a, int i, int prev) {
-
-        if (i == a.length) {
-            return 0;
-        }
-        if (dp[i][prev] != 0) {
-            return dp[i][prev];
-        }
-        int rt = 1;
-        int diff = a[i]-a[prev];
-        for (int j = i + 1; j < a.length; j++) {
-            if (a[j] == a[i] + diff) {
-                rt = 1 + longest(a, j, i);
-                break;
+        int res = 0;
+        for(int i=1; i<n; ++i){
+            for(int j=0; j<i; ++j){
+                int diff = a[i]-a[j];
+                int ndiff = diff+Max;
+                dp[i][ndiff] =  Math.max(dp[i][ndiff], dp[j][ndiff] +1);
+                res = Math.max(res, dp[i][ndiff]);
             }
         }
-        return rt;
+        return res;
     }
 
     public static void main(String[] args) {
