@@ -8,7 +8,7 @@ public class TallestBillBoard {
     // for every i, 3 possibilities: dont use, use in set1, use in set2
     // can use an array to accelerate.
     // split set problem, use diff to indicate the difference because that's all we care. no need to keep two counts!
-    // O(20*5000*@)
+    // O(20*5000*2)
     Map<Integer, Integer>[] dp;
 
     public int tallestBillboard(int[] a) {
