@@ -61,60 +61,36 @@ edges[i].length == 2
 0 <= destination <= n - 1
  */
 public class AllpathsSourceToDestination {
-    boolean reached = false;
-    boolean hascycle = false;
-    boolean stuck = false;
 
-    Map<Integer, Set<Integer>> graph = new HashMap<>();
-
-    Map<Integer, Integer> status = new HashMap<>();
-
-    public boolean leadsToDestination(int n, int[][] edges, int s, int t) {
-        build(edges);
-        dfs(s, t);
-        return good();
-    }
-
-    boolean good() {
-        return reached && !bad();
-    }
-
-    boolean bad() {
-        return hascycle || stuck;
-    }
-
-    void build(int[][] e) {
-        for (int[] ei : e) {
-            graph.computeIfAbsent(ei[0], k -> new HashSet<>()).add(ei[1]);
+    private Map<Integer,Set<Integer>> g = new HashMap<>();
+    private Boolean [] dp;
+    public boolean leadsToDestination(int n, int[][] edges, int source, int destination) {
+        for(int[] e: edges){
+            int v1 = e[0];
+            int v2 = e[1];
+            g.computeIfAbsent(v1, k-> new HashSet<>()).add(v2);
         }
+        dp = new Boolean[n];
+        return dfs(source, destination);
     }
 
-    void dfs(int s, int t) {
-        if (s == t) {
-            // need to check loop on t
-            reached = true;
+    private boolean dfs(int i, int t){
+        if(!g.containsKey(i)){
+            return i==t;
         }
-        status.put(s, 1);
-        Set<Integer> next = graph.getOrDefault(s, new HashSet<>());
-        if (next.isEmpty() && s != t) {
-            stuck = true;
-            return;
+        if(dp[i] != null){
+            return dp[i];
         }
-        for (int ni : next) {
-            int st = status.getOrDefault(ni, 0);
-            if (st == 1) {
-                // note even if the loop is not on s-->t its counted
-                hascycle = true;
-                return;
+        dp[i] = false; // 0 means can't reach
+        for(int ne: g.getOrDefault(i, new HashSet<>())){
+            if(dp[ne] != null && dp[ne] == false){
+                return false;
             }
-            if (st == 0) {
-                dfs(ni, t);
-            }
-            // checkef st==2 nodes before dont need to do again
-            if (bad()) {
-                return;
+            if(!dfs(ne, t)){
+                return false;
             }
         }
-        status.put(s, 2);
+        dp[i] = true;
+        return true;
     }
 }
