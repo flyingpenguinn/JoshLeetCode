@@ -58,85 +58,72 @@ Output:
 ]
  */
 public class TextJustification {
-    public List<String> fullJustify(String[] words, int maxWidth) {
-        List<String> r = new ArrayList<>();
-        if(words== null || words.length==0 || maxWidth <=0){
-            return r;
-        }
-        // assuming every line is long enough to contain all words
-        int len = words[0].length();
-        int wcount = 1;
-        int wlen = words[0].length();
-
-        int start = 0;
-        int i = 1;
-        int n = words.length;
+    public List<String> fullJustify(String[] ws, int len) {
+        int n = ws.length;
+        List<String> res = new ArrayList<>();
+        int i = 0;
         while(i<n){
-            len += (1+words[i].length());
-            wlen += words[i].length();
-            wcount++;
-            if(len> maxWidth){
-                len -= (1+words[i].length());
-                wcount--;
-                wlen -= words[i].length();
-                String justified = justify(words, start, i-1, wlen, wcount, maxWidth);
-                r.add(justified);
-                len = words[i].length();
-                wcount = 1;
-                wlen = words[i].length();
-                start = i;
+            StringBuilder row = new StringBuilder();
+            int j = i;
+            int clen = 0;
+            while(j<n){
+                String w = ws[j];
+                int cur = 0;
+                if(clen > 0){
+                    cur += 1;
+                }
+                cur += w.length();
+                if(clen + cur>len){
+                    break;
+                }else{
+                    clen += cur;
+                    ++j;
+                }
             }
-            i++;
-        }
-        // start...i-1 is the last line
-        String last = lastLine(words, start, n-1, maxWidth);
-        r.add(last);
-        return r;
-    }
-
-    private String pad(int num){
-        StringBuilder sb = new StringBuilder();
-        while(num>0){
-            sb.append(" ");
-            num--;
-        }
-        return sb.toString();
-    }
-
-    // start......end can be fit into this line
-    private String justify(String[] ws, int start, int end, int wlen, int wcount, int maxWidth){
-        int slots = wcount-1;
-        if(slots==0){
-            String padded = pad(maxWidth-wlen);
-            return ws[start]+padded;
-        }
-        // slots,
-        int spaces = maxWidth - wlen;
-        StringBuilder sb = new StringBuilder();
-        int i = start;
-        while(spaces>0){
-            sb.append(ws[i++]);
-            int allocated = (int)Math.ceil(spaces*1.0/slots);
-            sb.append(pad(allocated));
-            spaces -= allocated;
-            slots--;
-        }
-        sb.append(ws[end]);
-        return sb.toString();
-    }
-
-    private String lastLine(String[] words, int start, int end, int maxWidth){
-        StringBuilder sb = new StringBuilder();
-        for(int i=start; i<=end; i++){
-            if(sb.length()>0){
-                sb.append(" ");
+            if(j==n){
+                for(int k=i; k<n; ++k){
+                    if(row.length()>0){
+                        row.append(" ");
+                    }
+                    row.append(ws[k]);
+                }
+                padZero(len, row);
+                res.add(row.toString());
+                break;
             }
-            sb.append(words[i]);
+            // from i to j-1
+            int words = 0;
+            for(int k=i; k<=j-1; ++k){
+                words += ws[k].length();
+            }
+            int spaces = len-words;
+            int slots = j-i-1;
+            for(int k=i; k<=j-1; ++k){
+                if(slots == 0){
+                    row.append(ws[k]);
+                    padZero(len, row);
+                    break;
+                }else{
+                    row.append(ws[k]);
+                    int cs = (int)Math.ceil(spaces*1.0/slots);
+                    spaces -= cs;
+                    --slots;
+                    while(cs>0){
+                        row.append(" ");
+                        --cs;
+                    }
+                }
+            }
+            res.add(row.toString());
+            i = j;
         }
-        while(sb.length()<maxWidth){
-            sb.append(" ");
+        return res;
+    }
+
+    protected void padZero(int len, StringBuilder row) {
+        while (row.length() < len) {
+            row.append(" ");
         }
-        return sb.toString();
     }
 
     public static void main(String[] args) {
