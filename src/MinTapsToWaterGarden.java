@@ -84,11 +84,9 @@ public class MinTapsToWaterGarden {
             } else if (cstart > end) {
                 break;
             } else {
-                if(cend >end) {
-                    res++;
-                    start = end; // we are looking for cover from the end so ignore the portions before it
-                    end = cend;
-                }
+                res++;
+                start = end; // we are looking for cover from the end so ignore the portions before it
+                end = cend;
             }
         }
         return end >= t ? res : -1;
