@@ -41,47 +41,46 @@ There will be at most 5*10^4 queries.
  */
 public class KthAncestorInTree {
     // similar to Tarjan sparse table rmq algo: nlgn to initalize, lgn to look up
-
     class TreeAncestor {
-        private Integer[][] dp;
-        private int[] p;
+        // binary lifting!
+        private int[][] dp;
 
-        public TreeAncestor(int n, int[] p) {
-            dp = new Integer[n][16];
-            this.p = p;
+        public TreeAncestor(int n, int[] parent) {
+            // dp[i][j] means from j walk 2^i steps we get the ancestor
+            dp = new int[17][n];
+            for (int i = 0; i < n; ++i) {
+                dp[0][i] = parent[i];
+            }
+            for (int i = 1; i < 17; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    int mid = dp[i - 1][j];
+                    if (mid != -1) {
+                        dp[i][j] = dp[i - 1][mid];
+                    } else {
+                        dp[i][j] = -1;
+                    }
+                }
+            }
         }
 
-        // k=0 current node, k=1 one level above
         public int getKthAncestor(int node, int k) {
-            if (k == 0) {
-                return node;
-            }
-            if (node == -1) {
-                return -1;
-            }
-            if (k == 1) {
-                return p[node];
-            }
-            int l = 1;
-            int pow = 0;
-            while (l < k) {
-                l *= 2;
-                pow++;
-            }
-            if (l == k) {
-                if (dp[node][pow] != null) {
-                    return dp[node][pow];
+            int cur = node;
+            for (int i = 0; i < 17; ++i) {
+                if (((1 << i) & k) == 0) {
+                    continue;
                 }
-                int tn = getKthAncestor(node, l / 2);
-                int rt = getKthAncestor(tn, l / 2);
-                dp[node][pow] = rt;
-                return rt;
-            } else {
-                l /= 2;
-                pow--;
-                int tn = getKthAncestor(node, l);
-                return getKthAncestor(tn, k - l);
+                cur = dp[i][cur];
+                if (cur == -1) {
+                    break;
+                }
             }
+            return cur;
         }
     }
+
+/**
+ * Your TreeAncestor object will be instantiated and called as such:
+ * TreeAncestor obj = new TreeAncestor(n, parent);
+ * int param_1 = obj.getKthAncestor(node,k);
+ */
 }
