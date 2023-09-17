@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class MinMovesSpreadStoneOverGrid {
+    // can also get permutation of empty cells then feed them in the order
     private int[][] target = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
