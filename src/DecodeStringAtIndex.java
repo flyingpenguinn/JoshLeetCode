@@ -42,24 +42,38 @@ The decoded string is guaranteed to have less than 2^63 letters.
  */
 public class DecodeStringAtIndex {
     public String decodeAtIndex(String s, int k) {
-        return String.valueOf(solve(s.toCharArray(), k, 0, 0));
+        return solve(s, s.length(), k);
+
     }
 
-    private char solve(char[] s, long k, int i, long len) {
-        if (Character.isLetter(s[i])) {
-            if (len + 1 == k) {
-                return s[i];
+    private String solve(String s, int n, long k){
+        long clen = 0;
+        int i = 0;
+        while(i<n){
+            char c = s.charAt(i);
+            if(Character.isDigit(c)){
+                int cind = c-'0';
+                clen *= cind;
+            }else{
+                ++clen;
             }
-            return solve(s, k, i + 1, len + 1);
-        } else {
-            int times = s[i] - '0';
-            if (k > len * times) {
-                return solve(s, k, i + 1, len * times);
-            } else {
-                int mod = (int) (k % len);
-                int index = mod == 0 ? (int) (len) : mod; // key!
-                return solve(s, index, 0, 0);
+            if(clen>=k){
+                break;
+            }else{
+                ++i;
             }
+
+        }
+        if(Character.isDigit(s.charAt(i))){
+            int cind = s.charAt(i)-'0';
+            clen /= cind;
+            long rem = k%clen;
+            if(rem==0){
+                rem = clen;
+            }
+            return solve(s, i, rem);
+        }else{
+            return String.valueOf(s.charAt(i));
         }
     }
 }
