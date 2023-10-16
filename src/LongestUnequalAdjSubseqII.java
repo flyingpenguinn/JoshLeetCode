@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class LongestUnequalAdjSubseqIandII {
+public class LongestUnequalAdjSubseqII {
     private int limit = -1;
 
     public List<String> getWordsInLongestSubsequence(int n, String[] ws, int[] gs) {
@@ -80,7 +80,7 @@ public class LongestUnequalAdjSubseqIandII {
     }
 
     public static void main(String[] args) {
-        System.out.println(new LongestUnequalAdjSubseqIandII().getWordsInLongestSubsequence(3, new String[]{"e", "a", "b"}, ArrayUtils.read1d("0,0,1")));
+        System.out.println(new LongestUnequalAdjSubseqII().getWordsInLongestSubsequence(3, new String[]{"e", "a", "b"}, ArrayUtils.read1d("0,0,1")));
     }
 
 }
