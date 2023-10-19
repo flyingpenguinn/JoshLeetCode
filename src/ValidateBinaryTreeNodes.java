@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
 LC#1361
@@ -44,63 +46,46 @@ leftChild.length == rightChild.length == n
 -1 <= leftChild[i], rightChild[i] <= n - 1
  */
 public class ValidateBinaryTreeNodes {
-    // directed graph check treeness
-    // 1. no circle  2. only one parent per node  3. only one root
-    int[] pa;
-    boolean bad = false;
-    int[] v;
-
+    // 1. find root, only one root
+    // 2. no cycle, all nodes visited (connected)
     public boolean validateBinaryTreeNodes(int n, int[] leftChild, int[] rightChild) {
-        pa = new int[n];
-        v = new int[n];
-        Arrays.fill(pa, -1);
-        for (int i = 0; i < n; i++) {
-            if (v[i] == 0) {
-                dfs(i, leftChild, rightChild, -1);
+        Set<Integer> nodes = new HashSet<>();
+        for (int i = 0; i < n; ++i) {
+            nodes.add(i);
+        }
+        for (int lc : leftChild) {
+            if (lc != -1) {
+                nodes.remove(lc);
             }
         }
-        if (bad) {
+        for (int rc : rightChild) {
+            if (rc != -1) {
+                nodes.remove(rc);
+            }
+        }
+        if (nodes.size() != 1) {
             return false;
         }
-        int c = 0;
-        for (int i = 0; i < n; i++) {
-            if (pa[i] == -1) {
-                c++;
-                if (c >= 2) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        int root = nodes.iterator().next();
+        Set<Integer> seen = new HashSet<>();
+        boolean cycle = dfs(root, leftChild, rightChild, seen);
+        return !cycle && seen.size() == n;
     }
 
-    private void dfs(int i, int[] leftChild, int[] rightChild, int parent) {
-        // can't have two parents
-        if (pa[i] != -1 && pa[i] != parent) {
-            bad = true;
-            return;
+    private boolean dfs(int root, int[] leftChild, int[] rightChild, Set<Integer> seen) {
+        seen.add(root);
+        int lc = leftChild[root];
+        if (lc != -1 && seen.contains(lc)) {
+            return true;
         }
-        pa[i] = parent;
-        if (v[i] == 2) {
-            return;
+        boolean later = lc == -1 ? false : dfs(lc, leftChild, rightChild, seen);
+        if (later) {
+            return true;
         }
-        v[i] = 1;
-        int lc = leftChild[i];
-        if (lc != -1) {
-            if (v[lc] == 1) {
-                bad = true;
-                return;
-            }
-            dfs(lc, leftChild, rightChild, i);
+        int rc = rightChild[root];
+        if (rc != -1 && seen.contains(rc)) {
+            return true;
         }
-        int rc = rightChild[i];
-        if (rc != -1) {
-            if (v[rc] == 1) {
-                bad = true;
-                return;
-            }
-            dfs(rc, leftChild, rightChild, i);
-        }
-        v[i] = 2;
+        return rc == -1 ? false : dfs(rc, leftChild, rightChild, seen);
     }
 }
