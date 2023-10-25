@@ -29,18 +29,16 @@ K will be an integer in the range [1, 2^(N-1)].
  */
 public class KthSymbolInGrammar {
     public int kthGrammar(int n, int k) {
-        // our n. k both start from 0
-        return dfs(n-1, k-1);
+        return solve(n, k - 1);
     }
 
-    private int dfs(int n, int k){
-        if(n==0){
-            return 0; // k must be 0
-        }
-        if(dfs(n-1, k/2)==0){
-            return k%2; // if last == 0, it's 01
-        }else{
-            return (k%2) ^ 1; // otherwise it's 10
+    private int solve(int n, int k) {
+        if (n == 1) {
+            return 0;
+        } else if (k % 2 == 0) {
+            return solve(n - 1, k / 2);
+        } else {
+            return solve(n - 1, k / 2) ^ 1;
         }
     }
 }
