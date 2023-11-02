@@ -1,62 +1,47 @@
+import base.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 public class MaxProfitableTripletWithIncreasingPriceII {
-
-    // time = O(nlogn), space = O(n)
-    final int N = 50010;
-    int[] tr;
-    List<Integer> nums;
-    int m;
+    // fenwick tree used to get max number instead of sum
+    private final int N = 50010;
+    private int[] bit;
+    private List<Integer> a;
 
     public int maxProfit(int[] prices, int[] profits) {
-        tr = new int[N];
+        bit = new int[N];
         int n = prices.length;
-
-        nums = new ArrayList<>();
-        for (int x : prices) nums.add(x);
-        nums = new ArrayList<>(new HashSet<>(nums));
-        Collections.sort(nums);
-        m = nums.size();
-
-        int[] l = new int[n], r = new int[n];
-        for (int i = 0; i < n; i++) {
-            l[i] = sum(find(prices[i] - 1) + 1);
-            add(find(prices[i]) + 1, profits[i]);
+        for (int i = 0; i < n; ++i) {
+            prices[i] += 1;
         }
-        tr = new int[N];
+
+        a = new ArrayList<>();
+        for (int x : prices) a.add(x);
+        a = new ArrayList<>(new HashSet<>(a));
+        Collections.sort(a);
+
+        int[] l = new int[n];
+        int[] r = new int[n];
+        for (int i = 0; i < n; i++) {
+            l[i] = sum(prices[i] - 1);
+            add(prices[i], profits[i]);
+        }
+        bit = new int[N];
         for (int i = n - 1; i >= 0; i--) {
-            r[i] = sum2(find2(prices[i] + 1) + 1);
-            add2(find2(prices[i]) + 1, profits[i]);
+            r[i] = sum2(prices[i] + 1);
+            add2(prices[i], profits[i]);
         }
         int res = -1;
         for (int i = 0; i < n; i++) {
-            if (l[i] == 0 || r[i] == 0) continue;
+            if (l[i] == 0 || r[i] == 0) {
+                continue;
+            }
             res = Math.max(res, l[i] + profits[i] + r[i]);
         }
         return res;
-    }
-
-    private int find(int x) {
-        int l = 0, r = m - 1;
-        while (l < r) {
-            int mid = l + r + 1 >> 1;
-            if (nums.get(mid) <= x) l = mid;
-            else r = mid - 1;
-        }
-        return nums.get(r) <= x ? r : r - 1;
-    }
-
-    private int find2(int x) {
-        int l = 0, r = m - 1;
-        while (l < r) {
-            int mid = l + r >> 1;
-            if (nums.get(mid) >= x) r = mid;
-            else l = mid + 1;
-        }
-        return nums.get(r) >= x ? r : r + 1;
     }
 
     private int lowbit(int x) {
@@ -64,23 +49,34 @@ public class MaxProfitableTripletWithIncreasingPriceII {
     }
 
     private void add(int x, int c) {
-        for (int i = x; i <= N; i += lowbit(i)) tr[i] = Math.max(tr[i], c);
+        for (int i = x; i <= N; i += lowbit(i)) {
+            bit[i] = Math.max(bit[i], c);
+        }
     }
 
     private void add2(int x, int c) {
-        for (int i = x; i > 0; i -= lowbit(i)) tr[i] = Math.max(tr[i], c);
+        for (int i = x; i > 0; i -= lowbit(i)) {
+            bit[i] = Math.max(bit[i], c);
+        }
     }
 
     private int sum(int x) {
         int res = 0;
-        for (int i = x; i > 0; i -= lowbit(i)) res = Math.max(res, tr[i]);
+        for (int i = x; i > 0; i -= lowbit(i)) {
+            res = Math.max(res, bit[i]);
+        }
         return res;
     }
 
     private int sum2(int x) {
         int res = 0;
-        for (int i = x; i <= N; i += lowbit(i)) res = Math.max(res, tr[i]);
+        for (int i = x; i <= N; i += lowbit(i)) {
+            res = Math.max(res, bit[i]);
+        }
         return res;
     }
 
+    public static void main(String[] args) {
+        System.out.println(new MaxProfitableTripletWithIncreasingPriceII().maxProfit(ArrayUtils.read1d("1,1,7"), ArrayUtils.read1d("84,46,6")));
+    }
 }
