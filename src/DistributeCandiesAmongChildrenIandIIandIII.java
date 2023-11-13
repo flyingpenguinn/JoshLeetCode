@@ -1,4 +1,4 @@
-public class DistributeCandiesAmongChildrenIII {
+public class DistributeCandiesAmongChildrenIandIIandIII {
     // result oriented programming...
     public long distributeCandies(int n, int limit) {
         if (n < limit) {
@@ -51,7 +51,7 @@ public class DistributeCandiesAmongChildrenIII {
 
 
     public static void main(String[] args) {
-        System.out.println(new DistributeCandiesAmongChildrenIII().distributeCandies(18, 6));
-        System.out.println(new DistributeCandiesAmongChildrenIII().distributeCandiesSlow(19, 6));
+        System.out.println(new DistributeCandiesAmongChildrenIandIIandIII().distributeCandies(18, 6));
+        System.out.println(new DistributeCandiesAmongChildrenIandIIandIII().distributeCandiesSlow(19, 6));
     }
 }
