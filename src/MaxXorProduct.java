@@ -3,7 +3,7 @@ public class MaxXorProduct {
     // give "1" to the currently smaller value
     private long mod = (long) (1e9 + 7);
 
-    private int maximumXorProduct(long a, long b, int n) {
+    public int maximumXorProduct(long a, long b, int n) {
         for (long i = n - 1; i >= 0; i--) {
             long bit = (long) (1) << i;
             if ((bit & a) == (bit & b)) {

@@ -1,45 +1,37 @@
 import java.util.*;
 
 public class MinAmountTimeToCollectGarbage {
-    private Set<Character> cars = new HashSet<>();
-
-    {
-        cars.add('M');
-        cars.add('G');
-        cars.add('P');
-    }
-
-    public int garbageCollection(String[] garbage, int[] travel) {
-        Map<Character, List<Integer>> m = new HashMap<>();
-        for (int j = 0; j < garbage.length; ++j) {
-            String g = garbage[j];
-            for (int i = 0; i < g.length(); ++i) {
-                char c = g.charAt(i);
-                m.computeIfAbsent(c, k -> new ArrayList<>()).add(j);
-            }
-        }
-        int[] sum = new int[travel.length];
-        for (int i = 0; i < travel.length; ++i) {
-            sum[i] = (i == 0 ? 0 : sum[i - 1]) + travel[i];
-        }
+    private String trucks = "GMP";
+    public  int garbageCollection(String[] a, int[] t) {
+        int n = a.length;
         int res = 0;
-        for (char c : cars) {
-            List<Integer> list = m.getOrDefault(c, new ArrayList<>());
-            int cur = 0;
-            int i = 0;
-            while (i < list.size()) {
-                int next = list.get(i);
-                int dist = dist(sum, cur, next);
-                res += dist;
-                ++res;
-                cur = next;
-                ++i;
+        int[] psum = new int[n];
+        psum[0] = t[0];
+        for(int i=1; i<t.length; ++i){
+            psum[i] = psum[i-1] + t[i];
+        }
+        for(char c: trucks.toCharArray()){
+            int last = -1;
+            for(int i=0; i<n; ++i){
+                int cur = count(a[i], c);
+                res += cur;
+                if(cur>=1){
+                    last = i;
+                }
             }
+            res += last<=0? 0: psum[last-1];
         }
         return res;
     }
 
-    private int dist(int[] sum, int i, int j) {
-        return (j <= 0 ? 0 : sum[j - 1]) - (i <= 0 ? 0 : sum[i - 1]);
+    private int count(String s, char c){
+        int res = 0;
+        for(char si: s.toCharArray()){
+            if(si == c){
+                ++res;
+            }
+        }
+        return res;
     }
-}
+};
+
