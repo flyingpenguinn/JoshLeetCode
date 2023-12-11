@@ -33,3 +33,28 @@ public class CountSubarrayWhereMaxAppearAtlestKTimes {
         return res;
     }
 }
+
+class CountSubarrayWhereMaxAppearAtleastKTimesSol2 {
+
+    public long countSubarrays(int[] a, int k) {
+        int max = 0;
+        for (int ai : a) {
+            max = Math.max(max, ai);
+        }
+        int j = 0;
+        int n = a.length;
+        int cur = 0;
+        long res = 0;
+        for (int i = 0; i < n; ++i) {
+            cur += a[i] == max ? 1 : 0;
+            while (cur >= k) {
+                cur -= a[j] == max ? 1 : 0;
+                ++j;
+            }
+            // at this point j...i we have k-1 times of max
+            // j-1 will have k times of max, or j = 0 itself
+            res += j;
+        }
+        return res;
+    }
+}
