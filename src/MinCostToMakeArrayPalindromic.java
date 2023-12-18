@@ -83,3 +83,48 @@ public class MinCostToMakeArrayPalindromic {
         }
     }
 }
+
+class MinCostArrayEquipalindromII {
+    // get median and get its closest palindrome. here we are using brute force
+    public long minimumCost(int[] a) {
+        Arrays.sort(a);
+        int n = a.length;
+        int median = a[n / 2];
+        int cand1 = upper(median);
+        int cand2 = lower(median);
+        return Math.min(calc(a, cand1), calc(a, cand2));
+    }
+
+    private long calc(int[] a, int cand) {
+        long res = 0;
+        for (int ai : a) {
+            res += Math.abs(cand - ai);
+        }
+        return res;
+    }
+
+    private int upper(int t) {
+        while (!ispalin(t)) {
+            ++t;
+        }
+        return t;
+    }
+
+    private int lower(int t) {
+        while (!ispalin(t)) {
+            --t;
+        }
+        return t;
+    }
+
+    private boolean ispalin(int n) {
+        int on = n;
+        int rev = 0;
+        while (n > 0) {
+            rev = rev * 10 + (n % 10);
+            n /= 10;
+        }
+
+        return rev == on;
+    }
+}
