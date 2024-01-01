@@ -1,67 +1,54 @@
 import java.util.Arrays;
 
 public class StringCompressionII {
+    // 2d dp, while we run past at most j DIFFERENT chars from i. there is some greedy in it as if we keep i, we better remove OTHER characters
+    private Integer[][] dp;
 
-    private int[][][][] dp;
-
-    public int getLengthOfOptimalCompression(String s, int ks) {
+    public int getLengthOfOptimalCompression(String s, int k) {
         int n = s.length();
-        dp = new int[n][27][n][ks + 1];
-        for (int i = 0; i < dp.length; i++) {
-            for (int j = 0; j < dp[i].length; j++) {
-                for (int k = 0; k < dp[i][j].length; k++) {
-                    Arrays.fill(dp[i][j][k], -1);
-                }
-            }
-        }
-        return domin(0, 26, 0, ks, s);
+        dp = new Integer[n][k + 1];
+        return solve(s, k, 0);
     }
 
-
-    // min length if we start from i, last char is last and
-    // we have count pending chars in it, with k chances to delete remaining
-    private int domin(int i, int last, int count, int k, String s) {
-        if (i == s.length()) {
-            return countLen(count);
-        }
-        if (dp[i][last][count][k] != -1) {
-            return dp[i][last][count][k];
-        }
-        char c = s.charAt(i);
-        int cind = c - 'a';
-        int keep = 0;
-        if (cind == last) {
-            keep = domin(i + 1, last, count + 1, k, s);
-        } else {
-            keep = countLen(count) + domin(i + 1, cind, 1, k, s);
-        }
-        int remove = Integer.MAX_VALUE;
-        if (k > 0) {
-            remove = domin(i + 1, last, count, k - 1, s);
-        }
-        dp[i][last][count][k] = Math.min(keep, remove);
-        return dp[i][last][count][k];
-    }
-
-    private int countLen(int count) {
-        if (count == 0) {
-            return 0;
-        }
-        if (count == 1) {
+    private int getclen(int llen) {
+        if (llen == 1) {
             return 1;
-        }
-        return (1 + digits(count));
-    }
-
-    private int digits(int count) {
-        if (count >= 100) {
-            return 3;
-        } else if (count >= 10) {
+        } else if (llen < 10) {
             return 2;
-        } else if (count >= 2) {
-            return 1;
-        } else {
+        } else if (llen < 100) {
+            return 3;
+        }
+        return 4;
+    }
+
+    private int solve(String s, int k, int i) {
+        int n = s.length();
+        if (k < 0) {
+            return Integer.MAX_VALUE;
+        }
+        if (i == n) {
             return 0;
         }
+        if (dp[i][k] != null) {
+            return dp[i][k];
+        }
+
+        int res = solve(s, k - 1, i + 1); // delete
+        int count = 0, sind = s.charAt(i) - 'a', removed = 0;
+        for (int j = i; j < n; ++j) {
+            int jind = s.charAt(j) - 'a';
+            if (jind == sind) {
+                ++count;
+            } else {
+                ++removed;
+            }
+            if (removed > k) {
+                break;
+            }
+            int cur = getclen(count) + solve(s, k - removed, j + 1);
+            res = Math.min(res, cur);
+        }
+        dp[i][k] = res;
+        return res;
     }
 }
