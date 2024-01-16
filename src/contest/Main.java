@@ -8,23 +8,30 @@ public class Main {
 
     // Driver Code
     public static void main(String[] args) {
-        long u = 10000000000L;
-        long k = 10000000000L;
-        long res = 0;
-        int x = 5;
-        for (long i = 1; i <= u; ++i) {
-            for(int j=x; j<=40; j += x){
+        solve(9, 1);
+        solve(7, 2);
+        solve(100000000, 5);
+    }
 
-                if(((i>>(j-1))&1)==1){
+    protected static void solve(int k, int x) {
+        long u = 1000000000L;
+
+        long res = 0;
+
+        for (long i = 1; i <= u; ++i) {
+            for (int j = 1; j <= 40; ++j) {
+                if (j % x != 0) {
+                    continue;
+                }
+                if (((i >> (j - 1)) & 1) == 1) {
                     ++res;
                 }
-                if(res>k){
-                    System.out.println(i-1);
+                if (res > k) {
+                    System.out.println(i - 1);
                     return;
                 }
             }
         }
-
     }
 }
 
