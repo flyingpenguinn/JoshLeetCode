@@ -1,41 +1,31 @@
 import java.util.Arrays;
 
 public class HouseRobberIv {
-    // for each block of rob-able house, we know how to pick them- there are (len+1)/2 ways
+    // always better to pick the first good house on the most left, as it allows us to pick i+1 as well
     public int minCapability(int[] a, int k) {
         int n = a.length;
-        int[] na = Arrays.copyOf(a, n);
-        Arrays.sort(na);
-        int l = 0;
-        int u = n - 1;
+        int l = 1;
+        int u = (int) 1e9;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (good(a, na[mid], k)) {
+            boolean good = false;
+            int picked = 0;
+            for (int i = 0; i < n; ++i) {
+                if (a[i] <= mid) {
+                    ++picked;
+                    if (picked >= k) {
+                        good = true;
+                        break;
+                    }
+                    ++i;
+                }
+            }
+            if (good) {
                 u = mid - 1;
             } else {
                 l = mid + 1;
             }
         }
-        return na[l];
-    }
-
-    private boolean good(int[] a, int t, int k) {
-        int i = 0;
-        int n = a.length;
-        int chosen = 0;
-        while (i < n) {
-            if (a[i] > t) {
-                ++i;
-                continue;
-            }
-            int j = i;
-            while (j < n && a[j] <= t) {
-                ++j;
-            }
-            int count = j - i;
-            chosen += (count + 1) / 2;
-            i = j;
-        }
-        return chosen >= k;
+        return l;
     }
 }
