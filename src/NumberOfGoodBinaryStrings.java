@@ -1,36 +1,35 @@
 public class NumberOfGoodBinaryStrings {
     // multiple of certain number: either add this number to extend a section, or change the number!
     // do not need to enumerate how many numbers we are adding
-    private long mod = (long) (1e9 + 7);
-    private Long[][] dp;
-    private int[] counter = new int[2];
-
-    public int goodBinaryStrings(int minl, int maxl, int og, int zg) {
-        counter[0] = zg;
-        counter[1] = og;
-        dp = new Long[maxl + 1][2];
-        long rt = solve(0, 0, minl, maxl);
-        rt %= mod;
+    public int goodBinaryStrings(int minLength, int maxLength, int oneGroup, int zeroGroup) {
+        dp = new Long[maxLength];
+        long rt = solve(0, minLength, maxLength, oneGroup, zeroGroup);
         return (int) rt;
     }
 
-    private long solve(int i, int num, int minl, int maxl) {
-        if (i > maxl) {
+    private long Mod = (long) (1e9 + 7);
+    private Long[] dp;
+
+    private long solve(int i, int min, int max, int og, int zg) {
+        if (i == max) {
+            return 1;
+        }
+        if (i > max) {
             return 0;
         }
-        if (dp[i][num] != null) {
-            return dp[i][num];
-        }
         long res = 0;
-        if (i >= minl && i <= maxl) {
+        if (i >= min) {
             res = 1;
         }
-        long way1 = solve(i + counter[num], num, minl, maxl); // either keep extending current one
-        long way2 = solve(i + counter[num ^ 1], num ^ 1, minl, maxl); // or flip to a new one
+        if (dp[i] != null) {
+            return dp[i];
+        }
+        long way1 = solve(i + og, min, max, og, zg);
+        long way2 = solve(i + zg, min, max, og, zg);
         res += way1;
         res += way2;
-        res %= mod;
-        dp[i][num] = res;
+        res %= Mod;
+        dp[i] = res;
         return res;
     }
 
