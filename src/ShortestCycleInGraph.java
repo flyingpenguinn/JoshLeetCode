@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class ShortestCycleInGraph {
-    // just like dijkastra, but check ne and cur are not in parent relationship
+    // just like bfs, but check ne and cur are not in parent relationship
     private List<Integer>[] g;
     private int MAX = (int) 1e9;
 
@@ -34,7 +34,7 @@ public class ShortestCycleInGraph {
                         dist[ne] = nd;
                         parent[ne] = cur;
                         q.offer(ne);
-                    } else if (parent[ne] != cur && parent[cur] != ne) {
+                    } else if (parent[cur] != ne) {
                         res = Math.min(res, dist[cur] + dist[ne] + 1);
                     }
                 }
