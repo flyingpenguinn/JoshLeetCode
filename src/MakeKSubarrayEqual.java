@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class MakeKSubarrayEqual {
+    // we note that if k=3, then 0, 3, 6... must be equal, so does 1,4,7....
     // focus on k-cycles not the entire array
+    // length of the cycle is actually gcd(n, k) so we can actually do it in a simpler way by getting all the gcd len lists and sort
     public long makeSubKSumEqual(int[] a, int k) {
         long res = 0;
         int n = a.length;
