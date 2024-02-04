@@ -1,0 +1,55 @@
+public class MinTimeToRevertWordToInitialStateIandII {
+    // Use KMP to get all prefixes that are also suffix
+    // Function to generate the KMP table
+    public int minimumTimeToInitialState(String word, int k) {
+        int n = word.length();
+        int res = getAllPrefixesSuffixes(word, k);
+        if (res == -1) {
+            return (int) Math.ceil(n * 1.0 / k);
+        } else {
+            return res;
+        }
+    }
+
+    private static int[] computeKMPTable(String pattern) {
+        int[] lps = new int[pattern.length()];
+        int len = 0; // length of the previous longest prefix suffix
+        int i = 1;
+        lps[0] = 0; // lps[0] is always 0
+
+        // Build the table
+        while (i < pattern.length()) {
+            if (pattern.charAt(i) == pattern.charAt(len)) {
+                len++;
+                lps[i] = len;
+                i++;
+            } else {
+                if (len != 0) {
+                    len = lps[len - 1];
+                } else {
+                    lps[i] = len;
+                    i++;
+                }
+            }
+        }
+        return lps;
+    }
+
+    // Function to get all prefixes that are also suffixes
+    public static int getAllPrefixesSuffixes(String pattern, int k) {
+        int[] lps = computeKMPTable(pattern);
+        int n = pattern.length();
+        int res = -1;
+        // Use the KMP table to find all prefixes that are also suffixes
+        int length = lps[pattern.length() - 1]; // Start with the longest
+        while (length > 0) {
+            int prelen = n - length;
+            if (prelen % k == 0) {
+                return prelen / k;
+            }
+            length = lps[length - 1]; // Get the next length from the table
+        }
+
+        return res;
+    }
+}
