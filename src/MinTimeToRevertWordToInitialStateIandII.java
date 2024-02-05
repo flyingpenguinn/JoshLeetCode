@@ -53,3 +53,44 @@ public class MinTimeToRevertWordToInitialStateIandII {
         return res;
     }
 }
+
+
+class MinTimeToRevertStringRollingHash {
+    // rolling hash, rabin karp
+    private long base = 31;
+    private long Mod = (long) (1e9 + 7);
+
+    public int minimumTimeToInitialState(String s, int k) {
+        int n = s.length();
+        long cur = 0;
+        long[] f = new long[n];
+        for (int i = 0; i < n; ++i) {
+            int cind = s.charAt(i) + 1;
+            cur = cur * base + cind;
+            cur %= Mod;
+            f[i] = cur;
+        }
+        cur = 0;
+        long cbase = 1;
+        long[] b = new long[n];
+        for (int i = n - 1; i >= 1; --i) {
+            int cind = s.charAt(i) + 1;
+            cur += cbase * cind;
+            cur %= Mod;
+            b[i] = cur;
+            cbase *= base;
+            cbase %= Mod;
+        }
+        for (int times = 1; times * k < n; ++times) {
+            int end = times * k;
+            int rlen = n - end;
+            long fv = f[rlen - 1];
+            long rv = b[end];
+            //  System.out.println("end="+end+" fv="+fv+" rv="+rv+" rlen="+rlen);
+            if (fv == rv && s.substring(end).equals(s.substring(0, rlen))) {
+                return times;
+            }
+        }
+        return (int) (Math.ceil(n * 1.0 / k));
+    }
+}
