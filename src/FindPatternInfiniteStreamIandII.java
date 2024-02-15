@@ -2,7 +2,7 @@ interface InfiniteStream {
     public int next();
 }
 
-public class FindPatternInfiniteStreamI {
+public class FindPatternInfiniteStreamIandII {
     public int findPattern(InfiniteStream stream, int[] a) {
         int[] lps = computeLPSArray(a);
         int j = 0; // index for a (pattern)
