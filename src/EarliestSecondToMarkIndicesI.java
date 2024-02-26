@@ -30,7 +30,7 @@ public class EarliestSecondToMarkIndicesI {
             last[b[i] - 1] = i;
         }
 
-        Set<Integer> marked = new HashSet<>();
+        int marked = 0;
         Set<Integer> zeros = new HashSet<>();
         for (int i = 0; i < n; ++i) {
             if (last[i] == -1 && a[i] > 0) {
@@ -46,9 +46,9 @@ public class EarliestSecondToMarkIndicesI {
                 pq.offer(new int[]{a[i], i});
             }
         }
-        for (int i = 0; i < mid && marked.size() < n; ++i) {
+        for (int i = 0; i < mid && marked < n; ++i) {
             if (last[b[i] - 1] == i && zeros.contains(b[i] - 1)) {
-                marked.add(b[i] - 1);
+                ++marked;
                 continue;
             } else {
                 if (pq.isEmpty()) {
@@ -64,6 +64,6 @@ public class EarliestSecondToMarkIndicesI {
                 }
             }
         }
-        return marked.size() == n;
+        return marked == n;
     }
 }
