@@ -1,37 +1,51 @@
 public class SumGame {
-    // 1. if odd ? diffs, Alice does the last, can always win as she can sabotage whatever
-    // 2. if even, then if there are ?? left, the diff must be 9 because if it's 8, alice can do 9 and bob will suffer. so only when diff is 9 and ?? left can Bob win
-    // 3. if ????m then need the diff to be 18
     public boolean sumGame(String s) {
-        int n = s.length();
-        int s1 = 0;
-        int s1c = 0;
-        for (int i = 0; i < n / 2; i++) {
-            char c = s.charAt(i);
-            if (c == '?') {
-                s1c++;
+        char[] a = s.toCharArray();
+        int n = a.length;
+        int sum1 = 0;
+        int q1 = 0;
+        int sum2 = 0;
+        int q2 = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i < n / 2) {
+                if (a[i] == '?') {
+                    ++q1;
+                } else {
+                    sum1 += a[i] - '0';
+                }
             } else {
-                int cind = c - '0';
-                s1 += cind;
-            }
-
-        }
-        int s2c = 0;
-        int s2 = 0;
-        for (int i = n / 2; i < n; i++) {
-            char c = s.charAt(i);
-            if (c == '?') {
-                s2c++;
-            } else {
-                int cind = c - '0';
-                s2 += cind;
+                if (a[i] == '?') {
+                    ++q2;
+                } else {
+                    sum2 += a[i] - '0';
+                }
             }
         }
-        int diff = Math.abs(s1 - s2);
-        int diffc = Math.abs(s1c - s2c);
-        if (diffc % 2 == 1) {
+        if (sum1 > sum2) {
+            int tmp = sum2;
+            sum2 = sum1;
+            sum1 = tmp;
+            tmp = q2;
+            q2 = q1;
+            q1 = tmp;
+        }
+        if ((q1 + q2) % 2 == 1) {
             return true;
         }
-        return diff != diffc / 2 * 9;
+        if (sum1 == sum2) {
+            return q1 != q2;
+        } else {
+            // sum1 <= sum2
+            if (q1 <= q2) {
+                // can't catch up
+                return true;
+            } else {
+                int dsum = sum2 - sum1;
+                int dq = q1 - q2;
+                // dq / 2 * 9 is the most Bob can catch up
+                // (dq+1)/2 is the most Alice can spice it up to make sum1 out of control
+                return dsum > dq / 2 * 9 || dsum < (dq + 1) / 2 * 9;
+            }
+        }
     }
 }
