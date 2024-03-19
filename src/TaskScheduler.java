@@ -32,28 +32,26 @@ public class TaskScheduler {
     2. num++: must be num apart, means segment is num+1 in length
 
      */
-    public int leastInterval(char[] s, int k) {
-        k++;// segment length = k+1
-        int[][] count = new int[26][2];
-        int n = s.length;
-        for (int i = 0; i < n; i++) {
-            int cind = s[i] - 'A';
-            count[cind][0]++;
-            count[cind][1] = cind;
+    public int leastInterval(char[] a, int k) {
+        ++k;
+        int[] m = new int[26];
+        int n = a.length;
+        for (char ai : a) {
+            ++m[ai - 'A'];
         }
+        int rem = n;
         int res = 0;
-        while (true) {
-            Arrays.sort(count, (x, y) -> Integer.compare(y[0], x[0]));
-            int put = 0;
-            for (int i = 0; i < 26 && count[i][0] != 0 && put < k; i++) {
-                count[i][0]--;
-                put++;
+        while (rem > 0) {
+            Arrays.sort(m);
+            int remk = k;
+            for (int i = 25; i >= 0 && m[i] > 0 && remk > 0; --i) {
+                --m[i];
+                --rem;
+                --remk;
             }
-            if (count[0][0] > 0) {
-                // last segment won't need k
-                res += k - put;
-            } else {
-                break;
+            if (rem > 0) {
+                // if we have done, dont need to add remk idle rounds
+                res += remk;
             }
         }
         return res + n;
