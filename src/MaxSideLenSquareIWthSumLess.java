@@ -58,14 +58,14 @@ public class MaxSideLenSquareIWthSumLess {
         int[][] sum = new int[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                sum[i][j] = getsum(sum, i - 1, j) + getsum(sum, i, j - 1) - getsum(sum, i - 1, j - 1) + a[i][j];
+                sum[i][j] = v(sum, i - 1, j) + v(sum, i, j - 1) - v(sum, i - 1, j - 1) + a[i][j];
             }
         }
         return sum;
     }
 
 
-    private int getsum(int[][] sum, int i, int j) {
+    private int v(int[][] sum, int i, int j) {
         if (i < 0 || j < 0) {
             return 0;
         }
@@ -74,7 +74,7 @@ public class MaxSideLenSquareIWthSumLess {
 
 
     private int getsum(int[][] sum, int i, int j, int si, int sj) {
-        return getsum(sum, i, j) - getsum(sum, si - 1, j) - getsum(sum, i, sj - 1) + getsum(sum, si - 1, sj - 1);
+        return v(sum, i, j) - v(sum, si - 1, j) - v(sum, i, sj - 1) + v(sum, si - 1, sj - 1);
     }
 
     private boolean good(int[][] sum, int mid, int t) {
