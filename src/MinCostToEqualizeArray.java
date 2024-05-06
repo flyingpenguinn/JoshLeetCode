@@ -1,6 +1,9 @@
 import java.util.Arrays;
 
 public class MinCostToEqualizeArray {
+    // extension of question 1953
+    // solve this one last min in contest !
+
     private long Mod = (long) (1e9 + 7);
 
     public int minCostToEqualizeArray(int[] a, int x, int y) {
@@ -28,27 +31,31 @@ public class MinCostToEqualizeArray {
             if (n == 2) {
                 res = v0 * x;
             } else {
-                long v02 = Math.min(other, v0);
-                long otherall = v02 + other;
-
-                res = v0 >= other ? ((v0 - v02) * x + (otherall) / 2 * y) : (diffs / 2 * y + (diffs % 2) * x);
-                while (true) {
+                res = calc(x, y, diffs, v0, other);
+                int tries = 2;
+                while (tries > 0) {
                     other += n - 1;
                     ++v0;
                     diffs += n;
-                    //   System.out.println(other+" "+v0);
-                    v02 = Math.min(other, v0);
-                    otherall = v02 + other;
-                    long nres = v0 >= other ? ((v0 - v02) * x + (otherall) / 2 * y) : (diffs / 2 * y + (diffs % 2) * x);
-                    //    System.out.println(nres);
+                    long nres = calc(x, y, diffs, v0, other);
                     res = Math.min(res, nres);
-                    if (nres > res) {
-                        break;
-                    }
+                    --tries;
                 }
             }
         }
         res %= Mod;
         return (int) res;
+    }
+
+    protected long calc(int x, int y, long diffs, long v0, long other) {
+        long res = 0;
+        if (v0 > other) {
+            // if v0 > other we can pair each v0 with an other and get some remnants
+            res = (v0 - other) * x + (2 * other) / 2 * y;
+        } else {
+            // otherwise every number can find a pair until the last one if there are odd numbers
+            res = (diffs / 2 * y + (diffs % 2) * x);
+        }
+        return res;
     }
 }
