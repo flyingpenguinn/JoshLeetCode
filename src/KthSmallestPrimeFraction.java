@@ -57,12 +57,12 @@ class KthSmallestPrimeFractionHeap {
             last = pq.poll();
             k--;
             int nj = last[1] - 1;
-            if (nj >= 0 && a[nj] > a[last[0]]) {
+            if (nj >= 0 ) {
                 pq.offer(new int[]{last[0], nj});
             }
             if (last[1] == n - 1) {
                 int ni = last[0] + 1;
-                if (ni < n && a[ni] < a[last[1]]) {
+                if (ni < n ) {
                     pq.offer(new int[]{ni, last[1]});
                 }
             }
