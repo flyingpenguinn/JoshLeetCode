@@ -47,42 +47,41 @@ public class PathWithMaxGold {
 
 
     // worst case 4^25 but in reality n^4*25: we visit 25 cells at most for each ij
-    public int getMaximumGold(int[][] grid) {
-        int rows = grid.length;
-        int cols = grid[0].length;
-
-        int max = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (grid[i][j] != 0) {
-                    // start from ij collect gold
-                    grid[i][j] = -grid[i][j];
-                    int collected = dfs(grid, i, j);
-                    grid[i][j] = -grid[i][j];
-                    max = Math.max(max, collected);
+    public int getMaximumGold(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int res = 0;
+        for(int i=0; i<m; ++i){
+            for(int j=0; j<n; ++j){
+                if(a[i][j]>0){
+                    boolean[][] seen = new boolean[m][n];
+                    int cur = dfs(a, i, j, seen, 0);
+                    res = Math.max(res, cur);
                 }
             }
         }
-        return max;
+        return res;
     }
 
-    int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private int[][] dirs = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
-    private int dfs(int[][] grid, int i, int j) {
-        int rows = grid.length;
-        int cols = grid[0].length;
-        int maxafter = 0;
-        for (int[] d : dirs) {
-            int ni = i + d[0];
-            int nj = j + d[1];
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && grid[ni][nj] > 0) {
-                grid[ni][nj] = -grid[ni][nj];
-                int after = dfs(grid, ni, nj);
-                grid[ni][nj] = -grid[ni][nj];
-                maxafter = Math.max(maxafter, after);
+    private int dfs(int[][] a, int i, int j, boolean[][] seen, int csum){
+        int m = a.length;
+        int n = a[0].length;
+        seen[i][j] = true;
+        int res = a[i][j];
+        int maxlater = 0;
+        for(int[] d: dirs){
+            int ni = i+d[0];
+            int nj = j+d[1];
+            if(ni>=0 && ni<m && nj>=0 && nj<n && a[ni][nj] >0 && !seen[ni][nj]){
+                int later = dfs(a, ni, nj, seen, csum);
+                maxlater = Math.max(maxlater, later);
             }
         }
-        return maxafter + (-grid[i][j]);
+        res += maxlater;
+        seen[i][j] = false;
+        return res;
     }
 
     public static void main(String[] args) {
