@@ -66,3 +66,51 @@ public class SumOfSubarrayMinimums {
         System.out.println(new SumOfSubarrayMinimums().sumSubarrayMins(a));
     }
 }
+
+class SumSubarrayMinsAnotherWay {
+    // first strictly less on the left, and first <= on the right. note can't be both strict, and can't be both <=
+    public int sumSubarrayMins(int[] a) {
+        int n = a.length;
+        Deque<Integer> st = new ArrayDeque<>();
+        int[] left = new int[n];
+        int[] right = new int[n];
+
+        for (int i = 0; i < n; ++i) {
+            left[i] = -1;
+            right[i] = n;
+        }
+
+        for (int i = 0; i < n; ++i) {
+            while (!st.isEmpty() && a[st.peek()] >= a[i]) {
+                st.pop();
+            }
+            if (!st.isEmpty()) {
+                left[i] = st.peek();
+            }
+            st.push(i);
+        }
+
+        st.clear();
+
+        for (int i = n - 1; i >= 0; --i) {
+            while (!st.isEmpty() && a[st.peek()] > a[i]) {
+                st.pop();
+            }
+            if (!st.isEmpty()) {
+                right[i] = st.peek();
+            }
+            st.push(i);
+        }
+
+        long res = 0;
+        long Mod = (long) 1e9 + 7;
+        for (int i = 0; i < n; ++i) {
+            long ln = i - left[i];
+            long rn = right[i] - i;
+            long cur = ln * rn * a[i];
+            res += cur;
+            res %= Mod;
+        }
+        return (int) res;
+    }
+}
