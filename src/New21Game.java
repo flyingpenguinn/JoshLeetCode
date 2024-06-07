@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,39 +27,55 @@ Input: N = 21, K = 17, W = 10
 Output: 0.73278
  */
 public class New21Game {
+    // basiclaly convertin the dp to iterative way
+    // dp[i] = (dp[i+1]... dp[i+mp]) / mp
+    // apply subarray sum on dp
     public double new21Game(int n, int k, int mp) {
-// each i is contributed by max(1, i-mp)...min(i-1, k-1)
-        if(n==0){
-            return k==0? 1: 0;
+        int limit = Math.max(k, n) + 1;
+        double[] dp = new double[limit + 1];
+        double[] sum = new double[limit + 1];
+
+        for (int i = limit - 1; i >= k; --i) {
+            dp[i] = i <= n ? 1.0 : 0.0;
+            sum[i] = sum[i + 1] + dp[i];
         }
-        if(k==0){
-            return 1;
+
+        for (int i = k - 1; i >= 0; --i) {
+            int end = Math.min(i + mp + 1, limit);
+            double csum = sum[i + 1] - sum[end];
+            dp[i] = csum * 1.0 / mp;
+            sum[i] = sum[i + 1] + dp[i];
         }
-        // dp [i] is the chance of hitting i
-        // stop at k, so the most we can get is k-1+mp = k+mp-1
-        double[] dp = new double[k+mp];
+
+        return dp[0];
+    }
+}
+
+
+
+class New21GameTle {
+    // TLE but is the basis of the above approach
+    private double[] dp;
+
+    public double new21Game(int n, int k, int mp) {
+        dp = new double[n + 1];
+        Arrays.fill(dp, -1);
+        return solve(0, mp, k, n);
+    }
+
+    private double solve(int cur, int mp, int k, int n) {
+        if (cur >= k) {
+            return cur <= n ? 1.0 : 0.0;
+        }
+        if (dp[cur] != -1) {
+            return dp[cur];
+        }
         double res = 0;
-        double sum = 0;
-        for(int i=1; i<=k+mp-1; i++){
-            // for i it's controlled by i-mp...i-1
-            dp[i] = sum*1.0/mp;
-            if(i<=mp){
-                // i <= mp then the number itself can be achieved
-                dp[i] += 1.0/mp;
-            }
-            if(i>=k && i<=n){
-                // if >=k we stop drawing so it will stay there
-                res += dp[i];
-            }
-            if(i<k){
-                //if i==k already we can't contribute
-                sum += dp[i];
-            }
-            if(i-mp>=1){
-                // take out the too old i-mp
-                sum -= dp[i-mp];
-            }
+        for (int i = 1; i <= mp; ++i) {
+            double cres = solve(cur + i, mp, k, n) * 1.0 / mp;
+            res += cres;
         }
+        dp[cur] = res;
         return res;
     }
 }
