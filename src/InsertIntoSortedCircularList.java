@@ -51,29 +51,43 @@ public class InsertIntoSortedCircularList {
         }
     }
 
-    // either find a good place, or insert after max- for biggest or smallest
-    public Node insert(Node head, int insertVal) {
-        Node p = head;
-        Node maxNode = head;
-        Node cur = new Node(insertVal);
+    // differentiate - previous <= and next >=
+    // after max, number is min
+    // after max, number is max
+    public Node insert(Node head, int v) {
+        Node nn = new Node(v);
         if (head == null) {
-            cur.next = cur;
-            return cur;
+            nn.next = nn;
+            return nn;
         }
-        do {
-            if (p.val <= insertVal && p.next.val >= insertVal) {
-                cur.next = p.next;
-                p.next = cur;
-                return head;
+        if (head.next == head) {
+            head.next = nn;
+            nn.next = head;
+            return head;
+        }
+        Node prev = head;
+        Node next = head.next;
+        boolean inserted = false;
+        while (true) {
+            if ((prev.val <= v && next.val >= v) ||  // just fit in
+                    (prev.val > next.val && prev.val < v) ||  // max
+                    (prev.val > next.val && next.val > v)) {  // min
+                inserted = true;
+                prev.next = nn;
+                nn.next = next;
+                break;
             }
-            if (p.val >= maxNode.val) {
-                // >=, last max node
-                maxNode = p;
+            prev = prev.next;
+            next = next.next;
+            if (prev == head) {
+                break;
             }
-            p = p.next;
-        } while (p != head);
-        cur.next = maxNode.next;
-        maxNode.next = cur;
+        }
+        if (!inserted) {
+            // only possibility is all num equal and not = 0. insert anywhere
+            nn.next = head.next;
+            head.next = nn;
+        }
         return head;
     }
 }
