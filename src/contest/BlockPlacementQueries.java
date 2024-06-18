@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 public class BlockPlacementQueries {
 
+    // typical segment tree
     private int n = 50000;
 
     public List<Boolean> getResults(int[][] q) {
