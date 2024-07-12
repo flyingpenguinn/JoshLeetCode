@@ -3,43 +3,39 @@ import java.util.Deque;
 
 public class MaxScoreFromRemovingSubstrings {
     // reap the bigger reward as much as possible first
+    private int res;
     public int maximumGain(String s, int x, int y) {
-        char c1 = 'b';
-        char c2 = 'a';
-        int bigger = y;
-        int smaller = x;
-        if (y < x) {
-            c1 = 'a';
-            c2 = 'b';
-            bigger = x;
-            smaller = y;
+        if (y > x) {
+            s = solve(s, 'b', 'a', y);
+            solve(s, 'a', 'b', x);
+        } else {
+            s = solve(s, 'a', 'b', x);
+            solve(s, 'b', 'a', y);
         }
-        //   System.out.println(c1+" "+c2);
-        Deque<Character> st = new ArrayDeque<>();
-        int res = 0;
-        res += process(s, c1, c2, bigger, st);
-
-        StringBuilder sb = new StringBuilder();
-        while (!st.isEmpty()) {
-            sb.append(st.pollFirst());
-        }
-        //    System.out.println(sb.toString());
-        res += process(sb.toString(), c2, c1, smaller, st);
-        st.clear();
         return res;
     }
 
-    protected int process(String s, char c1, char c2, int v, Deque<Character> st) {
-        int res = 0;
-        for (int i = 0; i < s.length(); i++) {
+    private String solve(String s, char v1, char v2, int sc) {
+        // System.out.println(s);
+        int n = s.length();
+        Deque<Character> dq = new ArrayDeque<>();
+        StringBuilder ns = new StringBuilder();
+        for (int i = 0; i < n; ++i) {
             char c = s.charAt(i);
-            if (!st.isEmpty() && st.peekLast() == c1 && c == c2) {
-                st.pollLast();
-                res += v;
+            if (c == v2 && !dq.isEmpty() && dq.peekLast() == v1) {
+                dq.pollLast();
+                res += sc;
+                continue;
             } else {
-                st.offerLast(c);
+                //  System.out.println("in st "+c);
+                dq.offerLast(c);
             }
         }
+
+        while (!dq.isEmpty()) {
+            ns.append(dq.pollLast());
+        }
+        String res = ns.reverse().toString();
         return res;
     }
 }
