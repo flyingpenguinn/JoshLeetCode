@@ -1,39 +1,39 @@
 import base.TreeNode;
 
 public class FindDistanceInBinaryTree {
-    private int res = 0;
+    // find lc then get dist to both
+    private int Max = (int) 1e9;
 
     public int findDistance(TreeNode root, int p, int q) {
-        dfs(root, p, q, 0);
-        return res;
+        TreeNode lca = getLca(root, p, q);
+        int d1 = dist(lca, p);
+        int d2 = dist(lca, q);
+        return d1 + d2;
     }
 
-    private int dfs(TreeNode n, int p, int q, int d) {
-
+    private TreeNode getLca(TreeNode n, int p, int q) {
         if (n == null) {
-            return -1;
+            return null;
         }
-
-        int left = dfs(n.left, p, q, d + 1);
-        int right = dfs(n.right, p, q, d + 1);
         if (n.val == p || n.val == q) {
-            if (left >= 0) {
-                res = left - d;
-            } else if (right >= 0) {
-                res = right - d;
-            }
-            return d;
+            return n;
         }
-        if (left >= 0 && right >= 0) {
-            res = (left - d) + (right - d);
-            return -1;
-        } else if (left >= 0) {
-            return left;
-        } else if (right >= 0) {
-            return right;
+        TreeNode lr = getLca(n.left, p, q);
+        TreeNode rr = getLca(n.right, p, q);
+        if (lr != null && rr != null) {
+            return n;
         } else {
-            return -1;
+            return lr != null ? lr : rr;
         }
+    }
 
+    private int dist(TreeNode n, int v) {
+        if (n == null) {
+            return Max;
+        }
+        if (n.val == v) {
+            return 0;
+        }
+        return Math.min(dist(n.left, v), dist(n.right, v)) + 1;
     }
 }

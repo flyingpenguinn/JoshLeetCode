@@ -8,41 +8,36 @@ import java.util.Set;
 
 public class DeleteNodesReturnForest {
 
-    public List<TreeNode> delNodes(TreeNode root, int[] d) {
-        Set<Integer> tod = new HashSet<>();
-        for (int di : d) {
-            tod.add(di);
-        }
-        return new ArrayList<>(dfs(root, tod, null));
+    private HashSet<Integer> set = new HashSet<>();
+    private List<TreeNode> res = new ArrayList<>();
 
+    public List<TreeNode> delNodes(TreeNode root, int[] del) {
+        for (int ti : del) {
+            set.add(ti);
+        }
+        dfs(root, null);
+        return res;
     }
 
-    private List<TreeNode> dfs(TreeNode root, Set<Integer> tod, TreeNode parent) {
-        if (root == null) {
-            return new ArrayList<>();
+    private void dfs(TreeNode n, TreeNode parent) {
+        if (n == null) {
+            return;
         }
-        List<TreeNode> left = dfs(root.left, tod, root);
-        List<TreeNode> right = dfs(root.right, tod, root);
-        left.addAll(right);
-        if (tod.contains(root.val)) {
-            removeNode(root, parent);
-        } else {
-            if (parent == null || tod.contains(parent.val)) {
-                // no parent coverage...and itself isn't deleted, add to result
-                left.add(root);
-            }
+        // trap: deal with current node being deleted
+        // trap: deal with root being deleted
+        if ((parent == null || set.contains(parent.val)) && !set.contains(n.val)) {
+            res.add(n);
         }
-        return left;
-    }
-
-    private void removeNode(TreeNode root, TreeNode parent) {
-        if (parent != null && root == parent.left) {
-            parent.left = null;
-        } else if (parent != null) {
-            parent.right = null;
+        TreeNode olt = n.left;
+        TreeNode ort = n.right;
+        if (olt != null && set.contains(olt.val)) {
+            n.left = null;
         }
-        root.left = null;
-        root.right = null;
+        if (ort != null && set.contains(ort.val)) {
+            n.right = null;
+        }
+        dfs(olt, n);
+        dfs(ort, n);
     }
 
     public static void main(String[] args) {
