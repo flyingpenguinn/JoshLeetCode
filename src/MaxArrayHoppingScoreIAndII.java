@@ -1,4 +1,4 @@
-public class MaxArrayHoppingScoreI {
+public class MaxArrayHoppingScoreIAndII {
     // just jump to the max one on the right
     public int maxScore(int[] a) {
         int n = a.length;
