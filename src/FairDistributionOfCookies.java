@@ -1,4 +1,5 @@
-public class FiarDistributionOfCandies {
+public class FairDistributionOfCookies {
+    // subset's subset!
     private int Max = (int) 2e9;
     private Integer[][] dp;
 
