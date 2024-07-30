@@ -2,6 +2,7 @@ import java.util.Arrays;
 
 public class FlipStringToMonoIncrease {
     // can also dp but prefix sum is way more straightforward
+    // can also use easier approach as "MinDeletionsToMakeStringBalanced"
     public int minFlipsMonoIncr(String s) {
         int n = s.length();
         int sum = 0;
@@ -20,3 +21,4 @@ public class FlipStringToMonoIncrease {
         return res;
     }
 }
+
