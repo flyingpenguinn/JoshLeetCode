@@ -1,36 +1,39 @@
 public class CheckIfRectangleCornerIsReacahble {
+    // union find all circles make sure they are not touching left + bottom or bottm + upper or something else
+    // note all circle centers are within the rectangle
     private static class UnionFind {
         private int[] parent;
-        private int[] rank;
+        private int[] size;
 
         public UnionFind(int size) {
             parent = new int[size];
-            rank = new int[size];
+            this.size = new int[size];
             for (int i = 0; i < size; i++) {
                 parent[i] = i;
             }
         }
 
         public int find(int p) {
-            if (parent[p] != p) {
-                parent[p] = find(parent[p]);
+            if (parent[p] == p) {
+                return p;
             }
-            return parent[p];
+            int rt = find(parent[p]);
+            parent[p] = rt;
+            return rt;
         }
 
         public void union(int p, int q) {
-            int rootP = find(p);
-            int rootQ = find(q);
-
-            if (rootP == rootQ) return;
-
-            if (rank[rootP] > rank[rootQ]) {
-                parent[rootQ] = rootP;
-            } else if (rank[rootP] < rank[rootQ]) {
-                parent[rootP] = rootQ;
-            } else {
-                parent[rootQ] = rootP;
-                rank[rootP]++;
+            int ap = find(p);
+            int aq = find(q);
+            if (ap == aq) {
+                return;
+            }
+            if (size[ap] >= size[aq]) {
+                parent[aq] = ap;
+                size[ap] += size[aq];
+            } else if (size[ap] < size[aq]) {
+                parent[ap] = aq;
+                size[aq] += size[ap];
             }
         }
     }
