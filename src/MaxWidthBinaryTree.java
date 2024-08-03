@@ -65,33 +65,24 @@ Note: Answer will in the range of 32-bit signed integer.
 public class MaxWidthBinaryTree {
 
     // note we talk about width in complete tree here so using complete tree index
-    private Map<Integer,Integer> min = new HashMap<>();
-    private Map<Integer,Integer> max = new HashMap<>();
-    private int maxDepth = -1;
+    private Map<Integer, Long> m = new HashMap<>();
+    private long res = 0;
 
-    public int widthOfBinaryTree(TreeNode root) {
-        dfs(root, 0, 1);
-        int r = 0;
-        for(int i=0; i<=maxDepth; i++){
-            r = Math.max(max.get(i)-min.get(i)+1, r);
-        }
-        return r;
-    }
-
-    private void dfs(TreeNode n, int depth, int index){
-        if(n==null){
+    private void dfs(TreeNode n, long i, int d) {
+        if (n == null) {
             return;
         }
-        maxDepth = Math.max(depth, maxDepth);
-        Integer curmin = min.get(depth);
-        if(curmin == null || curmin>index){
-            min.put(depth, index);
+        if (!m.containsKey(d)) {
+            m.put(d, i);
         }
-        Integer curmax = max.get(depth);
-        if(curmax==null || curmax<index){
-            max.put(depth, index);
-        }
-        dfs(n.left, depth+1, 2*index);
-        dfs(n.right, depth+1, 2*index+1);
+        long cur = i - m.get(d) + 1; // use deducted value to avoid overflow. because the value can be held in int, the gap is no bigger than 1<<32. so on next level long can still hold them
+        res = Math.max(res, cur);
+        dfs(n.left, cur * 2, d + 1);
+        dfs(n.right, cur * 2 + 1, d + 1);
+    }
+
+    public int widthOfBinaryTree(TreeNode n) {
+        dfs(n, 1, 1);
+        return (int) res;
     }
 }
