@@ -9,6 +9,7 @@ public class CountSubstringThatSatisfyKConstraintsII {
         int j = 0;
         int c0 = 0;
         int c1 = 0;
+        long[] accuLeft = new long[n];
         for (int i = 0; i < n; ++i) {
             char c = s.charAt(i);
             int cind = c - '0';
@@ -26,9 +27,11 @@ public class CountSubstringThatSatisfyKConstraintsII {
                 ++j;
             }
             lefts[i] = j;
+            long count = i - j + 1;
+            accuLeft[i] = (i == 0 ? 0 : accuLeft[i - 1]) + count;
         }
         j = n - 1;
-        long[] res = new long[n];
+        long[] accuRight = new long[n];
         c0 = 0;
         c1 = 0;
         for (int i = n - 1; i >= 0; --i) {
@@ -48,7 +51,7 @@ public class CountSubstringThatSatisfyKConstraintsII {
                 --j;
             }
             long count = j - i + 1;
-            res[i] = (i == n - 1 ? 0 : res[i + 1]) + count;
+            accuRight[i] = (i == n - 1 ? 0 : accuRight[i + 1]) + count;
         }
 
         long[] qr = new long[queries.length];
@@ -59,7 +62,8 @@ public class CountSubstringThatSatisfyKConstraintsII {
             int mid = Math.max(start, lefts[end]);
             long len = end - mid + 1;
             long cur = len * (len + 1) / 2;
-            long add = res[start] - res[mid];
+            long add = accuRight[start] - accuRight[mid];
+            // here we have to go from the other direction because otherwise there could be strings span from < mid to >=mid
             cur += add;
 
             qr[i] = cur;

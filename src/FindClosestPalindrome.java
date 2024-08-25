@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /*
 LC#564
 Given an integer n, find the closest integer (not including itself), which is a palindrome.
@@ -15,68 +18,49 @@ public class FindClosestPalindrome {
     // +1, -1, or no change to middle number
     // also 9999, 10001 like numbers, find the best
     // beware of overlfow and -1 representation
-    public String nearestPalindromic(String s) {
+    public String nearestPalindromic(String num) {
+        int n = num.length();
+        // 1234 -> 12, 123 -> 12
+        int llen = (n % 2 == 0) ? n / 2 : n / 2 + 1;
+        String left = num.substring(0, llen);
+        long lnum = Long.parseLong(left);
+        List<Long> checks = new ArrayList<>();
+        checks.add(palin(lnum, n));
+        checks.add(palin(lnum + 1, n));
+        checks.add(palin(lnum - 1, n));
+        checks.add((long) Math.pow(10, n) + 1);
+        checks.add((long) Math.pow(10, n - 1) - 1);
 
-        long[] r = gen(s);
-        return closest(r, s);
-
-    }
-
-    private String closest(long[] r, String s) {
-        long sn = Long.valueOf(s);
+        long realnum = Long.parseLong(num);
         long mindiff = Long.MAX_VALUE;
-        long minnum = 0;
-        for (long ri : r) {
-            long diff = Math.abs(ri - sn);
-            if (diff == 0) {
-                continue;
-            }
-            if (diff < mindiff) {
+        long res = Long.MAX_VALUE;
+
+        for (long ci : checks) {
+            long diff = Math.abs(ci - realnum);
+            if (diff != 0 && diff < mindiff) {
                 mindiff = diff;
-                minnum = ri;
-            } else if (diff == mindiff && ri < minnum) {
-                minnum = ri;
+                res = ci;
+            } else if (diff == mindiff && ci < res) {
+                res = ci;
             }
         }
-        return String.valueOf(minnum);
+        return Long.toString(res);
     }
 
-    private long[] gen(String s) {
-        int n = s.length();
-        long m1 = 0;
-        long m2 = 0;
-        long m3 = 0;
-        if (n % 2 == 1) {
-            String h1 = s.substring(0, n / 2);
-            int middle = s.charAt(n / 2) - '0';
-            m1 = Long.valueOf(h1 + middle + reverses(h1));
-            m2 = middle == 0 ? m1 : Long.valueOf(h1 + (middle - 1) + reverses(h1));
-            m3 = middle == 9 ? m1 : Long.valueOf(h1 + (middle + 1) + reverses(h1));
-        } else {
-            String h1 = s.substring(0, n / 2);
-            int middle = s.charAt(n / 2 - 1) - '0';
-            String hm1 = s.substring(0, n / 2 - 1);
-            m1 = Long.valueOf(h1 + reverses(h1));
-            m2 = middle == 0 ? m1 : Long.valueOf(hm1 + (middle - 1) + reverses(hm1 + (middle - 1)));
-            m3 = middle == 9 ? m1 : Long.valueOf(hm1 + (middle + 1) + reverses(hm1 + (middle + 1)));
+    private long palin(long left, int n) {
+        String lstring = Long.toString(left);
+        StringBuilder res = new StringBuilder(String.join("", "0".repeat(n)));
+        for (int i = 0; i < lstring.length(); i++) {
+            res.setCharAt(i, lstring.charAt(i));
         }
-        StringBuilder nine = new StringBuilder();
-        for (int i = 0; i < n - 1; i++) {
-            nine.append("9");
+        int i = 0;
+        int j = n - 1;
+        while (i <= j) {
+            res.setCharAt(j--, res.charAt(i++));
         }
-        long longnine = nine.length() == 0 ? m1 : Long.valueOf(nine.toString());
-        StringBuilder one = new StringBuilder("1");
-        for (int i = 0; i < n - 1; i++) {
-            one.append("0");
-        }
-        one.append("1");
-        long longone = Long.valueOf(one.toString());
-        return new long[]{m1, m2, m3, longnine, longone};
+        return Long.parseLong(res.toString());
     }
 
-    private String reverses(String s) {
-        return new StringBuilder(s).reverse().toString();
-    }
 
     public static void main(String[] args) {
         System.out.println(new FindClosestPalindrome().nearestPalindromic("999999999999999999"));
