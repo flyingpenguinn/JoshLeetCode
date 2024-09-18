@@ -1,40 +1,41 @@
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class FindSafeWalkThroughGrid {
+    // v could just be recording [r][c][h], but here using it to filter for a bigger h is even better
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public boolean findSafeWalk(List<List<Integer>> g, int h) {
         int m = g.size();
         int n = g.get(0).size();
         int[][] v = new int[m][n];
-        Queue<int[]> q = new LinkedList<>();
-        v[0][0] = h;
+        Deque<int[]> q = new ArrayDeque<>();
         if (g.get(0).get(0) == 1) {
             --h;
         }
-        q.add(new int[]{0, 0, h});
+        q.offerLast(new int[]{0, 0, h});
+        v[0][0] = h;
         while (!q.isEmpty()) {
-            int[] c = q.poll();
-            int x = c[0];
-            int y = c[1];
-            int hp = c[2];
-            if (x == m - 1 && y == n - 1 && hp >= 1) {
+            int[] top = q.pollFirst();
+            int r = top[0];
+            int c = top[1];
+            int ch = top[2];
+            // System.out.println(r+","+c+" ch="+ch);
+            if (r == m - 1 && c == n - 1) {
                 return true;
             }
-            for (int k = 0; k < 4; k++) {
-                for (int[] d : dirs) {
-                    int x1 = x + d[0];
-                    int y1 = y + d[1];
-                    if (x1 >= 0 && x1 < m && y1 >= 0 && y1 < n) {
-                        int hp1 = hp - (g.get(x1).get(y1) == 1 ? 1 : 0);
-                        if (hp1 <= 0 || v[x1][y1] >= hp1) {
-                            continue;
-                        }
-                        v[x1][y1] = hp1;
-                        q.add(new int[]{x1, y1, hp1});
+            for (int[] d : dirs) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n) {
+                    int nh = ch;
+                    if (g.get(nr).get(nc) == 1) {
+                        --nh;
                     }
+                    if (v[nr][nc] >= nh) {
+                        continue;
+                    }
+                    v[nr][nc] = nh;
+                    q.offerLast(new int[]{nr, nc, nh});
                 }
             }
         }
