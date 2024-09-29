@@ -1,18 +1,31 @@
 public class TimeNeededToRearrangeBinaryString {
-    public int secondsToRemoveOccurrences(String s) {
-        int n = s.length();
-        char[] sc = s.toCharArray();
+    // check last 1. every 2 consecutive 1s make waiting +1, every 2 consecutive 0s make waiting -1
+    public int secondsToRemoveOccurrences(String is) {
+        char[] s = is.toCharArray();
+        int n = s.length;
         int zeros = 0;
-        int prev = 0;
-        int res = 0;
-        for (int i = 0; i < n; ++i) {
-            zeros += sc[i] == '0' ? 1 : 0;
-            if (sc[i] == '1' && zeros > 0) {
-                int cur = Math.max(prev + 1, zeros);
-                res = Math.max(res, cur);
-                prev = cur;
+        int lastone = -1;
+        for (int i = n - 1; i >= 0; --i) {
+            if (s[i] == '1') {
+                lastone = i;
+                break;
             }
         }
-        return res;
+        if (lastone == -1) {
+            return 0;
+        }
+        int waiting = 0;
+        for (int i = 0; i <= lastone; ++i) {
+            if (s[i] == '0') {
+                ++zeros;
+            }
+            if (i > 0 && s[i] == '1' && s[i - 1] == '1' && zeros > 0) {
+                ++waiting;
+            }
+            if (i > 0 && s[i] == '0' && s[i - 1] == '0' && waiting > 0) {
+                --waiting;
+            }
+        }
+        return zeros + waiting;
     }
 }
