@@ -1,5 +1,15 @@
 public class FindFirstOccurenceOfAlmostEqualSubstring {
-    // using z function !
+    // TODO using z function !
+    /*
+    z[i]  is the length of the longest string that is, at the same time, a prefix of s and a prefix of the suffix of  s  starting at i .
+
+
+If we compute z-function for p + s, then z[len(p) + i] would be the number of characters from s[i] that match the prefix of p .
+
+
+We also need to compute z-function for reverse(p) + reverse(s). It would tell us the number of characters matching the suffix of p.
+
+     */
     public int minStartingIndex(String s, String pattern) {
         int n = s.length(), m = pattern.length();
         int[] z1 = z_function(pattern + s);

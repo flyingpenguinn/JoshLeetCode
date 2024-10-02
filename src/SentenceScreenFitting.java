@@ -130,7 +130,7 @@ public class SentenceScreenFitting {
             // if it's abc abc vs 7, we will handle the abc separately below and still record a fit
             while (remcol >= ss[k].length()) {
                 remcol -= ss[k].length() + 1;
-                //look t this elegant way: if happens to be == ss[k].length(), remcol will be <0 so terminate at the next move
+                //look at this elegant way: if happens to be == ss[k].length(), remcol will be <0 so terminate at the next move
                 if (k == n - 1) {
                     r++;
                 }
