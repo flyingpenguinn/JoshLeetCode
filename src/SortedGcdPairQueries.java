@@ -1,32 +1,43 @@
+import base.ArrayUtils;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SortedGcdPairQueries {
-    public int[] gcdValues(int[] a, long[] qs) {
-        int n = a.length;
-        int maxi = 0;
-        for (int ai : a) {
-            maxi = Math.max(maxi, ai);
+    // enumerate based on divisors
+    public int[] gcdValues(int[] ia, long[] qs) {
+        int n = ia.length;
+        long[] a = new long[n];
+        long maxi = 0;
+        for (int i = 0; i < n; ++i) {
+            a[i] = ia[i];
+            maxi = Math.max(maxi, ia[i]);
         }
-        long[] divbyi = new long[maxi + 1];
-        long[] fre = new long[maxi + 1];
-        long[] gcdgreater = new long[maxi + 1];
-        long[] exact = new long[maxi + 1];
-        for (int ai : a) {
-            ++fre[ai];
+        long[] freq = new long[(int) (maxi + 1)];
+        for (int i = 0; i <n; ++i) {
+            ++freq[(int) a[i]];
         }
-        for (int i = 1; i <= maxi; i++) {
-            for (int j = i; j <= maxi; j += i)
-                divbyi[i] += fre[j];
+        long[] divby = new long[(int) (maxi + 1)];
+        for (int i = 1; i <= maxi; ++i) {
+            for (int j = i; j <= maxi; j += i) {
+                divby[i] += freq[j];
+            }
         }
-        for (int i = 1; i <= maxi; i++) {
-            if (divbyi[i] >= 1)
-                gcdgreater[i] = (divbyi[i] * (divbyi[i] - 1)) / 2;
+        // pairs whose gcd >=i
+        long[] greaterdiv = new long[(int) (maxi + 1)];
+        for (int i = 1; i <= maxi; ++i) {
+            if (divby[i] > 1) {
+                long cur = divby[i];
+                greaterdiv[i] = cur * (cur - 1) / 2;
+            }
         }
-        for (int i = maxi; i >= 1; i--) {
-            exact[i] = gcdgreater[i];
-            for (int j = i + i; j <= maxi; j += i)
+        long[] exact = new long[(int) (maxi + 1)];
+        for (int i = (int) maxi; i >= 1; --i) {
+            exact[i] = greaterdiv[i];
+            for (int j = 2 * i; j <= maxi; j += i) {
                 exact[i] -= exact[j];
+            }
         }
         List<long[]> sumexact = new ArrayList<>();
         long sum = 0;
@@ -58,5 +69,9 @@ public class SortedGcdPairQueries {
             }
         }
         return l;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new SortedGcdPairQueries().gcdValues(ArrayUtils.read1d("2,3,4"), new long[]{0, 2, 2})));
     }
 }
