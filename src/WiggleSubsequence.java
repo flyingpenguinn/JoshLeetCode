@@ -55,42 +55,20 @@ public class WiggleSubsequence {
 }
 
 class WiggleSubsequenceOn {
-    //  1,2,4-> use 4 to supercede 2
-    // 2,1,0-> use 0 to supercede 1
-    // 1,2,1-> good, keep the 1 look for > we can't do better than this
-    // 2,1,2-> good, keep the 2 look for < we can't do better than this
-// so we must select 0. then we diverge by +1 or -1, but we must pick the best +1 (the max) or best -1 (the min) and use this number as the next
-    public int wiggleMaxLength(int[] a) {
-        return Math.max(solve(a, 1), solve(a, -1));
-    }
-
-    private int solve(int[] a, int sign) {
+    //  count peaks and valleys. note if there is a consecutive peak or valley we are only counting that once
+    public int wiggleMaxLength(int[] a){
         int n = a.length;
-        int i = 0;
-        int res = 1;
-        while (i < n - 1) {
-            int j = i + 1;
-            if (sign == 1) {
-                while (j < n && a[j] <= a[i]) {
-                    j++;
-                }
-                while (j + 1 < n && a[j] <= a[j + 1]) {
-                    j++;
-                }
-            } else {
-                while (j < n && a[j] >= a[i]) {
-                    j++;
-                }
-                while (j + 1 < n && a[j] >= a[j + 1]) {
-                    j++;
-                }
+        int peaks = 1;
+        int valleys = 1;
+
+        for(int i=1; i<n; ++i){
+            if(a[i]>a[i-1]){
+                peaks = valleys + 1;
+            }else if(a[i]<a[i-1]){
+                valleys = peaks +1;
             }
-            if (j < n) {
-                res++;
-            }
-            i = j;
-            sign = -sign;
         }
+        int res = Math.max(peaks, valleys);
         return res;
     }
 }
