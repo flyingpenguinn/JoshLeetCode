@@ -2,22 +2,19 @@ public class SeparateBlackAndWhiteBalls {
     public long minimumSteps(String s) {
         char[] c = s.toCharArray();
         int n = s.length();
-        int lastone = -1;
         long res = 0;
-        for (int i = 0; i < n; ++i) {
-            char cur = c[i];
-            if (cur == '0') {
-                if (lastone == -1) {
-                    continue;
-                } else {
-                    res += 0L + i - lastone;
-                    ++lastone;
-                }
-            } else {
-                if (lastone == -1) {
-                    lastone = i;
-                }
+        int i = n-1;
+        int j = n-1;
+        while(i>=0 && j>=0){
+            while(j>=0 && s.charAt(j)=='0'){
+                --j;
             }
+            if(j>=0){
+                long cur = i-j;
+                res += cur;
+            }
+            --i;
+            --j;
         }
         return res;
     }
