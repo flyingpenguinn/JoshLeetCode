@@ -37,60 +37,48 @@ a + b + c > 0
  */
 public class LongestHappyString {
     // always picked the most frequent one if we can.
+    // if current max - put < 2nd max, then dont pick 2nd max, use it as the max in next round
+    private StringBuilder res = new StringBuilder();
     public String longestDiverseString(int a, int b, int c) {
-        return dol(new int[]{a, b, c}, new ArrayDeque<>());
+        dfs(a, b, c, 'a', 'b', 'c');
+        return res.toString();
     }
 
-    private String dol(int[] r, Deque<Character> dq) {
-        char picked = '*';
-        int ra = r[0];
-        int rb = r[1];
-        int rc = r[2];
-        if (ra >= rb && rb >= rc) {
-            picked = process('a', 'b', 'c', ra, rb, rc, dq);
-        } else if (ra >= rb & ra >= rc) {
-            picked = process('a', 'c', 'b', ra, rc, rb, dq);
-        } else if (rb >= ra && rb >= rc) {
-            picked = process('b', 'a', 'c', rb, ra, rc, dq);
-        } else if (rb >= rc && rb >= ra) {
-            picked = process('b', 'c', 'a', rb, rc, ra, dq);
-        } else if (rc >= ra && rc >= rb) {
-            picked = process('c', 'a', 'b', rc, ra, rb, dq);
-        } else if (rc >= rb && rc >= ra) {
-            picked = process('c', 'b', 'a', rc, rb, ra, dq);
+    private void dfs(int a, int b, int c, char ca, char cb, char cc){
+
+        if(a<b){
+            dfs(b, a, c, cb, ca, cc);
+            return;
         }
-        if (picked == '*') {
-            return "";
-        } else {
-            if (dq.size() == 2) {
-                dq.pollFirst();
+        if(a<c){
+            dfs(c, b, a, cc, cb, ca);
+            return;
+        }
+        if(b<c){
+            dfs(a, c, b, ca, cc, cb);
+            return;
+        }
+        // System.out.println(a+" "+b+" "+c);
+        if(b==0){
+            int puta = Math.min(2, a);
+            while(puta>0){
+                res.append(ca);
+                --puta;
             }
-            dq.offerLast(picked);
-            r[picked - 'a']--;
-            return picked + dol(r, dq);
+            return;
         }
-    }
-
-    private char process(char a, char b, char c, int ra, int rb, int rc, Deque<Character> dq) {
-        if (notbad(dq, a) && ra > 0) {
-            return a;
+        int puta = Math.min(2, a);
+        int putb = a-puta>=b? 1: 0; // we will use b as dominant one next time
+        a -= puta;
+        b -= putb;
+        while(puta>0){
+            res.append(ca);
+            --puta;
         }
-        if (notbad(dq, b) && rb > 0) {
-            return b;
+        while(putb>0){
+            res.append(cb);
+            --putb;
         }
-        if (notbad(dq, c) && rc > 0) {
-            return c;
-        }
-        return '*';
-    }
-
-    private boolean notbad(Deque<Character> dq, char a) {
-        if (dq.size() < 2) {
-            return true;
-        }
-        if (dq.peekFirst() != a || dq.peekLast() != a) {
-            return true;
-        }
-        return false;
+        dfs(a, b, c, ca, cb, cc);
     }
 }

@@ -15,36 +15,36 @@ Output: 1024
  */
 public class SuperPow {
 
-    // T(n) = T(n-1)+O(1) --On better than
-    // T(n) = 2*T(n/2) +O(n) -- nlgn
-    public int superPow(int a, int[] b) {
-        return dos(a % 1337, b, 0, b.length - 1);
-    }
+    // 2^52 = 2^5 * 2^2
+    // at each digit we look for the power for the base like 10, 100....
+    private long Mod = 1337;
 
-    private int dos(int a, int[] b, int l, int u) {
-        if (l > u) {
+    private long pow(long b, long p) {
+        if (p == 0) {
             return 1;
         }
-        if (l == u) {
-            int times = b[l];
-            long nr = 1;
-            for (int i = 0; i < times; i++) {
-                nr *= a;
-                nr %= 1337;
-            }
-            return (int) nr;
+        long half = pow(b, p / 2);
+        long hm = half * half;
+        hm %= Mod;
+        if (p % 2 == 1) {
+            hm *= b;
+            hm %= Mod;
         }
-        int left = dos(a, b, l, u - 1);
-        int right = dos(a, b, u, u);
-        long nr = 1;
-        for (int i = 0; i < 10; i++) {
-            nr *= left;
-            nr %= 1337;
-        }
-        nr *= right;
-        return (int) (nr % 1337);
+        return hm;
     }
 
+    public int superPow(int a, int[] b) {
+        int bn = b.length;
+        long res = 1;
+        long base = a;
+        for (int i = bn - 1; i >= 0; --i) {
+            long cur = pow(base, b[i]);
+            res *= cur;
+            res %= Mod;
+            base = pow(base, 10);
+        }
+        return (int) res;
+    }
 
     public static void main(String[] args) {
         System.out.println(new SuperPow().superPow(93, ArrayUtils.read1d("[1,2,3,4]")));
