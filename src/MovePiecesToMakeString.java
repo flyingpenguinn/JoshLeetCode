@@ -2,26 +2,35 @@ import java.util.*;
 
 public class MovePiecesToMakeString {
     // s's L indexes must be bigger, R indexes must be smaller than t
-    public boolean canChange(String start, String target) {
-        // relative order must be the same
-        if (!(start.replaceAll("_", "")).equals(target.replaceAll("_", ""))) {
-            return false;
-        }
-        int n = start.length();
+    public boolean canChange(String ss, String tt) {
         int i = 0;
         int j = 0;
-        while (i < n && j < n) {
-            while (i < n && start.charAt(i) == '_') {
+        int sn = ss.length();
+        int tn = tt.length();
+        char[] s = ss.toCharArray();
+        char[] t = tt.toCharArray();
+        while (i < sn || j < tn) {
+            while (i < sn && s[i] == '_') {
                 ++i;
             }
-            while (j < n && target.charAt(j) == '_') {
+            while (j < tn && t[j] == '_') {
                 ++j;
             }
-            if (i < n && j < n && start.charAt(i) != target.charAt(j)) {
+            if (i == sn && j == tn) {
+                break;
+            } else if (i == sn || j == tn) {
                 return false;
             }
-            if (i < n && j < n && (start.charAt(i) == 'L' && i < j || target.charAt(j) == 'R' && i > j)) {
+            if (s[i] != t[j]) {
                 return false;
+            } else if (s[i] == 'L' && t[j] == 'L') {
+                if (i < j) {
+                    return false;
+                }
+            } else if (s[i] == 'R' && t[j] == 'R') {
+                if (i > j) {
+                    return false;
+                }
             }
             ++i;
             ++j;
