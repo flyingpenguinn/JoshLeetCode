@@ -10,9 +10,7 @@ public class FindMinTimeToReachLastRoomI {
         int n = g[0].length;
         int[][] dist = new int[m][n];
         for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                Arrays.fill(dist[i], Max);
-            }
+            Arrays.fill(dist[i], Max);
         }
         dist[0][0] = 0;
         PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
