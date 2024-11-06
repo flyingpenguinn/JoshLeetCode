@@ -3,6 +3,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class FindIfArrayCanBeSorted {
+    // chunk the array so that each chunk has the same set bits. sort each chunk
     public boolean canSortArray(int[] a) {
         int n = a.length;
         int i = 0;
