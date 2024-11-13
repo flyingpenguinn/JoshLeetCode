@@ -30,3 +30,30 @@ public class CounNumberOfFairPairs {
         return u;
     }
 }
+
+class CountFairPairsTwoPointer {
+    // num of pairs sum <= t can be done via 0...n-1 style two pointer
+    public long countFairPairs(int[] a, int lower, int upper) {
+        int n = a.length;
+        Arrays.sort(a);
+        long p2 = count(a, upper);
+        long p1 = count(a, lower - 1);
+        long res = p2 - p1;
+        return res;
+    }
+
+    private long count(int[] a, int t) {
+        long res = 0;
+        int n = a.length;
+        int j = 0;
+        int i = n - 1;
+        while (i >= j) {
+            while (i > j && a[j] + a[i] <= t) {
+                res += (i - j);
+                ++j;
+            }
+            --i;
+        }
+        return res;
+    }
+}
