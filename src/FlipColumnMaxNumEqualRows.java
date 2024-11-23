@@ -36,30 +36,28 @@ matrix[i][j] is 0 or 1
  */
 public class FlipColumnMaxNumEqualRows {
 
-    // same AND complement rows form a group. find the biggest group
+    // same AND complement rows form a group. find the biggest group. use the one starting with 0 as signature
     public int maxEqualRowsAfterFlips(int[][] a) {
-        Map<List<Integer>, Integer> zm = new HashMap<>();
+        Map<List<Integer>,Integer> m=new HashMap<>();
 
-        int r = 1;
-        int same = 0;
-        for (int i = 0; i < a.length; i++) {
-            List<Integer> zs = new ArrayList<>();
-            List<Integer> os = new ArrayList<>();
-            for (int j = 0; j < a[0].length; j++) {
-                if (a[i][j] == 0) {
-                    zs.add(j);
-                } else {
-                    os.add(j);
+        int r=0;
+        for(int i=0;i<a.length;i++){
+            int[] row = a[i];
+            List<Integer> cr = new ArrayList<>();
+            if(row[0]==0){
+                for(int ai: row){
+                    cr.add(ai);
+                }
+            }else{
+                for(int ai: row){
+                    cr.add((ai^1));
                 }
             }
-            int nv1 = zm.getOrDefault(zs, 0) + 1;
-            int nv2 = zm.getOrDefault(os, 0);
-            int cur = nv1 + nv2;
-            r = Math.max(r, cur);
-            zm.put(zs, nv1);
-
+            int nv = m.getOrDefault(cr, 0)+1;
+            m.put(cr, nv);
+            r = Math.max(r, nv);
         }
-        return Math.max(r, same);
+        return r;
     }
 
     public static void main(String[] args) {
