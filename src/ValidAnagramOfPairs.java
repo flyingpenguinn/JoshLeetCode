@@ -13,14 +13,6 @@ public class ValidAnagramOfPairs {
             ind.put(p[1], ind.getOrDefault(p[1], 0)+1);
         }
         int start = -1;
-        int end = -1;
-        for(int ik: ind.keySet()){
-
-            if(ind.getOrDefault(ik, 0)-outd.getOrDefault(ik, 0)==1){
-                end = ik;
-                break;
-            }
-        }
         for(int ok: outd.keySet()){
             if(outd.getOrDefault(ok, 0)-ind.getOrDefault(ok, 0)==1){
                 start = ok;
@@ -30,7 +22,7 @@ public class ValidAnagramOfPairs {
         if(start==-1){
             start = outd.keySet().iterator().next();
         }
-        dfs(start, end);
+        dfs(start);
         Collections.reverse(res);
         int[][] rr = new int[res.size()-1][2];
         for(int i=0; i<res.size()-1; ++i){
@@ -40,12 +32,12 @@ public class ValidAnagramOfPairs {
         return rr;
     }
 
-    private void dfs(int i, int end){
+    private void dfs(int i){
 
         Deque<Integer> nes = g.getOrDefault(i, new ArrayDeque<>());
         while(!nes.isEmpty()){
             int ne = nes.poll();
-            dfs(ne, end);
+            dfs(ne);
         }
         res.add(i);
     }
