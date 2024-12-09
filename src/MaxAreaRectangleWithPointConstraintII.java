@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.*;
 
 public class MaxAreaRectangleWithPointConstraintII {
@@ -101,6 +103,10 @@ public class MaxAreaRectangleWithPointConstraintII {
         }
 
         return Arrays.copyOf(imap, p);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new MaxAreaRectangleWithPointConstraintII().maxRectangleArea(ArrayUtils.read1d("1,1,3,3"), ArrayUtils.read1d("1,3,1,3")));
     }
 
 }

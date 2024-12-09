@@ -4,144 +4,123 @@ public class CountVisitedNodesInDirectedGraph {
     // 1. find scc
     // 2. condense the sccs to nodes
     // 3. find the results for each scc
+
+    // Kosaraju's algorithm to get strongly connected component
+    private List<Integer>[] tg;
+    private List<Integer>[] g;
+    // vertex to condensed graph map
+    private Map<Integer, Integer> vgm = new HashMap<>();
+    // nodes in each g
+    private Map<Integer, Integer> gcount = new HashMap<>();
+    private List<Integer>[]  cg;
+    private int[] compres;
+    private int[] st;
+    private Deque<Integer> stack = new ArrayDeque<>();
+
+
     public int[] countVisitedNodes(List<Integer> edges) {
         int n = edges.size();
-        Graph g = new Graph(n);
-        g.V = n;
+        g = new ArrayList[n];
+        tg = new ArrayList[n];
+        st = new int[n];
+        for (int i = 0; i < n; ++i) {
+            g[i] = new ArrayList<>();
+            tg[i] = new ArrayList<>();
+        }
         for (int i = 0; i < n; ++i) {
             int v1 = i;
             int v2 = edges.get(i);
-            g.addEdge(v1, v2);
+            g[v1].add(v2);
+            // transpose the graph
+            tg[v2].add(v1);
         }
-        List<List<Integer>> comps = g.findScc();
-        int group = 0;
+        for (int i = 0; i < n; ++i) {
+            if (st[i] == 0) {
+                dfs1(g, i);
+            }
+        }
+        int comp = 0;
+        Arrays.fill(st, 0);
+        while (!stack.isEmpty()) {
+            int top = stack.pollLast();
+            if (st[top] == 0) {
+                int nodes = dfs2(tg, top, vgm, comp);
+                gcount.put(comp, nodes);
+                ++comp;
+            }
+        }
+        cg = new ArrayList[comp];
+        for(int i=0; i<comp; ++i){
+            cg[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < n; ++i) {
+            int v1 = i;
+            int v2 = edges.get(i);
+            int v1c = vgm.get(v1);
+            int v2c = vgm.get(v2);
+            if (v1c != v2c) {
+                cg[v1c].add(v2c);
+            }
+        }
+        st = new int[comp];
         int[] res = new int[n];
-        HashMap<Integer, Integer> m = new HashMap<>();
-        HashMap<Integer, Integer> sm = new HashMap<>();
-        for (List<Integer> v : comps) {
-            for (int vi : v) {
-                m.put(vi, group);
-            }
-            sm.put(group, v.size());
-            ++group;
-        }
-        Map<Integer, List<Integer>> ng = new HashMap<>();
+        compres = new int[comp];
         for (int i = 0; i < n; ++i) {
-            int v1 = i;
-            int v2 = edges.get(i);
-            int g1 = m.get(v1);
-            int g2 = m.get(v2);
-            if (g1 == g2) {
-                continue;
+            int c = vgm.get(i);
+            // each SCC that does not have crystal or cannot be reached via a crystal-containing SCC needs one connection
+            if (st[c] == 0) {
+                int nodes = dfs3(cg, c);
+                res[i] = nodes;
+                compres[c] = nodes;
+            } else {
+                res[i] = compres[c];
             }
-            ng.computeIfAbsent(g1, k -> new ArrayList<>()).add(g2);
-        }
-        if (ng.isEmpty()) {
-            Arrays.fill(res, sm.get(0));
-            return res;
-        }
-        int[] gres = new int[group];
-        for (int i = 0; i < group; ++i) {
-            dfsng(i, gres, ng, sm);
-        }
-        for (int i = 0; i < n; ++i) {
-            res[i] = gres[m.get(i)];
         }
         return res;
     }
 
-    private int dfsng(int i, int[] gres, Map<Integer, List<Integer>> ng, HashMap<Integer, Integer> sm) {
-        if (gres[i] != 0) {
-            return gres[i];
+    private int dfs3(List<Integer>[] cg, int ci) {
+        st[ci] = 1;
+        int res = gcount.get(ci);
+        for (int ne : cg[ci]) {
+            if (st[ne] == 0) {
+                int cur = dfs3(cg, ne);
+                res += cur;
+            } else {
+                res += compres[ne];
+            }
         }
-        gres[i] = sm.get(i);
-        for (int ne : ng.getOrDefault(i, new ArrayList<>())) {
-            gres[i] += dfsng(ne, gres, ng, sm);
-        }
-        return gres[i];
+        st[ci] = 2;
+        compres[ci] = res;
+        return res;
     }
 
-    class Graph {
-        private int V;
-        private LinkedList<Integer> adj[];
-
-        // Create a graph
-        Graph(int s) {
-            V = s;
-            adj = new LinkedList[s];
-            for (int i = 0; i < s; ++i)
-                adj[i] = new LinkedList();
-        }
-
-        // Add edge
-        void addEdge(int s, int d) {
-            adj[s].add(d);
-        }
-
-        // DFS
-        void DFSUtil(int s, boolean[] visitedVertices, List<Integer> nodes) {
-            visitedVertices[s] = true;
-            nodes.add(s);
-            int n;
-
-            Iterator<Integer> i = adj[s].iterator();
-            while (i.hasNext()) {
-                n = i.next();
-                if (!visitedVertices[n])
-                    DFSUtil(n, visitedVertices, nodes);
+    private int dfs2(List<Integer>[] tg, int i, Map<Integer, Integer> vgm, int cindex) {
+        st[i] = 1;
+        int res = 1;
+        vgm.put(i, cindex);
+        for (int ne : tg[i]) {
+            if (st[ne] == 0) {
+                int cur = dfs2(tg, ne, vgm, cindex);
+                res += cur;
             }
         }
+        st[i] = 2;
+        return res;
+    }
 
-        // Transpose the graph
-        Graph Transpose() {
-            Graph g = new Graph(V);
-            for (int s = 0; s < V; s++) {
-                Iterator<Integer> i = adj[s].listIterator();
-                while (i.hasNext())
-                    g.adj[i.next()].add(s);
+    private void dfs1(List<Integer>[] g, int i) {
+        st[i] = 1;
+        for (int ne : g[i]) {
+            if (st[ne] == 0) {
+                dfs1(g, ne);
             }
-            return g;
         }
+        st[i] = 2;
+        stack.offerLast(i);
+    }
 
-        void fillOrder(int s, boolean visitedVertices[], Stack stack) {
-            visitedVertices[s] = true;
-
-            Iterator<Integer> i = adj[s].iterator();
-            while (i.hasNext()) {
-                int n = i.next();
-                if (!visitedVertices[n])
-                    fillOrder(n, visitedVertices, stack);
-            }
-            stack.push(Integer.valueOf(s));
-        }
-
-        // Print strongly connected component
-        public List<List<Integer>> findScc() {
-            Stack stack = new Stack();
-            List<List<Integer>> res = new ArrayList<>();
-            boolean visitedVertices[] = new boolean[V];
-            for (int i = 0; i < V; i++)
-                visitedVertices[i] = false;
-
-            for (int i = 0; i < V; i++)
-                if (visitedVertices[i] == false)
-                    fillOrder(i, visitedVertices, stack);
-
-            Graph gr = Transpose();
-
-            for (int i = 0; i < V; i++)
-                visitedVertices[i] = false;
-
-            while (stack.empty() == false) {
-                int s = (int) stack.pop();
-
-                if (visitedVertices[s] == false) {
-                    List<Integer> nodes = new ArrayList<>();
-                    gr.DFSUtil(s, visitedVertices, nodes);
-                    res.add(nodes);
-                }
-            }
-            return res;
-        }
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new CountVisitedNodesInDirectedGraph().countVisitedNodes(List.of(3,6,1,0,5,7,4,3))));
     }
 }

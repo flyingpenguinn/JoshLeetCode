@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
-public class MinAreaRectWithConstraintsI {
+public class MaxAreaRectangleWithPointConstraintI {
     public int maxRectangleArea(int[][] a) {
         int n = a.length;
         Map<String, Integer> m = new HashMap<>();
