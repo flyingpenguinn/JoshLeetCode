@@ -1,57 +1,56 @@
-import java.util.Arrays;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class FindLongestSpecialSubstringOccuringThirceII {
+    // 3 ways
+    // 1. longest -2
+    // 2. 3rd longest
+    // 3. longest -1 or just 2nd longest. former if 2nd longest is long enough
     public int maximumLength(String s) {
         int n = s.length();
-        PriorityQueue<Integer>[] pqs = new PriorityQueue[26];
-        for (int j = 0; j < 26; ++j) {
-            pqs[j] = new PriorityQueue<>();
+        List<Integer>[] v  = new ArrayList[26];
+        for(int i=0; i<26; ++i) {
+            v[i] = new ArrayList<>();
         }
         int i = 0;
-        while (i < n) {
+        while(i<n){
             int j = i;
-            while (j < n && s.charAt(j) == s.charAt(i)) {
+            while(j<n && s.charAt(j) == s.charAt(i)){
                 ++j;
             }
-            int len = j - i;
-            int ind = s.charAt(i) - 'a';
-            pqs[ind].offer(len);
-            if (pqs[ind].size() > 3) {
-                pqs[ind].poll();
-            }
+            int len = j-i;
+            int cind = s.charAt(i)-'a';
+
+            v[cind].add(len);
             i = j;
         }
-        int res = -1;
-        for (i = 0; i < 26; ++i) {
-            if (!pqs[i].isEmpty()) {
-                int v1 = pqs[i].poll();
-                int v2 = 0;
-                if (!pqs[i].isEmpty()) {
-                    v2 = pqs[i].poll();
-                }
-                int v3 = 0;
-                if (!pqs[i].isEmpty()) {
-                    v3 = pqs[i].poll();
-                }
-                //   System.out.println(v1+" "+v2+" "+v3);
-                int[] cnt = {v1, v2, v3};
-                Arrays.sort(cnt);
-                int cur = -1;
-                if (cnt[2] == cnt[1] && cnt[1] == cnt[0]) {
-                    // 3,3,3
-                    cur = cnt[2];
-                } else if (cnt[2] - 2 >= cnt[1]) {
-                    // 5,2,1
-                    cur = cnt[2] - 2;
-                } else {
-                    // 4,3,1
-                    // 3,3,0, or 3,3,1
-                    cur = cnt[2] - 1;
-                }
-                res = Math.max(res, cur);
+        int res = 0;
+        for(i=0; i<26; ++i){
+            List<Integer> chunks = v[i];
+            if(chunks.isEmpty()){
+                continue;
             }
+            Collections.sort(chunks, Collections.reverseOrder());
+            // cout<<"i="<<i<<" chunks="<<chunks.size()<<endl;
+            int way1 = chunks.get(0)-2;
+            int way2 = 0;
+            if(chunks.size()>=2){
+                int p1 = chunks.get(0);
+                int p2 = chunks.get(1);
+                if(p2>=p1-1){
+                    way2 = p1-1;
+                }else{
+                    way2 = p2;
+                }
+            }
+            int way3 = 0;
+            if(chunks.size()>=3){
+                int p3 = chunks.get(2);
+                way3 = p3;
+            }
+            int cur = Math.max(way1, Math.max(way2, way3));
+            res = Math.max(res, cur);
         }
-        return res == 0 ? -1 : res;
+        return res>0? res: -1;
     }
+
 }
