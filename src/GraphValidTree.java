@@ -15,8 +15,12 @@ Output: false
 Note: you can assume that no duplicate edges will appear in edges. Since all edges are undirected, [0,1] is the same as [1,0] and thus will not appear together in edges.
  */
 public class GraphValidTree {
-    // acyclic,n-1 edges, connected, two of three can deduce the third
-    // using union find. can also use dfs to check connected components
+    /*
+    Two out of 3 must be satisfied
+    No cycles
+    Connected
+    n-1 edges
+     */
     private  int[] p;
     public boolean validTree(int n, int[][] es) {
         if (es.length != n - 1) {
