@@ -1,69 +1,72 @@
+import base.ArrayUtils;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 public class MaxCoinsFromKConsecutiveBags {
 
-    private long ans = 0;
-    private int K;
-    private List<long[]> coins;
-
-    public long maximumCoins(int[][] vec, int K) {
-        this.K = K;
-
-        // Convert the input to a list of long[] to prevent overflow
-        coins = new ArrayList<>();
-        for (int[] coin : vec) {
-            coins.add(new long[]{coin[0], coin[1], coin[2]});
-        }
-
-        // Process intervals starting at each segment's left endpoint
-        calculateMaximumCoins();
-
-        // Reverse the intervals to process windows ending at each segment's right endpoint
-        reverseIntervals();
-        calculateMaximumCoins();
-
-        return ans;
-    }
-
-    // Calculate total coins in the interval at index i
-    private long calc(int i) {
-        long[] coin = coins.get(i);
-        return coin[2] * (coin[1] - coin[0] + 1);
-    }
-
-    // Main logic for sliding window to calculate maximum coins
-    private void calculateMaximumCoins() {
-        coins.sort(Comparator.comparingLong(a -> a[0])); // Sort intervals by start point
-        long currentSum = 0;
-
-        int n = coins.size();
-        for (int i = 0, j = 0; i < n; i++) {
-            // Move the right pointer to find the first non-overlapping interval
-            while (j < n && coins.get(j)[0] < coins.get(i)[0] + K) {
-                currentSum += calc(j);
-                j++;
+    public long maximumCoins(int[][] ia, int k) {
+        int n = ia.length;
+        long[][] a = new long[n][3];
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < a[i].length; ++j) {
+                a[i][j] = ia[i][j];
             }
-
-            // Deduct the uncovered part of the last interval in the current window
-            long det = Math.max(0L, coins.get(j - 1)[1] - (coins.get(i)[0] + K) + 1);
-            ans = Math.max(ans, currentSum - det * coins.get(j - 1)[2]);
-
-            // Slide the window by removing the current interval
-            currentSum -= calc(i);
         }
+        Arrays.sort(a, (x, y) -> Long.compare(x[0], y[0]));
+        int i = 0;
+        int j = 0;
+        long csum = 0;
+        long res = 0;
+        // starting at each interval start
+        while (i < n) {
+            while (j < n && a[j][1] <= a[i][0] + k - 1) {
+                csum += (a[j][1] - a[j][0] + 1) * a[j][2];
+                ++j;
+            }
+            long cursum = csum;
+            if (j < n) {
+                // calced till j-1
+                long len = a[i][0] + k - 1 - a[j][0] + 1;
+                if (len > 0) {
+                    long extra = len * a[j][2];
+                    cursum += extra;
+                }
+            }
+            res = Math.max(res, cursum);
+            csum -= (a[i][1] - a[i][0] + 1) * a[i][2];
+            ++i;
+        }
+        Arrays.sort(a, (x, y) -> Long.compare(x[1], y[1]));
+        i = n - 1;
+        csum = 0;
+        j = n - 1;
+        // ending at each interval end
+        while (i >= 0) {
+            while (j >= 0 && a[j][0] >= a[i][1] - k + 1) {
+                csum += (a[j][1] - a[j][0] + 1) * a[j][2];
+                --j;
+            }
+            long cursum = csum;
+            if (j >= 0) {
+                // caled till j+1
+                long len = a[j][1] - (a[i][1] - k + 1) + 1;
+                if (len > 0) {
+                    long extra = len * a[j][2];
+                    cursum += extra;
+                }
+            }
+            res = Math.max(res, cursum);
+            csum -= (a[i][1] - a[i][0] + 1) * a[i][2];
+            --i;
+        }
+        return res;
     }
 
-    // Reverse intervals to process windows ending at each segment's right endpoint
-    private void reverseIntervals() {
-        for (int i = 0; i < coins.size(); i++) {
-            long[] coin = coins.get(i);
-            long l = 1_000_000_000L - coin[1];
-            long r = 1_000_000_000L - coin[0];
-            coin[0] = l;
-            coin[1] = r;
-        }
+    public static void main(String[] args) {
+        System.out.println(new MaxCoinsFromKConsecutiveBags().maximumCoins(ArrayUtils.read("[[34,37,19],[44,46,10],[17,26,14],[6,10,13]]"), 14));
     }
 
 }
