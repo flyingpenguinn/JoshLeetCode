@@ -1,67 +1,68 @@
 public class MinFlipsBinaryGridPalindromicII {
     // trick is in the middle row/col
     // because the 4 corners will either have all 1 or all 0 which is divisible by 4
-    public int minFlips(int[][] mat) {
-        int m = mat.length;
-        int n = mat[0].length;
-        int totalFlips = 0;
-        for (int i = 0; i < m / 2; i++) {
-            for (int j = 0; j < n / 2; j++) {
-                int[][] positions = {
-                        {i, j}, {i, n - 1 - j}, {m - 1 - i, j}, {m - 1 - i, n - 1 - j}
-                };
-                int[] count = new int[2]; // Binary values 0 and 1
-
-                for (int[] pos : positions) {
-                    count[mat[pos[0]][pos[1]]]++;
+    public int minFlips(int[][] a) {
+        int m = a.length;
+        int n = a[0].length;
+        int res = 0;
+        int flips = 0;
+        for(int i=0; i<m/2; ++i){
+            for(int j=0; j<n/2; ++j){
+                int[][] pos = {{i, j}, {i, n-1-j}, {m-1-i, j}, {m-1-i, n-1-j}};
+                int[] count = new int[2];
+                for(int[] p: pos){
+                    ++count[a[p[0]][p[1]]];
                 }
-
-                int flip0s = 4 - count[0];
-                int flip1s = 4 - count[1];
-                totalFlips += Math.min(flip0s, flip1s);
-
+                int f0 = 4-count[0];
+                int f1 = 4-count[1];
+                flips += Math.min(f0, f1);
             }
         }
-
-        // Handle the middle row if the number of rows is odd
+        // middle has to be 0
+        if(m%2==1 && n%2==1 && a[m/2][n/2] == 1){
+            ++res;
+        }
         int singles = 0;
         int doubles = 0;
-        if (m % 2 == 1) {
-            for (int j = 0; j < n / 2; j++) {
-
-                int ones = mat[m / 2][j] + mat[m / 2][n - 1 - j];
-                if (ones == 1) {
-                    ++singles;  // 1, 0
-                } else if (ones == 2) {
-                    ++doubles; // 1,1
-                }
-
-            }
-        }
-
-        // Handle the middle column if the number of columns is odd
-        if (n % 2 == 1) {
-            for (int i = 0; i < m / 2; i++) {
-                int ones = mat[i][n / 2] + mat[m - 1 - i][n / 2];
-                if (ones == 1) {
-                    ++singles;  // 1, 0
-                } else if (ones == 2) {
-                    ++doubles; // 1,1
+        if(m%2==1) {
+            for(int j=0; j<n/2; ++j){
+                int sum = a[m/2][j] + a[m/2][n-1-j];
+                if(sum==2){
+                    ++doubles;
+                }else if(sum==1){
+                    ++singles;
                 }
             }
-            if (m % 2 == 1) {
-                totalFlips += mat[n / 2][m / 2];
+        }
+        if(n%2==1){
+            for(int i=0; i<m/2; ++i){
+                int sum = a[i][n/2] + a[m-1-i][n/2];
+                if(sum==2){
+                    ++doubles;
+                }else if(sum==1){
+                    ++singles;
+                }
             }
         }
+        if(m%2==1 && n%2==1){
+            flips += a[m/2][n/2];
+        }
 
-        if (doubles % 2 == 0) {
-            return totalFlips + singles; // even number of 1,1 means it's divisible by 4. change any flip to 0,0
-        } else {
-            if (singles > 0) {
-                return totalFlips + singles; // one of the 1,0 goes to 1,1, to make the 1,1 pair even
-            } else {
-                // we now have odd number of 1,1 but we need it even, and there is no singles to spare...
-                return totalFlips + 2;
+        if(doubles % 2 == 0){
+            if(singles %2 == 0){
+                // all change to 1,1
+                return flips + singles;
+            }else{
+                // all change to 0,0
+                return flips + singles;
+            }
+        }else{
+            if(singles > 0){
+                // one of the singles to be 1,1  all others be 0,0
+                return flips + singles;
+            }else{
+                // no singles to spare, just change one 1,1 to 0,0
+                return flips + 2;
             }
         }
     }
