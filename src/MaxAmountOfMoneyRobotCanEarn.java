@@ -1,6 +1,7 @@
 import java.util.Arrays;
 
 public class MaxAmountOfMoneyRobotCanEarn {
+    // note dp initial state must not be -1 as some state can just = -1
     private int Min = (int) -1e9;
 
     public int maximumAmount(int[][] a) {
@@ -9,7 +10,7 @@ public class MaxAmountOfMoneyRobotCanEarn {
         dp = new int[m][n][3];
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
-                Arrays.fill(dp[i][j], -1);
+                Arrays.fill(dp[i][j], -12000);
             }
         }
         return solve(a, 0, 0, 2);
@@ -34,7 +35,7 @@ public class MaxAmountOfMoneyRobotCanEarn {
                 }
             }
         }
-        if (dp[i][j][k] != -1) {
+        if (dp[i][j][k] != -12000) {
             return dp[i][j][k];
         }
         int way1 = a[i][j] + solve(a, i + 1, j, k);
