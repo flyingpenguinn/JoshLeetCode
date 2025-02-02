@@ -1,4 +1,4 @@
-public class MaxDiffBetweenEventOddI {
+public class MaxDiffBetweenFreqEventOddI {
     public int maxDifference(String s) {
         int n = s.length();
         int[] cnt = new int[26];
