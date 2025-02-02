@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 public class MinCostGoodCaption {
-
+    // TODO do it self
     // We'll store the DP array as two separate 3D arrays:
     //   dpCost[i][last][cnt] = minimal cost for substring caption[i..], given 'last' and 'cnt'
     //   dpNext[i][last][cnt] = which character (0..25) to use at index i in that solution

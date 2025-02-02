@@ -1,20 +1,22 @@
 import java.util.*;
 
 public class MaxDiffBetweenFreqEvenOddII {
-    // TODO we should be able to do this ourselves
+    private int Min = (int) -1e9;
+    private int Max = (int) 1e9;
+
     public int maxDifference(String s, int k) {
         // We will treat "negative infinity" as a very large negative number,
         // and "positive infinity" as a very large positive number.
-        int NEG_INF = Integer.MIN_VALUE;
-        int POS_INF = Integer.MAX_VALUE;
 
-        int ans = NEG_INF;
+        int res = Min;
 
         // The string only contains digits '0'..'4'
         // Try every ordered pair (a,b) with a != b
         for (char a = '0'; a <= '4'; a++) {
             for (char b = '0'; b <= '4'; b++) {
-                if (a == b) continue;
+                if (a == b) {
+                    continue;
+                }
 
                 // 'seen' will map a parity-pair (pA, pB) to the minimal (pa[ii] - pb[ii])
                 // discovered so far, under certain conditions (explained below).
@@ -30,9 +32,9 @@ public class MaxDiffBetweenFreqEvenOddII {
                 pb.add(0);
 
                 // 'ii' is a pointer that will move forward once the substring length >= k
-                int ii = 0;
 
                 // Build prefix sums on the fly
+                int j = 0;
                 for (int i = 0; i < s.length(); i++) {
                     char ch = s.charAt(i);
                     // Append to the end of pa/pb the same values as previous,
@@ -51,24 +53,22 @@ public class MaxDiffBetweenFreqEvenOddII {
                     // Condition: ii <= i-k+1 ensures substring s[ii..i] has length >= k.
                     // Condition: pa[ii] < pa[i+1] and pb[ii] < pb[i+1] ensures
                     //            the substring s[ii..i] has at least 1 occurrence of 'a' and 'b'.
-                    while (ii <= i - k + 1
-                            && pa.get(ii) < pa.get(pa.size() - 1)
-                            && pb.get(ii) < pb.get(pb.size() - 1)) {
-
+                    while (j <= i - k + 1 &&
+                            pa.get(j) < pa.get(pa.size() - 1)
+                            && pb.get(j) < pb.get(pb.size() - 1)) {
                         // We record the parity of pa[ii], pb[ii], and the difference
-                        int pA = pa.get(ii) % 2;
-                        int pB = pb.get(ii) % 2;
+                        int pA = pa.get(j) % 2;
+                        int pB = pb.get(j) % 2;
                         String key = pA + "," + pB;
-                        int diff = pa.get(ii) - pb.get(ii);
+                        int diff = pa.get(j) - pb.get(j);
 
                         // We want the minimal diff so far for this parity combination
-                        int oldVal = seen.getOrDefault(key, POS_INF);
+                        int oldVal = seen.getOrDefault(key, Max);
                         if (diff < oldVal) {
                             seen.put(key, diff);
                         }
-                        ii++;
+                        ++j;
                     }
-
                     // Now we check if we can form a valid substring that ends at i
                     // and has the required parity conditions:
                     //   freq(a) is odd => pA[i+1] != pA[start]
@@ -83,15 +83,20 @@ public class MaxDiffBetweenFreqEvenOddII {
                     String neededKey = neededA + "," + neededB;
 
                     int curDiff = currentPA - currentPB;
-                    int storedVal = seen.getOrDefault(neededKey, POS_INF);
-                    if (storedVal != POS_INF) {
-                        ans = Math.max(ans, curDiff - storedVal);
+                    int storedVal = seen.getOrDefault(neededKey, Max);
+                    if (storedVal != Max) {
+                        res = Math.max(res, curDiff - storedVal);
                     }
                 }
             }
         }
 
-        return ans;
+        return res;
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(new MaxDiffBetweenFreqEvenOddII().maxDifference("2421", 1));
     }
 
 
