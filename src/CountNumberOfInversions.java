@@ -34,6 +34,9 @@ public class CountNumberOfInversions {
             }
         }
         return dp[n][req[n - 1]];
+    }
 
+    public static void main(String[] args) {
+        System.out.println(new CountNumberOfInversions().numberOfPermutations(4, new int[][]{{3,0}}));
     }
 }
