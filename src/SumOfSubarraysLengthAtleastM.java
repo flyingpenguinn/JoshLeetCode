@@ -18,18 +18,15 @@ public class SumOfSubarraysLengthAtleastM {
         }
         int res = Min;
         for (int p = 1; p <= k; ++p) {
-            PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+            int maxlater = Min; // can also use a pq
             for (int i = n - 1; i >= 0; --i) {
                 if (i + m <= n) {
-                    pq.offer(psum[i + m - 1] + dp[i + m][p - 1]);
+                    maxlater = Math.max(maxlater, psum[i + m - 1] + dp[i + m][p - 1]);
                 }
                 dp[i][p] = dp[i + 1][p];
-                if (!pq.isEmpty()) {
-                    int cmax = pq.peek() - (i - 1 < 0 ? 0 : psum[i - 1]);
-                    dp[i][p] = Math.max(dp[i][p], cmax);
 
-
-                }
+                int cmax = maxlater - (i - 1 < 0 ? 0 : psum[i - 1]);
+                dp[i][p] = Math.max(dp[i][p], cmax);
                 res = Math.max(res, dp[i][p]);
             }
         }

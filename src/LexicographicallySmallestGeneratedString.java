@@ -39,6 +39,7 @@ public class LexicographicallySmallestGeneratedString {
             }
             if (alleq) {
                 boolean changed = false;
+                // must count reversely! in contest didnt make this...
                 for (int j = s2n-1; j >=0; --j) {
                     if (!fixed.contains(i + j) ) {
                         changed = true;
