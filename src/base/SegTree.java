@@ -1,158 +1,66 @@
 package base;
 
 public class SegTree {
+    int[] t;
+    int n = 0;
 
-    // A utility function to get the
-    // middle index of given range.
-    static int getMid(int s, int e) {
-
-        return s + (e - s) / 2;
+    public SegTree(int[] a) {
+        this.n = a.length;
+        t = new int[4 * n + 1];
+        build(a, 1, 0, a.length - 1);
     }
 
-    /*
-    * A recursive function to get the max
-    of values in given range of the array.
-    * The following are parameters
-      for this function.
-    *
-    * st -> Pointer to segment tree
-    * node -> Index of current node in
-    *         the segment tree.
-    * ss & se -> Starting and ending indexes
-    *         of the segment represented
-    *         by current node, i.e., st[node]
-    * l & r -> Starting and ending indexes
-    *         of range query
-    */
-    static int getMaxHelper(int[] st, int ss,
-                            int se, int l,
-                            int r, int node) {
-
-        // If segment of this node is completely
-        // part of given range, then return
-        // the max of segment
-        if (l <= ss && r >= se)
-            return st[node];
-
-        // If segment of this node does not
-        // belong to given range
-        if (se < l || ss > r)
-            return -1;
-
-        // If segment of this node is partially
-        // the part of given range
-        int mid = getMid(ss, se);
-
-        return Math.max(
-                getMaxHelper(st, ss, mid, l, r,
-                        2 * node + 1),
-                getMaxHelper(st, mid + 1, se, l, r,
-                        2 * node + 2));
-    }
-
-    /*
-    * A recursive function to update the
-    nodes which have the given index in their
-    * range. The following are parameters
-    st, ss and se are same as defined above
-    * index -> index of the element to be updated.
-    */
-    static void updateValue(int arr[], int[]
-            st, int ss,
-                            int se, int index,
-                            int value,
-                            int node) {
-        if (index < ss || index > se) {
-            System.out.println("Invalid Input");
+    private void build(int[] a, int idx, int l, int u) {
+        if (l == u) {
+            t[idx] = a[l];
             return;
         }
-
-        if (ss == se) {
-
-            // update value in array and in
-            // segment tree
-            arr[index] = value;
-            st[node] = value;
-        } else {
-            int mid = getMid(ss, se);
-
-            if (index >= ss && index <= mid)
-                updateValue(arr, st, ss, mid,
-                        index, value,
-                        2 * node + 1);
-            else
-                updateValue(arr, st, mid + 1, se, index,
-                        value, 2 * node + 2);
-
-            st[node] = Math.max(st[2 * node + 1],
-                    st[2 * node + 2]);
-        }
-        return;
+        int mid = l + (u - l) / 2;
+        int left = 2 * idx;
+        int right = 2 * idx + 1;
+        build(a, left, l, mid);
+        build(a, right, mid + 1, u);
+        t[idx] = Math.max(t[left], t[right]);
     }
 
-    // Return max of elements in range from
-    // index l (query start) to r (query end).
-    static int getMax(int[] st, int n, int l, int r) {
+    public void updateValue(int pos, int nv) {
+        update(1, 0, n - 1, pos, nv);
+    }
 
-        // Check for erroneous input values
-        if (l < 0 || r > n - 1 || l > r) {
-            System.out.printf("Invalid Input\n");
+    public void update(int idx, int l, int u, int pos, int nv) {
+        if (l == u) {
+            t[idx] = nv;
+            return;
+        }
+        int mid = l + (u - l) / 2;
+        if (pos <= mid) {
+            update(2 * idx, l, mid, pos, nv);
+        } else {
+            update(2 * idx + 1, mid + 1, u, pos, nv);
+        }
+        t[idx] = Math.max(t[2 * idx], t[2 * idx + 1]);
+    }
+
+
+    private int lookup(int v) {
+        return lookuptree(1, 0, n - 1, v);
+    }
+
+    private int lookuptree(int idx, int l, int u, int v) {
+        if (t[idx] < v) {
             return -1;
         }
-
-        return getMaxHelper(st, 0, n - 1, l, r, 0);
-    }
-
-    // A recursive function that constructs Segment
-    // Tree for array[ss..se]. si is index of
-    // current node in segment tree st
-    static int constructSTUtil(int arr[],
-                               int ss, int se,
-                               int[] st, int si) {
-
-        // If there is one element in array, store
-        // it in current node of segment tree and return
-        if (ss == se) {
-            st[si] = arr[ss];
-            return arr[ss];
+        if (l == u) {
+            return t[idx] >= v ? l : -1;
         }
-
-        // If there are more than one elements, then
-        // recur for left and right subtrees and
-        // store the max of values in this node
-        int mid = getMid(ss, se);
-
-        st[si] = Math.max(
-                constructSTUtil(arr, ss, mid,
-                        st, si * 2 + 1),
-                constructSTUtil(arr, mid + 1,
-                        se, st,
-                        si * 2 + 2));
-
-        return st[si];
+        int mid = l + (u - l) / 2;
+        int left = lookuptree(2 * idx, l, mid, v);
+        if (left != -1) {
+            return left;
+        }
+        int right = lookuptree(2 * idx + 1, mid + 1, u, v);
+        return right;
     }
-
-    /*
-    * Function to construct segment tree from
-    given array. This function allocates
-    * memory for segment tree.
-    */
-    static int[] constructST(int arr[], int n) {
-
-        // Height of segment tree
-        int x = (int) Math.ceil(Math.log(n) / Math.log(2));
-
-        // Maximum size of segment tree
-        int max_size = 2 * (int) Math.pow(2, x) - 1;
-
-        // Allocate memory
-        int[] st = new int[max_size];
-
-        // Fill the allocated memory st
-        constructSTUtil(arr, 0, n - 1, st, 0);
-
-        // Return the constructed segment tree
-        return st;
-    }
-
 }
+
+

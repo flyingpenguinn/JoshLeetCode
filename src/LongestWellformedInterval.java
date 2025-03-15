@@ -79,3 +79,74 @@ class LongestWellformedIntervalHashMap {
         return res;
     }
 }
+
+class LongestWellformedIntervalSegTree {
+    // find the leftmost that is < a number
+    class SegTree {
+        int[] t;
+        int n = 0;
+
+        public SegTree(int[] a) {
+            this.n = a.length;
+            t = new int[4 * n + 1];
+            build(a, 1, 0, a.length - 1);
+        }
+
+        private void build(int[] a, int idx, int l, int u) {
+            if (l == u) {
+                t[idx] = a[l];
+                return;
+            }
+            int mid = l + (u - l) / 2;
+            int left = 2 * idx;
+            int right = 2 * idx + 1;
+            build(a, left, l, mid);
+            build(a, right, mid + 1, u);
+            t[idx] = Math.min(t[left], t[right]);
+        }
+
+
+        private int lookup(int v) {
+            return lookuptree(1, 0, n - 1, v);
+        }
+
+        private int lookuptree(int idx, int l, int u, int v) {
+            if (t[idx] >= v) {
+                return -1;
+            }
+            if (l == u) {
+                return t[idx] < v ? l : -1;
+            }
+            int mid = l + (u - l) / 2;
+            int left = lookuptree(2 * idx, l, mid, v);
+            if (left != -1) {
+                return left;
+            }
+            int right = lookuptree(2 * idx + 1, mid + 1, u, v);
+            return right;
+        }
+    }
+
+    public int longestWPI(int[] a) {
+        int n = a.length;
+        int[] na = new int[n];
+        for (int i = 0; i < n; ++i) {
+            na[i] = a[i] > 8 ? 1 : -1;
+        }
+        int[] csum = new int[n + 1];
+        for (int i = 0; i < n; ++i) {
+            csum[i + 1] = csum[i] + na[i];
+        }
+        SegTree seg = new SegTree(csum);
+        int res = 0;
+        for (int i = 1; i <= n; ++i) {
+            int v = csum[i];
+            int index = seg.lookup(v);
+            if (index != -1 && index < i) {
+                int cur = i - index;
+                res = Math.max(res, cur);
+            }
+        }
+        return res;
+    }
+}
