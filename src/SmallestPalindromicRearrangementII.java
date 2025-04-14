@@ -4,166 +4,163 @@ import java.util.List;
 
 public class SmallestPalindromicRearrangementII {
     // gist is use prime technique to count
+    // gist is use prime technique to count
+    private static final int lim = 5001;
+    private static boolean[] isprime = new boolean[lim];
+    private static int[] primes;
+    private static int psize = 0;
+    private static int[][] primeexp;
+    private static int[][] factorprimeexp;
 
-    // Change this limit if desired. Once we exceed this value, we clamp.
-    // It just needs to be comfortably above 1e6 to safely compare.
-    private static final long LIMIT = 2_000_000_0L;
+    private static void initprimes() {
+        Arrays.fill(isprime, true);
+        isprime[1] = false;
+        for (int i = 2; i < lim; ++i) {
+            if (!isprime[i]) {
+                continue;
+            }
+            for (int j = i * 2; j < lim; j += i) {
+                isprime[j] = false;
+            }
+        }
+        for (int i = 2; i < lim; ++i) {
+            if (isprime[i]) {
+                ++psize;
+            }
+        }
+        primes = new int[psize];
+        int pi = 0;
+        for (int i = 2; i < lim; ++i) {
+            if (isprime[i]) {
+                primes[pi++] = i;
+            }
+        }
+    }
 
-    // We'll store all primes up to 5000 (since halfLen can be as large as 5000).
-    private static List<Integer> primes = new ArrayList<>();
-    // factorialPrimeExps[n][pIndex] will store the exponent of the prime at pIndex in n!
-    private static int[][] factorialPrimeExps;
+    private static void initprimeexp() {
+        initprimes();
+        primeexp = new int[lim][psize];
+        for (int i = 2; i < lim; ++i) {
+            int cv = i;
+            for (int j = 0; j < psize; ++j) {
+                while (cv % primes[j] == 0) {
+                    ++primeexp[i][j];
+                    cv /= primes[j];
+                }
+            }
+        }
+        factorprimeexp = new int[lim][psize];
+        for (int i = 2; i < lim; ++i) {
+            factorprimeexp[i] = Arrays.copyOf(factorprimeexp[i - 1], psize);
+            for (int j = 0; j < psize; ++j) {
+                factorprimeexp[i][j] += primeexp[i][j];
+            }
+        }
+    }
 
-    // Precompute once.
-    static {
-        sievePrimesUpTo(5000);
-        factorialPrimeExps = new int[5001][primes.size()];
-        buildFactorialPrimeExps(5000);
+    private long BIG = (long) 2e6;
+
+    private void minus(int[] a, int[] b) {
+        for (int i = 0; i < psize; ++i) {
+            a[i] -= b[i];
+        }
+    }
+
+    private void plus(int[] a, int[] b) {
+        for (int i = 0; i < psize; ++i) {
+            a[i] += b[i];
+        }
+    }
+
+    private long eval(int[] a) {
+        long res = 1;
+        for (int i = 0; i < psize; ++i) {
+            if (a[i] == 0) {
+                continue;
+            }
+            int times = a[i];
+            while (times > 0) {
+                res *= primes[i];
+                if (res > BIG) {
+                    return BIG;
+                }
+                --times;
+            }
+        }
+        return res;
     }
 
     public String smallestPalindrome(String s, int k) {
-        // Count character frequencies
-        int[] freq = new int[26];
-        for (int i = 0; i < s.length(); i++) {
-            freq[s.charAt(i) - 'a']++;
+        if (factorprimeexp == null) {
+            initprimeexp();
         }
+        int[] cnt = new int[26];
+        int n = s.length();
+        for (int i = 0; i < n; ++i) {
+            int cind = s.charAt(i) - 'a';
+            ++cnt[cind];
+        }
+        String mid = "";
 
-        // Identify possible center (since s is originally a palindrome, at most one odd count)
-        String center = "";
-        for (int i = 0; i < 26; i++) {
-            if (freq[i] % 2 == 1) {
-                center = String.valueOf((char) (i + 'a'));
-                freq[i]--;
-                break;
+        int halflen = 0;
+        for (int i = 0; i < 26; ++i) {
+            if (cnt[i] % 2 == 1) {
+                mid = String.valueOf((char) ('a' + i));
             }
-        }
+            cnt[i] /= 2;
 
-        // Half counts and total length of half
-        int[] halfCount = new int[26];
-        int halfLen = 0;
-        for (int i = 0; i < 26; i++) {
-            halfCount[i] = freq[i] / 2;
-            halfLen += halfCount[i];
+            halflen += cnt[i];
         }
-
-        // Compute the total number of distinct permutations of this half distribution
-        long totalPerm = countPermutations(halfCount, halfLen);
-        if (totalPerm < k) {
+        int[] allfact = Arrays.copyOf(factorprimeexp[halflen], psize);
+        for (int i = 0; i < 26; ++i) {
+            minus(allfact, factorprimeexp[cnt[i]]);
+        }
+        long allcombi = eval(allfact);
+        if (allcombi < k) {
             return "";
         }
+        long rem = k;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < halflen; ++i) {
+            int remtotal = halflen - 1 - i;
+            for (int j = 0; j < 26; ++j) {
 
-        // Construct the k-th lexicographically smallest half
-        int[] half = new int[halfLen];
-        long K = k;
-
-        for (int pos = 0; pos < halfLen; pos++) {
-            for (int ch = 0; ch < 26; ch++) {
-                if (halfCount[ch] == 0) {
+                if (cnt[j] == 0) {
                     continue;
                 }
-                halfCount[ch]--;
-
-                // Count how many permutations if we fix ch at this position
-                long partial = countPermutations(halfCount, halfLen - pos - 1);
-
-                if (partial >= K) {
-                    // We keep ch at this position
-                    half[pos] = ch;
+                int[] ptotal = Arrays.copyOf(factorprimeexp[remtotal], psize);
+                --cnt[j];
+                for (int p = 0; p < 26; ++p) {
+                    if(cnt[p]==0){
+                        continue;
+                    }
+                    minus(ptotal, factorprimeexp[cnt[p]]);
+                }
+                final long curcombi = eval(ptotal);
+                if (curcombi >= rem) {
+                    sb.append((char) ('a' + j));
                     break;
                 } else {
-                    // Not enough permutations with ch at this position
-                    K -= partial;
-                    halfCount[ch]++;
+                    ++cnt[j];
+                    rem -= curcombi;
                 }
             }
-        }
 
-        // Build final string: half + center + reversed(half)
-        StringBuilder sb = new StringBuilder();
-        for (int x : half) {
-            sb.append((char) (x + 'a'));
         }
-        String left = sb.toString();
-        String right = sb.reverse().toString();
-        return left + center + right;
+        StringBuilder othersb = new StringBuilder(sb).reverse();
+        return sb.toString() + mid + othersb.toString();
     }
 
-    // Returns the clamped number of permutations for a distribution halfCount with total length sumLen.
-    private long countPermutations(int[] halfCount, int sumLen) {
-        // We'll compute exponent array = factorialPrimeExps[ sumLen ] minus
-        // the sum of factorialPrimeExps[ each halfCount[i] ].
-        int[] exps = Arrays.copyOf(factorialPrimeExps[sumLen], factorialPrimeExps[sumLen].length);
+    public static void main(String[] args) {
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzzzzzzyyxxwwvvuuttssrrqqppoonnmmllkkjjiihhggffeeddccbbaa", 1000000));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("ommjuujmmo", 49));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("abba", 2));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("smxggxms", 17));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("yfwwfy", 6));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("nyggyn", 4));
 
-        for (int i = 0; i < 26; i++) {
-            int c = halfCount[i];
-            if (c > 0) {
-                int[] sub = factorialPrimeExps[c];
-                for (int pIndex = 0; pIndex < exps.length; pIndex++) {
-                    exps[pIndex] -= sub[pIndex];
-                }
-            }
-        }
-
-        // Exponentiate with clamping
-        long result = 1;
-        for (int pIndex = 0; pIndex < exps.length; pIndex++) {
-            int e = exps[pIndex];
-            int prime = primes.get(pIndex);
-            while (e-- > 0) {
-                // risk of overflow => clamp
-                if (result > LIMIT / prime) {
-                    return LIMIT + 1;  // clamp
-                }
-                result *= prime;
-            }
-        }
-        return result;
-    }
-
-    // Simple sieve to fill the 'primes' list with all primes up to maxN.
-    private static void sievePrimesUpTo(int maxN) {
-        boolean[] isPrime = new boolean[maxN + 1];
-        Arrays.fill(isPrime, true);
-        isPrime[0] = false;
-        isPrime[1] = false;
-        for (int i = 2; i * i <= maxN; i++) {
-            if (isPrime[i]) {
-                for (int j = i * i; j <= maxN; j += i) {
-                    isPrime[j] = false;
-                }
-            }
-        }
-        for (int i = 2; i <= maxN; i++) {
-            if (isPrime[i]) {
-                primes.add(i);
-            }
-        }
-    }
-
-    // Build factorialPrimeExps up to maxN.
-    // factorialPrimeExps[n] is an array primeExp[] of length primes.size(), storing
-    // the exponent of each prime in n!.
-    private static void buildFactorialPrimeExps(int maxN) {
-        // factorialPrimeExps[0] = {0,0,0,...}
-        for (int i = 1; i <= maxN; i++) {
-            // start as copy of factorialPrimeExps[i-1]
-            System.arraycopy(factorialPrimeExps[i - 1], 0, factorialPrimeExps[i], 0, primes.size());
-            // factor i
-            int val = i;
-            for (int pIndex = 0; pIndex < primes.size(); pIndex++) {
-                int p = primes.get(pIndex);
-                if (p > val) {
-                    break;
-                }
-                while (val % p == 0) {
-                    factorialPrimeExps[i][pIndex]++;
-                    val /= p;
-                }
-                if (val == 1) {
-                    break;
-                }
-            }
-        }
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("aa", 2));
+        System.out.println(new SmallestPalindromicRearrangementII().smallestPalindrome("bacab", 1));
     }
 
 

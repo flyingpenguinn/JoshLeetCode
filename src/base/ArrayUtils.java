@@ -77,10 +77,11 @@ public class ArrayUtils {
         arrayStr = arrayStr.trim();
         ArrayList<String> inner = getInnerStrings(arrayStr);
 
-        int len = inner.get(0).split(",").length;
-        int[][] result = new int[inner.size()][len];
+
+        int[][] result = new int[inner.size()][];
         for (int i = 0; i < result.length; i++) {
             String[] split = inner.get(i).split(",");
+            result[i] = new int[split.length];
             for (int j = 0; j < split.length; j++) {
                 String v = split[j].trim();
                 if (!v.isEmpty()) {
