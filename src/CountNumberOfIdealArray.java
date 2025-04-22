@@ -20,7 +20,7 @@ public class CountNumberOfIdealArray {
         }
         for (int i = 2; i <= n && i <= 14; i++) {
             for (int j = 1; j <= maxValue; j++) {
-                for (int k : map.get(j)) {
+                for (int k : map.get(j)) { 
                     dp[i][j] += dp[i - 1][k];
                     dp[i][j] %= m;
                 }
