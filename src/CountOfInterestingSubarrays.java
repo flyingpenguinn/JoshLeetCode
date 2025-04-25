@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CountOfInterestingSubarrays {
+    // if (y-x) % M == k, then (y-k + M) % M == x % M
     public long countInterestingSubarrays(List<Integer> a, int modulo, int k) {
         int n = a.size();
         int cnt = 0;
@@ -15,13 +16,9 @@ public class CountOfInterestingSubarrays {
             if (a.get(i) % modulo == k) {
                 ++cnt;
             }
-            long mod = cnt % modulo;
-            long v = mod - k;
-            if (v < 0) {
-                v += modulo;
-            }
+            long v = (cnt - k + modulo) % modulo;
             res += count.getOrDefault(v, 0L);
-            update(count, mod, 1);
+            update(count, cnt%modulo, 1);
         }
         return res;
     }
