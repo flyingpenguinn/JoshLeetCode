@@ -72,3 +72,40 @@ class MinNumberOfSwapsDp {
         return res;
     }
 }
+
+class MinNumberOfSwapsDp2 {
+    // if len is even same as comparing 1010 and 0101
+    // otherwise if odd length, for each given point if we start from it after rotation, the left part will have expectation that is reverse of current expectation. we know the diff with ~expectation immediately
+    public int minFlips(String s) {
+        int n = s.length();
+        return Math.min(solve(s, 1), solve(s, 0));
+    }
+
+    private int solve(String s, int cur) {
+        int n = s.length();
+        int[] diff = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) - '0' != cur) {
+                diff[i] = 1;
+            }
+            cur ^= 1;
+        }
+        int[] rightDiff = new int[n + 1];
+        for (int i = n - 1; i >= 0; i--) {
+            rightDiff[i] = rightDiff[i + 1] + diff[i];
+        }
+        if (n % 2 == 0) {
+            return rightDiff[0];
+        }
+        int leftDiff = 0;
+        int res = n + 1;
+        for (int i = 0; i < n; i++) {
+            int cr = rightDiff[i];
+            int curlen = cr + (i - leftDiff);
+            res = Math.min(res, curlen);
+            leftDiff += diff[i];
+        }
+        return res;
+    }
+}
+
