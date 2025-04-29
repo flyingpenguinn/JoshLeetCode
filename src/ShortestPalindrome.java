@@ -12,36 +12,33 @@ Input: "abcd"
 Output: "dcbabcd"
  */
 
-// @TODO do it with tdp: concept is similar that we construct s#reverse(s) then calc the kmp table
+
 public class ShortestPalindrome {
 
-    // find max palin from index 0, then add rest, reversed, at the head
+    // find max palin from index 0, then add rest, reversed, at the head.
+    // max prefix that is also palin can use kmp lps table algo
     public String shortestPalindrome(String s) {
-        char[] cs = s.toCharArray();
-        int n = cs.length;
-        for (int i = n - 1; i >= 0; i--) {
-            if (cs[0] == cs[i] && ispalin(cs, 0, i)) {
-                return new StringBuilder((s.substring(i + 1))).reverse().toString() + s;
+        int n = s.length();
+        if (n <= 1) return s;
+        String rev = new StringBuilder(s).reverse().toString();
+        // build “pattern” = s + "#" + rev(s)
+        String t = s + "#" + rev;
+        int m = t.length();
+        int[] lps = new int[m];
+        // compute prefix-function on t
+        for (int i = 1; i < m; i++) {
+            int j = lps[i - 1];
+            while (j > 0 && t.charAt(i) != t.charAt(j)) {
+                j = lps[j - 1];
             }
+            if (t.charAt(i) == t.charAt(j)) j++;
+            lps[i] = j;
         }
-        return reverse(s) + s;
-    }
-
-    private String reverse(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = s.length() - 1; i >= 0; i--) {
-            sb.append(s.charAt(i));
-        }
-        return sb.toString();
-    }
-
-    private boolean ispalin(char[] cs, int i, int j) {
-        while (i <= j) {
-            if (cs[i++] != cs[j--]) {
-                return false;
-            }
-        }
-        return true;
+        // lps[m-1] = length of longest prefix of s that matches a suffix of rev(s)
+        int palPref = lps[m - 1];
+        // the part s[palPref..n) isn’t in that palindrome; reverse it and prepend
+        String toAdd = rev.substring(0, n - palPref);
+        return toAdd + s;
     }
 
     public static void main(String[] args) {
