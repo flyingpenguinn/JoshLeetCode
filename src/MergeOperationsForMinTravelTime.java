@@ -1,6 +1,13 @@
 import java.util.Arrays;
 
 public class MergeOperationsForMinTravelTime {
+    // can also do this to make it n^k
+    // State = (a, b, used) where a and b are the two most‐recently kept signs (indexes).
+    /*
+    weight = P[b+1] - P[a+1];  // sum of t[a+1..b]
+    dist   = pos[c] - pos[b];
+    cost   = dist * weight;
+     */
     private int[] tpsum;
     private int[][][][] dp;
     private int sumtime = 101;
