@@ -5,58 +5,63 @@ public class SubtreeInversionSum {
     private int n, K;
     private int[] nums;
     private List<Integer>[] adj;
-    private long[][] f, g;
+    private long[][][] dp;
+    private static final long UNVISITED = Long.MIN_VALUE;
 
-    public long subtreeInversionSum(int[][] edges, int[] nums, int K) {
+    public long subtreeInversionSum(int[][] edges, int[] nums, int k) {
         this.n    = edges.length + 1;
-        this.K    = K;
+        this.K    = k;
         this.nums = nums;
 
-        // build adjacency list
+        // build adjacency
         adj = new ArrayList[n];
-        for (int i = 0; i < n; i++) {
-            adj[i] = new ArrayList<>();
-        }
+        for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
         for (int[] e : edges) {
             adj[e[0]].add(e[1]);
             adj[e[1]].add(e[0]);
         }
 
-        // dp arrays
-        f = new long[n][K + 1];
-        g = new long[n][K + 1];
-
-        dfs(0, -1);
-        return f[0][0];
-    }
-
-    private void dfs(int u, int parent) {
-        long[] tf = new long[K + 1];
-        long[] tg = new long[K + 1];
-
-        for (int v : adj[u]) {
-            if (v == parent) continue;
-            dfs(v, u);
+        // dp[u][dist][parity], init to UNVISITED
+        dp = new long[n][K + 1][2];
+        for (int u = 0; u < n; u++) {
             for (int d = 0; d <= K; d++) {
-                tf[d] += f[v][d];
-                tg[d] += g[v][d];
+                dp[u][d][0] = dp[u][d][1] = UNVISITED;
             }
         }
 
-        // not inverting u: consume one distance unit
-        for (int d = 1; d <= K; d++) {
-            f[u][d] = nums[u] + tf[d - 1];
-            g[u][d] = nums[u] + tg[d - 1];
+        // kick off from root=0, dist=K (so root may invert), parity=0
+        return dfs(0, -1, K, 0);
+    }
+
+    private long dfs(int u, int parent, int dist, int parity) {
+        // if already computed, return cached
+        if (dp[u][dist][parity] != UNVISITED) {
+            return dp[u][dist][parity];
         }
 
-        // inverting u: use up one inversion here, K-1 for children
-        f[u][0] = -nums[u] - tg[K - 1];
-        g[u][0] = -nums[u] - tf[K - 1];
-
-        // suffix max/min to make “exactly d” → “up to d”
-        for (int d = K - 1; d >= 0; d--) {
-            f[u][d] = Math.max(f[u][d], f[u][d + 1]);
-            g[u][d] = Math.min(g[u][d], g[u][d + 1]);
+        // OPTION A: do NOT invert here
+        long base = parity == 0 ? nums[u] : -nums[u];
+        long best = base;
+        for (int v : adj[u]) {
+            if (v == parent) continue;
+            int nextDist = Math.min(dist + 1, K);
+            best += dfs(v, u, nextDist, parity);
         }
+
+        // OPTION B: invert here, only if dist >= K
+        if (dist >= K) {
+            long flipped = parity == 0 ? -nums[u] : nums[u];
+            long cand    = flipped;
+            for (int v : adj[u]) {
+                if (v == parent) continue;
+                // after flipping, children have dist=1 and toggled parity
+                cand += dfs(v, u, 1, parity ^ 1);
+            }
+            best = Math.max(best, cand);
+        }
+
+        // cache & return
+        dp[u][dist][parity] = best;
+        return best;
     }
 }
