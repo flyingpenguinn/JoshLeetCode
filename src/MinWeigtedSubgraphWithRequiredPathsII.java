@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MinWeigtedSubgraphWithRequiredPathsII {
-    // the answer id dist(a,b) + dist(b,c) + dist(a,c) then use LCA
+    // The key node we are looking for is the lca of two of them
     private Map<Integer, Integer>[] t;
     private int[] dist;
     private int[] level;
@@ -65,15 +65,20 @@ public class MinWeigtedSubgraphWithRequiredPathsII {
         for (int i = 0; i < qn; ++i) {
             int v1 = qs[i][0];
             int v2 = qs[i][1];
-
-            int dst = qs[i][2];
-            int dist1 = getdist(v1, v2);
-            int dist2 = getdist(v1, dst);
-            int dist3 = getdist(v2, dst);
-            int cur = (dist1 + dist2 + dist3) / 2;
+            int v3 = qs[i][2];
+            int cur1 =  calc(v1, v2, v3);
+            int cur2 =  calc(v2, v3, v1);
+            int cur3 =  calc(v1, v3, v2);
+            int cur = Math.min(cur1, Math.min(cur2, cur3));
             res[i] = cur;
         }
         return res;
+    }
+
+    private int calc(int v1, int v2, int v3){
+        int lca = getlca(v1, v2);
+        int cur = getdist(v1, lca) + getdist(v2, lca) + getdist(v3, lca);
+        return cur;
     }
 
     private void dfs(int i, int parent, int cd, int cl) {

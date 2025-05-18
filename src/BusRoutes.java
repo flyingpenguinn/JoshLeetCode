@@ -7,48 +7,50 @@ import java.io.IOException;
 import java.util.*;
 
 public class BusRoutes {
-    // stop to route = 1, route to stop = 0  , 01 BFS
-
+    // can do dijkastra or queue doesnt matter. gist is know what bus we boarded and don't board it again. because we generate dist greedily this is still optimal
     public int numBusesToDestination(int[][] routes, int source, int target) {
-        if (source == target) return 0;
-        int R = routes.length;
-        int maxStop = 0;
-        for (int[] r : routes) for (int s : r) maxStop = Math.max(maxStop, s);
-        int S = maxStop + 1;
-        List<List<Integer>> stopToRoutes = new ArrayList<>();
-        for (int i = 0; i < S; i++) stopToRoutes.add(new ArrayList<>());
-        for (int i = 0; i < R; i++)
-            for (int s : routes[i])
-                stopToRoutes.get(s).add(i);
-        int N = S + R;
-        int[] dist = new int[N];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        Deque<Integer> dq = new ArrayDeque<>();
-        dist[source] = 0;
-        dq.add(source);
-        boolean[] usedRoute = new boolean[R];
-        while (!dq.isEmpty()) {
-            int u = dq.pollFirst();
-            if (u < S) {
-                for (int r : stopToRoutes.get(u)) {
-                    int vr = S + r;
-                    if (dist[vr] > dist[u] + 1) {
-                        dist[vr] = dist[u] + 1;
-                        dq.addLast(vr);
-                    }
+        Map<Integer, Set<Integer>> sm = new HashMap<>();
+        int n = routes.length;
+        for (int i = 0; i < n; ++i) {
+            for (int st : routes[i]) {
+                sm.computeIfAbsent(st, p -> new HashSet<>()).add(i);
+            }
+        }
+        Map<Integer, Integer> dist = new HashMap<>();
+        int Max = (int) 1e9;
+        dist.put(source, 0);
+        Deque<int[]> pq = new ArrayDeque<>();
+        Set<Integer> seenbus = new HashSet<>();
+        pq.offer(new int[]{source, 0});
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            int stop = top[0];
+            int cd = top[1];
+
+            if (stop == target) {
+                return cd;
+            }
+            int nd = cd + 1;
+            for (int bus : sm.getOrDefault(stop, new HashSet<>())) {
+                if (seenbus.contains(bus)) {
+                    continue;
                 }
-            } else {
-                int r = u - S;
-                if (usedRoute[r]) continue;
-                usedRoute[r] = true;
-                for (int s : routes[r]) {
-                    if (dist[s] > dist[u]) {
-                        dist[s] = dist[u];
-                        dq.addFirst(s);
+                //   System.out.println("stop "+stop+" onto bus "+bus);
+                seenbus.add(bus);
+                for (int nextstop : routes[bus]) {
+
+                    if (dist.getOrDefault(nextstop, Max) > nd) {
+                        dist.put(nextstop, nd);
+                        pq.offer(new int[]{nextstop, nd});
                     }
                 }
             }
         }
-        return dist[target] == Integer.MAX_VALUE ? -1 : dist[target];
+        return -1;
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(new BusRoutes().numBusesToDestination(ArrayUtils.read("[[1,2,7],[3,6,7]]"), 1, 6));
     }
 }
