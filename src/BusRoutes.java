@@ -7,48 +7,48 @@ import java.io.IOException;
 import java.util.*;
 
 public class BusRoutes {
-    // visit as a level order in a bfs way.
-    // note we dont expand a bus again if we have done so, similar to jump game iv
-    // note the constraints are a bit misleading...
-    public int numBusesToDestination(int[][] a, int s, int t) {
+    // stop to route = 1, route to stop = 0  , 01 BFS
 
-        int n = a.length;
-        // stop-> bus
-        Map<Integer, Set<Integer>> m = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < a[i].length; j++) {
-                m.computeIfAbsent(a[i][j], k -> new HashSet<>()).add(i);
-            }
-        }
-        //     System.out.println(m);
-        Deque<int[]> q = new ArrayDeque<>();
-        q.offer(new int[]{s, 0});
-        Set<Integer> seenstop = new HashSet<>();
-        Set<Integer> seenbus = new HashSet<>();
-        seenstop.add(s);
-        while (!q.isEmpty()) {
-            int[] top = q.poll();
-            int stop = top[0];
-            int dist = top[1];
-            //  System.out.println(stop+" "+dist);
-            if (stop == t) {
-                return dist;
-            }
-            Set<Integer> buses = m.getOrDefault(stop, new HashSet<>());
-            for (int b : buses) {
-                if (!seenbus.contains(b)) {
-                    // key: if a bus was expanded before we dont need to redo it
-                    seenbus.add(b);
-                    for (int st : a[b]) {
-                        //   System.out.println("adding..."+st);
-                        if (!seenstop.contains(st)) {
-                            seenstop.add(st);
-                            q.offer(new int[]{st, dist + 1});
-                        }
+    public int numBusesToDestination(int[][] routes, int source, int target) {
+        if (source == target) return 0;
+        int R = routes.length;
+        int maxStop = 0;
+        for (int[] r : routes) for (int s : r) maxStop = Math.max(maxStop, s);
+        int S = maxStop + 1;
+        List<List<Integer>> stopToRoutes = new ArrayList<>();
+        for (int i = 0; i < S; i++) stopToRoutes.add(new ArrayList<>());
+        for (int i = 0; i < R; i++)
+            for (int s : routes[i])
+                stopToRoutes.get(s).add(i);
+        int N = S + R;
+        int[] dist = new int[N];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        Deque<Integer> dq = new ArrayDeque<>();
+        dist[source] = 0;
+        dq.add(source);
+        boolean[] usedRoute = new boolean[R];
+        while (!dq.isEmpty()) {
+            int u = dq.pollFirst();
+            if (u < S) {
+                for (int r : stopToRoutes.get(u)) {
+                    int vr = S + r;
+                    if (dist[vr] > dist[u] + 1) {
+                        dist[vr] = dist[u] + 1;
+                        dq.addLast(vr);
+                    }
+                }
+            } else {
+                int r = u - S;
+                if (usedRoute[r]) continue;
+                usedRoute[r] = true;
+                for (int s : routes[r]) {
+                    if (dist[s] > dist[u]) {
+                        dist[s] = dist[u];
+                        dq.addFirst(s);
                     }
                 }
             }
         }
-        return -1;
+        return dist[target] == Integer.MAX_VALUE ? -1 : dist[target];
     }
 }
