@@ -58,37 +58,27 @@ public class MinTapsToWaterGarden {
     // then next start is the end point of current round
     // note here next round must be able to concat with current round, but last tap seems to be fine... dont need to go n+1
     // similar to video stitching
-    public int minTaps(int n, int[] a) {
-        int tapCount = n + 1;
-        int[][] taps = new int[tapCount][2];
-        for (int i = 0; i < tapCount; i++) {
-            taps[i][0] = Math.max(0, i - a[i]);
-            taps[i][1] = i + a[i];
+    public int minTaps(int n, int[] ranges) {
+        int[] maxends = new int[n+1];
+        for(int i=0; i<=n; ++i){
+            int s = i - ranges[i];
+            int e = i + ranges[i];
+            int rs = Math.max(s, 0);
+            maxends[rs] = Math.max(maxends[rs], e);
         }
-        Arrays.sort(taps, (x, y) -> Integer.compare(x[0], y[0]));
-        return minIntervalCoverage(taps, n);
-    }
-
-
-    // same as that of video stitching
-    protected int minIntervalCoverage(int[][] a, int t) {
-        int n = a.length;
-        int start = -1;
-        int end = 0;
-        int res = 0;
-        for (int i = 0; i < n && end < t; i++) {
-            int cstart = a[i][0];
-            int cend = a[i][1];
-            if (cstart <= start) {
-                end = Math.max(end, cend);
-            } else if (cstart > end) {
-                break;
-            } else {
-                res++;
-                start = end; // we are looking for cover from the end so ignore the portions before it
-                end = cend;
+        int curend = 0;
+        int nextend = 0;
+        int needed = 0;
+        for(int i=0; i<=n; ++i){
+            if(i>nextend){
+                return -1;
             }
+            if (i>curend){
+                ++needed;
+                curend = nextend;
+            }
+            nextend = Math.max(nextend, maxends[i]);
         }
-        return end >= t ? res : -1;
+        return needed;
     }
 }

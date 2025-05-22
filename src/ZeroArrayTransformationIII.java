@@ -1,49 +1,47 @@
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.PriorityQueue;
+import base.ArrayUtils;
+
+import java.util.*;
 
 public class ZeroArrayTransformationIII {
+    // this is actually same as tap water question. smallest num of intervals cover a segment
     public int maxRemoval(int[] a, int[][] qs) {
-        // greedy. use the internal that can cover a[i] and is farthest
         int n = a.length;
-        Arrays.sort(qs, (x, y) -> Integer.compare(x[0], y[0]));
-        PriorityQueue<Integer> using = new PriorityQueue<>();
-        PriorityQueue<Integer> cand = new PriorityQueue<>(Collections.reverseOrder());
-
-        int needed = 0;
-        int qi = 0;
+        List<Integer>[] starts = new ArrayList[n];
         for (int i = 0; i < n; ++i) {
-            int v = a[i];
-            //   System.out.println("checking "+i);
-            while (!using.isEmpty() && using.peek() < i) {
-                //     System.out.println(using.peek() +" cannot cover "+i);
-                using.poll();
+            starts[i] = new ArrayList<>();
+        }
+        for (int[] q : qs) {
+            int s = q[0];
+            int e = q[1];
+            starts[s].add(e);
+        }
+        PriorityQueue<Integer> ends = new PriorityQueue<>(Collections.reverseOrder());
+        int csum = 0; // how much we can cover now
+        int[] diff = new int[n + 1];
+        int needed = 0;
+        for (int i = 0; i < n; ++i) {
+            if (!ends.isEmpty() && ends.peek() < i) {
+                ends.clear();
             }
-            //   System.out.println(using.size()+" left over to cover "+i);
-            v -= using.size(); // these can cover v
-            while (qi < qs.length && qs[qi][0] <= i) {
-                if (qs[qi][1] >= i) {
-                    //    System.out.println("offering cand "+qs[qi][1]);
-                    cand.offer(qs[qi][1]);
-                }
-                ++qi;
+            for (int end : starts[i]) {
+                ends.offer(end);
             }
-            while (v > 0 && !cand.isEmpty()) {
-                //    System.out.println("using "+cand.peek());
-                if (cand.peek() >= i) {
-                    using.offer(cand.poll());
-                    --v;
-                    ++needed;
-                } else {
-                    break;
-                }
+            csum += diff[i];
+            // System.out.println("csum="+csum+" diffi="+diff[i]);
+            while (csum < a[i] && !ends.isEmpty() && ends.peek() >= i) {
+                ++needed;
+                int cand = ends.poll();
+                diff[cand + 1] += -1;
+                ++csum;
             }
-            if (v > 0) {
-                //  System.out.println("cannot cover "+v);
+            if (csum < a[i]) {
                 return -1;
             }
         }
-        //  System.out.println("needed="+needed);
         return qs.length - needed;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new ZeroArrayTransformationIII().maxRemoval(ArrayUtils.read1d("0,0,3"), ArrayUtils.read("[[0,2],[1,1],[0,0],[0,0]]")));
     }
 }
