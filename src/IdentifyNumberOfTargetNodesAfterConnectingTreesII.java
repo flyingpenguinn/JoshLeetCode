@@ -1,64 +1,80 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class IdentifyNumberOfTargetNodesAfterConnectingTreesII {
-    private Map<Integer, ArrayList<Integer>> t1 = new HashMap<>();
-    private Map<Integer, ArrayList<Integer>> t2 = new HashMap<>();
-    private int t2offset = 10000;
+    List<Integer>[] t1;
+    List<Integer>[] t2;
+    int t2evens, t2odds;
+    int t1evens, t1odds;
+    int best2;
+    int[] res;
 
     public int[] maxTargetNodes(int[][] edges1, int[][] edges2) {
-        int n = edges1.length + 1;
-        for (int[] e : edges1) {
-            int v1 = e[0];
-            int v2 = e[1];
-            t1.computeIfAbsent(v1, p -> new ArrayList<>()).add(v2);
-            t1.computeIfAbsent(v2, p -> new ArrayList<>()).add(v1);
+        int n1 = edges1.length + 1;
+        int n2 = edges2.length + 1;
+        t1 = new ArrayList[n1];
+        t2 = new ArrayList[n2];
+        for (int i = 0; i < n1; i++) {
+            t1[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < n2; i++) {
+            t2[i] = new ArrayList<>();
         }
         for (int[] e : edges2) {
-            int v1 = t2offset + e[0];
-            int v2 = t2offset + e[1];
-            t2.computeIfAbsent(v1, p -> new ArrayList<>()).add(v2);
-            t2.computeIfAbsent(v2, p -> new ArrayList<>()).add(v1);
+            t2[e[0]].add(e[1]);
+            t2[e[1]].add(e[0]);
         }
-        int r21 = dfs(t2, t2offset + 0, -1, 0, 1);
-        int any = t2.get(t2offset + 0).iterator().next();
-        int r22 = dfs(t2, any, -1, 0, 1);
-        int maxr2 = Math.max(r21, r22);
-        int r11 = dfs(t1, 0, -1, 0, 0);
-        int[] res = new int[n];
-        Arrays.fill(res, maxr2);
-        dfs2(t1, 0, -1, 0, r11, n, res);
+        for (int[] e : edges1) {
+            t1[e[0]].add(e[1]);
+            t1[e[1]].add(e[0]);
+        }
+
+        dfs2(0, -1, 0);
+        best2 = Math.max(t2evens, t2odds);
+
+        dfs1(0, -1, 0);
+        res = new int[n1];
+        dfsres(0, -1, 0);
+
         return res;
     }
 
-    private void dfs2(Map<Integer, ArrayList<Integer>> t1, int i, int p, int mod, int r1, int n, int[] res) {
-        if (mod == 0) {
-            res[i] += r1;
+    private void dfs2(int i, int p, int d) {
+        if (d % 2 == 0) {
+            t2evens++;
         } else {
-            res[i] += n - r1;
+            t2odds++;
         }
-        for (int ne : t1.getOrDefault(i, new ArrayList<>())) {
-            if (ne == p) {
-                continue;
+        for (int ne : t2[i]) {
+            if (ne != p) {
+                dfs2(ne, i, d + 1);
             }
-            dfs2(t1, ne, i, mod ^ 1, r1, n, res);
         }
     }
 
-    private int dfs(Map<Integer, ArrayList<Integer>> t2, int i, int p, int mod, int expected) {
-        int res = 0;
-        if (mod == expected) {
-            ++res;
+    private void dfs1(int i, int p, int d) {
+        if (d % 2 == 0) {
+            t1evens++;
+        } else {
+            t1odds++;
         }
-        for (int ne : t2.getOrDefault(i, new ArrayList<>())) {
-            if (ne == p) {
-                continue;
+        for (int ne : t1[i]) {
+            if (ne != p) {
+                dfs1(ne, i, d + 1);
             }
-            int later = dfs(t2, ne, i, mod ^ 1, expected);
-            res += later;
         }
-        return res;
+    }
+
+    private void dfsres(int i, int p, int d) {
+        if (d % 2 == 0) {
+            res[i] = t1evens + best2;
+        } else {
+            res[i] = t1odds + best2;
+        }
+        for (int ne : t1[i]) {
+            if (ne != p) {
+                dfsres(ne, i, d + 1);
+            }
+        }
     }
 }
+
