@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class MaximizeCountOfDistinctPrimesAfterSplit {
+    // TODO: too hard to do myself
     public int[] maximumCount(int[] nums, int[][] queries) {
         int n = nums.length;
         int U = 100000;
