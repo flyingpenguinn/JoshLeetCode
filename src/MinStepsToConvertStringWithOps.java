@@ -1,79 +1,59 @@
 public class MinStepsToConvertStringWithOps {
     // TODO
-    public int minOperations(String w1, String w2) {
-        int n = w1.length();
-        char[] a = w1.toCharArray(), b = w2.toCharArray();
-        int[][] cost = new int[n][n], dp = new int[n][n];
-
-        // 1) build per‐substring cost[i][j]
+    // note the letter paring technique
+    public int minOperations(String word1, String word2) {
+        int n = word1.length();
+        final int INF = 1_000_000_000;
+        // g[i][j] = min ops to turn word1[i..j] → word2[i..j]
+        int[][] g = new int[n][n];
+        // precompute for every substring [i..j]
         for (int i = 0; i < n; i++) {
             for (int j = i; j < n; j++) {
-                // count direct mismatches
-                int diff = 0;
-                for (int k = i; k <= j; k++)
-                    if (a[k] != b[k]) diff++;
-
-                // count how many disjoint swaps fix two mismatches
-                boolean[] used = new boolean[j - i + 1];
-                int swp = 0;
-                for (int p = i; p <= j; p++) {
-                    if (used[p - i] || a[p] == b[p]) continue;
-                    for (int q = p + 1; q <= j; q++) {
-                        if (used[q - i] || a[q] == b[q]) continue;
-                        if (a[p] == b[q] && a[q] == b[p]) {
-                            swp++;
-                            used[p - i] = used[q - i] = true;
-                            break;
-                        }
-                    }
-                }
-
-                // best using only replaces or only swaps
-                int best = Math.min(diff, diff - swp);
-
-                // mismatches if you reverse once
-                int revMis = 0;
-                for (int k = i; k <= j; k++)
-                    if (a[k] != b[i + j - k]) revMis++;
-                best = Math.min(best, 1 + revMis);
-
-                // build reversed array
-                int L = j - i + 1;
-                char[] rArr = new char[L];
-                for (int k = 0; k < L; k++)
-                    rArr[k] = a[j - k];
-
-                // count swaps after reverse
-                used = new boolean[L];
-                int swpR = 0;
-                for (int p = 0; p < L; p++) {
-                    if (used[p] || rArr[p] == b[i + p]) continue;
-                    for (int q = p + 1; q < L; q++) {
-                        if (used[q] || rArr[q] == b[i + q]) continue;
-                        if (rArr[p] == b[i + q] && rArr[q] == b[i + p]) {
-                            swpR++;
-                            used[p] = used[q] = true;
-                            break;
-                        }
-                    }
-                }
-                // reverse + (some swaps) + replaces
-                best = Math.min(best, 1 + (revMis - swpR));
-
-                cost[i][j] = best;
+                int costNoRev = calc(word1, word2, i, j, false);
+                int costWithRev = calc(word1, word2, i, j, true) + 1;
+                g[i][j] = Math.min(costNoRev, costWithRev);
             }
         }
-
-        // 2) now partition DP over cost[i][j]
-        for (int len = 1; len <= n; len++) {
-            for (int i = 0; i + len - 1 < n; i++) {
-                int j = i + len - 1, r = cost[i][j];
-                for (int k = i; k < j; k++)
-                    r = Math.min(r, dp[i][k] + dp[k + 1][j]);
-                dp[i][j] = r;
+        // f[k] = min ops to fix prefix word1[0..k-1]
+        int[] f = new int[n + 1];
+        f[0] = 0;
+        for (int i = 1; i <= n; i++) {
+            f[i] = INF;
+            for (int j = 0; j < i; j++) {
+                f[i] = Math.min(f[i], f[j] + g[j][i - 1]);
             }
         }
+        return f[n];
+    }
 
-        return dp[0][n - 1];
+    // compute cost to turn word1[l..r] into word2[l..r],
+    // optionally reversing the substring first
+    private int calc(String w1, String w2, int l, int r, boolean rev) {
+        int len = r - l + 1;
+        char[] s = new char[len];
+        // extract and maybe reverse
+        if (!rev) {
+            for (int k = 0; k < len; k++) s[k] = w1.charAt(l + k);
+        } else {
+            for (int k = 0; k < len; k++) s[k] = w1.charAt(r - k);
+        }
+        // two counters for mismatched letter-pairs
+        int[][] fwd = new int[26][26];
+        int[][] bwd = new int[26][26];
+        for (int k = 0; k < len; k++) {
+            int x = s[k] - 'a';
+            int y = w2.charAt(l + k) - 'a';
+            if (x < y) fwd[x][y]++;
+            else if (x > y) bwd[y][x]++;
+        }
+        int ops = 0;
+        // for each unordered pair (i,j), cost is max(fwd[i][j],bwd[i][j])
+        for (int i = 0; i < 26; i++) {
+            for (int j = i + 1; j < 26; j++) {
+                ops += Math.max(fwd[i][j], bwd[i][j]);
+            }
+        }
+        return ops;
     }
 }
+
