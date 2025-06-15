@@ -84,11 +84,7 @@ public class FindWeighteMedianNodeInTree {
             long total = lcatov1 + lcatov2;
             long half = (long) Math.ceil(1.0 * total / 2);
             long half2 = (long) Math.floor(1.0 * total / 2);
-            if (lca == v1) {
-                res[i] = find(v2, half2, false);
-            } else if (lca == v2) {
-                res[i] = find(v1, half, true);
-            } else if (lcatov1 >= half) {
+            if (lcatov1 >= half) {
                 res[i] = find(v1, half, true);
             } else {
                 res[i] = find(v2, half2, false);
