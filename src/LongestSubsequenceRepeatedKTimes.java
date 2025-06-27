@@ -1,5 +1,5 @@
 public class LongestSubsequenceRepeatedKTimes {
-    // just brute force it...
+    // just brute force it...key here is we only move on from those strings already showed up k times or more
     private StringBuilder res = null;
     private int limit = 0;
     private boolean[] hot = new boolean[26];
