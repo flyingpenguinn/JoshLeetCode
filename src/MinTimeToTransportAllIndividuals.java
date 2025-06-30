@@ -51,6 +51,9 @@ public class MinTimeToTransportAllIndividuals {
                 if (Integer.bitCount(gost) > k) {
                     continue;
                 }
+                if(l2r == 0 && Integer.bitCount(gost) > 1){
+                    continue;
+                }
                 int maxtime = 0;
                 for (int i = 0; i < n; ++i) {
                     if (((gost >> i) & 1) == 1) {
