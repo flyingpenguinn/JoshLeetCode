@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MinNumberOfPrimesToSumToTarget {
-    private static int LIMIT = 10000;
+    private static int LIMIT = 1001;
     private static boolean[] isprime = new boolean[LIMIT + 1];
     private static List<Integer> primes = new ArrayList<>();
 
@@ -40,7 +40,10 @@ public class MinNumberOfPrimesToSumToTarget {
         if(n==0){
             return 0;
         }
-        if (i == m) {
+        if (i == m ) {
+            return Max;
+        }
+        if(primes.get(i)>n){
             return Max;
         }
         if (dp[i][n] != null) {
@@ -63,7 +66,7 @@ public class MinNumberOfPrimesToSumToTarget {
     public int minNumberOfPrimes(int n, int m) {
         init();
         dp = new Integer[m][n+1];
-        int rt = solve(0, n, m);
+        int rt = solve(0, n, Math.min(m, primes.size()));
         return rt>=Max? -1: rt;
     }
 
