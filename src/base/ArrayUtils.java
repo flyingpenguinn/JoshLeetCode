@@ -92,6 +92,41 @@ public class ArrayUtils {
         return result;
     }
 
+    public static long[][] readlong(String arrayStr) {
+        arrayStr = arrayStr.trim();
+        ArrayList<String> inner = getInnerStrings(arrayStr);
+
+
+        long[][] result = new long[inner.size()][];
+        for (int i = 0; i < result.length; i++) {
+            String[] split = inner.get(i).split(",");
+            result[i] = new long[split.length];
+            for (int j = 0; j < split.length; j++) {
+                String v = split[j].trim();
+                if (!v.isEmpty()) {
+                    result[i][j] = Long.valueOf(v);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static long[] read1dlong(String arraStr) {
+        arraStr = arraStr.trim();
+        if (arraStr.startsWith("[")) {
+            arraStr = arraStr.substring(1, arraStr.length() - 1);
+        }
+        String[] str = arraStr.split(",");
+        long[] r = new long[str.length];
+        for (int i = 0; i < str.length; i++) {
+            String v = str[i].trim();
+            if (!v.isEmpty()) {
+                r[i] = Long.valueOf(v);
+            }
+        }
+        return r;
+    }
+
     public static int[] read1d(String arraStr) {
         arraStr = arraStr.trim();
         if (arraStr.startsWith("[")) {
