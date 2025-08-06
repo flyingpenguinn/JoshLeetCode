@@ -1,31 +1,17 @@
 public class TimeNeededToRearrangeBinaryString {
-    // check last 1. every 2 consecutive 1s make waiting +1, every 2 consecutive 0s make waiting -1
+    // each 1 must wait for earlier 1 to finish
     public int secondsToRemoveOccurrences(String is) {
         char[] s = is.toCharArray();
         int n = s.length;
+        int time = 0;
         int zeros = 0;
-        int lastone = -1;
-        for (int i = n - 1; i >= 0; --i) {
-            if (s[i] == '1') {
-                lastone = i;
-                break;
-            }
-        }
-        if (lastone == -1) {
-            return 0;
-        }
-        int waiting = 0;
-        for (int i = 0; i <= lastone; ++i) {
+        for (int i = 0; i < n; ++i) {
             if (s[i] == '0') {
                 ++zeros;
-            }
-            if (i > 0 && s[i] == '1' && s[i - 1] == '1' && zeros > 0) {
-                ++waiting;
-            }
-            if (i > 0 && s[i] == '0' && s[i - 1] == '0' && waiting > 0) {
-                --waiting;
+            } else if (zeros > 0) {
+                time = Math.max(time + 1, zeros);
             }
         }
-        return zeros + waiting;
+        return time;
     }
 }
