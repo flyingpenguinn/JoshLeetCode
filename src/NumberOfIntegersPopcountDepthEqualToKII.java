@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NumberOfIntegersPopcountDepthEqualToKII {
-    // real segment tree template
+
     // segtree template
     // can also use fenwick tree
     private final long Max = (long) (2e15);
