@@ -63,3 +63,113 @@ public class FindBuildingWhereAliceBobMeet {
     }
 
 }
+
+class FindBuildingWhereAliceBobMeetSegTree {
+    // seg tree binary search
+    static class Node {
+        int max = 0;
+        int index = -1;
+
+        public Node(int max, int index) {
+            this.max = max;
+            this.index = index;
+        }
+    }
+
+
+    static class SegTree {
+        Node[] t;
+        int n = 0;
+
+        public SegTree(int[] a) {
+            this.n = a.length;
+            this.t = new Node[4 * n + 1];
+            build(a, 1, 0, a.length - 1);
+        }
+
+
+        private void build(int[] a, int idx, int l, int u) {
+            if (l == u) {
+                t[idx] = makeleaf(a[l], l);
+                return;
+            }
+            int mid = l + (u - l) / 2;
+            int left = 2 * idx;
+            int right = 2 * idx + 1;
+            build(a, left, l, mid);
+            build(a, right, mid + 1, u);
+            t[idx] = merge(t[left], t[right]);
+        }
+
+        private Node merge(Node left, Node right) {
+            Node cur = new Node(0, -1);
+            if (left.max >= right.max) {
+                cur.max = left.max;
+                cur.index = left.index;
+            } else {
+                cur.max = right.max;
+                cur.index = right.index;
+
+            }
+            return cur;
+        }
+
+        private Node makeleaf(int v, int index) {
+            return new Node(v, index);
+        }
+
+        // left most >
+        private int query(int idx, int l, int r, int ql, int qr, int v) {
+            if (qr < l || r < ql || t[idx] == null || t[idx].max <= v) {
+                // identity node: prod=1, cnt all zero
+                return -1;
+            }
+            if (ql <= l && r <= qr) {
+                if (l == r) {
+                    return t[idx].index;
+                }
+                int mid = l + (r - l) / 2;
+                int left = idx * 2;
+                int right = idx * 2 + 1;
+                if (t[left].max > v) {
+                    return query(left, l, mid, ql, qr, v);
+                } else {
+                    return query(right, mid + 1, r, ql, qr, v);
+                }
+            }
+            int mid = l + (r - l) / 2;
+            int left = idx * 2;
+            int right = idx * 2 + 1;
+            int lr = query(left, l, mid, ql, qr, v);
+            int rr = query(right, mid + 1, r, ql, qr, v);
+            if (lr != -1) {
+                return lr;
+            }
+            return rr;
+        }
+
+
+    }
+
+    public int[] leftmostBuildingQueries(int[] a, int[][] qs) {
+        int n = a.length;
+        SegTree sg = new SegTree(a);
+        int qn = qs.length;
+        int[] res = new int[qn];
+        for (int i = 0; i < qn; ++i) {
+            int v1 = qs[i][0];
+            int v2 = qs[i][1];
+            int nv1 = Math.min(v1, v2);
+            int nv2 = Math.max(v1, v2);
+            if (nv1 == nv2) {
+                res[i] = nv2;
+            } else if (a[nv1] < a[nv2]) {
+                res[i] = nv2;
+            } else {
+                int index = sg.query(1, 0, n - 1, nv2 + 1, n - 1, a[nv1]);
+                res[i] = index;
+            }
+        }
+        return res;
+    }
+}

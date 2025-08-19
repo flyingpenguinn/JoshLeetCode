@@ -1,88 +1,94 @@
-import java.util.Arrays;
+import base.ArrayUtils;
+import javafx.scene.layout.Priority;
+
+import java.util.*;
 
 public class MinCostPathWithTeleports {
     public int minCost(int[][] g, int k) {
         int m = g.length;
         int n = g[0].length;
-        int l = m * n;
-        int[] xs = new int[l];
-        int[] ys = new int[l];
-        int[] vs = new int[l];
-        int p = 0;
+        TreeMap<Integer, Integer> rm = new TreeMap<>();
+        int Max = (int) 1e9;
+        List<Integer> list = new ArrayList<>();
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
-                xs[p] = i;
-                ys[p] = j;
-                vs[p] = g[i][j];
-                ++p;
+                list.add(g[i][j]);
             }
         }
-        Integer[] ord = new Integer[l];
-        for (int i = 0; i < l; ++i) {
-            ord[i] = i;
-        }
-        Arrays.sort(ord, (a, b) -> Integer.compare(vs[a], vs[b]));
-        int[] rk = new int[l];
-        int u = 0;
-        for (int i = 0; i < l; ++i) {
-            if (i == 0 || vs[ord[i]] != vs[ord[i - 1]]) {
-                ++u;
+        Collections.sort(list);
+        int rank = 1;
+        for (int i = 0; i < list.size(); ++i) {
+            if (i == 0 || !list.get(i - 1).equals(list.get(i))) {
+                rm.put(list.get(i), rank++);
             }
-            rk[ord[i]] = u - 1;
         }
-        long inf = (long) 4e18;
-        long[][] d = new long[m][n];
+        Map<Integer, List<int[]>> l2 = new HashMap<>();
         for (int i = 0; i < m; ++i) {
-            Arrays.fill(d[i], inf);
+            for (int j = 0; j < n; ++j) {
+                int v = g[i][j];
+                int cr = rm.get(v);
+                l2.computeIfAbsent(cr, p -> new ArrayList<>()).add(new int[]{i, j});
+            }
         }
-        d[0][0] = 0;
-        long ans = inf;
-        for (int t = 0; t <= k; ++t) {
-            for (int i = 0; i < m; ++i) {
-                for (int j = 0; j < n; ++j) {
-                    if (i > 0) {
-                        d[i][j] = Math.min(d[i][j], d[i - 1][j] + g[i][j]);
-                    }
-                    if (j > 0) {
-                        d[i][j] = Math.min(d[i][j], d[i][j - 1] + g[i][j]);
-                    }
-                }
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> {
+            if (x[3] != y[3]) {
+                return Integer.compare(x[3], y[3]);
+            } else {
+                return Integer.compare(y[2], x[2]);
             }
-            ans = Math.min(ans, d[m - 1][n - 1]);
-            if (t == k) {
-                break;
+        });
+        int[][][] dist = new int[m][n][k + 1];
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                Arrays.fill(dist[i][j], Max);
             }
-            long[] bm = new long[u];
-            Arrays.fill(bm, inf);
-            for (int idx = 0; idx < l; ++idx) {
-                int r = rk[idx];
-                int i = xs[idx];
-                int j = ys[idx];
-                if (d[i][j] < bm[r]) {
-                    bm[r] = d[i][j];
-                }
-            }
-            long[] sb = new long[u];
-            for (int r = u - 1; r >= 0; --r) {
-                if (r == u - 1) {
-                    sb[r] = bm[r];
-                } else {
-                    sb[r] = Math.min(bm[r], sb[r + 1]);
-                }
-            }
-            long[][] nd = new long[m][n];
-            for (int i = 0; i < m; ++i) {
-                Arrays.fill(nd[i], inf);
-            }
-            for (int idx = 0; idx < l; ++idx) {
-                int r = rk[idx];
-                int i = xs[idx];
-                int j = ys[idx];
-                long v = Math.min(d[i][j], sb[r]);
-                nd[i][j] = v;
-            }
-            d = nd;
         }
-        return (int) ans;
+        dist[0][0][k] = 0;
+        pq.offer(new int[]{0, 0, k, 0});
+        // this must be per k as well!
+        int[] maxvisitedrank = new int[k + 1];
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            //   System.out.println(Arrays.toString(top));
+            int r = top[0];
+            int c = top[1];
+            int rk = top[2];
+            int cd = top[3];
+            if (r == m - 1 && c == n - 1) {
+                return cd;
+            }
+            if (r + 1 < m && dist[r + 1][c][rk] > cd + g[r + 1][c]) {
+                dist[r + 1][c][rk] = cd + g[r + 1][c];
+                pq.offer(new int[]{r + 1, c, rk, cd + g[r + 1][c]});
+            }
+            if (c + 1 < n && dist[r][c + 1][rk] > cd + g[r][c + 1]) {
+                dist[r][c + 1][rk] = cd + g[r][c + 1];
+                pq.offer(new int[]{r, c + 1, rk, cd + g[r][c + 1]});
+            }
+            if (rk >= 1) {
+                int cv = g[r][c];
+                int crank = rm.get(cv);
+                for (int i = maxvisitedrank[rk] + 1; i <= crank; ++i) {
+                    List<int[]> cand = l2.get(i);
+                    for (int[] ca : cand) {
+                        int nr = ca[0];
+                        int nc = ca[1];
+                        if (nr == r && nc == c) {
+                            continue;
+                        }
+                        if (dist[nr][nc][rk - 1] > cd) {
+                            dist[nr][nc][rk - 1] = cd;
+                            pq.offer(new int[]{nr, nc, rk - 1, cd});
+                        }
+                    }
+                }
+                maxvisitedrank[rk] = Math.max(crank, maxvisitedrank[rk]);
+            }
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new MinCostPathWithTeleports().minCost(ArrayUtils.read("[[0,12,1,14,3],[8,18,18,4,8],[15,17,13,16,6],[11,16,23,15,16],[21,17,25,27,24],[26,27,21,16,23],[27,20,31,30,32]]"), 2));
     }
 }
