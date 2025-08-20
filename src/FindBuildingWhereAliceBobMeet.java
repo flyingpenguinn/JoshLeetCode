@@ -173,3 +173,63 @@ class FindBuildingWhereAliceBobMeetSegTree {
         return res;
     }
 }
+
+
+class FindBuildingWhereAliceBobMeetBinaryLifting {
+    private int BITS = 17;
+
+    public int[] leftmostBuildingQueries(int[] a, int[][] qs) {
+        Deque<Integer> st = new ArrayDeque<>();
+        int n = a.length;
+        int[] next = new int[n];
+        Arrays.fill(next, -1);
+
+        for (int i = 0; i < n; ++i) {
+            while (!st.isEmpty() && a[st.peek()] < a[i]) {
+                next[st.peek()] = i;
+                st.pop();
+            }
+            st.push(i);
+        }
+        int[][] up = new int[n][BITS];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(up[i], -1);
+        }
+        for (int j = 0; j < BITS; ++j) {
+            for (int i = 0; i < n; ++i) {
+
+                if (j == 0) {
+                    up[i][j] = next[i];
+                } else if (up[i][j - 1] != -1) {
+                    up[i][j] = up[up[i][j - 1]][j - 1];
+                }
+            }
+        }
+        int qn = qs.length;
+        int[] res = new int[qn];
+        for (int i = 0; i < qn; ++i) {
+            int s = qs[i][0];
+            int e = qs[i][1];
+            int v1 = Math.min(s, e);
+            int v2 = Math.max(s, e);
+            if (v1 == v2) {
+                res[i] = v2;
+            } else if (a[v1] < a[v2]) {
+                res[i] = v2;
+            } else {
+                for (int j = BITS - 1; j >= 0; --j) {
+                    if (up[v2][j] != -1 && a[up[v2][j]] <= a[v1]) {
+                        v2 = up[v2][j];
+                    }
+                }
+                final int cand = up[v2][0];
+                if (cand != -1 && a[cand] > a[v1]) {
+                    res[i] = cand;
+                } else {
+                    res[i] = -1;
+                }
+            }
+        }
+        return res;
+    }
+}
