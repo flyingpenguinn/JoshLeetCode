@@ -2,7 +2,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 
-public class JumpGameIX {
+class JumpGameViii {
     private int[] next1;
     private int[] next2;
     private long[] dp;
