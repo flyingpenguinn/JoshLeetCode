@@ -1,3 +1,5 @@
+import base.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,43 +9,31 @@ public class JumpGameIx {
 
     public int[] maxValue(int[] a) {
         int n = a.length;
-        int[][] na = new int[n][2];
-        for (int i = 0; i < n; ++i) {
-            na[i][0] = a[i];
-            na[i][1] = i;
+        int[] minright = new int[n+1];
+        minright[n] = Integer.MAX_VALUE;
+        for(int i=n-1; i>=0; --i){
+            minright[i] = Math.min(minright[i+1], a[i]);
         }
-        Arrays.sort(na, (x, y) -> {
-            if (x[0] != y[0]) {
-                return Integer.compare(x[0], y[0]);
-            } else {
-                return Integer.compare(x[1], y[1]);
-            }
-        });
-        int[] rm = new int[n];
-        int rank = 1;
-        for (int i = 0; i < n; ++i) {
-            rm[na[i][1]] = rank++;
-        }
-        int maxrank = rm[0];
-        int maxv = a[0];
-        int s = 0;
+        int maxleft = -1;
+        int j = 0;
         int[] res = new int[n];
-        for (int i = 0; i < n; ++i) {
-            int cr = rm[i];
-            maxv = Math.max(maxv, a[i]);
-            maxrank = Math.max(cr, maxrank);
-            if (maxrank == i + 1) {
-                for (int j = s; j <= i; ++j) {
-                    res[j] = maxv;
+        for(int i=0; i<n; ++i){
+            maxleft = Math.max(maxleft, a[i]);
+            if(maxleft <= minright[i+1]){
+                for(int k=j; k<=i; ++k){
+                    res[k] = maxleft;
+
                 }
-                s = i + 1;
-                if (s < n) {
-                    maxrank = rm[s];
-                    maxv = a[s];
-                }
+                maxleft = -1;
+                j = i+1;
             }
         }
         return res;
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new JumpGameIx().maxValue(ArrayUtils.read1d("2,1,3"))));
     }
 
 }
