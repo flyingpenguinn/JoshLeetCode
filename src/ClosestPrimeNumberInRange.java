@@ -29,6 +29,7 @@ public class ClosestPrimeNumberInRange {
                 primeNumbers.add(i);
             }
         }
+
     }
 
 
