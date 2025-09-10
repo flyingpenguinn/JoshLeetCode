@@ -14,6 +14,7 @@ public class MaxHeightByStackingCuboids {
     // hence we can rotate and make the whole thing taller
 
     // 2D BIT
+    // 2d bit
     int[][] bit;
 
     int q(int y, int z) {
