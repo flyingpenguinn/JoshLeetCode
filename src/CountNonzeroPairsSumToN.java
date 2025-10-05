@@ -1,106 +1,55 @@
 import java.util.Arrays;
 
+
 public class CountNonzeroPairsSumToN {
     // TODO digit dp with lots of nuances...
-    int[] d;
-    long[][][][][][] p;
+    private Long[][][][][][] dp;
+    private int[] d;
 
-    public long countNoZeroPairs(long n) {
-        long t = n;
-        int m = 0;
-        while (t > 0) {
-            m++;
-            t /= 10;
+    public long countNoZeroPairs(long input) {
+        String s = String.valueOf(input);
+        int n = s.length();
+        d = new int[n];
+        for (int i = 0; i < n; i++) {
+            d[i] = s.charAt(n - 1 - i) - '0';
         }
-        d = new int[m];
-        t = n;
-        for (int i = 0; i < m; i++) {
-            d[i] = (int) (t % 10);
-            t /= 10;
-        }
-
-        p = new long[m + 1][2][2][2][2][2];
-        for (int i = 0; i <= m; i++) {
-            for (int c = 0; c < 2; c++) {
-                for (int ea = 0; ea < 2; ea++) {
-                    for (int eb = 0; eb < 2; eb++) {
-                        for (int sa = 0; sa < 2; sa++) {
-                            Arrays.fill(p[i][c][ea][eb][sa], -1L);
-                        }
-                    }
-                }
-            }
-        }
-        return f(0, 0, 0, 0, 0, 0, m);
+        dp = new Long[n + 1][2][2][2][2][2];
+        return f(0, 0, 0, 0, 0, 0, n);
     }
 
-    private long f(int i, int c, int ea, int eb, int sa, int sb, int m) {
-        if (i == m) {
-            if (c == 0) {
-                if (sa == 1) {
-                    if (sb == 1) {
-                        return 1L;
-                    } else {
-                        return 0L;
-                    }
-                } else {
-                    return 0L;
-                }
-            } else {
-                return 0L;
-            }
+    private long f(int i, int c, int ta, int tb, int pa, int pb, int n) {
+        if (i == n) {
+            return (c == 0 && pa == 1 && pb == 1) ? 1L : 0L;
         }
-        long v = p[i][c][ea][eb][sa][sb];
-        if (v != -1L) {
-            return v;
+        if (dp[i][c][ta][tb][pa][pb] != null) {
+            return dp[i][c][ta][tb][pa][pb];
         }
         long res = 0L;
         int nd = d[i];
         for (int da = 0; da <= 9; da++) {
-            int nea;
-            int nsa;
-            if (ea == 1) {
-                if (da != 0) {
-                    continue;
-                }
-                nea = 1;
-                nsa = sa;
-            } else {
-                if (da == 0) {
-                    nea = 1;
-                    nsa = sa;
-                } else {
-                    nea = 0;
-                    nsa = 1;
-                }
+            if (ta == 1 && da != 0) {
+                continue;
             }
-            for (int db = 0; db <= 9; db++) {
-                int neb;
-                int nsb;
-                if (eb == 1) {
-                    if (db != 0) {
-                        continue;
-                    }
-                    neb = 1;
-                    nsb = sb;
-                } else {
-                    if (db == 0) {
-                        neb = 1;
-                        nsb = sb;
-                    } else {
-                        neb = 0;
-                        nsb = 1;
-                    }
-                }
-                int s = da + db + c;
-                if ((s % 10) != nd) {
-                    continue;
-                }
-                int nc = s / 10;
-                res += f(i + 1, nc, nea, neb, nsa, nsb, m);
+            int db = nd - c - da;
+            db %= 10;
+            if (db < 0) {
+                db += 10;
             }
+            if (tb == 1 && db != 0) {
+                continue;
+            }
+            int na = (ta == 1) ? 1 : ((da == 0) ? 1 : 0);
+            int nb = (tb == 1) ? 1 : ((db == 0) ? 1 : 0);
+            int npa = (pa == 1) ? 1 : ((da > 0) ? 1 : 0);
+            int npb = (pb == 1) ? 1 : ((db > 0) ? 1 : 0);
+            int nc = (da + db + c) / 10;
+            res += f(i + 1, nc, na, nb, npa, npb, n);
         }
-        p[i][c][ea][eb][sa][sb] = res;
+        dp[i][c][ta][tb][pa][pb] = res;
         return res;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new CountNonzeroPairsSumToN().countNoZeroPairs(11));
     }
 }
