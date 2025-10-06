@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class MaxDistBetweenUnequalWordsInArrayI {
+public class MaxDistBetweenUnequalWordsInArrayIAndII {
     public int maxDistance(String[] words) {
         int n = words.length;
         int res = 0;
