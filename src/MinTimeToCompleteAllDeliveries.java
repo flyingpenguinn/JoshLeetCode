@@ -1,45 +1,33 @@
 public class MinTimeToCompleteAllDeliveries {
-    // set problem!
+    // set problem! either consider individual and overall, or use only a, only b... to segregate counting
     public long minimumTime(int[] d, int[] r) {
-        long l = 0;
-        long h = 1;
-        while (!ok(h, d[0], d[1], r[0], r[1])) {
-            h = h * 2;
-        }
-        while (l < h) {
-            long m = l + (h - l) / 2;
-            if (ok(m, d[0], d[1], r[0], r[1])) {
-                h = m;
-            } else {
-                l = m + 1;
+        long l = 1;
+        long u = (long)1e15;
+        while(l<=u){
+            long mid = l+(u-l)/2;
+            if(good(d, r, mid)){
+                u = mid-1;
+            }else{
+                l = mid+1;
             }
         }
         return l;
     }
 
-    private boolean ok(long t, int d1, int d2, int r1, int r2) {
-        long a1 = t - t / r1;
-        long a2 = t - t / r2;
-        long cap = t - t / lcm(r1, r2);
-        if (a1 < d1) {
-            return false;
-        }
-        if (a2 < d2) {
-            return false;
-        }
-        return (long) d1 + (long) d2 <= cap;
+    private long gcd(long a, long b){
+        return b==0?a: gcd(b, a%b);
+    }
+    private long lcm(long a, long b){
+        return a*b / gcd(a,b);
     }
 
-    private long lcm(int a, int b) {
-        return (long) a / gcd(a, b) * (long) b;
-    }
-
-    private int gcd(int a, int b) {
-        while (b != 0) {
-            int c = a % b;
-            a = b;
-            b = c;
-        }
-        return a;
+    private boolean good(int[] d, int[] r, long mid){
+        long lcm = lcm(r[0], r[1]);
+        long either = mid - mid / lcm;
+        long onlya = mid/r[1] - mid/lcm;
+        long onlyb = mid/r[0] - mid/lcm;
+        long both = either - onlya - onlyb;
+        long shared = Math.max(d[0] - onlya, 0) + Math.max(d[1] - onlyb, 0);
+        return shared <= both;
     }
 }
