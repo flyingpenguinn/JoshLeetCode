@@ -11,30 +11,33 @@ public class SetIntersectionAtLeastTwo {
     // if <=end-1, nothing
     // otherwise tricky part: we make the old e2 to e1, and current end becomes e2. this can make e1==e2, so in this case e1=e2-1
     public int intersectionSizeTwo(int[][] a) {
+        int n = a.length;
         Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
-        int e1 = a[0][1] - 1;
-        int e2 = a[0][1];
-        int r = 2;
-        for (int i = 1; i < a.length; i++) {
-            if (a[i][0] > e2) {
-                e1 = a[i][1] - 1;
-                e2 = a[i][1];
-                r += 2;
-            } else if (a[i][0] <= e1) {
-                // do nothing, included
-            } else {
-                //a[i][0] > e1 && a[i][0] <= e2
-                e1 = e2;
-                e2 = a[i][1];
-                r++;
-                if (e1 == e2) {
-                    // same e2 appearing with a later starting time...
-                    // for example, [[1, 5],[5,9],[6,9]]
-                    e1 = e2 - 1;
+        int res = 2;
+        int p1 = a[0][1] - 1;
+        int p2 = a[0][1];
+        for (int i = 1; i < n; ++i) {
+            int cstart = a[i][0];
+            int cend = a[i][1];
+            if (cstart <= p1) {
+                continue;
+            } else if (cstart <= p2) {
+                if (p2 < cend) {
+                    p1 = p2;
+                    p2 = cend;
+                    ++res;
+                } else {
+                    p1 = cend - 1;
+                    p2 = cend;
+                    ++res;
                 }
+            } else {
+                p1 = cend - 1;
+                p2 = cend;
+                res += 2;
             }
         }
-        return r;
+        return res;
     }
 
     public static void main(String[] args) {
