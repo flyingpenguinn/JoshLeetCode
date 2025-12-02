@@ -1,6 +1,7 @@
 import java.util.PriorityQueue;
 
 public class MaxTotalSubarrayValueII {
+    // real segtree template!
     private final long Max = (long) (2e15);
 
     static class Node {

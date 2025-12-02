@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 public class MaxRunningTimeOfNComputers {
-    // either use whole battery for piece the smaller ones together....
+    // either use whole battery or piece the smaller ones together....
     public long maxRunTime(long n, int[] b) {
         long l = 1;
         long u = (long) 1e14;
