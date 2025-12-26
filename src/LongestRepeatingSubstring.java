@@ -128,53 +128,74 @@ class LrsBinarySearch {
 }
 
 class LrsRollingHash {
+    // binary search and rolling hash. rolling hash template with double hash!
+    private long base = 31;
+    private long mod1 = 1_000_000_007L;
+    private long mod2 = 1_000_000_009L;
+
     public int longestRepeatingSubstring(String s) {
+        int n = s.length();
         int l = 1;
-        int u = s.length();
-        while(l<=u){
-            int mid = l+(u-l)/2;
-            if(repeat(s, mid)){
-                l = mid+1;
-            }else{
-                u = mid-1;
+        int u = n;
+        while (l <= u) {
+            int mid = l + (u - l) / 2;
+            Map<Long, List<Integer>> m = new HashMap<>();
+            long cur1 = 0;
+            long cur2 = 0;
+            boolean found = false;
+            long multibase1 = 1;
+            long multibase2 = 1;
+            for (int i = 0; i < n; ++i) {
+                int cind = s.charAt(i) - 'a' + 1;
+                cur1 = cur1 * base + cind;
+                cur1 %= mod1;
+                cur2 = cur2 * base + cind;
+                cur2 %= mod2;
+                long key = (cur1 << 32) ^ cur2;
+                if (i - mid + 1 < 0) {
+                    // or just do
+                    // long multibase1 = pow(base, mid - 1, mod1);
+                    // long multibase2 = pow(base, mid - 1, mod2);
+                    multibase1 *= base;
+                    multibase1 %= mod1;
+
+                    multibase2 *= base;
+                    multibase2 %= mod2;
+                    continue;
+                }
+                if (m.containsKey(key)) {
+                    List<Integer> pre = m.get(key);
+                    for (int start1 : pre) {
+                        if (s.regionMatches(i-mid+1, s, start1, mid)) {
+                            found = true;
+                            break;
+                        }
+
+                    }
+                }
+                if(found){
+                    break;
+                }
+                m.computeIfAbsent(key, k -> new ArrayList<>()).add(i - mid + 1);
+                int head = i - mid + 1;
+                int headind = s.charAt(head) - 'a' + 1;
+                cur1 -=  multibase1*headind;
+                cur1 %= mod1;
+                if (cur1 < 0) {
+                    cur1 += mod1;
+                }
+                cur2 -=  multibase2*headind;
+                cur2 %= mod2;
+                if (cur2 < 0) {
+                    cur2 += mod2;
+                }
+            }
+            if (found) {
+                l = mid + 1;
+            } else {
+                u = mid - 1;
             }
         }
         return u;
-    }
-
-    private int toint(char c){
-        return c-'a'+1;
-    }
-    private int magic = 31;
-    private long mod = 1000000007;
-    private boolean repeat(String s, int m){
-        long base = 1L;
-        long hash = 0L;
-        Map<Long, List<Integer>> map = new HashMap<>();
-        for(int i=0; i<s.length(); i++){
-            hash = hash*magic + toint(s.charAt(i)); // 1 to 26
-            hash %= mod;
-            int head = i-m+1;
-            if(head>=0){
-                List<Integer> cur = map.get(hash);
-                if(cur != null){
-                    for(int e: cur){
-                        if(s.substring(head, i+1).equals(s.substring(e-m+1, e+1))){
-                            return true;
-                        }
-                    }
-                }
-                map.computeIfAbsent(hash, k-> new ArrayList<> ()).add(i);
-                hash -= base * toint(s.charAt(head));
-                hash %= mod;
-                if(hash<0){
-                    hash += mod;
-                }
-            }else{
-                base *= magic;
-                base %= mod;
-            }
-        }
-        return false;
     }
 }
