@@ -1,5 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.PriorityQueue;
 
 /*
 LC#1405
@@ -36,49 +35,37 @@ Constraints:
 a + b + c > 0
  */
 public class LongestHappyString {
-    // always picked the most frequent one if we can.
-    // if current max - put < 2nd max, then dont pick 2nd max, use it as the max in next round
-    private StringBuilder res = new StringBuilder();
+    // pick only one each time from the max. if the max forms aaa, pick the 2nd max, but only pick 1 each time
     public String longestDiverseString(int a, int b, int c) {
-        dfs(a, b, c, 'a', 'b', 'c');
-        return res.toString();
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(y[0], x[0]));
+        pushToQ(a, pq, 1);
+        pushToQ(b, pq, 2);
+        pushToQ(c, pq, 3);
+        StringBuilder sb = new StringBuilder();
+        while (!pq.isEmpty()) {
+            int[] t1 = pq.poll();
+            char last = (char) (t1[1] + 'a' - 1);
+            int sn = sb.length();
+            if (sn >= 2 && sb.charAt(sn - 1) == last && sb.charAt(sn - 2) == last) {
+                if (pq.isEmpty()) {
+                    break;
+                }
+
+                int[] t2 = pq.poll();
+                sb.append((char) (t2[1] + 'a' - 1));
+                pushToQ(t2[0] - 1, pq, t2[1]);
+                pq.offer(t1);
+            } else {
+                sb.append((char) (t1[1] + 'a' - 1));
+                pushToQ(t1[0] - 1, pq, t1[1]);
+            }
+        }
+        return sb.toString();
     }
 
-    private void dfs(int a, int b, int c, char ca, char cb, char cc){
-
-        if(a<b){
-            dfs(b, a, c, cb, ca, cc);
-            return;
+    private static void pushToQ(int a, PriorityQueue<int[]> pq, int x) {
+        if (a > 0) {
+            pq.offer(new int[]{a, x});
         }
-        if(a<c){
-            dfs(c, b, a, cc, cb, ca);
-            return;
-        }
-        if(b<c){
-            dfs(a, c, b, ca, cc, cb);
-            return;
-        }
-        // System.out.println(a+" "+b+" "+c);
-        if(b==0){
-            int puta = Math.min(2, a);
-            while(puta>0){
-                res.append(ca);
-                --puta;
-            }
-            return;
-        }
-        int puta = Math.min(2, a);
-        int putb = a-puta>=b? 1: 0; // we will use b as dominant one next time
-        a -= puta;
-        b -= putb;
-        while(puta>0){
-            res.append(ca);
-            --puta;
-        }
-        while(putb>0){
-            res.append(cb);
-            --putb;
-        }
-        dfs(a, b, c, ca, cb, cc);
     }
 }
