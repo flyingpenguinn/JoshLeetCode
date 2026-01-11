@@ -63,11 +63,11 @@ public class RangeSumQueryMutable2d {
             }
         }
 
-        public int sumRegion(int r1, int c1, int r2, int c2) {
-            int s1 = p(r2 + 1, c2 + 1);
-            int s2 = p(r1, c2 + 1);
-            int s3 = p(r2 + 1, c1);
-            int s4 = p(r1, c1);
+        private int sumRegion(int r1, int c1, int r2, int c2) {
+            int s1 = p(r2 , c2 );
+            int s2 = p(r1-1, c2 );
+            int s3 = p(r2, c1-1);
+            int s4 = p(r1-1, c1-1);
             return s1 - s2 - s3 + s4;
         }
 
