@@ -1,45 +1,32 @@
 public class NumXorAlternatingPartitions {
     public int alternatingXOR(int[] a, int t1, int t2) {
-        long mod = 1000000007L;
-
-        int mx = t1;
-        if (t2 > mx) {
-            mx = t2;
-        }
-        for (int i = 0; i < a.length; ++i) {
-            if (a[i] > mx) {
-                mx = a[i];
+        int n = a.length;
+        int m = 1 << 17;
+        // ending in t1, prefix is the index
+        long[] cnt1 = new long[m];
+        long[] cnt2 = new long[m];
+        cnt2[0] = 1;
+        long mod = (long) (1e9 + 7);
+        int psum = 0;
+        long res = 0;
+        for (int i = 0; i < n; ++i) {
+            long v = a[i];
+            psum ^= v;
+            int pt1 = psum ^ t1;
+            int pt2 = psum ^ t2;
+            // must save old values!
+            long va = cnt2[pt1];
+            long vb = cnt1[pt2];
+            cnt1[psum] += va;
+            cnt1[psum] %= mod;
+            cnt2[psum] += vb;
+            cnt2[psum] %= mod;
+            if (i == n - 1) {
+                res += va;
+                res += vb;
+                res %= mod;
             }
         }
-        int sz = 1;
-        while (sz <= mx) {
-            sz <<= 1;
-        }
-
-        long[] e = new long[sz];
-        long[] o = new long[sz];
-
-        e[0] = 1L;
-
-        int px = 0;
-        long addO = 0L;
-        long addE = 0L;
-
-        for (int i = 0; i < a.length; ++i) {
-            px ^= a[i];
-
-            addO = e[px ^ t1];
-            addE = o[px ^ t2];
-
-            o[px] += addO;
-            o[px] %= mod;
-
-            e[px] += addE;
-            e[px] %= mod;
-        }
-
-        long ans = addO + addE;
-        ans %= mod;
-        return (int) ans;
+        return (int) res;
     }
 }
