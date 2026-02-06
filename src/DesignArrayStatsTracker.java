@@ -53,6 +53,7 @@ public class DesignArrayStatsTracker {
                 return tm.containsKey(k);
             }
 
+            // must call contains before remove
             public void remove(K k) {
                 --size;
                 update(tm, k, -1);
