@@ -3,45 +3,40 @@ import java.util.PriorityQueue;
 
 public class KthSmallestPrimeFraction {
 
-    private double eps = 0.000001;
-
     public int[] kthSmallestPrimeFraction(int[] a, int k) {
         int n = a.length;
-        double l = 1.0 / a[n - 1];
-        double u = (a[n - 1] - 1) * 1.0 / a[n - 1];
-        double lastgood = -1.0;
-        while (u - l > eps * eps) {
-            double mid = (l + u) / 2;
-            int i = n - 2;
-            int j = n - 1;
-            int smaller = 0;
-            while (i >= 0) {
-                while (j >= 0 && a[i] * 1.0 / a[j] <= mid) {
-                    j--;
+        double l = 0;
+        double u = (int) 3e4;
+        while (l <= u) {
+            double mid = l + (u - l) / 2.0;
+            //   System.out.println("mid="+mid);
+            double maxd = -1;
+            int[] best = {-1, -1};
+            int cur = 0;
+            int j = 0;
+            for (int i = 0; i < n; ++i) {
+                while (j < n && a[i] * 1.0 / a[j] > mid) {
+                    ++j;
                 }
-                // 0..j-1
-                smaller += n - 1 - j;
-                // 0..j-1
-                i--;
+                cur += n - j;
+                if (j < n) {
+                    double cmax = a[i] * 1.0 / a[j];
+                    //    System.out.println("i="+i+" cur="+cur+" cmax="+cmax);
+                    if (cmax > maxd) {
+                        maxd = cmax;
+                        best = new int[]{a[i], a[j]};
+                    }
+                }
             }
-            // <= has nobigger elements
-            if (smaller >= k) {
-                u = mid;
-                lastgood = mid;
-            } else {
+            if (cur == k) {
+                return best;
+            } else if (cur < k) {
                 l = mid;
+            } else {
+                u = mid;
             }
         }
-
-        for (int i = 1; i < n; i++) {
-            double ddem = lastgood * a[i];
-            int idem = (int) ddem;
-            double diff = Math.abs(ddem - idem);
-            if (idem > 0 && diff <= 0.000001) {
-                return new int[]{idem, a[i]};
-            }
-        }
-        return null;
+        return new int[]{-1, -1};
     }
 }
 
@@ -57,12 +52,12 @@ class KthSmallestPrimeFractionHeap {
             last = pq.poll();
             k--;
             int nj = last[1] - 1;
-            if (nj >= 0 ) {
+            if (nj >= 0) {
                 pq.offer(new int[]{last[0], nj});
             }
             if (last[1] == n - 1) {
                 int ni = last[0] + 1;
-                if (ni < n ) {
+                if (ni < n) {
                     pq.offer(new int[]{ni, last[1]});
                 }
             }
