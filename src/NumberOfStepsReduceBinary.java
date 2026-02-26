@@ -40,29 +40,30 @@ s consists of characters '0' or '1'
 s[0] == '1'
  */
 public class NumberOfStepsReduceBinary {
+    // we can use carry to simulate the calc. no need to do string calc directly
     public int numSteps(String s) {
-        if ("1".equals(s)) {
-            return 0;
-        }
         int n = s.length();
-        if (s.endsWith("0")) {
-            return 1 + numSteps((s.substring(0, n - 1)));
-        } else {
-            return 1 + numSteps(addone(s));
+        int carry = 0;
+        int res = 0;
+        for(int i=n-1; i>0; --i){
+            int cb = s.charAt(i)-'0';
+            int cv = (cb+carry);
+            if(cv == 0){
+                ++res;
+            }else if(cv == 2){
+                carry = 1;
+                ++res;
+            }else{
+                // cv == 1
+                res+=2;
+                carry = 1;
+            }
         }
-    }
-
-    private String addone(String s) {
-        StringBuilder sb = new StringBuilder();
-        int carry = 1;
-        for (int i = s.length() - 1; i >= 0; i--) {
-            int raw = s.charAt(i) - '0' + carry;
-            sb.append(raw % 2);
-            carry = raw / 2;
+        int b0 = s.charAt(0)-'0'+carry;
+        if(b0 == 1){
+            return res;
+        }else{
+            return res+1;
         }
-        if (carry > 0) {
-            sb.append(carry);
-        }
-        return sb.reverse().toString();
     }
 }
