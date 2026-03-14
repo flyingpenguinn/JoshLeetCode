@@ -1,56 +1,39 @@
 import java.util.*;
 
 public class CountVowelSubstringsOfAString {
-    private String vow = "aeiou";
+    // 3 pointers!
+    private String vows = "aeiou";
 
-    private boolean good(List<Integer> v) {
-        for (int vi : v) {
-            if (vi == 0) {
-                return false;
-            }
+    private void update(Map<Character, Integer> m, char k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
         }
-        return true;
-    }
-
-    private boolean isVow(char c) {
-        return vow.indexOf(c) != -1;
-    }
-
-    private int count(String s, int b, int e) {
-        int j = b;
-        List<Integer> vm = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            vm.add(0);
-        }
-        int res = 0;
-        for (int i = b; i < e; ++i) {
-            int pos = vow.indexOf(s.charAt(i));
-            vm.set(pos, vm.get(pos) + 1);
-            while (good(vm)) {
-                res += e - i; //all good from i all the way to e
-                int pj = vow.indexOf(s.charAt(j));
-                vm.set(pj, vm.get(pj) - 1);
-                ++j;
-            }
-        }
-        return res;
     }
 
     public int countVowelSubstrings(String s) {
         int n = s.length();
-        int i = 0;
+        int j = 0;
+        int k = 0;
         int res = 0;
-        while (i < n) {
-            if (!isVow(s.charAt(i))) {
-                ++i;
-                continue;
+        Map<Character, Integer> m = new HashMap<>();
+        for (int i = 0; i < n; ++i) {
+            char c = s.charAt(i);
+            if (vows.indexOf(c) == -1) {
+                j = i + 1;
+                k = j;
+                m.clear();
+            } else {
+                update(m, c, 1);
+                while (k <= i && m.size() == 5) {
+                    char vk = s.charAt(k);
+                    update(m, vk, -1);
+                    ++k;
+                }
+                res += k - j;
             }
-            int j = i;
-            while (j < n && isVow(s.charAt(j))) {
-                ++j;
-            }
-            res += count(s, i, j);
-            i = j;
         }
         return res;
     }
