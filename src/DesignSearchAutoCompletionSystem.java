@@ -57,90 +57,111 @@ Please use double-quote instead of single-quote when you write test cases even f
 Please remember to RESET your class variables declared in class AutocompleteSystem, as static/class variables are persisted across multiple test cases. Please see here for more details.
  */
 public class DesignSearchAutoCompletionSystem {
+    static class AutocompleteSystem {
+        class Record {
+            String str;
+            int cnt;
 
-}
-
-class AutocompleteSystem {
-    class Trie {
-        char c;
-        List<String> hot = new ArrayList<>();
-        Trie[] ch = new Trie[255];
-
-        public Trie(char c) {
-            this.c = c;
+            public Record(String str, int cnt) {
+                this.str = str;
+                this.cnt = cnt;
+            }
         }
 
-        void insert(String s, int i) {
-            // in tri do processing before i== check and do in current node. after i== decide where to go next
-            if (!hot.contains(s)) {
-                hot.add(s);
-            }
-            sorthot(hot);
-            if (i == s.length()) {
-                return;
-            }
-            char c = s.charAt(i);
-            Trie node = this.ch[c];
-            if (node == null) {
-                node = ch[c] = new Trie(c);
+        private Map<String, Integer> cm = new HashMap<>();
+
+        class TN {
+            char c;
+
+            public TN(char c) {
+                this.c = c;
             }
 
-            node.insert(s, i + 1);
-        }
-
-        private void sorthot(List<String> hot) {
-            Collections.sort(hot, new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    int f1 = freq.getOrDefault(o1, 0);
-                    int f2 = freq.getOrDefault(o2, 0);
-                    if (f1 != f2) {
-                        // hotter first
-                        return Integer.compare(f2, f1);
-                    } else {
-                        return o1.compareTo(o2);
-                    }
+            AutocompleteSystem.TN[] ch = new AutocompleteSystem.TN[27];
+            TreeSet<AutocompleteSystem.Record> cand = new TreeSet<>((x, y) -> {
+                if (y.cnt != x.cnt) {
+                    return Integer.compare(y.cnt, x.cnt);
+                } else {
+                    return x.str.compareTo(y.str);
                 }
             });
-            if (hot.size() > 3) {
-                hot.remove(hot.size() - 1);
+
+            void addCand(AutocompleteSystem.Record rc) {
+                if (rc.cnt > 1) {
+                    AutocompleteSystem.Record old = new AutocompleteSystem.Record(rc.str, rc.cnt - 1);
+                    cand.remove(old);
+                }
+                cand.add(rc);
+                if (cand.size() > LIMIT) {
+                    cand.pollLast();
+                }
             }
         }
-    }
 
-    Map<String, Integer> freq = new HashMap<>();
-
-    Trie root = new Trie('-');
-    Trie p = root;
-    StringBuilder sb = new StringBuilder();
-
-    public AutocompleteSystem(String[] sentences, int[] times) {
-        for (int i = 0; i < sentences.length; i++) {
-            freq.put(sentences[i], times[i]);
+        public AutocompleteSystem(String[] sentences, int[] times) {
+            int n = sentences.length;
+            for (int i = 0; i < n; ++i) {
+                cm.put(sentences[i], times[i]);
+                insert(sentences[i], times[i]);
+            }
         }
-        for (int i = 0; i < sentences.length; i++) {
-            root.insert(sentences[i], 0);
-        }
-    }
 
-    public List<String> input(char c) {
-        if (c == '#') {
-            String str = sb.toString();
-            sb = new StringBuilder();
-            int nv = freq.getOrDefault(str, 0) + 1;
-            freq.put(str, nv);
-            root.insert(str, 0);
-            p = root;
-            return new ArrayList<>();
-        } else {
-            sb.append(c);
-            if (p == null) {
-                return new ArrayList<>();
+        private AutocompleteSystem.TN root = new AutocompleteSystem.TN('*');
+        private final int LIMIT = 3;
+
+        private void insert(String sentence, int time) {
+            int n = sentence.length();
+            AutocompleteSystem.TN p = root;
+            for (int i = 0; i < n; ++i) {
+                char c = sentence.charAt(i);
+                int cind = getCind(c);
+
+                if (p.ch[cind] == null) {
+                    p.ch[cind] = new AutocompleteSystem.TN(c);
+                }
+                p = p.ch[cind];
+                p.addCand(new AutocompleteSystem.Record(sentence, time));
+            }
+        }
+
+        private static int getCind(char c) {
+            return c == ' ' ? 26 : c - 'a';
+        }
+
+        private StringBuilder sb = new StringBuilder();
+        private AutocompleteSystem.TN rp = root;
+        List<AutocompleteSystem.TN> visited = new ArrayList<>();
+
+        public List<String> input(char c) {
+
+            if (c == '#') {
+                rp = root;
+                String cstr = sb.toString();
+                int ntime = cm.getOrDefault(cstr, 0) + 1;
+                cm.put(cstr, ntime);
+                for (AutocompleteSystem.TN node : visited) {
+                    node.addCand(new AutocompleteSystem.Record(cstr, ntime));
+                }
+                sb = new StringBuilder();
+                visited = new ArrayList<>();
+                return List.of();
             } else {
-                Trie next = p.ch[c];
-                p = next;
-                return next == null ? new ArrayList<>() : next.hot;
+                int cind = getCind(c);
+                sb.append(c);
+                if (rp.ch[cind] == null) {
+                    rp.ch[cind] = new AutocompleteSystem.TN(c);
+                }
+                rp = rp.ch[cind];
+                visited.add(rp);
             }
+            List<String> res = new ArrayList<>();
+            for (AutocompleteSystem.Record cs : rp.cand) {
+                if (res.size() == LIMIT) {
+                    break;
+                }
+                res.add(cs.str);
+            }
+            return res;
         }
     }
 }
