@@ -32,28 +32,28 @@ Note:
 public class SubstringWithKDifferentIntegers {
     // == k => ?<=k - <=k-1
     public int subarraysWithKDistinct(int[] a, int k) {
-        return atmost(a, k)- atmost(a, k-1);
+        return atmost(a, k) - atmost(a, k - 1);
     }
 
-    private int atmost(int[] a, int k){
-        if(k==0){
+    private int atmost(int[] a, int k) {
+        if (k == 0) {
             return 0;
         }
         int n = a.length;
         int start = 0;
-        Map<Integer,Integer> m = new HashMap<>();
+        Map<Integer, Integer> m = new HashMap<>();
         int res = 0;
-        for(int i=0; i<n; i++){
-            m.put(a[i], m.getOrDefault(a[i], 0)+1);
-            while(m.size()>k){
-                m.put(a[start], m.get(a[start])-1);
-                if(m.get(a[start])==0){
+        for (int i = 0; i < n; i++) {
+            m.put(a[i], m.getOrDefault(a[i], 0) + 1);
+            while (m.size() > k) {
+                m.put(a[start], m.get(a[start]) - 1);
+                if (m.get(a[start]) == 0) {
                     m.remove(a[start]);
                 }
                 start++;
             }
             // start...i good, have at most k chars
-            res += i-start+1;
+            res += i - start + 1;
         }
         return res;
     }
@@ -62,5 +62,43 @@ public class SubstringWithKDifferentIntegers {
         int[] a = {1, 2, 1, 2, 3};
         int k = 2;
         System.out.println(new SubstringWithKDifferentIntegers().subarraysWithKDistinct(a, k));
+    }
+}
+
+class SubstringWithKDifferentIntegersThreePointers {
+    // template for 3 pointers!
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
+        }
+    }
+
+    public int subarraysWithKDistinct(int[] a, int t) {
+        int n = a.length;
+        int j = 0;
+        int k = 0;
+        Map<Integer, Integer> jm = new HashMap<>();
+        Map<Integer, Integer> km = new HashMap<>();
+        int res = 0;
+        for (int i = 0; i < n; ++i) {
+            update(jm, a[i], 1);
+            update(km, a[i], 1);
+            while (j <= i && jm.size() > t) {
+                int vj = a[j];
+                update(jm, vj, -1);
+                ++j;
+            }
+            while (k <= i && km.size() >= t) {
+                int vk = a[k];
+                update(km, vk, -1);
+                ++k;
+            }
+            int cur = k - j;
+            res += cur;
+        }
+        return res;
     }
 }
