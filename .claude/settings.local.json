@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wc -l /d/dev/projects/JoshLeetCode/src/*.java)"
+      "Bash(wc -l /d/dev/projects/JoshLeetCode/src/*.java)",
+      "Bash(grep -h \"^public \" /d/dev/projects/JoshLeetCode/src/*.java)",
+      "Bash(grep -rh \"^\\\\s*private\\\\|^\\\\s*public\\\\|^\\\\s*static\" /d/dev/projects/JoshLeetCode/src/*.java)",
+      "Bash(find /d/dev/projects/JoshLeetCode/src -name \"*.java\" -exec wc -l {} +)"
     ]
   }
 }
