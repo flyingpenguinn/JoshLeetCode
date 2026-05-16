@@ -1,52 +1,36 @@
 import base.ArrayUtils;
 
-import java.util.*;
-
-import static java.lang.Math.min;
-import static java.lang.Math.max;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MinMovesToMakeArrayComplementary {
 
-    // here we use line sweeping. can also use binary search to look for good Rs and minus bad Ls
+    // min+lim always >= max+1, so between min+1, max+lim it's one move. zero moves basically will be counted as one move, so deduct them
     public int minMoves(int[] a, int lim) {
         int n = a.length;
-        int pairs = n / 2;
-        List<Event> events = new ArrayList<>();
-        Map<Integer, Integer> hits = new HashMap<>();
-        for (int i = 0; i < pairs; i++) {
-            int v1 = a[i], v2 = a[n - 1 - i];
-            int minv = Math.min(v1, v2), maxv = Math.max(v1, v2);
-            int L = 1 + minv, R = lim + maxv;
-            events.add(new Event(L, 1));
-            events.add(new Event(R + 1, -1));
-            hits.put(v1 + v2, hits.getOrDefault(v1 + v2, 0) + 1);
+        int i = 0;
+        int j = n-1;
+        int[] seg = new int[200000+100];
+        Map<Integer,Integer> cnt = new HashMap<>();
+        while(i<j){
+            int min = Math.min(a[i], a[j]);
+            int max = Math.max(a[i], a[j]);
+            seg[2] += 2;
+            seg[min+1] -= 1;
+            seg[max+lim+1] += 1;
+            int sum = min+max;
+            cnt.put(sum, cnt.getOrDefault(sum,0)+1);
+            ++i;
+            --j;
         }
-        Set<Integer> posSet = new HashSet<>();
-        for (Event e : events) posSet.add(e.pos);
-        posSet.addAll(hits.keySet());
-        List<Integer> posList = new ArrayList<>(posSet);
-        Collections.sort(posList);
-        events.sort(Comparator.comparingInt(e -> e.pos));
-        int idx = 0, active = 0, best = Integer.MAX_VALUE, base = 2 * pairs;
-        for (int pos : posList) {
-            while (idx < events.size() && events.get(idx).pos == pos) {
-                active += events.get(idx).delta;
-                idx++;
-            }
-            int hitCount = hits.getOrDefault(pos, 0);
-            best = Math.min(best, base - active - hitCount);
+        int rsum = 0;
+        int res = 2*n+1;
+        for(i=2; i<seg.length; ++i){
+            rsum += seg[i];
+            int cur = rsum - cnt.getOrDefault(i, 0);
+            res = Math.min(res, cur);
         }
-        return best;
-    }
-
-    private static class Event {
-        int pos, delta;
-
-        Event(int p, int d) {
-            pos = p;
-            delta = d;
-        }
-
+        return res;
     }
 
 

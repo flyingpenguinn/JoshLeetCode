@@ -22,35 +22,23 @@ This is a follow up problem to Find Minimum in Rotated Sorted Array.
 Would allow duplicates affect the run-time complexity? How and why?
  */
 public class FindMinimumInRoatedArrayII {
-    // note the structure is similar: check which part mid is in first then decide the two directions. note the < not <=
+    // note the structure is similar: compare mid with r. 3 cases, <. > , =
     public int findMin(int[] a) {
         int n = a.length;
-        int l=0;
-        int u=n-1;
+        int l = 0;
+        int u = n-1;
+        int res = Integer.MAX_VALUE;
         while(l<=u){
             int mid = l+(u-l)/2;
-            if(a[l] == a[mid] && a[mid]==a[u]){
-                int min = a[0];
-                for(int i=1; i<n; ++i){
-                    min = Math.min(min, a[i]);
-                }
-                return min;
-            }
-            if(a[l]<a[u]){
-                return a[l];
-            }
-            else if((mid==0 || a[mid]<a[mid-1])
-                    && (mid==n-1 || a[mid]<=a[mid+1])){
-                // key: min must < on the left it could <= on the right
-                return a[mid];
-            }
-            else if(a[l]>a[mid]){
-                // a[l]>a[mid] means mid is on the smaller side on the right
+            res = Math.min(res, a[mid]);
+            if(a[mid]>a[u]){
+                l = mid+1;
+            }else if(a[mid]<a[u]){
                 u = mid-1;
             }else{
-                l = mid+1;
+                u -= 1;
             }
         }
-        return -1;
+        return res;
     }
 }

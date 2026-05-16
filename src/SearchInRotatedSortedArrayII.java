@@ -21,42 +21,28 @@ Would this affect the run-time complexity? How and why?
  */
 public class SearchInRotatedSortedArrayII {
     public boolean search(int[] a, int t) {
+        int n = a.length;
         int l = 0;
-        int u = a.length - 1;
+        int u = n - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a[mid] == t) {
+            if (t == a[mid] || t == a[u]) {
                 return true;
-            } else if (a[l] == a[mid] && a[mid] == a[u]) {
-                // can't tell mid is in which part if all 3 are equal
-                // for example if it's
-                // 5,5,5,5,2,3,4,[5],5,5,5,5
-                // we would go l= mid+1 when we should go u = mid-1 if mid is the bracketed 5
-                for (int i = l; i <= u; i++) {
-                    if (a[i] == t) {
-                        return true;
-                    }
+            }
+            if (a[mid] > a[u]) {
+                if (t < a[u] || t > a[mid]) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
                 }
-                return false;
+            } else if (a[mid] < a[u]) {
+                if (t > a[mid] && t < a[u]) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
+                }
             } else {
-                // rest is the same as search iin rotated sorted array I
-                if (a[mid] == t) {
-                    return true;
-                } else if (a[l] > a[mid]) { // mid in 2nd half the smaller one
-                    if (t > a[mid] && t <= a[u]) {
-                        // t is in the same one
-                        l = mid + 1;
-                    } else {
-                        u = mid - 1;
-                    }
-                } else { // mid in first half the bigger one
-                    if (t < a[mid] && t >= a[l]) {
-                        // t is in the same one
-                        u = mid - 1;
-                    } else {
-                        l = mid + 1;
-                    }
-                }
+                --u;
             }
         }
         return false;
