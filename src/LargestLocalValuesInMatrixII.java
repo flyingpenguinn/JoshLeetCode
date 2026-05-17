@@ -1,5 +1,4 @@
 public class LargestLocalValuesInMatrixII {
-    // seg tree template for max
     class SegTree {
 
 
@@ -63,6 +62,9 @@ public class LargestLocalValuesInMatrixII {
         }
 
         // Range query [ql..qr], returns identity‑if‑empty
+        public Node queryRange(int ql, int qr){
+            return query(1, 0, n-1, ql, qr);
+        }
         private Node query(int idx, int l, int r, int ql, int qr) {
             if (qr < l || r < ql) {
                 // identity node: prod=1, cnt all zero
@@ -87,18 +89,9 @@ public class LargestLocalValuesInMatrixII {
         int m = a.length;
         int n = a[0].length;
         SegTree[] rseg = new SegTree[m];
-        SegTree[] cseg = new SegTree[n];
         for (int i = 0; i < m; ++i) {
             SegTree cs = new SegTree(a[i], n);
             rseg[i] = cs;
-        }
-        for (int j = 0; j < n; ++j) {
-            int[] col = new int[m];
-            for (int i = 0; i < m; ++i) {
-                col[i] = a[i][j];
-            }
-            SegTree cs = new SegTree(col, m);
-            cseg[j] = cs;
         }
         int res = 0;
         for (int i = 0; i < m; ++i) {
@@ -107,27 +100,23 @@ public class LargestLocalValuesInMatrixII {
                 if (v == 0) {
                     continue;
                 }
-                int rstart1 = Math.max(0, i - v + 1);
-                int rend1 = Math.min(m - 1, i + v - 1);
+                int rstart1 = Math.max(0, i - v);
+                int rend1 = Math.min(m - 1, i + v);
                 int cstart1 = Math.max(0, j - v);
                 int cend1 = Math.min(n - 1, j + v);
-                boolean bad = false;
-                for (int k = rstart1; k <= rend1; ++k) {
-                    int cv = rseg[k].query(1, 0, n - 1, cstart1, cend1).value;
-                    if (cv > v) {
-                        bad = true;
-                        break;
-                    }
-                }
-                if (bad) {
-                    continue;
-                }
-                int rstart2 = Math.max(0, i - v);
-                int rend2 = Math.min(m - 1, i + v);
+
                 int cstart2 = Math.max(0, j - v + 1);
                 int cend2 = Math.min(n - 1, j + v - 1);
-                for (int k = cstart2; k <= cend2; ++k) {
-                    int cv = cseg[k].query(1, 0, m - 1, rstart2, rend2).value;
+                boolean bad = false;
+                for (int k = rstart1; k <= rend1; ++k) {
+                    int cs = cstart1;
+                    int ce = cend1;
+                    if (Math.abs(k - i) == v) {
+                        // cut the corners
+                        cs = cstart2;
+                        ce = cend2;
+                    }
+                    int cv = rseg[k].queryRange(cs, ce).value;
                     if (cv > v) {
                         bad = true;
                         break;
