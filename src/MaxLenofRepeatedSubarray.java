@@ -45,7 +45,7 @@ public class MaxLenofRepeatedSubarray {
 class MaxlenOfRepeatedSubarrayRollingHash {
     // Onlogn in average
     long Mod = 1000000007L;
-    long Base = 101;
+    long Base = 100_003L;
 
     public int findLength(int[] a, int[] b) {
         int na = a.length;
