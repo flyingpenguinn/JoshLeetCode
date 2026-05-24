@@ -3,7 +3,6 @@ import java.util.List;
 
 public class NumberOfIntegersPopcountDepthEqualToKII {
 
-    // segtree template
     // can also use fenwick tree
     private final long Max = (long) (2e15);
 

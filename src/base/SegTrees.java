@@ -1,9 +1,7 @@
-import java.util.PriorityQueue;
+package base;
 
-public class MaxTotalSubarrayValueII {
-
-    private final long Max = (long) (2e15);
-
+public class SegTrees {
+    // seg tree support range update
     static class Node {
         long max;
         long min;
@@ -123,44 +121,5 @@ public class MaxTotalSubarrayValueII {
         }
     }
 
-    class Item {
-        int start;
-        int end;
-        long v;
 
-        public Item(int start, int end, long v) {
-            this.start = start;
-            this.end = end;
-            this.v = v;
-        }
-    }
-
-    public long maxTotalValue(int[] a, int k) {
-        int n = a.length;
-        SegTree seg = new SegTree(a);
-        PriorityQueue<Item> pq = new PriorityQueue<>((x, y) -> Long.compare(y.v, x.v));
-        for (int i = 0; i < n; ++i) {
-            long v = getValue(i, n - 1, seg);
-            pq.offer(new Item(i, n - 1, v));
-        }
-        long res = 0;
-        while (k > 0 && !pq.isEmpty()) {
-            Item top = pq.poll();
-            res += top.v;
-            int start = top.start;
-            int end = top.end;
-            if (start == end) {
-                continue;
-            }
-            long nv = getValue(start, end - 1, seg);
-            pq.offer(new Item(start, end - 1, nv));
-            --k;
-        }
-        return res;
-    }
-
-    protected long getValue(int i, int j, SegTree seg) {
-        Node nd = seg.query(i, j);
-        return nd.max - nd.min;
-    }
 }

@@ -1,9 +1,8 @@
 package base;
 
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class DeadlockSimilator {
+public class DeadlockSimulator {
     // use cb to make sure we trigger a deadlock
     private Object a = new Object();
     private Object b = new Object();
@@ -28,7 +27,7 @@ public class DeadlockSimilator {
     }
 
     public static void main(String[] args) {
-        DeadlockSimilator ds = new DeadlockSimilator();
+        DeadlockSimulator ds = new DeadlockSimulator();
         new Thread(new Runnable() {
             @Override
             public void run() {
