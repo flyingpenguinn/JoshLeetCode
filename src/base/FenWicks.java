@@ -5,7 +5,7 @@ public class FenWicks {
         private int[] bit;
 
         public FenWick(int n) {
-            int[] bit = new int[n];
+            this.bit = new int[n];
         }
 
         private int q(int i) {
