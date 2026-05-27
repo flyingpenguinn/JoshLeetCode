@@ -2,28 +2,164 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HandlingSumQueryAfterUpdate {
+    // lazy segtree template with flip
+    static class Node {
 
-    private LazySegmentTree seg = new LazySegmentTree();
+        long len;
+        long cnt0;
+        long cnt1;
 
-    public long[] handleQuery(int[] nums1, int[] nums2, int[][] queries) {
-        int n = nums1.length;
-        seg.constructST(nums1, n);
-        List<Long> res = new ArrayList<>();
-        long cursum = 0;
-        for (int ni2 : nums2) {
-            cursum += ni2;
+        Node(long len, long cnt0, long cnt1) {
+            this.len = len;
+            this.cnt0 = cnt0;
+            this.cnt1 = cnt1;
         }
-        for (int[] q : queries) {
-            if (q[0] == 1) {
+    }
+
+    static class SegTree {
+        Node[] t;
+        long[] lazy;
+        int n;
+
+        public SegTree(int[] a) {
+            this.n = a.length;
+            this.t = new Node[4 * n + 1];
+            this.lazy = new long[4 * n + 1];
+
+            build(a, 1, 0, n - 1);
+        }
+
+        private void build(int[] a, int idx, int l, int r) {
+            if (l == r) {
+                t[idx] = makeLeaf(a[l]);
+                return;
+            }
+
+            int mid = l + (r - l) / 2;
+            int left = idx * 2;
+            int right = idx * 2 + 1;
+
+            build(a, left, l, mid);
+            build(a, right, mid + 1, r);
+
+            t[idx] = merge(t[left], t[right]);
+        }
+
+        private Node makeLeaf(long v) {
+            long cnt1 = v == 1 ? 1 : 0;
+            long cnt0 = v == 0 ? 1 : 0;
+            return new Node(1, cnt0, cnt1);
+        }
+
+        private Node merge(Node left, Node right) {
+            return new Node(
+                    left.len + right.len,
+                    left.cnt0 + right.cnt0,
+                    left.cnt1 + right.cnt1);
+
+        }
+
+        private void apply(int idx, long delta) {
+
+            lazy[idx] += delta;
+            if (delta % 2 == 1) {
+                long tmp = t[idx].cnt0;
+                t[idx].cnt0 = t[idx].cnt1;
+                t[idx].cnt1 = tmp;
+            }
+        }
+
+        private void push(int idx) {
+            if (lazy[idx] == 0) {
+                return;
+            }
+
+            int left = idx * 2;
+            int right = idx * 2 + 1;
+
+            apply(left, lazy[idx]);
+            apply(right, lazy[idx]);
+
+            lazy[idx] = 0;
+        }
+
+        public void rangeAdd(int ql, int qr, long delta) {
+            rangeAdd(1, 0, n - 1, ql, qr, delta);
+        }
+
+        private void rangeAdd(int idx, int l, int r, int ql, int qr, long delta) {
+            if (qr < l || r < ql) {
+                return;
+            }
+
+            if (ql <= l && r <= qr) {
+                apply(idx, delta);
+                return;
+            }
+
+            push(idx);
+
+            int mid = l + (r - l) / 2;
+            int left = idx * 2;
+            int right = idx * 2 + 1;
+
+            rangeAdd(left, l, mid, ql, qr, delta);
+            rangeAdd(right, mid + 1, r, ql, qr, delta);
+
+            t[idx] = merge(t[left], t[right]);
+        }
+
+        public Node query(int ql, int qr) {
+            return query(1, 0, n - 1, ql, qr);
+        }
+
+        private Node query(int idx, int l, int r, int ql, int qr) {
+            if (qr < l || r < ql) {
+                return new Node(0, 0, 0);
+            }
+
+            if (ql <= l && r <= qr) {
+                return t[idx];
+            }
+
+            push(idx);
+
+            int mid = l + (r - l) / 2;
+            int left = idx * 2;
+            int right = idx * 2 + 1;
+
+            Node lr = query(left, l, mid, ql, qr);
+            Node rr = query(right, mid + 1, r, ql, qr);
+
+            return merge(lr, rr);
+        }
+    }
+
+    public long[] handleQuery(int[] a, int[] b, int[][] qs) {
+        int an = a.length;
+        int qn = qs.length;
+
+        List<Long> res = new ArrayList<>();
+        SegTree seg = new SegTree(a);
+        long added = 0;
+        for (long bi : b) {
+            added += bi;
+        }
+        for (int i = 0; i < qn; ++i) {
+            int[] q = qs[i];
+            int type = q[0];
+            if (type == 1) {
                 int l = q[1];
                 int r = q[2];
-                seg.updateRange(n, l, r);
-            } else if (q[0] == 2) {
+                seg.rangeAdd(l, r, 1);
+            } else if (type == 2) {
+
                 long p = q[1];
-                long nums1sum = seg.getSum(n, 0, n - 1);
-                cursum += nums1sum * p;
+                long suma = seg.query(0, an - 1).cnt1;
+                long av = suma * p;
+                added += av;
             } else {
-                res.add(cursum);
+                res.add(added);
             }
         }
         long[] rres = new long[res.size()];
@@ -32,188 +168,148 @@ public class HandlingSumQueryAfterUpdate {
         }
         return rres;
     }
+}
 
-    // Java program to demonstrate lazy propagation in segment tree
-    class LazySegmentTree {
-        final int MAX = 400000;     // Max tree size
-        long tree[] = new long[MAX]; // To store segment tree
-        long lazy[] = new long[MAX]; // To store pending updates
 
-        /* si -> index of current node in segment tree
-            ss and se -> Starting and ending indexes of elements for
-                        which current nodes stores sum.
-            us and eu -> starting and ending indexes of update query
-            ue -> ending index of update query
-            diff -> which we need to add in the range us to ue */
-        void updateRangeUtil(int si, int ss, int se, int us,
-                             int ue) {
-            // If lazy value is non-zero for current node of segment
-            // tree, then there are some pending updates. So we need
-            // to make sure that the pending updates are done before
-            // making new updates. Because this value may be used by
-            // parent after recursive calls (See last line of this
-            // function)
-            if (lazy[si] != 0) {
-                // Make pending updates using value stored in lazy
-                // nodes
-                tree[si] = (se - ss + 1) - tree[si];
+class HandleQuerySqrt {
+    static class SqrtSum {
+        int n;
+        int B;
+        int m;
 
-                // checking if it is not leaf node because if
-                // it is leaf node then we cannot go further
-                if (ss != se) {
-                    // We can postpone updating children we don't
-                    // need their new values now.
-                    // Since we are not yet updating children of si,
-                    // we need to set lazy flags for the children
-                    lazy[si * 2 + 1] ^= 1;
-                    lazy[si * 2 + 2] ^= 1;
+        long[] a;
+        long[] lazy;
+        long[] sums;
+
+        public SqrtSum(int[] arr) {
+            this.n = arr.length;
+            this.B = (int) Math.sqrt(n) + 1;
+            this.m = (n + B - 1) / B;
+
+            this.a = new long[n];
+            for (int i = 0; i < n; i++) {
+                a[i] = arr[i];
+            }
+
+            this.lazy = new long[m];
+            this.sums = new long[m];
+
+            for (int i = 0; i < m; i++) {
+                rebuild(i);
+            }
+        }
+
+        private int blockLen(int b) {
+            int l = b * B;
+            int r = Math.min(n - 1, l + B - 1);
+            return r - l + 1;
+        }
+
+        private void rebuild(int b) {
+
+            int l = b * B;
+            int r = Math.min(n - 1, l + B - 1);
+            sums[b] = 0;
+            for (int i = l; i <= r; i++) {
+                sums[b] += a[i];
+            }
+        }
+
+        private void push(int b) {
+            if (lazy[b] == 0) {
+                return;
+            }
+
+            int l = b * B;
+            int r = Math.min(n - 1, l + B - 1);
+
+            for (int i = l; i <= r; i++) {
+                if (lazy[b] % 2 == 1) {
+                    a[i] ^= 1;
+                }
+            }
+
+            lazy[b] = 0;
+            rebuild(b);
+        }
+
+        public void flip(int ql, int qr) {
+            int lb = ql / B;
+            int rb = qr / B;
+
+            if (lb == rb) {
+                push(lb);
+
+                for (int i = ql; i <= qr; i++) {
+                    a[i] ^= 1;
                 }
 
-                // Set the lazy value for current node as 0 as it
-                // has been updated
-                lazy[si] = 0;
+                rebuild(lb);
+                return;
             }
 
-            // out of range
-            if (ss > se || ss > ue || se < us)
-                return;
+            push(lb);
+            int lend = Math.min(n - 1, (lb + 1) * B - 1);
+            for (int i = ql; i <= lend; i++) {
+                a[i] ^= 1;
+            }
+            rebuild(lb);
 
-            // Current segment is fully in range
-            if (ss >= us && se <= ue) {
-                // Add the difference to current node
-                tree[si] = (se - ss + 1) - tree[si];
+            push(rb);
+            int rstart = rb * B;
+            for (int i = rstart; i <= qr; i++) {
+                a[i] ^= 1;
+            }
+            rebuild(rb);
 
-                // same logic for checking leaf node or not
-                if (ss != se) {
-                    // This is where we store values in lazy nodes,
-                    // rather than updating the segment tree itself
-                    // Since we don't need these updated values now
-                    // we postpone updates by storing values in lazy[]
-                    lazy[si * 2 + 1] ^= 1;
-                    lazy[si * 2 + 2] ^= 1;
+            for (int b = lb + 1; b <= rb - 1; b++) {
+                ++lazy[b];
+                if (lazy[b] % 2 == 1) {
+                    sums[b] = blockLen(b) - sums[b];
                 }
-                return;
             }
-
-            // If not completely in rang, but overlaps, recur for
-            // children,
-            int mid = (ss + se) / 2;
-            updateRangeUtil(si * 2 + 1, ss, mid, us, ue);
-            updateRangeUtil(si * 2 + 2, mid + 1, se, us, ue);
-
-            // And use the result of children calls to update this
-            // node
-            tree[si] = tree[si * 2 + 1] + tree[si * 2 + 2];
         }
 
-        // Function to update a range of values in segment
-        // tree
-    /* us and eu -> starting and ending indexes of update query
-        ue -> ending index of update query
-        diff -> which we need to add in the range us to ue */
-        void updateRange(int n, int us, int ue) {
-            updateRangeUtil(0, 0, n - 1, us, ue);
-        }
-
-        /* A recursive function to get the sum of values in given
-            range of the array. The following are parameters for
-            this function.
-            si --> Index of current node in the segment tree.
-                Initially 0 is passed as root is always at'
-                index 0
-            ss & se --> Starting and ending indexes of the
-                        segment represented by current node,
-                        i.e., tree[si]
-            qs & qe --> Starting and ending indexes of query
-                        range */
-        long getSumUtil(int ss, int se, int qs, int qe, int si) {
-            // If lazy flag is set for current node of segment tree,
-            // then there are some pending updates. So we need to
-            // make sure that the pending updates are done before
-            // processing the sub sum query
-            if (lazy[si] != 0) {
-                // Make pending updates to this node. Note that this
-                // node represents sum of elements in arr[ss..se] and
-                // all these elements must be increased by lazy[si]
-                tree[si] += (se - ss + 1) - tree[si];
-
-                // checking if it is not leaf node because if
-                // it is leaf node then we cannot go further
-                if (ss != se) {
-                    // Since we are not yet updating children os si,
-                    // we need to set lazy values for the children
-                    lazy[si * 2 + 1] ^= 1;
-                    lazy[si * 2 + 2] ^= 1;
-                }
-
-                // unset the lazy value for current node as it has
-                // been updated
-                lazy[si] = 0;
+        public long sumall() {
+            long res = 0;
+            for (int b = 0; b < m; b++) {
+                res += sums[b];
             }
-
-            // Out of range
-            if (ss > se || ss > qe || se < qs)
-                return 0;
-
-            // At this point sure, pending lazy updates are done
-            // for current node. So we can return value (same as
-            // was for query in our previous post)
-
-            // If this segment lies in range
-            if (ss >= qs && se <= qe)
-                return tree[si];
-
-            // If a part of this segment overlaps with the given
-            // range
-            int mid = (ss + se) / 2;
-            return getSumUtil(ss, mid, qs, qe, 2 * si + 1) +
-                    getSumUtil(mid + 1, se, qs, qe, 2 * si + 2);
+            return res;
         }
+    }
 
-        // Return sum of elements in range from index qs (query
-        // start) to qe (query end). It mainly uses getSumUtil()
-        long getSum(int n, int qs, int qe) {
-            // Check for erroneous input values
-            if (qs < 0 || qe > n - 1 || qs > qe) {
-                System.out.println("Invalid Input");
-                return -1;
+    public long[] handleQuery(int[] a, int[] b, int[][] qs) {
+        int an = a.length;
+        int qn = qs.length;
+
+        List<Long> res = new ArrayList<>();
+        SqrtSum sqrtsum = new SqrtSum(a);
+        long added = 0;
+        for (long bi : b) {
+            added += bi;
+        }
+        for (int i = 0; i < qn; ++i) {
+            int[] q = qs[i];
+            int type = q[0];
+            if (type == 1) {
+                int l = q[1];
+                int r = q[2];
+                sqrtsum.flip(l, r);
+            } else if (type == 2) {
+
+                long p = q[1];
+                long suma = sqrtsum.sumall();
+                long av = suma * p;
+                added += av;
+            } else {
+                res.add(added);
             }
-
-            return getSumUtil(0, n - 1, qs, qe, 0);
         }
-
-        /* A recursive function that constructs Segment Tree for
-        array[ss..se]. si is index of current node in segment
-        tree st. */
-        void constructSTUtil(int arr[], int ss, int se, int si) {
-            // out of range as ss can never be greater than se
-            if (ss > se)
-                return;
-
-        /* If there is one element in array, store it in
-        current node of segment tree and return */
-            if (ss == se) {
-                tree[si] = arr[ss];
-                return;
-            }
-
-        /* If there are more than one elements, then recur
-        for left and right subtrees and store the sum
-        of values in this node */
-            int mid = (ss + se) / 2;
-            constructSTUtil(arr, ss, mid, si * 2 + 1);
-            constructSTUtil(arr, mid + 1, se, si * 2 + 2);
-
-            tree[si] = tree[si * 2 + 1] + tree[si * 2 + 2];
+        long[] rres = new long[res.size()];
+        for (int i = 0; i < res.size(); ++i) {
+            rres[i] = res.get(i);
         }
-
-        /* Function to construct segment tree from given array.
-        This function allocates memory for segment tree and
-        calls constructSTUtil() to fill the allocated memory */
-        void constructST(int arr[], int n) {
-            // Fill the allocated memory st
-            constructSTUtil(arr, 0, n - 1, 0);
-        }
-
+        return rres;
     }
 }

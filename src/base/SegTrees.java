@@ -3,123 +3,132 @@ package base;
 public class SegTrees {
     // seg tree support range update
     static class Node {
-        long max;
-        long min;
+        int l, r;
+        long min, max, sum;
 
-        Node(long max, long min) {
-            this.max = max;
+        Node(int l, int r, long min, long max, long sum) {
+            this.l = l;
+            this.r = r;
             this.min = min;
+            this.max = max;
+            this.sum = sum;
+        }
+
+        int len() {
+            return r - l + 1;
         }
     }
 
     static class SegTree {
-        Node[] t;
+        Node[] tree;
         long[] lazy;
         int n;
 
-        public SegTree(int[] a) {
+        SegTree(int[] a) {
             this.n = a.length;
-            this.t = new Node[4 * n + 1];
-            this.lazy = new long[4 * n + 1];
-            build(a, 1, 0, n - 1);
+            this.tree = new Node[4 * n + 5];
+            this.lazy = new long[4 * n + 5];
+            build(1, 0, n - 1, a);
         }
 
-        private void build(int[] a, int idx, int l, int r) {
+        private void build(int idx, int l, int r, int[] a) {
             if (l == r) {
-                t[idx] = makeLeaf(a[l]);
+                long v = a[l];
+                tree[idx] = new Node(l, r, v, v, v);
                 return;
             }
 
             int mid = l + (r - l) / 2;
-            int left = idx * 2;
-            int right = idx * 2 + 1;
+            build(idx * 2, l, mid, a);
+            build(idx * 2 + 1, mid + 1, r, a);
 
-            build(a, left, l, mid);
-            build(a, right, mid + 1, r);
-
-            t[idx] = merge(t[left], t[right]);
-        }
-
-        private Node makeLeaf(long v) {
-            return new Node(v, v);
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
 
         private Node merge(Node left, Node right) {
             return new Node(
+                    left.l,
+                    right.r,
+                    Math.min(left.min, right.min),
                     Math.max(left.max, right.max),
-                    Math.min(left.min, right.min)
+                    left.sum + right.sum
             );
         }
 
         private void apply(int idx, long delta) {
-            t[idx].max += delta;
-            t[idx].min += delta;
+            Node cur = tree[idx];
+
+            cur.min += delta;
+            cur.max += delta;
+            cur.sum += delta * cur.len();
+
             lazy[idx] += delta;
         }
 
         private void push(int idx) {
-            if (lazy[idx] == 0) return;
+            if (lazy[idx] == 0) {
+                return;
+            }
 
-            int left = idx * 2;
-            int right = idx * 2 + 1;
+            long delta = lazy[idx];
 
-            apply(left, lazy[idx]);
-            apply(right, lazy[idx]);
+            apply(idx * 2, delta);
+            apply(idx * 2 + 1, delta);
 
             lazy[idx] = 0;
         }
 
         public void rangeAdd(int ql, int qr, long delta) {
-            rangeAdd(1, 0, n - 1, ql, qr, delta);
+            rangeAdd(1, ql, qr, delta);
         }
 
-        private void rangeAdd(int idx, int l, int r, int ql, int qr, long delta) {
-            if (qr < l || r < ql) {
+        private void rangeAdd(int idx, int ql, int qr, long delta) {
+            Node cur = tree[idx];
+
+            if (qr < cur.l || cur.r < ql) {
                 return;
             }
 
-            if (ql <= l && r <= qr) {
+            if (ql <= cur.l && cur.r <= qr) {
                 apply(idx, delta);
                 return;
             }
 
             push(idx);
 
-            int mid = l + (r - l) / 2;
-            int left = idx * 2;
-            int right = idx * 2 + 1;
+            rangeAdd(idx * 2, ql, qr, delta);
+            rangeAdd(idx * 2 + 1, ql, qr, delta);
 
-            rangeAdd(left, l, mid, ql, qr, delta);
-            rangeAdd(right, mid + 1, r, ql, qr, delta);
-
-            t[idx] = merge(t[left], t[right]);
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
 
         public Node query(int ql, int qr) {
-            return query(1, 0, n - 1, ql, qr);
+            return query(1, ql, qr);
         }
 
-        private Node query(int idx, int l, int r, int ql, int qr) {
-            if (qr < l || r < ql) {
-                return new Node(Long.MIN_VALUE, Long.MAX_VALUE);
+        private Node query(int idx, int ql, int qr) {
+            Node cur = tree[idx];
+
+            if (qr < cur.l || cur.r < ql) {
+                return null;
             }
 
-            if (ql <= l && r <= qr) {
-                return t[idx];
+            if (ql <= cur.l && cur.r <= qr) {
+                return cur;
             }
 
             push(idx);
 
-            int mid = l + (r - l) / 2;
-            int left = idx * 2;
-            int right = idx * 2 + 1;
+            Node left = query(idx * 2, ql, qr);
+            Node right = query(idx * 2 + 1, ql, qr);
 
-            Node lr = query(left, l, mid, ql, qr);
-            Node rr = query(right, mid + 1, r, ql, qr);
-
-            return merge(lr, rr);
+            if (left == null) {
+                return right;
+            }
+            if (right == null) {
+                return left;
+            }
+            return merge(left, right);
         }
     }
-
-
 }
