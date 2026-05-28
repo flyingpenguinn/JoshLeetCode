@@ -1,88 +1,133 @@
+import base.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class MaxProfitFromTradingStockWithDiscounts {
-    // subtree convolution
-    // dp return value is subtree spending array on c
+    // subtree convolution template 2
+    /*
+    Counting DP:
+  invalid/default = 0
+  transition = += ways
+
+Max DP:
+  invalid/default = -INF
+  transition = max(...)
+
+Min DP:
+  invalid/default = +INF
+  transition = min(...)
+     */
+    private int Min = (int) -1e7;
     private List<Integer>[] t;
-    private int[][][] dp;
-    private int Min = (int) -1e9;
+    private int[][][][] dp;
 
     public int maxProfit(int n, int[] present, int[] future, int[][] hierarchy, int budget) {
         t = new ArrayList[n];
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ++i) {
             t[i] = new ArrayList<>();
         }
-        for (int[] h : hierarchy) {
-            t[h[0] - 1].add(h[1] - 1);
+        for (int[] hi : hierarchy) {
+            int u = hi[0] - 1;
+            int v = hi[1] - 1;
+            t[u].add(v);
         }
-        dp = new int[n][2][budget + 1];
+
+        dp = new int[n][budget + 1][2][2];
         for (int i = 0; i < n; ++i) {
-            Arrays.fill(dp[i], null);
+            for (int j = 0; j <= budget; ++j) {
+                for (int k = 0; k <= 1; ++k) {
+                    Arrays.fill(dp[i][j][k], Min);
+                }
+            }
         }
-        int[] res0 = dfs(0, 0, present, future, budget);
+
+        solve(0, present, future, budget);
         int res = 0;
-        for (int c = 0; c <= budget; c++) {
-            res = Math.max(res, res0[c]);
+        for (int i = 0; i <= budget; ++i) {
+            res = Math.max(res, dp[0][i][0][0]);
+            res = Math.max(res, dp[0][i][0][1]);
         }
         return res;
     }
 
-    private int[] dfs(int i, int pb, int[] p, int[] f, int budget) {
-        if (dp[i][pb] != null) {
-            return dp[i][pb];
+    private void solve(int i, int[] present, int[] future, int budget) {
+        dp[i][0][0][0] = 0;
+        dp[i][0][1][0] = 0;
+        if (present[i] <= budget) {
+            dp[i][present[i]][0][1] = future[i] - present[i];
         }
-        int[] dp1 = new int[budget + 1];
-        Arrays.fill(dp1, Min);
-        dp1[0] = 0;
+        if (present[i] / 2 <= budget && i != 0) {
+            dp[i][present[i] / 2][1][1] = future[i] - present[i] / 2;
+        }
+
         for (int ne : t[i]) {
-            int[] ndp = new int[budget + 1];
-            Arrays.fill(ndp, Min);
-            int[] later = dfs(ne, 0, p, f, budget);
-            for (int c1 = 0; c1 <= budget; ++c1) {
-                for (int c2 = 0; c1 + c2 <= budget; ++c2) {
-                    int bestlater = later[c2] + dp1[c1];
-                    int nc = c1 + c2;
-                    ndp[nc] = Math.max(ndp[nc], bestlater);
-                }
-            }
-            dp1 = ndp;
-        }
-        int purchase = p[i];
-        int half = p[i] / 2;
-        if (pb == 1 && half <= budget) {
-            purchase = half;
-
-        }
-        if (budget >= purchase) {
-            // have to separate dp1 and dp2 because they differ on dp[purchase] and dp[0]
-            int[] dp2 = new int[budget + 1];
-            Arrays.fill(dp2, Min);
-            dp2[purchase] = f[i] - purchase;
-
-            for (int ne : t[i]) {
-                int[] ndp = new int[budget + 1];
-                Arrays.fill(ndp, Min);
-                int[] later = dfs(ne, 1, p, f, budget);
-                for (int c1 = 0; c1 <= budget; ++c1) {
-                    for (int c2 = 0; c1 + c2 <= budget; ++c2) {
-                        int bestlater = later[c2] + dp2[c1];
-                        int nc = c1 + c2;
-                        ndp[nc] = Math.max(ndp[nc], bestlater);
-                    }
-                }
-                dp2 = ndp;
-            }
-            int[] dpcombine = new int[budget + 1];
-            for (int c = 0; c < dp1.length; ++c) {
-                dpcombine[c] = Math.max(dp1[c], dp2[c]);
-            }
-            dp[i][pb] = dpcombine;
-            return dpcombine;
-        } else {
-            dp[i][pb] = dp1;
-            return dp1;
+            solve(ne, present, future, budget);
+            mergeconv(ne, i, present, budget);
         }
     }
+
+    private void mergeconv(int ne, int i, int[] present, int budget) {
+        int[][][] ndp = new int[budget + 1][2][2];
+        for (int j = 0; j <= budget; ++j) {
+            for (int k = 0; k <= 1; ++k) {
+                Arrays.fill(ndp[j][k], Min);
+            }
+        }
+
+        for (int cur = 0; cur <= budget; ++cur) {
+            for (int sub = 0; sub + cur <= budget; ++sub) {
+                for (int parentbuy = 0; parentbuy <= 1; ++parentbuy) {
+                    for (int mebuy = 0; mebuy <= 1; ++mebuy) {
+
+                        int newbudget = cur + sub;
+                        int bestchild = Math.max(dp[ne][sub][mebuy][0], dp[ne][sub][mebuy][1]);
+                        int bestcur = dp[i][cur][parentbuy][mebuy] + bestchild;
+                        ndp[newbudget][parentbuy][mebuy] = Math.max(ndp[newbudget][parentbuy][mebuy], bestcur);
+
+                    }
+                }
+            }
+        }
+
+        dp[i] = ndp;
+    }
+
+    static void main() {
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(2, ArrayUtils.read1d("[1,2]"), ArrayUtils.read1d("[4,3]"), ArrayUtils.read("[[1,2]]"), 3));
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(4, ArrayUtils.read1d("[2,41,34,44]"), ArrayUtils.read1d("[48,11,3,49]"), ArrayUtils.read("[[1,4],[4,3],[4,2]]"), 32));
+
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(3, ArrayUtils.read1d("[49,46,48]"), ArrayUtils.read1d("[44,38,38]"), ArrayUtils.read("[[1,3],[3,2]]"), 75));
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(3, ArrayUtils.read1d("[42,27,32]"), ArrayUtils.read1d("[46,8,17]"), ArrayUtils.read("[[1,2],[2,3]]"), 93));
+
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(2, ArrayUtils.read1d("[21,44]"), ArrayUtils.read1d("[3,13]"), ArrayUtils.read("[[1,2]]"), 65));
+
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(3, ArrayUtils.read1d("[5,2,3]"), ArrayUtils.read1d("[8,5,6]"), ArrayUtils.read("[[1,2],[2,3]]"), 7));
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(3, ArrayUtils.read1d("[29,45,14]"), ArrayUtils.read1d("[1,11,9]"), ArrayUtils.read("[[1,2],[1,3]]"), 136));
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(3, ArrayUtils.read1d("[4,6,8]"), ArrayUtils.read1d("[7,9,11]"), ArrayUtils.read("[[1,2],[1,3]]"), 10));
+
+
+        System.out.println(
+                new MaxProfitFromTradingStockWithDiscounts().maxProfit(2, ArrayUtils.read1d("[3,4]"), ArrayUtils.read1d("[5,8]"), ArrayUtils.read("[[1,2]]"), 4));
+
+
+    }
+
+
 }
