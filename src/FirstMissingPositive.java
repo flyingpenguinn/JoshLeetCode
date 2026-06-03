@@ -50,3 +50,25 @@ public class FirstMissingPositive {
         System.out.println(new FirstMissingPositive().firstMissingPositive(ArrayUtils.read1d("7,8,9")));
     }
 }
+
+class FirstMissingPositiveNormalWay {
+    // MEX template
+    public int firstMissingPositive(int[] a) {
+        int n = a.length;
+        int[] cnt = new int[n + 2];
+        for (int i = 0; i < n; ++i) {
+            if (a[i] <= 0) {
+                continue;
+            }
+            if (a[i] < cnt.length) {
+                ++cnt[a[i]];
+            }
+        }
+
+        int seen = 1;
+        while (cnt[seen] > 0) {
+            ++seen;
+        }
+        return seen;
+    }
+}

@@ -1,6 +1,9 @@
+
 import java.util.Arrays;
 
 public class EarliestTimeForLandAndWaterRidesIandII {
+    // sort by end!
+    // we only need a good b ending. we filter all bad bs that starts too early (for these we need to take duration)
     class Event {
         int start;
         int duration;
@@ -14,79 +17,53 @@ public class EarliestTimeForLandAndWaterRidesIandII {
     }
 
     public int earliestFinishTime(int[] as, int[] ad, int[] bs, int[] bd) {
-        int an = as.length;
-        int bn = bs.length;
-        Event[] a = new Event[an];
-        for (int i = 0; i < an; ++i) {
+        int n = as.length;
+        int m = bs.length;
+        Event[] a = new Event[n];
+        for (int i = 0; i < n; ++i) {
             a[i] = new Event(as[i], ad[i], as[i] + ad[i]);
         }
-        Event[] b = new Event[bn];
-        for (int i = 0; i < bn; ++i) {
+
+        Event[] b = new Event[m];
+        for (int i = 0; i < m; ++i) {
             b[i] = new Event(bs[i], bd[i], bs[i] + bd[i]);
         }
-        int res = Integer.MAX_VALUE;
-        Arrays.sort(a, (x, y) -> Integer.compare(x.start, y.start));
-        Arrays.sort(b, (x, y) -> Integer.compare(x.start, y.start));
-        int[] minda1 = new int[an];
-        minda1[0] = a[0].duration;
-        for (int i = 1; i < an; ++i) {
-            minda1[i] = Math.min(minda1[i - 1], a[i].duration);
-        }
+        Arrays.sort(a, (x, y) -> Integer.compare(x.end, y.end));
+        Arrays.sort(b, (x, y) -> Integer.compare(x.end, y.end));
 
-        int[] minda2 = new int[an];
-        minda2[an - 1] = a[an - 1].end;
-        for (int i = an - 2; i >= 0; --i) {
-            minda2[i] = Math.min(minda2[i + 1], a[i].end);
-        }
+        int bj = 0;
+        int Max = (int) 1e9;
+        int res = Max;
+        int minduration = Max;
+        for (int i = 0; i < n; ++i) {
+            int cend = a[i].end;
+            while (bj < m && b[bj].start < cend) {
+                minduration = Math.min(minduration, b[bj].duration);
+                ++bj;
+            }
+            if (bj < m) {
+                int cur1 = b[bj].end;
+                res = Math.min(res, cur1);
 
-        int[] mindb1 = new int[bn];
-        mindb1[0] = b[0].duration;
-        for (int i = 1; i < bn; ++i) {
-            mindb1[i] = Math.min(mindb1[i - 1], b[i].duration);
+            }
+            int cur2 = cend + minduration;
+            res = Math.min(res, cur2);
         }
-
-        int[] mindb2 = new int[bn];
-        mindb2[bn - 1] = b[bn - 1].end;
-        for (int i = bn - 2; i >= 0; --i) {
-            mindb2[i] = Math.min(mindb2[i + 1], b[i].end);
-        }
-
-        for (int i = 0; i < an; ++i) {
-            int aend = a[i].end;
-            int pos = binary(b, aend);
-            // pos is first >=
-            if (pos < bn) {
-                res = Math.min(res, mindb2[pos]);
+        int aj = 0;
+        minduration = Max;
+        for (int i = 0; i < m; ++i) {
+            int cend = b[i].end;
+            while (aj < n && a[aj].start < cend) {
+                minduration = Math.min(minduration, a[aj].duration);
+                ++aj;
             }
-            if (pos - 1 >= 0) {
-                res = Math.min(res, aend + mindb1[pos - 1]);
+            if (aj < n) {
+                int cur1 = a[aj].end;
+                res = Math.min(res, cur1);
             }
-        }
-        for (int i = 0; i < bn; ++i) {
-            int bend = b[i].end;
-            int pos = binary(a, bend);
-            if (pos < an) {
-                res = Math.min(res,minda2[pos]);
-            }
-            if (pos - 1 >= 0) {
-                res = Math.min(res, bend + minda1[pos - 1]);
-            }
+            int cur2 = cend + minduration;
+            res = Math.min(res, cur2);
         }
         return res;
-    }
-
-    private int binary(Event[] x, int t) {
-        int n = x.length;
-        int l = 0;
-        int u = n - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (x[mid].start < t) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
-            }
-        }
-        return l;
     }
 }

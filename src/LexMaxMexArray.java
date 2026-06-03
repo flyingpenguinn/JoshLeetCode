@@ -2,55 +2,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LexMaxMexArray {
+    // suffix then prefix
     public int[] maximumMEX(int[] a) {
         int n = a.length;
-        int maxv = 0;
-        for (int ai : a) {
-            maxv = Math.max(maxv, ai);
-        }
-        maxv = Math.max(2 * n, maxv);
-        int[] suf = new int[n + 1];
-        boolean[] seen = new boolean[maxv + 1];
-        int mex = 0;
+        int[] suffix = new int[n];
 
+        int[] cnt = new int[n + 1];
+        int lastseen = 0;
         for (int i = n - 1; i >= 0; --i) {
-            if (a[i] <= n) {
-                seen[a[i]] = true;
-            }
-            while (seen[mex]) {
-                ++mex;
-            }
-            suf[i] = mex;
-        }
+            if (a[i] < cnt.length) {
 
-        List<Integer> res = new ArrayList<>();
+
+                ++cnt[a[i]];
+            }
+            while (cnt[lastseen] > 0) {
+                ++lastseen;
+            }
+            suffix[i] = lastseen;
+        }
         int i = 0;
-
+        int[] cnt2 = new int[n + 1];
+        lastseen = 0;
+        int target = suffix[0];
+        List<Integer> res = new ArrayList<>();
         while (i < n) {
-            int target = suf[i];
-
-            if (target == 0) {
-                res.add(0);
-                ++i;
-                continue;
+            if (a[i] < cnt2.length) {
+                ++cnt2[a[i]];
             }
-
-            boolean[] have = new boolean[target];
-            int cnt = 0;
-            int j = i;
-
-            while (j < n && cnt < target) {
-                if (a[j] < target && !have[a[j]]) {
-                    have[a[j]] = true;
-                    ++cnt;
+            while (cnt2[lastseen] > 0) {
+                ++lastseen;
+            }
+            if (lastseen == target) {
+                res.add(target);
+                lastseen = 0;
+                if (i + 1 < n) {
+                    target = suffix[i + 1];
+                    // this is On because the seg must be >=target in length so the sum is <=n
+                    cnt2 = new int[target + 1];
+                } else {
+                    break;
                 }
-                ++j;
             }
-
-            res.add(target);
-            i = j;
+            ++i;
         }
-
         int[] rres = new int[res.size()];
         for (i = 0; i < res.size(); ++i) {
             rres[i] = res.get(i);

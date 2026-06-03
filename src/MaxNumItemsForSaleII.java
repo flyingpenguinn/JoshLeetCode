@@ -1,49 +1,45 @@
+import base.ArrayUtils;
+
 import java.util.Arrays;
 
 public class MaxNumItemsForSaleII {
-
+    // buying each item only gives us 1 or 2. if buy 1 we'd buy the cheapest.
 
     public int maximumSaleItems(int[][] a, int b) {
         int n = a.length;
         int[] cnt = new int[n + 1];
         int[] divcnt = new int[n + 1];
-
         for (int i = 0; i < n; ++i) {
-            int v = a[i][0];
-            ++cnt[v];
+            int cf = a[i][0];
+            ++cnt[cf];
         }
-
-        for (int f = 1; f <= n; ++f) {
-            for (int m = f; m <= n; m += f) {
-                divcnt[f] += cnt[m];
+        for (int i = 1; i <= n; ++i) {
+            for (int j = i; j <= n; j += i) {
+                divcnt[i] += cnt[j];
             }
         }
-
         Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
-
-        long budget = b;
-        long res = 0;
-        long mn = a[0][1];
-
-        for (int[] item : a) {
-            long price = item[1];
-            int factor = item[0];
-
-            if (price >= 2 * mn) {
-                break;
-            }
-
-            long deg = divcnt[factor] - 1L;
-            if (deg <= 0) {
+        int minprice = a[0][1];
+        int res = 0;
+        for (int i = 0; i < n; ++i) {
+            int fv = a[i][0];
+            int other = divcnt[fv] - 1;
+            if (other == 0) {
                 continue;
             }
-
-            long take = Math.min(deg, budget / price);
-            res += take * 2;
-            budget -= take * price;
+            int pv = a[i][1];
+            if (pv >= 2 * minprice) {
+                break;
+            }
+            int tobuy = Math.min(b / pv, other);
+            res += 2 * tobuy;
+            b -= tobuy * pv;
         }
+        res += b / minprice;
+        return res;
+    }
 
-        res += budget / mn;
-        return (int) res;
+    static void main() {
+        System.out.println(new MaxNumItemsForSaleII().maximumSaleItems(ArrayUtils.read("[[2,8],[1,10],[6,6],[4,12],[5,20],[5,17]]"), 35));
     }
 }

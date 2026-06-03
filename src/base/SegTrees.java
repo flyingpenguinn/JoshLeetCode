@@ -78,6 +78,10 @@ public class SegTrees {
             lazy[idx] = 0;
         }
 
+        public void pointAdd(int q, long delta){
+            rangeAdd(1, q, q, delta);
+        }
+
         public void rangeAdd(int ql, int qr, long delta) {
             rangeAdd(1, ql, qr, delta);
         }
