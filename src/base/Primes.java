@@ -34,6 +34,32 @@ public class Primes {
 
         private final Map<Integer, Set<Integer>> g = new HashMap<>();
 
+        // for num <= 1e5, at most 6!
+        private List<Integer> distinctPrimeFactors(int x) {
+            List<Integer> res = new ArrayList<>();
+            int t = x;
+
+            for (int i = 0; i < primelist.size(); ++i) {
+                int p = primelist.get(i);
+                if ((long) p * p > t) {
+                    break;
+                }
+                if (t % p == 0) {
+                    res.add(p);
+                    while (t % p == 0) {
+                        t /= p;
+                    }
+                }
+            }
+
+            if (t > 1) {
+                res.add(t);
+            }
+
+            return res;
+        }
+
+
         public static void init(int maxNum) {
 
             if (isprime == null) {
