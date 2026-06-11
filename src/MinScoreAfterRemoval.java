@@ -3,81 +3,77 @@ import base.ArrayUtils;
 import java.util.*;
 
 public class MinScoreAfterRemoval {
-    private Set<Integer>[] g;
-    private Set<Integer>[] t;
-    private int[] xorm;
-    private int res = Integer.MAX_VALUE;
+    // enumerate cut points, then use start/finish time to check parenthood
+    private List<Integer>[] t;
+    private int[] xor;
+    private int res = (int) 1e9;
+    private int[] start;
+    private int[] finish;
+    private int time = 0;
 
     public int minimumScore(int[] a, int[][] edges) {
-        int n = a.length;
-        xorm = new int[n];
-        g = new HashSet[n];
-        t = new HashSet[n];
+        int en = edges.length;
+        int n = en + 1;
+        xor = new int[n];
+        t = new ArrayList[n];
+        start = new int[n];
+        finish = new int[n];
         for (int i = 0; i < n; ++i) {
-            g[i] = new HashSet<>();
-            t[i] = new HashSet<>();
+            t[i] = new ArrayList<>();
         }
         for (int[] e : edges) {
             int v1 = e[0];
             int v2 = e[1];
-            g[v1].add(v2);
-            g[v2].add(v1);
+            t[v1].add(v2);
+            t[v2].add(v1);
         }
+        dfs1(0, -1, a);
+        for (int i = 1; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
 
-        for (int[] e : edges) {
-            int v1 = e[0];
-            int v2 = e[1];
-            g[v1].remove(v2);
-            g[v2].remove(v1);
-            for (int i = 0; i < n; ++i) {
-                t[i] = new HashSet<>();
-            }
-            Arrays.fill(xorm, 0);
-            boolean[] seen = new boolean[n];
-            dfs(0, a, seen);
-            int res3 = 0;
-            int resall = 0;
-            for (int i = 0; i < n; ++i) {
-                if (!seen[i]) {
-                    res3 ^= a[i];
+                int cres = 0;
+                if (isparent(i, j)) {
+                    int v1 = xor[i] ^ xor[j];
+                    int v2 = xor[0] ^ xor[i];
+                    int cmax = Math.max(v1, Math.max(v2, xor[j]));
+                    int cmin = Math.min(v1, Math.min(v2, xor[j]));
+                    cres = cmax - cmin;
+                } else if (isparent(j, i)) {
+                    int v1 = xor[j] ^ xor[i];
+                    int v2 = xor[0] ^ xor[j];
+                    int cmax = Math.max(v1, Math.max(v2, xor[i]));
+                    int cmin = Math.min(v1, Math.min(v2, xor[i]));
+                    cres = cmax - cmin;
                 } else {
-                    resall ^= a[i];
+                    int v1 = xor[i];
+                    int v2 = xor[0] ^ v1 ^ xor[j];
+                    int cmax = Math.max(v1, Math.max(v2, xor[j]));
+                    int cmin = Math.min(v1, Math.min(v2, xor[j]));
+                    cres = cmax - cmin;
                 }
+                res = Math.min(res, cres);
             }
-            //    System.out.println(v1+"-"+v2+" "+resall+" "+res3);
-            solve(0, resall, res3);
-            g[v1].add(v2);
-            g[v2].add(v1);
         }
         return res;
     }
 
-    private int dfs(int i, int[] a, boolean[] seen) {
-        seen[i] = true;
-        int xor = a[i];
-        for (int ne : g[i]) {
-            if (!seen[ne]) {
-                t[i].add(ne);
-                xor ^= dfs(ne, a, seen);
-            }
-        }
-        xorm[i] = xor;
-        return xor;
+    private boolean isparent(int u, int v) {
+        return start[u] < start[v] && finish[v] < finish[u];
     }
 
-    private void solve(int i, int resall, int res3) {
-        if (t[i].isEmpty()) {
-            return;
-        }
+
+    private int dfs1(int i, int pa, int[] a) {
+        int res = a[i];
+        start[i] = ++time;
         for (int ne : t[i]) {
-            int res1 = xorm[ne];
-            int res2 = resall ^ res1;
-            int cmax = Math.max(res1, Math.max(res2, res3));
-            int cmin = Math.min(res1, Math.min(res2, res3));
-            //   System.out.println("looking at "+i+"->"+ne+" "+res2);
-            res = Math.min(res, cmax - cmin);
-            solve(ne, resall, res3);
+            if (ne == pa) {
+                continue;
+            }
+            res ^= dfs1(ne, i, a);
         }
+        xor[i] = res;
+        finish[i] = ++time;
+        return res;
     }
 
     public static void main(String[] args) {
