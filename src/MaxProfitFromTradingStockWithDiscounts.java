@@ -19,78 +19,82 @@ Min DP:
   invalid/default = +INF
   transition = min(...)
      */
-    private int Min = (int) -1e7;
     private List<Integer>[] t;
     private int[][][][] dp;
+    private int Min = -(int) 1e9;
 
     public int maxProfit(int n, int[] present, int[] future, int[][] hierarchy, int budget) {
         t = new ArrayList[n];
         for (int i = 0; i < n; ++i) {
             t[i] = new ArrayList<>();
         }
-        for (int[] hi : hierarchy) {
-            int u = hi[0] - 1;
-            int v = hi[1] - 1;
-            t[u].add(v);
+        for (int[] h : hierarchy) {
+            int v1 = h[0] - 1;
+            int v2 = h[1] - 1;
+            t[v1].add(v2);
         }
-
         dp = new int[n][budget + 1][2][2];
         for (int i = 0; i < n; ++i) {
-            for (int j = 0; j <= budget; ++j) {
-                for (int k = 0; k <= 1; ++k) {
-                    Arrays.fill(dp[i][j][k], Min);
-                }
-            }
+            init(dp[i]);
         }
-
-        solve(0, present, future, budget);
+        solve(0, budget, present, future);
         int res = 0;
-        for (int i = 0; i <= budget; ++i) {
-            res = Math.max(res, dp[0][i][0][0]);
-            res = Math.max(res, dp[0][i][0][1]);
+        for (int j = 0; j <= budget; ++j) {
+            res = Math.max(res, dp[0][j][0][0]);
+            res = Math.max(res, dp[0][j][0][1]);
         }
         return res;
     }
 
-    private void solve(int i, int[] present, int[] future, int budget) {
-        dp[i][0][0][0] = 0;
-        dp[i][0][1][0] = 0;
-        if (present[i] <= budget) {
-            dp[i][present[i]][0][1] = future[i] - present[i];
-        }
-        if (present[i] / 2 <= budget && i != 0) {
-            dp[i][present[i] / 2][1][1] = future[i] - present[i] / 2;
-        }
+    private void init(int[][][] dp) {
 
-        for (int ne : t[i]) {
-            solve(ne, present, future, budget);
-            mergeconv(ne, i, present, budget);
-        }
-    }
-
-    private void mergeconv(int ne, int i, int[] present, int budget) {
-        int[][][] ndp = new int[budget + 1][2][2];
-        for (int j = 0; j <= budget; ++j) {
-            for (int k = 0; k <= 1; ++k) {
-                Arrays.fill(ndp[j][k], Min);
+        for (int j = 0; j <= dp[0].length; ++j) {
+            for (int k = 0; k < dp[j].length; ++k) {
+                Arrays.fill(dp[j][k], Min);
             }
         }
 
-        for (int cur = 0; cur <= budget; ++cur) {
-            for (int sub = 0; sub + cur <= budget; ++sub) {
-                for (int parentbuy = 0; parentbuy <= 1; ++parentbuy) {
-                    for (int mebuy = 0; mebuy <= 1; ++mebuy) {
+    }
 
-                        int newbudget = cur + sub;
-                        int bestchild = Math.max(dp[ne][sub][mebuy][0], dp[ne][sub][mebuy][1]);
-                        int bestcur = dp[i][cur][parentbuy][mebuy] + bestchild;
-                        ndp[newbudget][parentbuy][mebuy] = Math.max(ndp[newbudget][parentbuy][mebuy], bestcur);
 
-                    }
+    private void solve(int i, int allb, int[] p, int[] f) {
+        // at leaf level set what happens when we only have this node
+        /*budget dimension means exact money already spent, a one-node subtree has only these possibilities:
+
+        do not buy i → spend 0
+        buy i without discount → spend exactly p[i]
+        buy i with discount → spend exactly p[i] / 2
+        */
+        dp[i][0][0][0] = 0;
+        dp[i][0][1][0] = 0;
+        if (p[i] <= allb) {
+            dp[i][p[i]][0][1] = f[i] - p[i];
+        }
+        if (p[i] / 2 <= allb) {
+            dp[i][p[i] / 2][1][1] = f[i] - p[i] / 2;
+        }
+        for (int ne : t[i]) {
+            solve(ne, allb, p, f);
+            merge(ne, i, allb);
+        }
+
+    }
+
+    private void merge(int ne, int i, int allb) {
+        int[][][] ndp = new int[allb + 1][2][2];
+        init(ndp);
+        for (int pb = 0; pb <= allb; ++pb) {
+            for (int cb = 0; cb + pb <= allb; ++cb) {
+                int sumb = pb + cb;
+                for (int pf = 0; pf <= 1; ++pf) {
+                    int maxsub = Math.max(dp[ne][cb][pf][0], dp[ne][cb][pf][1]);
+                    int profit0 = dp[i][pb][0][pf] + maxsub;
+                    ndp[sumb][0][pf] = Math.max(ndp[sumb][0][pf], profit0);
+                    int profit1 = dp[i][pb][1][pf] + maxsub;
+                    ndp[sumb][1][pf] = Math.max(ndp[sumb][1][pf], profit1);
                 }
             }
         }
-
         dp[i] = ndp;
     }
 
