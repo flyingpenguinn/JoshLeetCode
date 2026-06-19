@@ -11,56 +11,75 @@ public class SqrtDecomp {
         int B;
         int m;
 
+        // Raw values. If lazy[b] != 0, values in block b do not yet include it.
         long[] a;
+
+        // Pending add applied logically to every value in the block.
         long[] lazy;
+
+        // Per-block summary over raw values.
+        //
+        // This can be replaced depending on the query:
+        // - frequency map: count values equal to x
+        // - sorted array/list: count values <= x, >= x, or inside a value range
+        // - min/max: block extrema
+        // - bitset: presence or distinct-value information over a small domain
+        //
+        // A full-block add changes only lazy[b], because every value shifts equally.
         Map<Long, Integer>[] freq;
 
         public SqrtFreq(int[] arr) {
-            this.n = arr.length;
-            this.B = (int) Math.sqrt(n) + 1;
-            this.m = (n + B - 1) / B;
+            n = arr.length;
+            B = (int) Math.sqrt(n) + 1;
+            m = (n + B - 1) / B;
 
-            this.a = new long[n];
+            a = new long[n];
             for (int i = 0; i < n; i++) {
                 a[i] = arr[i];
             }
 
-            this.lazy = new long[m];
-            this.freq = new HashMap[m];
+            lazy = new long[m];
+            freq = new HashMap[m];
 
-            for (int i = 0; i < m; i++) {
-                rebuild(i);
+            for (int b = 0; b < m; b++) {
+                rebuild(b);
             }
         }
 
+        private int blockL(int b) {
+            return b * B;
+        }
+
+        private int blockR(int b) {
+            return Math.min(n - 1, (b + 1) * B - 1);
+        }
+
         private void rebuild(int b) {
+            // Rebuild the block summary after raw values in this block change.
             freq[b] = new HashMap<>();
 
-            int l = b * B;
-            int r = Math.min(n - 1, l + B - 1);
-
-            for (int i = l; i <= r; i++) {
+            for (int i = blockL(b); i <= blockR(b); i++) {
                 freq[b].put(a[i], freq[b].getOrDefault(a[i], 0) + 1);
             }
         }
 
         private void push(int b) {
+            // Materialize the block's lazy shift into its raw values.
             if (lazy[b] == 0) {
                 return;
             }
 
-            int l = b * B;
-            int r = Math.min(n - 1, l + B - 1);
+            long delta = lazy[b];
 
-            for (int i = l; i <= r; i++) {
-                a[i] += lazy[b];
+            for (int i = blockL(b); i <= blockR(b); i++) {
+                a[i] += delta;
             }
 
             lazy[b] = 0;
             rebuild(b);
         }
 
-        public void add(int ql, int qr, long v) {
+        public void add(int ql, int qr, long delta) {
             int lb = ql / B;
             int rb = qr / B;
 
@@ -68,7 +87,7 @@ public class SqrtDecomp {
                 push(lb);
 
                 for (int i = ql; i <= qr; i++) {
-                    a[i] += v;
+                    a[i] += delta;
                 }
 
                 rebuild(lb);
@@ -76,35 +95,80 @@ public class SqrtDecomp {
             }
 
             push(lb);
-            int lend = Math.min(n - 1, (lb + 1) * B - 1);
-            for (int i = ql; i <= lend; i++) {
-                a[i] += v;
+            for (int i = ql; i <= blockR(lb); i++) {
+                a[i] += delta;
             }
             rebuild(lb);
 
             push(rb);
-            int rstart = rb * B;
-            for (int i = rstart; i <= qr; i++) {
-                a[i] += v;
+            for (int i = blockL(rb); i <= qr; i++) {
+                a[i] += delta;
             }
             rebuild(rb);
 
-            for (int b = lb + 1; b <= rb - 1; b++) {
-                lazy[b] += v;
+            // Full blocks shift uniformly, so their raw-value summaries remain valid.
+            for (int b = lb + 1; b < rb; b++) {
+                lazy[b] += delta;
             }
         }
 
         public int count(long target) {
+            // Count target over the entire array.
             int res = 0;
 
             for (int b = 0; b < m; b++) {
+                // Actual value = raw value + lazy[b].
+                // Therefore raw value must equal target - lazy[b].
                 long need = target - lazy[b];
                 res += freq[b].getOrDefault(need, 0);
             }
 
             return res;
         }
+
+        public int count(int ql, int qr, long target) {
+            // Count target inside [ql, qr].
+            int lb = ql / B;
+            int rb = qr / B;
+            int res = 0;
+
+            if (lb == rb) {
+                for (int i = ql; i <= qr; i++) {
+                    if (a[i] + lazy[lb] == target) {
+                        res++;
+                    }
+                }
+                return res;
+            }
+
+            for (int i = ql; i <= blockR(lb); i++) {
+                if (a[i] + lazy[lb] == target) {
+                    res++;
+                }
+            }
+
+            for (int i = blockL(rb); i <= qr; i++) {
+                if (a[i] + lazy[rb] == target) {
+                    res++;
+                }
+            }
+
+            for (int b = lb + 1; b < rb; b++) {
+                long need = target - lazy[b];
+                res += freq[b].getOrDefault(need, 0);
+            }
+
+            return res;
+        }
+
+        public long get(int i) {
+            int b = i / B;
+            return a[i] + lazy[b];
+        }
     }
+
+
+    //----------------------------- not as useful since this is more like a seg tree, but kept for illustration
 
 
     static class SqrtDecompSum {

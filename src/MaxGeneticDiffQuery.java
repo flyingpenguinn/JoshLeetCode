@@ -1,103 +1,109 @@
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MaxGeneticDiffQuery {
-    // similar to "MaxXorWithElementFromArray". but here it's based on paths.
-    // queries based on path: dfs and maintain a data structure. remove when we are done with the node. record which nodes are part of the query
-    // dont necessarily need to sort the query but can do dfs in passing too!
+    class Trie {
+        int v;
+        Trie[] ch = new Trie[2];
+        int cnt = 0;
+
+        public Trie(int v) {
+            this.v = v;
+        }
+    }
+
+    private List<Integer>[] t;
     private Trie root = new Trie(-1);
+    private Map<Integer, List<Integer>> qs = new HashMap<>();
+    private Map<Integer, Map<Integer, Integer>> as = new HashMap<>();
 
     public int[] maxGeneticDifference(int[] parents, int[][] queries) {
-        int qn = queries.length;
         int n = parents.length;
-        List<Integer>[] tree = new ArrayList[n];
-        for (int i = 0; i < n; i++) {
-            tree[i] = new ArrayList<>();
+        t = new ArrayList[n];
+        for (int i = 0; i < n; ++i) {
+            t[i] = new ArrayList<>();
         }
-        int troot = -1;
-        for (int i = 0; i < n; i++) {
-            if (parents[i] == -1) {
-                troot = i;
-                continue;
+        int root = -1;
+        for (int i = 0; i < n; ++i) {
+            int pi = parents[i];
+            if (pi == -1) {
+                root = i;
+            } else {
+                t[pi].add(i);
             }
-            tree[parents[i]].add(i);
         }
-        List<int[]>[] qs = new ArrayList[n];
-        for (int i = 0; i < n; i++) {
-            qs[i] = new ArrayList<>();
+        for (int[] q : queries) {
+            int v1 = q[0];
+            int v2 = q[1];
+            qs.computeIfAbsent(v1, k -> new ArrayList<>()).add(v2);
         }
-        for (int i = 0; i < qn; i++) {
-            int[] q = queries[i];
-            int node = q[0];
-            qs[node].add(new int[]{q[1], i});
+
+        dfs(root);
+        int[] res = new int[queries.length];
+        for (int i = 0; i < res.length; ++i) {
+            int v1 = queries[i][0];
+            int v2 = queries[i][1];
+            res[i] = as.get(v1).get(v2);
         }
-        int[] res = new int[qn];
-        dfs(troot, tree, qs, res);
         return res;
     }
 
-    void dfs(int i, List<Integer>[] tree, List<int[]>[] qs, int[] res) {
-        insert(i);
-        for (int[] q : qs[i]) {
-            //   System.out.println(i+" "+Arrays.toString(q));
-            int cur = find(q[0]);
-            res[q[1]] = cur;
+    private void dfs(int cur) {
+        insertTrie(cur);
+        for (int q : qs.getOrDefault(cur, List.of())) {
+            int rv = checkTrie(q);
+            as.computeIfAbsent(cur, p -> new HashMap<>()).put(q, rv);
         }
-        for (int ne : tree[i]) {
-            dfs(ne, tree, qs, res);
+        for (int ne : t[cur]) {
+            dfs(ne);
         }
-        remove(i);
+        removeTrie(cur);
     }
 
-    class Trie {
-        private int val;
-        private int nums = 0;
-        private Trie[] ch = new Trie[2];
-
-        public Trie(int val) {
-            this.val = val;
-        }
-    }
-
-
-    private void insert(int num) {
+    private int checkTrie(int v) {
         Trie p = root;
-        for (int j = 31; j >= 0; j--) {
-            int dig = ((num >> j) & 1);
-            if (p.ch[dig] == null) {
-                p.ch[dig] = new Trie(dig);
-            }
-            p.ch[dig].nums++;
-            p = p.ch[dig];
-        }
-    }
-
-    private void remove(int num) {
-        Trie p = root;
-        for (int j = 31; j >= 0; j--) {
-            int dig = ((num >> j) & 1);
-            Trie next = p.ch[dig];
-            next.nums--;
-            if (next.nums == 0) {
-                p.ch[dig] = null;
-            }
-            p = next;
-        }
-    }
-
-    private int find(int num) {
         int res = 0;
-        Trie p = root;
-        for (int j = 31; j >= 0; j--) {
-            int dig = ((num >> j) & 1);
-            int nd = dig ^ 1;
-            if (p.ch[nd] != null) {
-                p = p.ch[nd];
+        for (int j = 31; j >= 0; --j) {
+            int dig = (((v >> j) & 1));
+            int rdig = dig ^ 1;
+            if (p.ch[rdig] != null) {
+                p = p.ch[rdig];
                 res |= (1 << j);
+
             } else {
                 p = p.ch[dig];
             }
         }
         return res;
+    }
+
+    private void insertTrie(int cur) {
+        Trie p = root;
+        for (int j = 31; j >= 0; --j) {
+            int dig = (((cur >> j) & 1));
+            if (p.ch[dig] == null) {
+                p.ch[dig] = new Trie(dig);
+            }
+            ++p.ch[dig].cnt;
+            p = p.ch[dig];
+        }
+    }
+
+
+    private void removeTrie(int cur) {
+        Trie p = root;
+        for (int j = 31; j >= 0; --j) {
+            int dig = (((cur >> j) & 1));
+            --p.ch[dig].cnt;
+            if (p.ch[dig].cnt == 0) {
+                p.ch[dig] = null;
+                break;
+            } else {
+                p = p.ch[dig];
+            }
+        }
     }
 }
