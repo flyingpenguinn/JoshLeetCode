@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MinWeigtedSubgraphWithRequiredPathsII {
-    // The key node we are looking for is the lca of two of them
+    // lca template
     private Map<Integer, Integer>[] t;
     private int[] dist;
     private int[] level;
@@ -55,11 +55,9 @@ public class MinWeigtedSubgraphWithRequiredPathsII {
         }
         dist = new int[n];
         dfs(0, -1, 0, 0);
-        for (int k = 1; k < BITS; k++) {
-            for (int i = 0; i < n; i++) {
-                lift[k][i] = lift[k - 1][lift[k - 1][i]];
-            }
-        }
+
+        buildlifting(n);
+
         int qn = qs.length;
         int[] res = new int[qn];
         for (int i = 0; i < qn; ++i) {
@@ -73,6 +71,14 @@ public class MinWeigtedSubgraphWithRequiredPathsII {
             res[i] = cur;
         }
         return res;
+    }
+
+    private void buildlifting(int n) {
+        for (int k = 1; k < BITS; k++) {
+            for (int i = 0; i < n; i++) {
+                lift[k][i] = lift[k - 1][lift[k - 1][i]];
+            }
+        }
     }
 
     private int calc(int v1, int v2, int v3){
