@@ -1,4 +1,4 @@
-public class CountSubarraysWithMajorityElementII {
+public class CountSubarraysWithMajorityElementI {
     public int countMajoritySubarrays(int[] a, int t) {
         int n = a.length;
         int res = 0;

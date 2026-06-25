@@ -1,4 +1,5 @@
 public class CountPairsInTwoArrays {
+    // bit template
     public long countPairs(int[] nums1, int[] nums2) {
         int n = nums1.length;
         int size = 200000;

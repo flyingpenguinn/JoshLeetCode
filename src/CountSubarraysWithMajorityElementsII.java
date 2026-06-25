@@ -3,17 +3,29 @@ import base.ArrayUtils;
 import java.util.*;
 
 public class CountSubarraysWithMajorityElementsII {
-    private int[] bit;
+    long[] bit;
 
-    private void u(int i) {
-        while (i < bit.length) {
-            ++bit[i];
-            i += i & (-i);
+    public long countMajoritySubarrays(int[] a, int t) {
+        int n = a.length;
+        bit = new long[3*n];
+        int cnt = 0;
+        long res = 0;
+        for (int i = 0; i < n; ++i) {
+            cnt += (a[i] == t) ? 1 : 0;
+            int sum = 2*cnt - i;
+            long cur = query(bit, sum+n-1);
+            res += cur;
+            if(cnt>(i+1)/2){
+                ++res;
+            }
+            update(bit, sum+n);
         }
+        return res;
     }
 
-    private int v(int i) {
-        int res = 0;
+
+    private long query(long[] bit, int i) {
+        long res = 0;
         while (i > 0) {
             res += bit[i];
             i -= i & (-i);
@@ -21,37 +33,11 @@ public class CountSubarraysWithMajorityElementsII {
         return res;
     }
 
-    public long countMajoritySubarrays(int[] a, int t) {
-        int n = a.length;
-        long[] cnt = new long[n];
-        int ccnt = 0;
-        TreeSet<Long> evs = new TreeSet<>();
-        for (int i = 0; i < n; ++i) {
-            if (a[i] == t) {
-                ++ccnt;
-            }
-            cnt[i] = ccnt;
-            long ev = 2 * cnt[i] - i;
-            evs.add(ev);
+    private void update(long[] bit, int i) {
+        while (i < bit.length) {
+            bit[i]++;
+            i += i & (-i);
         }
-        int rank = 1;
-        Map<Long, Integer> rm = new HashMap<>();
-        for (long ek : evs) {
-            rm.put(ek, rank++);
-        }
-        bit = new int[rank];
-        long res = 0;
-        for (int i = 0; i < n; ++i) {
-            long cev = 2 * cnt[i] - i;
-            int crank = rm.get(cev);
-            long counter = v(crank - 1);
-            res += counter;
-            if (cnt[i] * 2 > (i + 1)) {
-                ++res;
-            }
-            u(crank);
-        }
-        return res;
     }
 
     public static void main(String[] args) {
