@@ -2,7 +2,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 
-public class MinOperationsToMakeElementsWithINKsubarraysEQUAL {
+public class MinOperationsToMakeElementsWithinKsubarraysEqual {
     private static class MyPq {
         private int size = 0;
         private long sum = 0;
