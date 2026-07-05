@@ -4,8 +4,9 @@ import java.util.Arrays;
 
 public class UnionFind {
     static class UF {
-        public int[] pa;
-        public int[] psize;
+        // you should not be using pa directly always find!
+        private int[] pa;
+        private int[] psize;
 
         public UF(int size) {
             pa = new int[size];
