@@ -1,5 +1,5 @@
 public class PalindromicSubarraySum {
-    // todo. mancher
+    // Manacher O(n) palindrome subarray template
     public long getSum(int[] nums) {
         int n = nums.length;
 
