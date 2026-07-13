@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class CreateGridExactlyKpaths {
+public class CreateGridExactlyKpathsI {
     public String[] createGrid(int m, int n, int k) {
         char[][] res = new char[m][n];
 
