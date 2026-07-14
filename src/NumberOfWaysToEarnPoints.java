@@ -1,33 +1,32 @@
 public class NumberOfWaysToEarnPoints {
-    private Long[][] dp;
-    private long mod = (long) (1e9 + 7);
-
     public int waysToReachTarget(int t, int[][] a) {
+        // sliding window bounded knapsack optimization based on mod
         int n = a.length;
-        dp = new Long[n][t + 1];
-        return (int) solve(a, 0, t);
-    }
+        long[][] dp = new long[n + 1][t + 1];
+        dp[0][0] = 1;
+        long mod = (long) 1e9 + 7;
 
-    private long solve(int[][] a, int i, int t) {
-        int n = a.length;
-        if (i == n) {
-            return t == 0 ? 1 : 0;
-        }
-        if (dp[i][t] != null) {
-            return dp[i][t];
-        }
-        long cur = 0;
-        long count = a[i][0];
-        long score = a[i][1];
-        long res = 0;
-        for (int j = 0; j <= count; ++j) {
-            cur = j * score;
-            if (cur <= t) {
-                res += solve(a, i + 1, t - (int) (cur));
-                res %= mod;
+        for (int i = 1; i <= n; ++i) {
+            int ccnt = a[i - 1][0];
+            int cscore = a[i - 1][1];
+            for (int r = 0; r < cscore && r <= t; ++r) {
+                long sum = 0;
+                for (int j = r; j <= t; j += cscore) {
+                    sum += dp[i - 1][j];
+                    sum %= mod;
+                    int head = j - (ccnt + 1) * cscore;
+                    if (head >= 0) {
+                        sum -= dp[i - 1][head];
+                        sum %= mod;
+                        if (sum < 0) {
+                            sum += mod;
+                        }
+                    }
+                    dp[i][j] = sum;
+                }
             }
+
         }
-        dp[i][t] = res;
-        return res;
+        return (int) dp[n][t];
     }
 }
