@@ -32,28 +32,25 @@ public class KinversePairsArray {
     // dp[n-1][k-1]-> put n at the n-1...thus forming k
     // dp[n-1][k-2] -> put n at the n-2 th
     // dp[n-1][k-(n-1)] -> put n at the first. note if(k-n-1)<=0 then it would be starting from 0
-    private long Mod = 1000000007;
+    private long Mod = (long) (1e9 + 7);
 
     public int kInversePairs(int n, int k) {
         long[][] dp = new long[n + 1][k + 1];
-        long[] psum = new long[k + 1];
-        for (int i = 1; i <= n; i++) {
-            long[] csum = new long[k + 1];
-            for (int j = 0; j <= k; j++) {
-                if (j == 0) {
-                    dp[i][j] = 1;
-                } else {
-                    dp[i][j] = psum[j] - (j < i ? 0 : psum[j - i]);
+        dp[0][0] = 1;
+        for (int i = 1; i <= n; ++i) {
+            long cur =0;
+            for (int j = 0; j <= k; ++j) {
+                cur += dp[i - 1][j];
+                if (j - i >= 0) {
+                    cur -= dp[i - 1][j - i];
                 }
-                dp[i][j] %= Mod;
-                if (dp[i][j] < 0) {
-                    dp[i][j] += Mod;
+                cur %= Mod;
+                if (cur < 0) {
+                    cur += Mod;
                 }
-                csum[j] = (j == 0 ? 0 : csum[j - 1]) + dp[i][j];
-                csum[j] %= Mod;
+                dp[i][j] = cur;
             }
-            psum = csum;
         }
-        return (int) (dp[n][k]);
+        return (int) dp[n][k];
     }
 }
