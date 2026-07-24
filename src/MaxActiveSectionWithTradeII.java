@@ -189,39 +189,24 @@ public class MaxActiveSectionWithTradeII {
             int l = q[0] + 1;
             int r = q[1] + 1;
 
-            int leftstart = binaryfirstbiggerstart(zeros, l); // first fully enclosed pair
-            int rightend = binarylastsmallerend(zeros, r);
-            if (leftstart > rightend) {
-                int l1 = binarylastsmallerstart(zeros, l);
-                int l2 = binarylastsmallerstart(zeros, r);
-                if (l1 < l2 && l1 >= 0 && l1 < zeros.size() && l2 < zeros.size() && zeros.get(l1).end >= l && zeros.get(l2).start <= r) {
-                    int p1 = zeros.get(l1).end - l + 1;
-                    int p2 = r - zeros.get(l2).start + 1;
-                    int cres = p1 + p2 + ones;
-                    res.add(cres);
-                } else {
-                    res.add(ones);
-                }
+            int leftstart = binaryfirstbiggerend(zeros, l); // first fully enclosed pair
+            int rightend = binarylastsmallerstart(zeros, r);
+            if (leftstart >= rightend) {
+                res.add(ones);
                 continue;
             }
-            int cres = 0;
-            if (leftstart < rightend) {
-
-
-                Node cur = seg.query(leftstart, rightend - 1);
-                if (cur != null) {
-                    cres = (int) cur.max;
-                }
-            }
-            if (leftstart < zeros.size() && leftstart - 1 >= 0 && zeros.get(leftstart - 1).end >= l) {
-                int leftpart = zeros.get(leftstart - 1).end - l + 1;
-                int cleft = leftpart + zeros.get(leftstart).len;
-                cres = Math.max(cres, cleft);
-            }
-            if (rightend >= 0 && rightend + 1 < zeros.size() && zeros.get(rightend + 1).start <= r) {
-                int rightpart = r - zeros.get(rightend + 1).start + 1;
-                int cright = rightpart + zeros.get(rightend).len;
-                cres = Math.max(cres, cright);
+            Node full = leftstart + 1 > rightend - 2 ? null : seg.query(leftstart + 1, rightend - 2);
+            int cres = full == null ? 0 : (int) full.max;
+            int leftpart = zeros.get(leftstart).start <= l ? zeros.get(leftstart).end - l + 1 : zeros.get(leftstart).len;
+            int rightpart = zeros.get(rightend).end >= r ? r - zeros.get(rightend).start + 1 : zeros.get(rightend).len;
+            if (leftstart + 1 == rightend) {
+                int cur = leftpart + rightpart;
+                cres = Math.max(cres, cur);
+            } else {
+                int lsum = leftpart + zeros.get(leftstart + 1).len;
+                cres = Math.max(cres, lsum);
+                int rsum = rightpart + zeros.get(rightend - 1).len;
+                cres = Math.max(cres, rsum);
             }
             int c1 = cres + ones;
             res.add(c1);
@@ -244,26 +229,12 @@ public class MaxActiveSectionWithTradeII {
 
     }
 
-    private int binarylastsmallerend(List<Seg> a, int t) {
+    private int binaryfirstbiggerend(List<Seg> a, int t) {
         int l = 0;
         int u = a.size() - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a.get(mid).end <= t) {
-                l = mid + 1;
-            } else {
-                u = mid - 1;
-            }
-        }
-        return u;
-    }
-
-    private int binaryfirstbiggerstart(List<Seg> a, int t) {
-        int l = 0;
-        int u = a.size() - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a.get(mid).start >= t) {
+            if (a.get(mid).end >= t) {
                 u = mid - 1;
             } else {
                 l = mid + 1;
@@ -272,8 +243,13 @@ public class MaxActiveSectionWithTradeII {
         return l;
     }
 
+
     static void main() {
+        System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("0010101001", ArrayUtils.read("[[1,7]]")));
         System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("0101110001101", ArrayUtils.read("[[0,7]]")));
+        System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("1000100", ArrayUtils.read("[[1,5]]")));
+
+
         System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("00000100", ArrayUtils.read("[[5,6]]")));
         System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("1100", ArrayUtils.read("[[3,3],[1,2]]")));
         System.out.println(new MaxActiveSectionWithTradeII().maxActiveSectionsAfterTrade("0001000000", ArrayUtils.read("[[2,7],[8,9],[2,6],[8,8],[6,9]]")));
