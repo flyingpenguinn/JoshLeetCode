@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class Solution2 {
 
-    private long Max = (int) 1e18;
+    private long Max = (long) 1e18;
     private long Min = -Max;
     private long Mod = (long) (1e9+7);
     private int[][] dirs = {{-1,0}, {1,0}, {0, -1}, {0,1}};
