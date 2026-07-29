@@ -1,9 +1,6 @@
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class SmallestPalindromicRearrangementII {
-    // gist is use prime technique to count
     // gist is use prime technique to count
     private static final int lim = 5001;
     private static boolean[] isprime = new boolean[lim];

@@ -1,19 +1,7 @@
-public class CountValidSequence {
+package base;
 
-
-    public int countValidSequences(int n, int k) {
-        getFacts(k+1);
-
-        long all = comb(n - 1, k - 1);
-        long odd = 0;
-
-        if ((n - k) % 2 == 0) {
-            odd = comb((n + k - 2) / 2, k - 1);
-        }
-
-        return (int) ((all - odd + mod) % mod);
-    }
-
+public class Combi {
+    // java fast combi template
     private static final long mod = (long) (1e9 + 7);
 
     private static long[] fact;
@@ -62,5 +50,4 @@ public class CountValidSequence {
 
         return res;
     }
-
 }
