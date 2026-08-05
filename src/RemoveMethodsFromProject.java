@@ -1,71 +1,46 @@
 import java.util.*;
 
 public class RemoveMethodsFromProject {
-    private Map<Integer, Set<Integer>> g = new HashMap<>();
-    private int[] st;
-    private boolean changed = false;
+    private List<Integer>[] g;
 
-    public List<Integer> remainingMethods(int n, int k, int[][] es) {
-        st = new int[n];
-        for (int[] e : es) {
+    public List<Integer> remainingMethods(int n, int k, int[][] invocations) {
+        g = new ArrayList[n];
+        for (int i = 0; i < n; ++i) {
+            g[i] = new ArrayList<>();
+        }
+        for (int[] e : invocations) {
             int v1 = e[0];
             int v2 = e[1];
-            g.computeIfAbsent(v1, p -> new HashSet<>()).add(v2);
+            g[v1].add(v2);
         }
-        dfs1(k);
-        for (int i = 0; i < n; ++i) {
-            if (i == k || st[i] != 0) {
-                continue;
+        Set<Integer> nodes = new HashSet<>();
+        dfs(k, nodes);
+        boolean bad = false;
+        for (int[] e : invocations) {
+            int v1 = e[0];
+            int v2 = e[1];
+            if (!nodes.contains(v1) && nodes.contains(v2)) {
+                bad = true;
+                break;
             }
-            dfs2(i);
         }
         List<Integer> res = new ArrayList<>();
-        if (changed) {
-            for (int i = 0; i < n; ++i) {
-                res.add(i);
+        for (int i = 0; i < n; ++i) {
+            if (!bad && nodes.contains(i)) {
+                continue;
             }
-        } else {
-            for (int i = 0; i < n; ++i) {
-                if (st[i] == 3 || st[i] == 4) {
-                    res.add(i);
-                }
-            }
+            res.add(i);
         }
         return res;
-
     }
 
-    private void dfs1(int i) {
-        // System.out.println("dfs1 "+i);
-        st[i] = 1;
-        for (int ne : g.getOrDefault(i, new HashSet<>())) {
-            if (st[ne] == 1) {
+    private void dfs(int k, Set<Integer> nodes) {
+        nodes.add(k);
+        for (int ne : g[k]) {
+            if (nodes.contains(ne)) {
                 continue;
             }
-            if (st[ne] == 2) {
-                continue;
-            }
-            dfs1(ne);
+            dfs(ne, nodes);
         }
-        st[i] = 2;
-    }
-
-    private void dfs2(int i) {
-        //System.out.println("dfs2 "+i);
-        if (st[i] == 1 || st[i] == 2) {
-            changed = true;
-        }
-        st[i] = 3;
-        for (int ne : g.getOrDefault(i, new HashSet<>())) {
-            if (st[ne] == 3) {
-                continue;
-            }
-            if (st[ne] == 4) {
-                continue;
-            }
-
-            dfs2(ne);
-        }
-        st[i] = 4;
     }
 }
