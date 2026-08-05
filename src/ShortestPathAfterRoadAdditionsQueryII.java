@@ -1,5 +1,6 @@
-import java.util.HashSet;
-import java.util.Set;
+import base.ArrayUtils;
+
+import java.util.Arrays;
 import java.util.TreeSet;
 
 public class ShortestPathAfterRoadAdditionsQueryII {
@@ -11,19 +12,26 @@ public class ShortestPathAfterRoadAdditionsQueryII {
         }
         int[] res = new int[qs.length];
         int ri = 0;
-        for (int[] q : qs) {
-            int start = q[0];
-            int end = q[1];
-            Integer ss = set.ceiling(start + 1);
-            Integer se = set.higher(end - 1);
-            Integer next = ss;
-            while (next != se) {
+        for (int[] qi : qs) {
+            int start = qi[0];
+            int end = qi[1];
+            int cur = start + 1;
+            while (true) {
+                Integer next = set.ceiling(cur);
+                if (next == null || next >= end) {
+                    break;
+                }
                 set.remove(next);
-                next = set.higher(next);
+
             }
             res[ri++] = set.size() - 1;
         }
         return res;
+    }
+
+    static void main() {
+        System.out.println(Arrays.toString(new ShortestPathAfterRoadAdditionsQueryII().shortestDistanceAfterQueries(4, ArrayUtils.read("[[0,3]]"))));
+        System.out.println(Arrays.toString(new ShortestPathAfterRoadAdditionsQueryII().shortestDistanceAfterQueries(5, ArrayUtils.read("[[2,4],[0,2],[0,4]]"))));
     }
 
 }
