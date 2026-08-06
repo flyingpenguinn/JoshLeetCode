@@ -69,20 +69,23 @@ class FindBuildingWhereAliceBobMeetSegTree {
     // note this is different pruning from a "normal" segtree where we dont look for full seg hit but look for left/right BST like pruning
     static class Node {
         int l, r;
-        int  max;
+        long min, max, sum;
 
-
-        Node(int l, int r, int max) {
+        Node(int l, int r, long min, long max, long sum) {
             this.l = l;
             this.r = r;
+            this.min = min;
             this.max = max;
+            this.sum = sum;
         }
 
+        int len() {
+            return r - l + 1;
+        }
     }
 
     static class SegTree {
         Node[] tree;
-
         int n;
 
         SegTree(int[] a) {
@@ -94,8 +97,8 @@ class FindBuildingWhereAliceBobMeetSegTree {
 
         private void build(int idx, int l, int r, int[] a) {
             if (l == r) {
-                int v = a[l];
-                tree[idx] = new Node(l, r, v);
+                long v = a[l];
+                tree[idx] = new Node(l, r, v, v, v);
                 return;
             }
 
@@ -107,69 +110,71 @@ class FindBuildingWhereAliceBobMeetSegTree {
         }
 
         private Node merge(Node left, Node right) {
-
             return new Node(
                     left.l,
                     right.r,
-
-                    Math.max(left.max, right.max)
+                    Math.min(left.min, right.min),
+                    Math.max(left.max, right.max),
+                    left.sum + right.sum
             );
         }
 
 
-
-
         public Node query(int ql, int qr, int v) {
-            return query(1, ql, qr, v);
+            return query2(1, ql, qr, v);
         }
 
-        private Node query(int idx, int ql, int qr, int v) {
+        private Node query2(int idx, int ql, int qr, int v) {
+            if(idx>=tree.length || tree[idx] == null){
+                return null;
+            }
             Node cur = tree[idx];
 
             if (qr < cur.l || cur.r < ql) {
                 return null;
             }
-
-            if (cur.l == cur.r) {
-                return cur;
+            if(cur.max<v){
+                return null;
+            }
+            if(cur.l == cur.r){
+                return cur.max>=v? cur: null;
             }
 
-            Node found = null;
-            if (tree[idx * 2].max > v) {
-                found = query(idx * 2, ql, qr, v);
-            }
-            if (found != null) {
-                return found;
-            } else if (tree[idx * 2 + 1].max > v) {
-                found = query(idx * 2 + 1, ql, qr, v);
-            }
-            return found;
 
+            Node left = query2(idx * 2, ql, qr, v);
+            if (left != null && left.max >= v) {
+                return left;
+            }
+            Node right = query2(idx * 2 + 1, ql, qr, v);
+            if (right != null && right.max >= v) {
+                return right;
+            }
+            return null;
         }
     }
 
     public int[] leftmostBuildingQueries(int[] a, int[][] qs) {
         int n = a.length;
-        int[] res = new int[qs.length];
-        int ri = 0;
         SegTree seg = new SegTree(a);
+
+        int[] res = new int[qs.length];
+        Arrays.fill(res, -1);
+        int ri = 0;
         for (int[] q : qs) {
-            int ql = q[0];
-            int qr = q[1];
-            if(ql == qr){
-                res[ri++] = ql;
-                continue;
-            }
-            int nql = Math.min(ql, qr);
-            int nqr = Math.max(ql, qr);
-            if (a[nql] < a[nqr]) {
-                res[ri++] = nqr;
+            int ov1 = q[0];
+            int ov2 = q[1];
+            int v1 = Math.min(ov1, ov2);
+            int v2 = Math.max(ov1, ov2);
+            if (v1 == v2) {
+                res[ri++] = v2;
+            } else if (a[v1] < a[v2]) {
+                res[ri++] = v2;
             } else {
-                Node found = seg.query(nqr + 1, n - 1, a[nql]);
-                if (found == null) {
-                    res[ri++] = -1;
+                Node cur = seg.query(v2 + 1, n - 1, a[v1] + 1);
+                if (cur != null) {
+                    res[ri++] = (int) cur.l;
                 } else {
-                    res[ri++] = found.l;
+                    res[ri++] = -1;
                 }
             }
         }
