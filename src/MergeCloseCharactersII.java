@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class MergeCloseCharactersII {
     public String mergeCharacters(String s, int len) {
         int n = s.length();

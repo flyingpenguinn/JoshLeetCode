@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class FindAllNumbersDisappearedInAnArrayII {
     public List<List<Integer>> findDisappearedNumbers(int[] a, int lower, int upper) {
         Arrays.sort(a);

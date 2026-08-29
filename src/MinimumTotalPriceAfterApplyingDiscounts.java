@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class MinimumTotalPriceAfterApplyingDiscounts {
     public double minPrice(int[] a, int[] b) {
         int an = a.length;

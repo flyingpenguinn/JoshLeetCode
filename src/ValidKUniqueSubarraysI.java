@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class ValidKUniqueSubarraysI {
     static class Fenwick {
         int[] bit;

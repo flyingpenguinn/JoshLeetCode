@@ -1,3 +1,8 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class WeightedSumOfATree {
     private long res = 0;
     private Map<Integer,List<Integer>> t = new HashMap<>();
