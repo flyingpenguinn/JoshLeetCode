@@ -1,4 +1,4 @@
-class Solution {
+public class MergeCloseCharactersII {
     public String mergeCharacters(String s, int len) {
         int n = s.length();
         int[] last = new int[26];

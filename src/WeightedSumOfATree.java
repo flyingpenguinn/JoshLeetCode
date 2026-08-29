@@ -1,4 +1,4 @@
-class Solution {
+public class WeightedSumOfATree {
     private long res = 0;
     private Map<Integer,List<Integer>> t = new HashMap<>();
     public long weightedSum(int[] parent, int[] nums) {

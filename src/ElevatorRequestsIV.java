@@ -1,4 +1,4 @@
-class Solution {
+public class ElevatorRequestsIV {
     private long Max = (long) 4e18;
 
     public long elevatorRequests(int n, int start, int[][] requests) {

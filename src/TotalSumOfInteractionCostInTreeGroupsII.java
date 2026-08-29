@@ -1,4 +1,4 @@
-class Solution {
+public class TotalSumOfInteractionCostInTreeGroupsII {
     // virtual tree
     private List<Integer>[] adj;
     private int[][] lift;

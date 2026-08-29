@@ -1,4 +1,4 @@
-class Solution {
+public class MinimizeTheMaximumWaitingTimeAtSynchronizedTrafficLights {
     public int minPenalty(int period, int[] lights, int[] at) {
         int ln = lights.length;
         int an = at.length;

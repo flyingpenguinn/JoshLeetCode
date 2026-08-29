@@ -1,4 +1,4 @@
-class Solution {
+public class ElevatorRequestsI {
     public int elevatorRequests(int n, int[] reqs) {
         int res = 0;
         int cur = 0;

@@ -1,4 +1,4 @@
-class Solution {
+public class ValidKUniqueSubarraysI {
     static class Fenwick {
         int[] bit;
         int n;

@@ -1,4 +1,4 @@
-class Solution {
+public class KthDigitInInfiniteString {
     private long pow10(long n) {
         return (long) Math.pow(10, n);
     }

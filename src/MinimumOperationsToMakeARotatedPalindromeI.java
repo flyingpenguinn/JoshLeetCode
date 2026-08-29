@@ -1,4 +1,4 @@
-class Solution {
+public class MinimumOperationsToMakeARotatedPalindromeI {
     public int minOperations(String s) {
         int n = s.length();
         int res = (int)(1e9);

@@ -1,4 +1,4 @@
-class Solution {
+public class MaximumGapBetweenStations {
     public int maximumGap(String s, String t) {
         char[] cs = s.toCharArray();
         char[] ct = t.toCharArray();

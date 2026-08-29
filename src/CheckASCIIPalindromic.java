@@ -1,4 +1,4 @@
-class Solution {
+public class CheckASCIIPalindromic {
     public boolean isPalindromic(String s) {
         int n = s.length();
         StringBuilder sb = new StringBuilder();

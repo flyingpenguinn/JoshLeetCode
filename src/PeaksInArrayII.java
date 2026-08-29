@@ -1,4 +1,4 @@
-class Solution {
+public class PeaksInArrayII {
     static class Node {
         int l, r;
         int len;

@@ -1,4 +1,4 @@
-class Solution {
+public class LongestSubarrayWithAtMostKDistinctPrimeFactors {
     static class Prime {
         static boolean[] isprime = null;
         static Set<Integer> primeset = new HashSet<>();

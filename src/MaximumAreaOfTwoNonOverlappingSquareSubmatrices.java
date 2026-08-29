@@ -1,4 +1,4 @@
-class Solution {
+public class MaximumAreaOfTwoNonOverlappingSquareSubmatrices {
     private int[][] sum;
     private int getsum(int i, int j, int len){
     

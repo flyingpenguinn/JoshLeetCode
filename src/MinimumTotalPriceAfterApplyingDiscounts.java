@@ -1,4 +1,4 @@
-class Solution {
+public class MinimumTotalPriceAfterApplyingDiscounts {
     public double minPrice(int[] a, int[] b) {
         int an = a.length;
         int bn = b.length;

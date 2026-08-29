@@ -1,4 +1,4 @@
-class Solution {
+public class FindAllNumbersDisappearedInAnArrayII {
     public List<List<Integer>> findDisappearedNumbers(int[] a, int lower, int upper) {
         Arrays.sort(a);
         int n = a.length;

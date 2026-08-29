@@ -1,4 +1,4 @@
-class Solution {
+public class NearestAvailableDrone {
     public int nearestDrone(int[][] drones, int[] target) {
         int index = -1;
         int n = drones.length;

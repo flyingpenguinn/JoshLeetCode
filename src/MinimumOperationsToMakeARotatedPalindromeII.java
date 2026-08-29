@@ -1,4 +1,4 @@
-class Solution {
+public class MinimumOperationsToMakeARotatedPalindromeII {
     // todo convolution/fft
     private static final int MOD = 998244353;
     private static final int ROOT = 3;
