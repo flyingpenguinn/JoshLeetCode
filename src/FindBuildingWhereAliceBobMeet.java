@@ -3,59 +3,108 @@ import base.ArrayUtils;
 import java.util.*;
 
 public class FindBuildingWhereAliceBobMeet {
-    public int[] leftmostBuildingQueries(int[] a, int[][] qs) {
-        int n = a.length;
-        int qn = qs.length;
-        int[][] nqs = new int[qn][3];
-        for (int i = 0; i < qn; ++i) {
-            nqs[i][0] = Math.min(qs[i][0], qs[i][1]);
-            nqs[i][1] = Math.max(qs[i][0], qs[i][1]);
-            nqs[i][2] = i;
-        }
-        Arrays.sort(nqs, (x, y) -> Integer.compare(x[1], y[1]));
-        int[] res = new int[qn];
-        Arrays.fill(res, -1);
-        List<Integer> st = new ArrayList<>();
-        int qi = qn - 1;
-        for (int i = n - 1; i >= 0; --i) {
+    class Query {
+        int v2;
+        int v1;
+        int index;
+        int result;
 
-            while (!st.isEmpty() && a[st.get(st.size() - 1)] <= a[i]) {
-                st.remove(st.size() - 1);
-            }
-            st.add(i);
-            while (qi >= 0 && i == nqs[qi][1]) {
-                int x = Math.min(nqs[qi][0], nqs[qi][1]);
-                int y = Math.max(nqs[qi][0], nqs[qi][1]);
-                int idx = nqs[qi][2];
-                if (x == y) {
-                    res[idx] = x;
-                } else if (a[x] < a[y]) {
-                    res[idx] = y;
-                } else {
-                    int pos = binary(a, st, a[x]);
-                    if (pos >= 0 && pos < st.size()) {
-                        res[idx] = st.get(pos);
-                    }
-                }
-
-                --qi;
-            }
+        public Query(int v1, int v2, int index, int result) {
+            this.v2 = v2;
+            this.v1 = v1;
+            this.index = index;
+            this.result = result;
         }
-        return res;
     }
 
-    private int binary(int[] a, List<Integer> st, int t) {
-        int l = 0;
-        int u = st.size() - 1;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            if (a[st.get(mid)] > t) {
-                l = mid + 1;
+    class BinarySearchStack {
+        List<Integer> st = new ArrayList<>();
+
+        public void push(int v) {
+            st.add(v);
+        }
+
+        public int peek() {
+            return st.get(st.size() - 1);
+        }
+
+        public boolean isEmpty() {
+            return st.isEmpty();
+        }
+
+        public int pop() {
+            int rt = peek();
+            st.remove(st.size() - 1);
+            return rt;
+        }
+
+        public int size() {
+            return st.size();
+        }
+
+        // the order in st is actually reversed. the back is the smallest
+        public int binaryLastBigger(int[] a, int t) {
+            int l = 0;
+            int u = st.size() - 1;
+            while (l <= u) {
+                int mid = l + (u - l) / 2;
+                if (a[st.get(mid)] > t) {
+                    l = mid + 1;
+                } else {
+                    u = mid - 1;
+                }
+            }
+            return u;
+        }
+
+        public int get(int pos) {
+            return st.get(pos);
+        }
+    }
+
+    public int[] leftmostBuildingQueries(int[] a, int[][] queries) {
+        Map<Integer, List<Query>> qm = new HashMap<>();
+        int qn = queries.length;
+        List<Query> lres = new ArrayList<>();
+        for (int i = 0; i < qn; ++i) {
+            int[] q = queries[i];
+            int ov1 = q[0];
+            int ov2 = q[1];
+            int v1 = Math.min(ov1, ov2);
+            int v2 = Math.max(ov1, ov2);
+            if (v1 == v2) {
+                lres.add(new Query(v1, v2, i, v2));
+            } else if (a[v1] < a[v2]) {
+                lres.add(new Query(v1, v2, i, v2));
             } else {
-                u = mid - 1;
+                qm.computeIfAbsent(v2, k -> new ArrayList<>()).add(new Query(v1, v2, i, -1));
             }
         }
-        return u;
+        int n = a.length;
+        BinarySearchStack stack = new BinarySearchStack();
+        for (int i = n - 1; i >= 0; --i) {
+            while (!stack.isEmpty() && a[stack.peek()] <= a[i]) {
+                stack.pop();
+            }
+            for (Query q : qm.getOrDefault(i, new ArrayList<>())) {
+                int v1 = q.v1;
+                int pos = stack.binaryLastBigger(a, a[v1]);
+                if (pos == -1) {
+                    lres.add(new Query(v1, i, q.index, -1));
+                } else {
+                    lres.add(new Query(v1, i, q.index, stack.get(pos)));
+                }
+            }
+            stack.push(i);
+
+        }
+        int[] res = new int[qn];
+        for (int i = 0; i < lres.size(); ++i) {
+            Query cq = lres.get(i);
+            int index = cq.index;
+            res[index] = cq.result;
+        }
+        return res;
     }
 
     public static void main(String[] args) {
@@ -125,7 +174,7 @@ class FindBuildingWhereAliceBobMeetSegTree {
         }
 
         private Node query2(int idx, int ql, int qr, int v) {
-            if(idx>=tree.length || tree[idx] == null){
+            if (idx >= tree.length || tree[idx] == null) {
                 return null;
             }
             Node cur = tree[idx];
@@ -133,11 +182,11 @@ class FindBuildingWhereAliceBobMeetSegTree {
             if (qr < cur.l || cur.r < ql) {
                 return null;
             }
-            if(cur.max<v){
+            if (cur.max < v) {
                 return null;
             }
-            if(cur.l == cur.r){
-                return cur.max>=v? cur: null;
+            if (cur.l == cur.r) {
+                return cur.max >= v ? cur : null;
             }
 
 
@@ -184,60 +233,65 @@ class FindBuildingWhereAliceBobMeetSegTree {
 
 
 class FindBuildingWhereAliceBobMeetBinaryLifting {
-    private int BITS = 17;
+    // binary lifting template!
+    private int[][] lift;
+    private int BITS = 18;
 
     public int[] leftmostBuildingQueries(int[] a, int[][] qs) {
         Deque<Integer> st = new ArrayDeque<>();
         int n = a.length;
-        int[] next = new int[n];
-        Arrays.fill(next, -1);
-
+        lift = new int[BITS][n];
+        for (int i = 0; i < BITS; ++i) {
+            Arrays.fill(lift[i], -1);
+        }
         for (int i = 0; i < n; ++i) {
             while (!st.isEmpty() && a[st.peek()] < a[i]) {
-                next[st.peek()] = i;
-                st.pop();
+                int pre = st.pop();
+                lift[0][pre] = i;
             }
             st.push(i);
         }
-        int[][] up = new int[n][BITS];
-        for (int i = 0; i < n; ++i) {
-            Arrays.fill(up[i], -1);
-        }
-        for (int j = 0; j < BITS; ++j) {
-            for (int i = 0; i < n; ++i) {
-
-                if (j == 0) {
-                    up[i][j] = next[i];
-                } else if (up[i][j - 1] != -1) {
-                    up[i][j] = up[up[i][j - 1]][j - 1];
-                }
-            }
-        }
-        int qn = qs.length;
-        int[] res = new int[qn];
-        for (int i = 0; i < qn; ++i) {
-            int s = qs[i][0];
-            int e = qs[i][1];
-            int v1 = Math.min(s, e);
-            int v2 = Math.max(s, e);
+        buildlifting(n);
+        int[] res = new int[qs.length];
+        int ri = 0;
+        for (int[] q : qs) {
+            int ov1 = q[0];
+            int ov2 = q[1];
+            int v1 = Math.min(ov1, ov2);
+            int v2 = Math.max(ov1, ov2);
             if (v1 == v2) {
-                res[i] = v2;
+                res[ri++] = v2;
             } else if (a[v1] < a[v2]) {
-                res[i] = v2;
+                res[ri++] = v2;
             } else {
-                for (int j = BITS - 1; j >= 0; --j) {
-                    if (up[v2][j] != -1 && a[up[v2][j]] <= a[v1]) {
-                        v2 = up[v2][j];
-                    }
-                }
-                final int cand = up[v2][0];
-                if (cand != -1 && a[cand] > a[v1]) {
-                    res[i] = cand;
-                } else {
-                    res[i] = -1;
-                }
+                int t = lifting(a, v2, a[v1]);
+                res[ri++] = t;
             }
         }
         return res;
+    }
+
+    private int lifting(int[] a, int start, int t) {
+        int cur = start;
+        for (int j = BITS - 1; j >= 0; --j) {
+            if (lift[j][cur] != -1 && a[lift[j][cur]] <= t) {
+                cur = lift[j][cur];
+            }
+        }
+        if (lift[0][cur] != -1 && a[lift[0][cur]] > t) {
+            return lift[0][cur];
+        } else {
+            return -1;
+        }
+    }
+
+    private void buildlifting(int n) {
+        for (int k = 1; k < BITS; k++) {
+            for (int i = 0; i < n; i++) {
+                if (lift[k - 1][i] != -1) {
+                    lift[k][i] = lift[k - 1][lift[k - 1][i]];
+                }
+            }
+        }
     }
 }
