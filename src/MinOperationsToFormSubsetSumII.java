@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class MinOperationsToFormSubsetSumIandII {
+public class MinOperationsToFormSubsetSumII {
     private int Max = (int) (1e9);
     private int[][] dp;
 
