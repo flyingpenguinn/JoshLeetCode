@@ -1,9 +1,8 @@
 import base.ArrayUtils;
-import javafx.util.Pair;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
-import java.util.Stack;
 
 public class MaxNumberOfBooksYouCanTake {
     // find the last index j where a[j]-j<=a[i]-i
@@ -11,42 +10,37 @@ public class MaxNumberOfBooksYouCanTake {
 
     public long maximumBooks(int[] a) {
         int n = a.length;
-        Stack<int[]> st = new Stack<>();
-
-        long res = 0;
-        long[] dp = new long[n];
-
+        Deque<Integer> st = new ArrayDeque<>();
+        int[] left = new int[n];
+        Arrays.fill(left, -1);
         for (int i = 0; i < n; ++i) {
-            long v = a[i];
-            int prev = -1;
-
-            while (!st.empty() && st.peek()[0] > a[i] - i) {
+            while (!st.isEmpty() && (a[st.peek()] - st.peek() > a[i] - i)) {
                 st.pop();
             }
-
-            if (!st.empty()) {
-                prev = st.peek()[1];
+            if (!st.isEmpty()) {
+                left[i] = st.peek();
             }
-
-            st.push(new int[]{a[i] - i, i});
-            long cur = 0;
-            if (prev == -1) {
-                long len = Math.min(i + 1, a[i]);
-                cur = (v - len + 1 + v) * len / 2;
-            } else {
-                long accu = dp[prev];
-                int len = i - prev;
-                cur = (v - len + 1 + v) * len / 2;
-
-                if (len <= a[i] - a[prev]) {
-                    cur += accu;
-                }
-            }
-
-            dp[i] = Math.max(cur, 0L + a[i]);
-            res = Math.max(res, cur);
+            st.push(i);
         }
-
+        long res = 0;
+        long[] dp = new long[n];
+        for (int i = 0; i < n; ++i) {
+            int prev = left[i];
+            long v = a[i];
+            long len = 0;
+            if (prev == -1) {
+                len = Math.min(i + 1, v);
+            } else {
+                len = i - prev;
+            }
+            long start = v - len + 1;
+            long csum = (start + v) * len / 2;
+            if (prev != -1) {
+                csum += dp[prev];
+            }
+            res = Math.max(res, csum);
+            dp[i] = csum;
+        }
         return res;
     }
 

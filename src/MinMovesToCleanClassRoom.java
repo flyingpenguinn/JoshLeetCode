@@ -1,94 +1,74 @@
 import java.util.*;
 
 public class MinMovesToCleanClassRoom {
-    static class Status {
-        int i;
-        int j;
-        int lstatus;
-        int energy;
-        int moves;
+    // only need deque for simple bfs
+    // only need best for dominance case!
+    private int Max = (int) 1e18;
 
-        public Status(int i, int j, int lstatus, int energy, int moves) {
-            this.i = i;
-            this.j = j;
-            this.lstatus = lstatus;
-            this.energy = energy;
-            this.moves = moves;
-        }
-    }
+    private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    private final int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    public int minMoves(String[] a, int energy) {
+    public int minMoves(String[] a, int maxe) {
         int m = a.length;
         int n = a[0].length();
-        int Max = (int) 1e9;
-        Deque<Status> q = new ArrayDeque<>();
-        int starti = -1;
-        int startj = -1;
-        Map<Integer, Map<Integer, Integer>> lm = new HashMap<>();
+
+        int si = -1;
+        int sj = -1;
+        int[][] lmap = new int[m][n];
         int lindex = 0;
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
-                final char v = a[i].charAt(j);
-                if (v == 'L') {
-                    lm.computeIfAbsent(i, p -> new HashMap<>()).put(j, lindex);
-                    lindex += 1;
-                } else if (v == 'S') {
-                    starti = i;
-                    startj = j;
+                if (a[i].charAt(j) == 'S') {
+                    si = i;
+                    sj = j;
+                } else if (a[i].charAt(j) == 'L') {
+                    lmap[i][j] = lindex++;
                 }
             }
         }
-        int[][][][] dist = new int[m][n][energy + 1][(1 << lindex)];
+        int[][][] best = new int[m][n][(1 << (lindex))];
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
-                for (int k = 0; k <= energy; ++k) {
-                    Arrays.fill(dist[i][j][k], Max);
-                }
+                Arrays.fill(best[i][j], -1);
+
             }
         }
-        q.offerLast(new Status(starti, startj, 0, energy, 0));
-        while (!q.isEmpty()) {
-            Status top = q.pollFirst();
-            int i = top.i;
-            int j = top.j;
-
-            int lstatus = top.lstatus;
-            int cenergy = top.energy;
-
-            int cmoves = top.moves;
-            if (top.lstatus + 1 == (1 << lindex)) {
-                return cmoves;
+        Deque<int[]> pq = new ArrayDeque<>();
+        pq.offer(new int[]{si, sj, maxe, 0, 0});
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            int r = top[0];
+            int c = top[1];
+            int ce = top[2];
+            int cl = top[3];
+            int cd = top[4];
+            if (cl + 1 == (1 << lindex)) {
+                return cd;
             }
-            if (cenergy == 0 && a[i].charAt(j) != 'R') {
+            if (ce == 0) {
                 continue;
             }
-            int nmoves = cmoves + 1;
+            int nd = cd + 1;
             for (int[] d : dirs) {
-                int ni = i + d[0];
-                int nj = j + d[1];
-                if (ni >= 0 && ni < m && nj >= 0 && nj < n) {
-                    char nv = a[ni].charAt(nj);
-                    if (nv == 'X') {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n && a[nr].charAt(nc) != 'X') {
+                    int nce = ce - 1;
+
+                    if (a[nr].charAt(nc) == 'R') {
+                        nce = maxe;
+                    } else if (nce < 0) {
                         continue;
                     }
-                    int nenergy = cenergy - 1;
-                    if (nv == 'R') {
-                        nenergy = energy;
+                    int ncl = cl;
+                    if (a[nr].charAt(nc) == 'L') {
+                        int cindex = lmap[nr][nc];
+                        ncl |= (1 << cindex);
                     }
-
-                    int nlstatus = lstatus;
-                    if (nv == 'L') {
-                        int nlindex = lm.get(ni).get(nj);
-                        if ((((lstatus >> nlindex) & 1) == 0)) {
-                            nlstatus |= (1 << nlindex);
-                        }
+                    if (nce <= best[nr][nc][ncl]) {
+                        continue;
                     }
-                    if (dist[ni][nj][nenergy][nlstatus] > nmoves) {
-                        dist[ni][nj][nenergy][nlstatus] = nmoves;
-                        q.offerLast(new Status(ni, nj, nlstatus, nenergy, nmoves));
-                    }
+                    best[nr][nc][ncl] = nce;
+                    pq.offer(new int[]{nr, nc, nce, ncl, nd});
 
                 }
             }
