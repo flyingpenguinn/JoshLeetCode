@@ -1,38 +1,65 @@
-public class DeliverBoxesFromStorageToPorts {
+import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 
-    public int boxDelivering(int[][] a, int pn, int maxBoxes, int maxWeight) {
+public class DeliverBoxesFromStorageToPorts {
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+        } else {
+            m.put(k, nv);
+        }
+    }
+
+    public int boxDelivering(int[][] a, int portsCount, int maxBoxes, int maxWeight) {
         int n = a.length;
-        // dp[i] is the cost from 0...i
-        int[] dp = new int[n];
-        int j = 0;
-        int w = 0;
-        // extra ports to travel at each i. note for 0, no extra port to trave so =0
-        int[] stops = new int[n];
-        stops[0] = 0;
-        for (int i = 1; i < n; i++) {
+
+        int[] blocks = new int[n];
+        blocks[0] = 0;
+        for (int i = 1; i < n; ++i) {
             if (a[i][0] != a[i - 1][0]) {
-                stops[i] = stops[i - 1] + 1;
+                blocks[i] = blocks[i - 1] + 1;
             } else {
-                stops[i] = stops[i - 1];
+                blocks[i] = blocks[i - 1];
             }
         }
-        for (int i = 0; i < n; i++) {
-            // j...i, so i-j+1 is the box count. note we should add w here first
-            w += a[i][1];
-            int boxes = i - j + 1;
-            if (boxes > maxBoxes) {
-                w -= a[j++][1];
+        int[] right = new int[n];
+        Arrays.fill(right, -1);
+        int i = 0;
+        int j = 0;
+        int cb = 0;
+        int cw = 0;
+        for (i = 0; i < n; ++i) {
+            while (j < n && cb + 1 <= maxBoxes && cw + a[j][1] <= maxWeight) {
+                cb += 1;
+                cw += a[j][1];
+                ++j;
             }
-            while (w > maxWeight) {
-                w -= a[j++][1];
-            }
-            while (j < i && dp[j] == (j == 0 ? 0 : dp[j - 1])) {
-                w -= a[j++][1];
-            }
-            // j... i so j<=i. we are guaranteed to start a new trip at j comparing to j-1
-            int cstops = stops[i] - stops[j];
-            dp[i] = (j == 0 ? 0 : dp[j - 1]) + cstops + 2;
+            right[i] = j - 1;
+            cb -= 1;
+            cw -= a[i][1];
         }
-        return dp[n - 1];
+        int[] dp = new int[n + 1];
+        TreeMap<Integer, Integer> m = new TreeMap<>();
+        j = n - 1;
+
+        for (i = n - 1; i >= 0; --i) {
+            int end = right[i];
+            while (j > end) {
+                int v = blocks[j] + dp[j + 1];
+                update(m, v, -1);
+                --j;
+            }
+            dp[i] = 2 + dp[i + 1];
+            if (!m.isEmpty()) {
+                int minv = m.firstKey();
+                int cur = minv - blocks[i] + 2;
+                dp[i] = Math.min(dp[i], cur);
+            }
+            int cv = blocks[i] + dp[i + 1];
+            update(m, cv, 1);
+        }
+        return dp[0];
     }
 }
