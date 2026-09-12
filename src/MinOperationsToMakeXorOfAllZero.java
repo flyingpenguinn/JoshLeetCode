@@ -1,5 +1,3 @@
-import base.ArrayUtils;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
@@ -48,10 +46,5 @@ public class MinOperationsToMakeXorOfAllZero {
             return -1;
         }
         return mincnt;
-    }
-
-    static void main() {
-        System.out.println(new MinOperationsToMakeXorOfAllZero().minOperations(ArrayUtils.read1d("6,15,15,15")));
-        System.out.println(new MinOperationsToMakeXorOfAllZero().minOperations(ArrayUtils.read1d("8,1,4,8,2")));
     }
 }
