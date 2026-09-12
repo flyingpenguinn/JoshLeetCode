@@ -4,100 +4,113 @@ import java.util.Collections;
 import java.util.List;
 
 public class MaxScoreOfNonOverlappingIntervals {
-    private long[][] dp;
-    private int[][] dpc;
-    private int[] nexts;
+    private RV[][] dp;
 
-    public int[] maximumWeight(List<List<Integer>> a) {
+    class Interval {
+        int start;
+        int end;
+        long weight;
+        int index;
 
-        int n = a.size();
+        public Interval(int start, int end, long weight, int index) {
+            this.start = start;
+            this.end = end;
+            this.weight = weight;
+            this.index = index;
+        }
+    }
+
+    public int[] maximumWeight(List<List<Integer>> input) {
+        int n = input.size();
+        Interval[] a = new Interval[n];
         for (int i = 0; i < n; ++i) {
-            a.get(i).add(i);
+            a[i] = new Interval(input.get(i).get(0), input.get(i).get(1), input.get(i).get(2), i);
         }
-        Collections.sort(a, (x, y) -> Integer.compare(x.get(0), y.get(0)));
-        dp = new long[n + 1][4];
-        dpc = new int[n + 1][4];
-        nexts = new int[n + 1];
-        Arrays.fill(nexts, -1);
-        for (int i = 0; i <= n; ++i) {
-            Arrays.fill(dp[i], -1);
-            Arrays.fill(dpc[i], -1);
-        }
-        long best = solve(a, 0, 0);
+        Arrays.sort(a, (x, y) -> Integer.compare(x.start, y.start));
 
-
-        List<Integer> res = new ArrayList<>();
+        dp = new RV[n][5];
         for (int i = 0; i < n; ++i) {
-            if (dp[i][0] != best) {
-                continue;
-            }
-
-            if (res.isEmpty() || res.get(0) > a.get(dpc[i][0]).get(3)) {
-                int k = i;
-                int j = 0;
-                List<Integer> cres = new ArrayList<>();
-                while (k >= 0 && j < 4 && dpc[k][j] != -1) {
-                    final int topick = dpc[k][j];
-                    cres.add(a.get(topick).get(3));
-                    k = nexts[dpc[k][j]];
-                    j += 1;
-                }
-                Collections.sort(cres);
-                res = cres;
-            }
+            Arrays.fill(dp[i], null);
         }
-        int[] rres = new int[res.size()];
+        // start and max weight starting at i (might skip i)
+        RV rt = solve(a, 0, 4);
+        List<Integer> res = rt.indexes;
+        int[] rr = new int[res.size()];
         for (int i = 0; i < res.size(); ++i) {
-            rres[i] = res.get(i);
+            rr[i] = res.get(i);
         }
-        return rres;
+        Arrays.sort(rr);
+        return rr;
     }
 
 
-    private long solve(List<List<Integer>> a, int i, int j) {
-        int n = a.size();
+    class RV {
+        List<Integer> indexes;
+        long wsum;
+        int ci;
+
+        public RV(List<Integer> indexes, long wsum, int ci) {
+            this.indexes = indexes;
+            this.wsum = wsum;
+            this.ci = ci;
+        }
+    }
+
+    private RV solve(Interval[] a, int i, int rem) {
+        int n = a.length;
+
         if (i == n) {
-            return 0;
+            return new RV(new ArrayList<>(), 0, n);
         }
-        if (j == 4) {
-            return 0;
+        if (dp[i][rem] != null) {
+            return dp[i][rem];
         }
-        if (dp[i][j] != -1) {
-            return dp[i][j];
+        RV res = solve(a, i + 1, rem);
+        RV way2 = new RV(new ArrayList<>(), 0, n);
+        if (rem >= 1) {
+            int cend = a[i].end;
+            int pos = binary(a, cend);
+            RV later = solve(a, pos, rem - 1);
+            List<Integer> nl = new ArrayList<>();
+            nl.addAll(later.indexes);
+            nl.add(a[i].index);
+            Collections.sort(nl);
+            way2 = new RV(nl, later.wsum + a[i].weight, i);
         }
-        long way1 = solve(a, i + 1, j);
-        int end = a.get(i).get(1);
-        int next = binary(a, end);
-        nexts[i] = next;
-        long way2 = a.get(i).get(2) + solve(a, next, j + 1);
-        if (way2 > way1) {
-            dpc[i][j] = i;
-        } else if (way2 < way1) {
-            dpc[i][j] = dpc[i + 1][j];
-        } else {
-            int v1 = a.get(dpc[i + 1][j]).get(3);
-            int v2 = a.get(i).get(3);
-            if (v1 < v2) {
-                dpc[i][j] = dpc[i + 1][j];
-            } else {
-                dpc[i][j] = i;
-            }
+        if (way2.wsum > res.wsum) {
+            res = way2;
+        } else if (way2.wsum == res.wsum && better(way2, res)) {
+            res = way2;
         }
-        long res = Math.max(way1, way2);
-        dp[i][j] = res;
+        dp[i][rem] = res;
         return res;
     }
 
-    private int binary(List<List<Integer>> a, int t) {
-        int n = a.size();
+    private boolean better(RV v1, RV v2) {
+        int i = 0;
+        for (i = 0; i < v1.indexes.size() && i < v2.indexes.size(); ++i) {
+            if (v1.indexes.get(i) < v2.indexes.get(i)) {
+                return true;
+            } else if (v1.indexes.get(i) > v2.indexes.get(i)) {
+                return false;
+            }
+        }
+        if (i == v1.indexes.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int binary(Interval[] a, int t) {
         int l = 0;
-        int u = a.size() - 1;
+        int u = a.length - 1;
         while (l <= u) {
             int mid = l + (u - l) / 2;
-            if (a.get(mid).get(0) <= t) {
-                l = mid + 1;
-            } else {
+            if (a[mid].start > t) {
                 u = mid - 1;
+            } else {
+                l = mid + 1;
             }
         }
         return l;
