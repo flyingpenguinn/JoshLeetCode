@@ -7,52 +7,65 @@ public class MaxNumberOfNonoverlappingStrings {
 
     // 1. find good substrings first, at most 26 of them starting from a left
     // 2. use normal interval way to pick the most non conflicting intervals
+    private int[][] range = new int[26][2];
+
+
     public List<String> maxNumOfSubstrings(String s) {
         int n = s.length();
-        int[] right = new int[26];
-        int[] left = new int[26];
-        for (int i = 0; i < n; i++) {
-            right[s.charAt(i) - 'a'] = i;
+
+        for (int i = 0; i < 26; ++i) {
+            Arrays.fill(range[i], -1);
         }
-        for (int i = n - 1; i >= 0; i--) {
-            left[s.charAt(i) - 'a'] = i;
-        }
-        List<int[]> intervals = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ++i) {
             int cind = s.charAt(i) - 'a';
-            if (left[cind] == i) {
-                // doing this at most 26 times. for each start we find the end and validate if this is a valid substring
-                int cend = extend(s, i, right[cind], left, right);
-                if (cend != -1) {
-                    intervals.add(new int[]{i, cend});
+            if (range[cind][0] == -1) {
+                range[cind][0] = i;
+            }
+            range[cind][1] = i;
+        }
+        List<int[]> l = new ArrayList<>();
+        for (int i = 0; i < 26; ++i) {
+            int start = range[i][0];
+            int end = range[i][1];
+            if (start == -1) {
+                continue;
+            }
+            boolean bad = false;
+            for (int j = start; j <= end; ++j) {
+                int jv = s.charAt(j) - 'a';
+                if (range[jv][0] < start) {
+                    bad = true;
+                    break;
+                } else {
+                    end = Math.max(end, range[jv][1]);
                 }
             }
-        }
-        List<String> res = new ArrayList<>();
-        Collections.sort(intervals, (x, y) -> Integer.compare(x[1], y[1]));
-        int end = -1;
-        for (int i = 0; i < intervals.size(); i++) {
-            int cs = intervals.get(i)[0];
-            int ce = intervals.get(i)[1];
-            if (cs > end) {
-                res.add(s.substring(cs, ce + 1));
-                end = ce;
+            if (!bad) {
+                l.add(new int[]{start, end});
             }
+        }
+        Collections.sort(l, (x, y) -> {
+            if (x[1] != y[1]) {
+                return Integer.compare(x[1], y[1]);
+            } else {
+                return Integer.compare(y[0], x[0]);
+            }
+        });
+        int start = -1;
+        int end = -1;
+        List<String> res = new ArrayList<>();
+        for (int i = 0; i < l.size(); ++i) {
+            if (l.get(i)[0] > end) {
+                if (start != -1) {
+                    res.add(s.substring(start, end + 1));
+                }
+                start = l.get(i)[0];
+                end = l.get(i)[1];
+            }
+        }
+        if (start != -1) {
+            res.add(s.substring(start, end + 1));
         }
         return res;
-    }
-
-    private int extend(String s, int i, int j, int[] left, int[] right) {
-
-        int end = j;
-        for (int k = i; k <= end; k++) {
-            int cind = s.charAt(k) - 'a';
-            if (left[cind] < i) {
-                return -1;
-            } else if (right[cind] > end) {
-                end = right[cind];
-            }
-        }
-        return end;
     }
 }
