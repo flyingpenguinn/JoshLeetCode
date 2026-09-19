@@ -1,40 +1,37 @@
 import base.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class SetIntersectionAtLeastTwo {
 
     // if it's one point solution is pick the last point
     // pick e1=end-1 and e2=end
-    // if >end, add two more
-    // if <=end-1, nothing
-    // otherwise tricky part: we make the old e2 to e1, and current end becomes e2. this can make e1==e2, so in this case e1=e2-1
+    // note sort by end first then start desc
     public int intersectionSizeTwo(int[][] a) {
         int n = a.length;
-        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
-        int res = 2;
-        int p1 = a[0][1] - 1;
-        int p2 = a[0][1];
-        for (int i = 1; i < n; ++i) {
-            int cstart = a[i][0];
-            int cend = a[i][1];
-            if (cstart <= p1) {
-                continue;
-            } else if (cstart <= p2) {
-                if (p2 < cend) {
-                    p1 = p2;
-                    p2 = cend;
-                    ++res;
-                } else {
-                    p1 = cend - 1;
-                    p2 = cend;
-                    ++res;
-                }
+        int p1 = -1;
+        int p2 = -1;
+        int res = 0;
+        Arrays.sort(a, (x, y) -> {
+            if (x[1] != y[1]) {
+                return Integer.compare(x[1], y[1]);
             } else {
-                p1 = cend - 1;
-                p2 = cend;
+                return Integer.compare(y[0], x[0]);
+            }
+        });
+        for (int i = 0; i < n; ++i) {
+            int v1 = a[i][0];
+            int v2 = a[i][1];
+            if (v1 <= p1 && v2 >= p2) {
+                continue;
+            } else if (v1 > p2) {
+                p1 = v2 - 1;
+                p2 = v2;
                 res += 2;
+            } else {
+                res += 1;
+                p1 = p2;
+                p2 = v2;
             }
         }
         return res;
