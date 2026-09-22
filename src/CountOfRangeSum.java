@@ -1,7 +1,4 @@
-import base.ArrayUtils;
-
 import java.util.Arrays;
-import java.util.Map;
 import java.util.TreeMap;
 
 /*
@@ -20,123 +17,70 @@ Explanation: The three ranges are : [0,0], [2,2], [0,2] and their respective sum
  */
 public class CountOfRangeSum {
     // typical rank based bit similar to count smaller after self
-    public int countRangeSum(int[] a, int l, int u) {
+    static class FenWick {
+        private int[] bit;
+
+        public FenWick(int n) {
+            this.bit = new int[n];
+        }
+
+        private int q(int i) {
+            int res = 0;
+            while (i > 0) {
+                res += bit[i];
+                i -= i & (-i);
+            }
+            return res;
+        }
+
+        private void u(int i, int d) {
+
+            while (i < bit.length) {
+                bit[i] += d;
+                i += i & (-i);
+            }
+        }
+    }
+
+
+    public int countRangeSum(int[] a, int lower, int upper) {
         int n = a.length;
-        long[] sum = new long[n + 1];
-        sum[0] = 0L;
-        for (int i = 1; i <= n; i++) {
-            sum[i] = sum[i - 1] + a[i - 1];
+        long[] psum = new long[n + 1];
+        for (int i = 1; i <= n; ++i) {
+            psum[i] = psum[i - 1] + a[i - 1];
         }
-        Arrays.sort(sum);
-        TreeMap<Long, Integer> m = new TreeMap<>();
-        int rank = 1;
-        m.put(sum[0], rank++);
-        for (int i = 1; i <= n; i++) {
-            if (sum[i] != sum[i - 1]) {
-                m.put(sum[i], rank++);
+        TreeMap<Long, Integer> rank = new TreeMap<>();
+        long[] psumcp = Arrays.copyOf(psum, n + 1);
+        Arrays.sort(psumcp);
+        int cr = 1;
+        for (int i = 0; i <= n; ++i) {
+            if (i == 0 || psumcp[i] != psumcp[i - 1]) {
+                rank.put(psumcp[i], cr++);
             }
         }
-        int[] b = new int[rank];
-        u(b, m.get(0L));
-        long csum = 0L;
-        int r = 0;
-
-        // reverse l,u here and note lower for u
-        for (int i = 0; i < n; i++) {
-            csum += a[i];
-            Long ek = m.floorKey(csum - l);
-            int pe = (ek == null) ? 0 : p(b, m.get(ek));
-            Long sk = m.lowerKey(csum - u);
-            int ps = (sk == null) ? 0 : p(b, m.get(sk));
-            //   System.out.println(i+" start key="+sk+" ps= "+ps+" end key="+ek+" pe= "+pe);
-            r += pe - ps;
-            u(b, m.get(csum));
-        }
-        return r;
-    }
-
-    void u(int[] b, int i) {
-        if (i == 0) {
-            return;
-        }
-        while (i < b.length) {
-            b[i]++;
-            i += i & (-i);
-        }
-    }
-
-    int p(int[] b, int i) {
-        int r = 0;
-        while (i > 0) {
-            r += b[i];
-            i -= i & (-i);
-        }
-        return r;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new CountRangeSumDivideConquer().countRangeSum(ArrayUtils.read1d("[3,9,4,2,6,8]"), 1, 10));
-    }
-}
-
-// whenever we feel we need a good submap.size to calc how many are bigger/smaller we should consider the merge sort way
-class CountRangeSumDivideConquer {
-    int r = 0;
-
-    public int countRangeSum(int[] a, int nl, int nu) {
-        int n = a.length;
-        long[] sum = new long[n + 1];
-        sum[0] = 0L;
-        for (int i = 1; i <= n; i++) {
-            sum[i] = sum[i - 1] + a[i - 1];
-        }
-        doc(sum, 0, n, nl, nu);
-        return r;
-    }
-
-    private void doc(long[] a, int l, int u, int nl, int nu) {
-        if (l >= u) {
-            return;
-        }
-        long[] t = new long[u - l + 1];
-        int mid = l + (u - l) / 2;
-        doc(a, l, mid, nl, nu);
-        doc(a, mid + 1, u, nl, nu);
-        int j = mid + 1;
-        int i = l;
-        int k = l;
-        // note this neat way to getting numbers between a[j]-u, a[j]-l for each j: effectively a sliding window!
-        while (j <= u) {
-            while (i <= mid && a[i] < a[j] - nu) {
-                i++;
+        FenWick fenWick = new FenWick(cr);
+        long res = 0;
+        for (int i = 0; i <= n; ++i) {
+            long v1 = psum[i] - lower;
+            Long lookup1 = rank.floorKey(v1);
+            int lookuprank1 = 0;
+            if (lookup1 != null) {
+                lookuprank1 = rank.get(lookup1);
             }
-            while (k <= mid && a[k] <= a[j] - nl) {
-                k++;
+            long count1 = fenWick.q(lookuprank1);
+
+            long v2 = psum[i] - upper - 1;
+            Long lookup2 = rank.floorKey(v2);
+            int lookuprank2 = 0;
+            if (lookup2 != null) {
+                lookuprank2 = rank.get(lookup2);
             }
-            // j...k-1
-            r += k - i;
-            j++;
+            long count2 = fenWick.q(lookuprank2);
+            res += count1 - count2;
+            int crank = rank.get(psum[i]);
+            fenWick.u(crank, 1);
         }
-        j = mid + 1;
-        i = l;
-        int ti = 0;
-        while (i <= mid && j <= u) {
-            if (a[i] <= a[j]) {
-                t[ti++] = a[i];
-                i++;
-            } else {
-                t[ti++] = a[j];
-                j++;
-            }
-        }
-        while (i <= mid) {
-            t[ti++] = a[i++];
-        }
-        while (j <= u) {
-            t[ti++] = a[j++];
-        }
-        for (i = l; i <= u; i++) {
-            a[i] = t[i - l];
-        }
+
+        return (int) res;
     }
 }
