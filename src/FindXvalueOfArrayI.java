@@ -6,22 +6,21 @@ public class FindXvalueOfArrayI {
 
     public long[] resultArray(int[] a, int k) {
         int n = a.length;
-        long[][] dp = new long[n][k];
+        long[][] left = new long[n][k];
         for (int i = 0; i < n; ++i) {
-            int v = a[i];
-            dp[i][v % k] = 1;
-        }
-        // dp[i][j]: ending at i, remainder = j
-        for (int i = 1; i < n; ++i) {
+            long v = a[i];
             for (int j = 0; j < k; ++j) {
-                long mod = (1L * j * a[i]) % k;
-                dp[i][(int) (mod)] += dp[i - 1][j];
+                int nv = (int) ((j * v) % k);
+                left[i][nv] += (i == 0 ? 0 : left[i - 1][j]);
             }
+            left[i][(int) (v % k)] += 1;
         }
+
         long[] res = new long[k];
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < k; ++j) {
-                res[j] += dp[i][j];
+                long cur = left[i][j] ;
+                res[j] += cur;
             }
         }
         return res;
