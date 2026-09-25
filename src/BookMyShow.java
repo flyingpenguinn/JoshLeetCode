@@ -1,10 +1,6 @@
-
 import java.util.Arrays;
 
 class BookMyShow {
-
-    // each row is left to right consecutive
-    // use seg tree max/sum for maintainence
     static class Node {
         int l, r;
         long min, max, sum;
@@ -23,21 +19,21 @@ class BookMyShow {
     }
 
     static class SegTree {
-        BookMyShow.Node[] tree;
-        long[] lazy;
+        Node[] tree;
+
         int n;
 
         SegTree(int[] a) {
             this.n = a.length;
-            this.tree = new BookMyShow.Node[4 * n + 5];
-            this.lazy = new long[4 * n + 5];
+            this.tree = new Node[4 * n + 5];
+
             build(1, 0, n - 1, a);
         }
 
         private void build(int idx, int l, int r, int[] a) {
             if (l == r) {
                 long v = a[l];
-                tree[idx] = new BookMyShow.Node(l, r, v, v, v);
+                tree[idx] = new Node(l, r, v, v, v);
                 return;
             }
 
@@ -48,8 +44,8 @@ class BookMyShow {
             tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
 
-        private BookMyShow.Node merge(BookMyShow.Node left, BookMyShow.Node right) {
-            return new BookMyShow.Node(
+        private Node merge(Node left, Node right) {
+            return new Node(
                     left.l,
                     right.r,
                     Math.min(left.min, right.min),
@@ -59,38 +55,23 @@ class BookMyShow {
         }
 
         private void apply(int idx, long delta) {
-            BookMyShow.Node cur = tree[idx];
-
+            Node cur = tree[idx];
+            if (cur.len() > 1) {
+                throw new IllegalArgumentException("Only allowed to be point add");
+            }
             cur.min += delta;
             cur.max += delta;
             cur.sum += delta * cur.len();
 
-            lazy[idx] += delta;
         }
 
-        private void push(int idx) {
-            if (lazy[idx] == 0) {
-                return;
-            }
-
-            long delta = lazy[idx];
-
-            apply(idx * 2, delta);
-            apply(idx * 2 + 1, delta);
-
-            lazy[idx] = 0;
-        }
 
         public void pointAdd(int q, long delta) {
-            rangeAdd(1, q, q, delta);
+            pointAdd(1, q, q, delta);
         }
 
-        public void rangeAdd(int ql, int qr, long delta) {
-            rangeAdd(1, ql, qr, delta);
-        }
-
-        private void rangeAdd(int idx, int ql, int qr, long delta) {
-            BookMyShow.Node cur = tree[idx];
+        private void pointAdd(int idx, int ql, int qr, long delta) {
+            Node cur = tree[idx];
 
             if (qr < cur.l || cur.r < ql) {
                 return;
@@ -101,20 +82,45 @@ class BookMyShow {
                 return;
             }
 
-            push(idx);
 
-            rangeAdd(idx * 2, ql, qr, delta);
-            rangeAdd(idx * 2 + 1, ql, qr, delta);
+            pointAdd(idx * 2, ql, qr, delta);
+            pointAdd(idx * 2 + 1, ql, qr, delta);
 
             tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
 
-        public BookMyShow.Node query(int ql, int qr) {
+        public Node lookup(int ql, int qr, int t) {
+            return lookup(1, ql, qr, t);
+        }
+
+        private Node lookup(int idx, int ql, int qr, int t) {
+            Node cur = tree[idx];
+
+            if (qr < cur.l || cur.r < ql) {
+                return null;
+            }
+            if (cur.len() == 1) {
+                if (cur.sum >= t) {
+                    return cur;
+                } else {
+                    return null;
+                }
+            }
+            if (tree[idx * 2].max >= t) {
+                return lookup(idx * 2, ql, qr, t);
+            } else if (tree[idx * 2 + 1].max >= t) {
+                return lookup(idx * 2 + 1, ql, qr, t);
+            } else {
+                return null;
+            }
+        }
+
+        public Node query(int ql, int qr) {
             return query(1, ql, qr);
         }
 
-        private BookMyShow.Node query(int idx, int ql, int qr) {
-            BookMyShow.Node cur = tree[idx];
+        private Node query(int idx, int ql, int qr) {
+            Node cur = tree[idx];
 
             if (qr < cur.l || cur.r < ql) {
                 return null;
@@ -124,10 +130,8 @@ class BookMyShow {
                 return cur;
             }
 
-            push(idx);
-
-            BookMyShow.Node left = query(idx * 2, ql, qr);
-            BookMyShow.Node right = query(idx * 2 + 1, ql, qr);
+            Node left = query(idx * 2, ql, qr);
+            Node right = query(idx * 2 + 1, ql, qr);
 
             if (left == null) {
                 return right;
@@ -140,79 +144,43 @@ class BookMyShow {
     }
 
     private int[] rows;
-    int n;
-    int m;
-    private BookMyShow.SegTree seg;
-
+    private int m;
+    private int n;
+    private int start = 0;
+    private SegTree seg;
 
     public BookMyShow(int n, int m) {
-        this.n = n;
-        this.m = m;
         rows = new int[n];
-        int[] emptyrows = new int[n];
-        Arrays.fill(emptyrows, m);
-        seg = new BookMyShow.SegTree(emptyrows);
+        Arrays.fill(rows, m);
+        this.m = m;
+        seg = new SegTree(rows);
     }
 
     public int[] gather(int k, int maxRow) {
-        int l = 0;
-        int u = maxRow;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            long cmax = seg.query(0, mid).max;
-            if (cmax >= k) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
-        }
-        if (l == maxRow + 1) {
-            return new int[0];
+        Node cur = seg.lookup(0, maxRow, k);
+        if (cur != null) {
+            int len = (int) cur.sum;
+            int start = m - len;
+            seg.pointAdd(cur.l, -k);
+            return new int[]{cur.l, start};
         } else {
-            int oldrowsl = rows[l];
-            rows[l] += k;
-            seg.pointAdd(l, -k);
-            while (firstnonfull < n && rows[firstnonfull] == m) {
-                ++firstnonfull;
-            }
-            return new int[]{l, oldrowsl};
+            return new int[0];
         }
     }
 
-    private int firstnonfull = 0;
-
     public boolean scatter(int k, int maxRow) {
-        int l = 0;
-        int u = maxRow;
-        while (l <= u) {
-            int mid = l + (u - l) / 2;
-            long csum = seg.query(0, mid).sum;
-            if (csum >= k) {
-                u = mid - 1;
-            } else {
-                l = mid + 1;
-            }
-        }
-        if (l == maxRow + 1) {
+        Node cur = seg.query(0, maxRow);
+        if (cur.sum < k) {
             return false;
-        } else {
-            int rem = k;
-            for (int i = firstnonfull; i <= maxRow; ++i) {
-                int diff = m - rows[i];
-                if (diff <= rem) {
-                    rows[i] += diff;
-                    rem -= diff;
-                    seg.pointAdd(i, -diff);
-                } else {
-                    rows[i] += rem;
-                    seg.pointAdd(i, -rem);
-                    break;
-                }
-            }
-            while (firstnonfull < n && rows[firstnonfull] == m) {
-                ++firstnonfull;
-            }
-            return true;
         }
+        Node start = seg.lookup(0, maxRow, 1);
+        // we must terminate quickly for k
+        for (int j = start.l; j <= maxRow && k > 0; ++j) {
+            Node rem = seg.query(j, j);
+            int taken = Math.min((int) rem.sum, k);
+            seg.pointAdd(j, -taken);
+            k -= taken;
+        }
+        return true;
     }
 }
