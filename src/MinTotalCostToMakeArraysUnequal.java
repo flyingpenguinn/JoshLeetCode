@@ -3,38 +3,56 @@ import java.util.Map;
 
 public class MinTotalCostToMakeArraysUnequal {
     // find the initial bad set s. then try to add more elements to it if there is a dominant element
-    public long minimumTotalCost(int[] nums1, int[] nums2) {
-        int n = nums1.length;
-        long res = 0;
-        Map<Integer, Integer> freq = new HashMap<>();
-        int maxFrequency = 0;
-        int maxFrequencyValue = 0;
-        int toSwap = 0;
+    // the 1/2 rule for swapping
+    private int update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        if (nv <= 0) {
+            m.remove(k);
+            return 0;
+        } else {
+            m.put(k, nv);
+            return nv;
+        }
+    }
 
-        for (int i = 0; i < n; i++) {
-            if (nums1[i] == nums2[i]) {
-                freq.put(nums1[i], freq.getOrDefault(nums1[i], 0) + 1);
-                if (freq.get(nums1[i]) > maxFrequency) {
-                    maxFrequencyValue = nums1[i];
+    public long minimumTotalCost(int[] a, int[] b) {
+        int n = a.length;
+        Map<Integer, Integer> f = new HashMap<>();
+        int diffs = 0;
+        int maxf = 0;
+        int maxfkey = 0;
+        long sum = 0;
+        for (int i = 0; i < n; ++i) {
+            if (a[i] == b[i]) {
+                int nv = update(f, a[i], 1);
+                if (nv > maxf) {
+                    maxf = nv;
+                    maxfkey = a[i];
                 }
-                maxFrequency = Math.max(maxFrequency, freq.get(nums1[i]));
-                toSwap++;
-                res += i;
+                sum += i;
+                ++diffs;
             }
         }
-
-        for (int i = 0; i < n; i++) {
-            if (maxFrequency > toSwap / 2 && nums1[i] != nums2[i] && nums1[i] != maxFrequencyValue &&
-                    nums2[i] != maxFrequencyValue) {
-                res += i;
-                toSwap++;
-            }
+        if (maxf * 2 <= diffs) {
+            return sum;
         }
+        int needed = 2 * maxf - diffs;
+        for (int i = 0; i < n && needed > 0; ++i) {
+            int v = a[i];
+            if (a[i] == b[i]) {
+                continue;
+            }
 
-        if (maxFrequency > toSwap / 2) {
+            if (a[i] == maxfkey || b[i] == maxfkey) {
+                continue;
+            }
+            --needed;
+            sum += i;
+        }
+        if (needed == 0) {
+            return sum;
+        } else {
             return -1;
         }
-
-        return res;
     }
 }

@@ -43,78 +43,88 @@ The given expression represents a set of words based on the grammar given in the
  */
 public class BraceExpansionII {
     // for prasing questions: parse level 0 , first, then separate single blocks out. in these single blocks there shouldnt be level 0 commas
-    public List<String> braceExpansionII(String ex) {
-        Set<String> r = docomma(ex, 0, ex.length() - 1);
-        ArrayList<String> lr = new ArrayList<>(r);
-        Collections.sort(lr);
-        return lr;
-    }
-
-    // handle ones with ,. we should union them
-    private Set<String> docomma(String s, int start, int end) {
-        Set<String> r = new HashSet<>();
-        if (start > end) {
-            r.add("");
-            return r;
+    private Set<String> cart(Set<String> s1, Set<String> s2) {
+        if (s1.isEmpty()) {
+            return s2;
         }
-        int level = 0;
-        int last = start;
-        for (int i = start; i <= end + 1; i++) {
-            if (i == end + 1 || s.charAt(i) == ',' && level == 0) {
-                Set<String> cur = dosingleblock(s, last, i - 1);
-                r.addAll(cur);
-                last = i + 1;
-            } else if (s.charAt(i) == '{') {
-                level++;
-            } else if (s.charAt(i) == '}') {
-                level--;
+        if (s2.isEmpty()) {
+            return s1;
+        }
+        Set<String> res = new HashSet<>();
+        for (String s1i : s1) {
+            for (String s2i : s2) {
+                res.add(s1i + s2i);
             }
         }
-        return r;
+        return res;
     }
 
-    // l is the position of {
-    private int nextright(String s, int l, int u) {
+    private Set<String> union(Set<String> s1, Set<String> s2) {
+        Set<String> res = new HashSet<>();
+        res.addAll(s1);
+        res.addAll(s2);
+        return res;
+    }
+
+    public List<String> braceExpansionII(String s) {
+        Set<String> set = solve(s, 0, s.length() - 1);
+        List<String> res = new ArrayList<>(set);
+        Collections.sort(res);
+        return res;
+    }
+
+    private Set<String> solve(String s, int l, int u) {
+        Set<String> res = new HashSet<>();
+        int n = u - l + 1;
+        if (n == 1) {
+            res.add(String.valueOf(s.charAt(l)));
+            return res;
+        }
+
         int level = 0;
-        for (int i = l; i <= u; i++) {
-            if (s.charAt(i) == '{') {
-                level++;
-            } else if (s.charAt(i) == '}') {
-                level--;
+        int pre = l;
+        boolean found = false;
+        for (int i = l; i <= u; ++i) {
+            char c = s.charAt(i);
+            if (c == '{') {
+                ++level;
+            } else if (c == '}') {
+                --level;
+            } else if (c == ',' && level == 0) {
+                Set<String> cur = solve(s, pre, i - 1);
+                res = union(res, cur);
+                pre = i + 1;
+                found = true;
+            }
+        }
+        if (found) {
+            Set<String> cur = solve(s, pre, u);
+            res = union(res, cur);
+            return res;
+        }
+
+        level = 0;
+        int ilevel0 = l;
+        for (int i = l; i <= u; ++i) {
+            char c = s.charAt(i);
+            if (c == '{') {
                 if (level == 0) {
-                    return i;
+                    ilevel0 = i;
                 }
+                ++level;
+            } else if (c == '}') {
+                --level;
+                if (level == 0) {
+                    Set<String> cur = solve(s, ilevel0 + 1, i - 1);
+                    res = cart(res, cur);
+                }
+            } else if (level == 0) {
+                res = cart(res, solve(s, i, i));
             }
         }
-        return -1;
-    }
 
-    // 2 kinds of single block: start with {, or not
-    // if start with {, find the next right, and recurse on it. treat {} as a single unit
-    // otherwise the char is a single unit
-    private Set<String> dosingleblock(String s, int start, int end) {
-        Set<String> r = new HashSet<>();
-        if (start > end) {
-            r.add("");
-            return r;
-        }
-        if (Character.isLetter(s.charAt(start))) {
-            Set<String> later = dosingleblock(s, start + 1, end);
-            for (String l : later) {
-                r.add(s.charAt(start) + l);
-            }
-            return r;
-        } else {
-            int rend = nextright(s, start, end);
-            Set<String> cur = docomma(s, start + 1, rend - 1);
-            Set<String> later = docomma(s, rend + 1, end);
-            for (String c : cur) {
-                for (String l : later) {
-                    r.add(c + l);
-                }
-            }
-            return r;
-        }
+        return res;
+
     }
 
 
