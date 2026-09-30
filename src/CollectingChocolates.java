@@ -3,22 +3,27 @@ import base.ArrayUtils;
 import java.util.Arrays;
 
 public class CollectingChocolates {
-    public long minCost(int[] a, long x) {
+    // iterate through the max possible moves. Note each item is independent in cost, but share the overall transform cost
+    public long minCost(int[] a, int x) {
         int n = a.length;
-        long[] na = new long[n];
-        for (int i = 0; i < n; ++i) {
-            na[i] = a[i];
-        }
-        long res = (long) 2e18;
-        for (int i = 0; i < n; ++i) {
-            long cur = i * x;
-            for (int j = 0; j < n; ++j) {
-                na[j] = Math.min(na[j], a[(i + j) % n]);
+        long Max = (long) 1e16;
+        long res = Max;
+
+        long[] cmin = new long[n];
+
+        Arrays.fill(cmin, Max);
+        for (long moves = 0; moves < n; ++moves) {
+            long mc = moves * x;
+            for (int i = 0; i < n; ++i) {
+                int npos = (int) ((i + moves) % n);
+                long cc = a[npos];
+                cmin[i] = Math.min(cmin[i], cc);
             }
-            for (int j = 0; j < n; ++j) {
-                cur += na[j];
+            long csum = mc;
+            for (int i = 0; i < n; ++i) {
+                csum += cmin[i];
             }
-            res = Math.min(res, cur);
+            res = Math.min(res, csum);
         }
         return res;
     }
