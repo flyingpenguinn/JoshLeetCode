@@ -1,58 +1,53 @@
-import base.ArrayUtils;
-
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 public class MinAdjSwapsForKConsecutives {
-    // "move to consecutive" can usually be converted to
-    // move to center
-    // then compensate for the extra moves
+    /*
+   第 oi 个 1 在原位置 i
+→ normalized position = i - oi
+然后对于每个连续 k 个 1 的窗口：
+取 normalized positions 的 median
+→ 算所有点到 median 的绝对距离和
+    */
+    private int getcount(int[] sum, int j, int i) {
+        return sum[j] - (i == 0 ? 0 : sum[i - 1]);
+    }
+
     public int minMoves(int[] a, int k) {
         if (k == 1) {
             return 0;
         }
         int n = a.length;
-        List<Integer> ones = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
+        int oi = 0;
+        List<Integer> ol = new ArrayList<>();
+        for (int i = 0; i < n; ++i) {
             if (a[i] == 1) {
-                ones.add(i);
+                ol.add(i - oi);
+                ++oi;
             }
         }
-        int[] sum = new int[ones.size()];
-        for (int i = 0; i < ones.size(); i++) {
-            sum[i] = (i == 0 ? 0 : sum[i - 1]) + ones.get(i);
-        }
-        int min = Integer.MAX_VALUE;
-        for (int i = k - 1; i < ones.size(); i++) {
-            int head = i - k + 1;
-            if (k % 2 == 1) {
-                int mid = (head + i) / 2;
-                int left = getsum(sum, head, mid - 1);
-                int right = getsum(sum, mid + 1, i);
-                int r1 = right - left;
-                int r = (k - 1) / 2;
-                int r2 = r * (r + 1);  // 1,2,3...r on two sides
-                int cur = r1 - r2;
-                min = Math.min(min, cur);
-            } else {
-                int mid = (head + i) / 2;
-                int left = getsum(sum, head, mid - 1);
-                int right = getsum(sum, mid + 1, i);
-                int r1 = right - left - ones.get(mid); // extra -ones.get(mid) at position i
-                int r = (k - 2) / 2;
-                int r21 = r * (r + 1);
-                int r22 = r + 1;
-                int cur = r1 - r21 - r22;  // 1,2,3...r on two sides, plus an extra r+1 on the right
-                min = Math.min(min, cur);
-            }
-        }
-        return min;
-    }
 
-    // sum from i... j
-    private int getsum(int[] sum, int i, int j) {
-        return i > j ? 0 : sum[j] - ((i == 0) ? 0 : sum[i - 1]);
+        int on = ol.size();
+        int[] olsum = new int[on];
+        for (int i = 0; i < on; ++i) {
+            olsum[i] = (i == 0 ? 0 : olsum[i - 1]) + ol.get(i);
+        }
+        int res = (int) (1e9);
+        for (int i = 0; i < on; ++i) {
+            int j = i + k - 1;
+            if (j >= on) {
+                break;
+            }
+            int p = (i + j) / 2;
+            int lsum = getcount(olsum, p, i);
+            int rsum = getcount(olsum, j, p + 1);
+            int lcount = p - i + 1;
+            int rcount = k - lcount;
+            int lr = lcount * ol.get(p) - lsum;
+            int rr = rsum - rcount * ol.get(p);
+            int cur = lr + rr;
+            res = Math.min(res, cur);
+        }
+        return res;
     }
 }
