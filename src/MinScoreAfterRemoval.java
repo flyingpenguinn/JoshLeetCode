@@ -3,7 +3,7 @@ import base.ArrayUtils;
 import java.util.*;
 
 public class MinScoreAfterRemoval {
-    // enumerate cut points, then use start/finish time to check parenthood
+    // tree euler tour template. O(1) check if i is j ancestor after dfs
     private List<Integer>[] t;
     private int[] xor;
     private int res = (int) 1e9;
