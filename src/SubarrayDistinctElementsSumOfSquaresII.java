@@ -2,108 +2,173 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SubarrayDistinctElementsSumOfSquaresII {
-    //TODO: do it myself
-    class SegmentTree {
-        SegmentTree left;
-        SegmentTree right;
-        int leftVal;
-        int rightVal;
-        long sum;
-        long add;
+    class Node {
+        int l, r;
+        long min, max, sum;
+
+        Node(int l, int r, long min, long max, long sum) {
+            this.l = l;
+            this.r = r;
+            this.min = min;
+            this.max = max;
+            this.sum = sum;
+
+        }
+
+        int len() {
+            return r - l + 1;
+        }
     }
 
-    int MOD = 1_000_000_007;
-    SegmentTree root;
+    class SegTree {
+        Node[] tree;
+        long[] lazy;
+        int n;
 
-    private void buildTree(int n) {
-        root = new SegmentTree();
-        root.left = null;
-        root.right = null;
-        root.leftVal = 0;
-        root.rightVal = n;
-        root.sum = 0;
-        root.add = 0;
-    }
+        SegTree(int[] a) {
+            this.n = a.length;
+            this.tree = new Node[4 * n + 5];
+            this.lazy = new long[4 * n + 5];
+            build(1, 0, n - 1, a);
+        }
 
-    private void update(int from, int to, SegmentTree me) {
-        if (to < from) return;
-        me.sum += to - from + 1;
-        if (me.leftVal == from && me.rightVal == to) {
-            me.add++;
-        } else {
-            int mid = me.leftVal + (me.rightVal - me.leftVal) / 2;
-            if (me.left == null) {
-                me.left = new SegmentTree();
-                me.left.leftVal = me.leftVal;
-                me.left.rightVal = mid;
-                me.left.sum = (me.sum / (me.rightVal - me.leftVal + 1)) * (mid - me.leftVal + 1);
-                me.left.add = 0;
-
-                me.right = new SegmentTree();
-                me.right.leftVal = mid + 1;
-                me.right.rightVal = me.rightVal;
-                me.right.sum = (me.sum / (me.rightVal - me.leftVal + 1)) * (me.rightVal - (mid + 1) + 1);
-                me.right.add = 0;
+        private void build(int idx, int l, int r, int[] a) {
+            if (l == r) {
+                long v = a[l];
+                tree[idx] = new Node(l, r, v, v, v);
+                return;
             }
-            update(from, Math.min(to, mid), me.left);
-            update(Math.max(from, mid + 1), to, me.right);
-        }
-    }
 
-    private long query(int from, int to, SegmentTree me) {
-        if (to < from) return 0;
-        if (me.leftVal == me.rightVal) return me.sum;
-        if (me.leftVal == from && me.rightVal == to) {
-            return me.sum;
-        } else {
-            if (me.left == null) {
-                return me.add * (to - from + 1);
-            } else {
-                int mid = me.leftVal + (me.rightVal - me.leftVal) / 2;
-                return query(from, Math.min(mid, to), me.left) + query(Math.max(mid + 1, from), to, me.right) + me.add * (to - from + 1);
+            int mid = l + (r - l) / 2;
+            build(idx * 2, l, mid, a);
+            build(idx * 2 + 1, mid + 1, r, a);
+
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
+        }
+
+        private Node merge(Node left, Node right) {
+            long newsum = left.sum + right.sum;
+
+            return new Node(
+                    left.l,
+                    right.r,
+                    Math.min(left.min, right.min),
+                    Math.max(left.max, right.max),
+                    newsum
+            );
+
+        }
+
+        private void apply(int idx, long delta) {
+            Node cur = tree[idx];
+
+            cur.min += delta;
+            cur.max += delta;
+            int clen = cur.len();
+            cur.sum += delta * clen;
+            lazy[idx] += delta;
+        }
+
+        private void push(int idx) {
+            if (lazy[idx] == 0) {
+                return;
             }
+
+            long delta = lazy[idx];
+
+            apply(idx * 2, delta);
+            apply(idx * 2 + 1, delta);
+
+            lazy[idx] = 0;
+        }
+
+        public void pointAdd(int q, long delta) {
+            rangeAdd(1, q, q, delta);
+        }
+
+        public void rangeAdd(int ql, int qr, long delta) {
+            rangeAdd(1, ql, qr, delta);
+        }
+
+        private void rangeAdd(int idx, int ql, int qr, long delta) {
+            Node cur = tree[idx];
+
+            if (qr < cur.l || cur.r < ql) {
+                return;
+            }
+
+            if (ql <= cur.l && cur.r <= qr) {
+                apply(idx, delta);
+                return;
+            }
+
+            push(idx);
+
+            rangeAdd(idx * 2, ql, qr, delta);
+            rangeAdd(idx * 2 + 1, ql, qr, delta);
+
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
+        }
+
+        public Node query(int ql, int qr) {
+            return query(1, ql, qr);
+        }
+
+        private Node query(int idx, int ql, int qr) {
+            Node cur = tree[idx];
+
+            if (qr < cur.l || cur.r < ql) {
+                return null;
+            }
+
+            if (ql <= cur.l && cur.r <= qr) {
+                return cur;
+            }
+
+            push(idx);
+
+            Node left = query(idx * 2, ql, qr);
+            Node right = query(idx * 2 + 1, ql, qr);
+
+            if (left == null) {
+                return right;
+            }
+            if (right == null) {
+                return left;
+            }
+            return merge(left, right);
         }
     }
 
-    public int sumCounts(int[] nums) {
-        /*
-        case1
-        987654
-        543210 -> 654321
-        sum1 = 55
-        sum2 = sum1 + updateLen + 2 *(query) = 55 + 6 + 2 *(15) = 91
-        */
-        /*
-        case2
-        98776654
-        54332210 -> 65443321
-        sum2 = sum1 + updateLen + 2 *(query) = sum1  + 8 + 2 *(20)
-        */
-        /*
-        case3
-        98776657, 6th -> 7th
-        5433,2210 -> 5433,3321
-        sum2 = sum1 + updateLen + 2 *(query) = sum1 + 4 + 2 *(5)
-        */
-        int n = nums.length;
-        buildTree(nums.length - 1);
+    public int sumCounts(int[] a) {
+        int n = a.length;
+        long[] dp = new long[n];
+        Map<Integer, Integer> last = new HashMap<>();
+        int[] cnt = new int[n];
+        SegTree seg = new SegTree(cnt);
+        long res = 0;
+        long mod = (long) (1e9 + 7);
+        // 第 i 轮结束后，Segment Tree 中的 cnt[j] 恰好等于 distinct(a[j..i])
+        for (int i = 0; i < n; ++i) {
+            int v = a[i];
+            int pre = last.getOrDefault(v, -1);
 
-        Map<Integer, Integer> lastSeenAt = new HashMap();
-        lastSeenAt.put(nums[0], 0);
-        long ans = 1l, rsf = 1l;
-        update(0, 0, root);
+            long base = i == 0 ? 0 : dp[i - 1];
+            Node node = seg.query(pre + 1, i - 1);
+            long delta = 1;
+            if (node != null) {
 
-        for (int i = 1; i < nums.length; ++i) {
-            int num = nums[i], lastID = -1;
-            if (lastSeenAt.containsKey(num)) lastID = lastSeenAt.get(num);
+                long sum = node.sum;
+                long len = i - pre - 1;
+                delta += 2 * sum + len;
+            }
+            dp[i] = base + delta;
 
-            long temp = query(lastID + 1, i - 1, root);
-            rsf = (rsf + i - lastID + temp * 2) % MOD;
-            ans = (ans + rsf) % MOD;
-
-            update(lastID + 1, i, root);
-            lastSeenAt.put(num, i);
+            res += dp[i];
+            res %= mod;
+            last.put(v, i);
+            seg.rangeAdd(pre + 1, i, 1);
         }
-        return (int) ans;
+        return (int) res;
     }
 }
