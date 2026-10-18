@@ -2,23 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CountNonadjSubtreesInARootedTree {
-    // subtree convolution template
-    /* hallmark:
 
-    void dfs(u):
-        init dp[u]
-           for child v:
-            dfs(v)
-            merge current aggregate at u × contribution from v
-
-    the merge is typically:
-
-    for (int cur = 0; cur < K; cur++) {      // current aggregate at u
-    for (int sub = 0; sub < K; sub++) {  // contribution from child subtree
-        ndp[combine(cur, sub)] += dpU[cur] * dpChild[sub];
-    }
-    }
-     */
     private List<Integer>[] tree;
     private long[][][] dp;
     private long Mod = (long) (1e9 + 7);

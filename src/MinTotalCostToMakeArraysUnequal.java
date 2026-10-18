@@ -2,57 +2,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MinTotalCostToMakeArraysUnequal {
-    // find the initial bad set s. then try to add more elements to it if there is a dominant element
-    // the 1/2 rule for swapping
-    private int update(Map<Integer, Integer> m, int k, int d) {
-        int nv = m.getOrDefault(k, 0) + d;
-        if (nv <= 0) {
-            m.remove(k);
-            return 0;
-        } else {
-            m.put(k, nv);
-            return nv;
-        }
-    }
-
+    // first see if the bad ones can be paired internally through majority rule
+    // then anything not possible we get outside help
     public long minimumTotalCost(int[] a, int[] b) {
         int n = a.length;
-        Map<Integer, Integer> f = new HashMap<>();
-        int diffs = 0;
-        int maxf = 0;
-        int maxfkey = 0;
-        long sum = 0;
+        Map<Integer, Integer> m = new HashMap<>();
+        int maxbad = 0;
+        int maxv = -1;
+        long badsum = 0;
+        int badsize = 0;
         for (int i = 0; i < n; ++i) {
             if (a[i] == b[i]) {
-                int nv = update(f, a[i], 1);
-                if (nv > maxf) {
-                    maxf = nv;
-                    maxfkey = a[i];
+                int nv = m.getOrDefault(a[i], 0) + 1;
+                m.put(a[i], nv);
+                if (nv > maxbad) {
+                    maxbad = nv;
+                    maxv = a[i];
                 }
-                sum += i;
-                ++diffs;
+                badsum += i;
+                ++badsize;
             }
         }
-        if (maxf * 2 <= diffs) {
-            return sum;
+        long res = badsum;
+        if (2 * maxbad <= badsize) {
+            return res;
         }
-        int needed = 2 * maxf - diffs;
-        for (int i = 0; i < n && needed > 0; ++i) {
-            int v = a[i];
-            if (a[i] == b[i]) {
-                continue;
-            }
+        long toborrow = 2L * maxbad - badsize;
 
-            if (a[i] == maxfkey || b[i] == maxfkey) {
-                continue;
+        for (int i = 0; toborrow > 0 && i < n; ++i) {
+            if (a[i] != b[i] && a[i] != maxv && b[i] != maxv) {
+                res += i;
+                --toborrow;
             }
-            --needed;
-            sum += i;
         }
-        if (needed == 0) {
-            return sum;
-        } else {
+        if (toborrow > 0) {
             return -1;
         }
+        return res;
     }
 }

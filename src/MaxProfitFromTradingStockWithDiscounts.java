@@ -5,26 +5,49 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MaxProfitFromTradingStockWithDiscounts {
-    // subtree convolution template 2
-    /*
-    Counting DP:
-  invalid/default = 0
-  transition = += ways
 
-Max DP:
-  invalid/default = -INF
-  transition = max(...)
+     /*
+   subtree convolution template
+    Tree Knapsack / Subtree Convolution:
+    for each node there are resources B.
+    Resource dimensions may be multidimensional; additional DP state dimensions are carried through the merge via for loops on them
+ndp[b1 + b2] = Math.max(ndp[b1 + b2], cdp[b1] + child[b2]);
+Time: O(B^2) per child, O(n * B^2) overall.
 
-Min DP:
-  invalid/default = +INF
-  transition = min(...)
-     */
+   private void dfs(int i) {
+   // 1. Initialize local decisions
+   int[] cdp = init(i);
+
+   // 2. Merge children one by one
+   for (int ne : t[i]) {
+       dfs(ne);
+       cdp = merge(cdp, dp[ne]);
+   }
+
+   // 3. assign back if all states are in cdp
+   dp[i] = cdp
+   }
+
+   merge()
+    ndp = new
+    for(int b1=0; b1<=B; b1++)
+      for(int b2=0; b1+b2<=B; b2++)
+        skip invalid cdp and child
+        ndp[b1+b2] = max(ndp[b1+b2], cdp[b1] + child[b2])
+        // max/min/count depending on DP type
+    return ndp so as to be the new cdp in next child
+
+    */
+
     private List<Integer>[] t;
     private int[][][][] dp;
-    private int Min = -(int) 1e9;
+    private static final int NEG = -1000000000;
 
     public int maxProfit(int n, int[] present, int[] future, int[][] hierarchy, int budget) {
         t = new ArrayList[n];
+        // n, p buy, cbuy, budget
+        dp = new int[n][2][2][budget + 1];
+
         for (int i = 0; i < n; ++i) {
             t[i] = new ArrayList<>();
         }
@@ -33,69 +56,69 @@ Min DP:
             int v2 = h[1] - 1;
             t[v1].add(v2);
         }
-        dp = new int[n][budget + 1][2][2];
-        for (int i = 0; i < n; ++i) {
-            init(dp[i]);
-        }
+
         solve(0, budget, present, future);
-        int res = 0;
-        for (int j = 0; j <= budget; ++j) {
-            res = Math.max(res, dp[0][j][0][0]);
-            res = Math.max(res, dp[0][j][0][1]);
+        int res = NEG;
+        for (int i = 0; i <= budget; ++i) {
+            int cres = Math.max(dp[0][0][0][i], dp[0][0][1][i]);
+            res = Math.max(cres, res);
         }
         return res;
     }
 
-    private void init(int[][][] dp) {
 
-        for (int j = 0; j <= dp[0].length; ++j) {
-            for (int k = 0; k < dp[j].length; ++k) {
-                Arrays.fill(dp[j][k], Min);
+    private void solve(int i, int bg, int[] present, int[] future) {
+        int[][][] cur = new int[2][2][bg + 1];
+
+        for (int pb = 0; pb <= 1; ++pb) {
+            for (int buy = 0; buy <= 1; ++buy) {
+                Arrays.fill(cur[pb][buy], NEG);
+            }
+
+            // i does not buy
+            cur[pb][0][0] = 0;
+
+            // i buys
+            int cost = pb == 1 ? present[i] / 2 : present[i];
+            if (cost <= bg) {
+                cur[pb][1][cost] = future[i] - cost;
             }
         }
 
-    }
-
-
-    private void solve(int i, int allb, int[] p, int[] f) {
-        // at leaf level set what happens when we only have this node
-        /*budget dimension means exact money already spent, a one-node subtree has only these possibilities:
-
-        do not buy i → spend 0
-        buy i without discount → spend exactly p[i]
-        buy i with discount → spend exactly p[i] / 2
-        */
-        dp[i][0][0][0] = 0;
-        dp[i][0][1][0] = 0;
-        if (p[i] <= allb) {
-            dp[i][p[i]][0][1] = f[i] - p[i];
-        }
-        if (p[i] / 2 <= allb) {
-            dp[i][p[i] / 2][1][1] = f[i] - p[i] / 2;
-        }
         for (int ne : t[i]) {
-            solve(ne, allb, p, f);
-            merge(ne, i, allb);
+            solve(ne, bg, present, future);
+            cur = mergesub(cur, ne, bg);
         }
-
+        dp[i] = cur;
     }
 
-    private void merge(int ne, int i, int allb) {
-        int[][][] ndp = new int[allb + 1][2][2];
-        init(ndp);
-        for (int pb = 0; pb <= allb; ++pb) {
-            for (int cb = 0; cb + pb <= allb; ++cb) {
-                int sumb = pb + cb;
-                for (int pf = 0; pf <= 1; ++pf) {
-                    int maxsub = Math.max(dp[ne][cb][pf][0], dp[ne][cb][pf][1]);
-                    int profit0 = dp[i][pb][0][pf] + maxsub;
-                    ndp[sumb][0][pf] = Math.max(ndp[sumb][0][pf], profit0);
-                    int profit1 = dp[i][pb][1][pf] + maxsub;
-                    ndp[sumb][1][pf] = Math.max(ndp[sumb][1][pf], profit1);
+    private int[][][] mergesub(int[][][] cur, int ne, int bg) {
+        int[][][] ndp = new int[2][2][bg + 1];
+
+        for (int pb = 0; pb <= 1; ++pb) {
+            for (int buy = 0; buy <= 1; ++buy) {
+                Arrays.fill(ndp[pb][buy], NEG);
+
+                for (int current = 0; current <= bg; ++current) {
+                    if (cur[pb][buy][current] == NEG) {
+                        continue;
+                    }
+
+                    for (int bne = 0; current + bne <= bg; ++bne) {
+                        int child = Math.max(dp[ne][buy][0][bne], dp[ne][buy][1][bne]);
+                        if (child == NEG) {
+                            continue;
+                        }
+
+                        ndp[pb][buy][current + bne] = Math.max(
+                                ndp[pb][buy][current + bne],
+                                cur[pb][buy][current] + child
+                        );
+                    }
                 }
             }
         }
-        dp[i] = ndp;
+        return ndp;
     }
 
     static void main() {

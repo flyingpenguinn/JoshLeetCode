@@ -1,17 +1,18 @@
 public class MaxNumWeeksYouCanWork {
-    // similar to reorganize string, task scheduler
+    // pairing. majority rule
     public long numberOfWeeks(int[] a) {
         int n = a.length;
+        long maxv = 0;
         long sum = 0;
-        long max = 0;
-        for(int i=0; i<n; i++){
-            sum += a[i];
-            max = Math.max(max, a[i]);
+        for (int i = 0; i < n; ++i) {
+            long v = a[i];
+            maxv = Math.max(maxv, v);
+            sum += v;
         }
-        if(max <= sum-max){
+        if (maxv <= sum / 2) {
             return sum;
-        }else{
-            return 2*(sum-max)+1;
         }
+        long lost = maxv - (sum - maxv);
+        return sum - lost + 1; // can arrange one in the end
     }
 }

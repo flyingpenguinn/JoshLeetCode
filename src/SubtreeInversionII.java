@@ -3,27 +3,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SubtreeInversionII {
-    // subtree convolution template 3
-
-    // dp[u][parity][d]:
-// parity = flips from ancestors, controls signs going down.
-// d = nearest flipped node inside u-subtree, distance from u, capped at k.
-// d = k means none within distance < k.
-
-// Base states must be real:
-// flip u     -> d = 0
-// not flip u -> d = k
-// d = 1..k-1 can only appear after merging children. NEG to begin with
-
-// Child parity is fixed:
-// if u not flipped -> child parity = parity
-// if u flipped     -> child parity = parity ^ 1
-
-// Merge:
-// child distance from u = childD + 1.
-// If u flipped, childDist must be >= k.
-// Else nearest existing flipped node and child nearest flipped node
-// must satisfy d + childDist >= k.
 
     private int[] sum;
     private List<Integer>[] t;

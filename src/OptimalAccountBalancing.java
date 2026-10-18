@@ -5,45 +5,57 @@ import java.util.*;
 public class OptimalAccountBalancing {
 
     // for each i try to balance it with another different sign and clear this debt to zero
-    Map<List<Integer>, Map<List<Integer>, Integer>> dp = new HashMap<>();
 
-    public int minTransfers(int[][] ts) {
-        Map<Integer, Integer> m = new HashMap<>();
-        for (int[] t : ts) {
-            int out = t[0];
-            int in = t[1];
-            m.put(out, m.getOrDefault(out, 0) + t[2]);
-            m.put(in, m.getOrDefault(in, 0) - t[2]);
+    public int minTransfers(int[][] trans) {
+        int pn = 12;
+        int[] ba = new int[pn];
+        for (int[] t : trans) {
+            int v1 = t[0];
+            int v2 = t[1];
+            int am = t[2];
+            ba[v1] -= am;
+            ba[v2] += am;
         }
-        int[] a = new int[m.keySet().size()];
-        int i = 0;
-        for (int k : m.keySet()) {
-            a[i++] = m.get(k);
-        }
-        return dom(a, 0);
+        return dfs(ba);
     }
 
-    private int dom(int[] a, int i) {
+    private int Max = (int) 1e9;
+
+    private int dfs(int[] a) {
         int n = a.length;
-        while (i < n && a[i] == 0) {
-            i++;
-        }
-        if (i == n) {
-            return 0;
-        }
-        int oai = a[i];
-        a[i] = 0;
-        int min = 1000000;
-        for (int j = i + 1; j < n; j++) {
-            if (a[j] * oai < 0) {
-                a[j] += oai;
-                int cur = 1 + dom(a, i + 1);
-                a[j] -= oai;
-                min = Math.min(cur, min);
+        int res = Max;
+        boolean found = false;
+        for (int i = 0; i < n; ++i) {
+            int vi = a[i];
+            if (vi == 0) {
+                continue;
             }
+            found = true;
+            for (int j = i + 1; j < n; ++j) {
+                int vj = a[j];
+                if (vj == 0) {
+                    continue;
+                }
+                if (vi * vj < 0) {
+                    int cancel = Math.min(Math.abs(vi), Math.abs(vj));
+                    int newvi = vi > 0 ? vi - cancel : vi + cancel;
+                    int newvj = vj > 0 ? vj - cancel : vj + cancel;
+                    a[i] = newvi;
+                    a[j] = newvj;
+                    int ccost = 1 + dfs(a);
+                    res = Math.min(res, ccost);
+                    a[i] = vi;
+                    a[j] = vj;
+
+                }
+            }
+            break;
         }
-        a[i] = oai;
-        return min;
+        if (!found) {
+            return 0;
+        } else {
+            return res;
+        }
     }
 
 

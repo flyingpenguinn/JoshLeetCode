@@ -1,30 +1,50 @@
 import java.util.*;
 
 public class RearrangingFruits {
-    // note we can always use the min value as buffer
-    public long minCost(int[] basket1, int[] basket2) {
-        Map<Integer, Integer> cnt = new HashMap<>();
-        int minx = (int) 1e9;
-        for (int c : basket1) {
-            cnt.put(c, cnt.getOrDefault(c, 0) + 1);
-            minx = Math.min(c, minx);
+    // we can always use minv as buffer for 2 swaps, or directly swap for 1 swap
+    // for each neg value in map there is a pos value so we dont really care the swapping we just use the min numbers if possible
+    private void update(Map<Integer, Integer> m, int k, int d) {
+        int nv = m.getOrDefault(k, 0) + d;
+        m.put(k, nv);
+    }
+
+    public long minCost(int[] a, int[] b) {
+        int n = a.length;
+        int minv = Integer.MAX_VALUE;
+        TreeMap<Integer, Integer> cmap = new TreeMap<>();
+        for (int i = 0; i < n; ++i) {
+            minv = Math.min(minv, a[i]);
+            update(cmap, a[i], 1);
         }
-        for (int c : basket2) {
-            cnt.put(c, cnt.getOrDefault(c, 0) - 1);
-            minx = Math.min(c, minx);
+        for (int i = 0; i < n; ++i) {
+            minv = Math.min(minv, b[i]);
+            update(cmap, b[i], -1);
         }
-        List<Integer> last = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> e : cnt.entrySet()) {
-            int v = e.getValue();
-            if (v % 2 != 0)
-                return -1;
-            for (int i = 0; i < Math.abs(v) / 2; ++i)
-                last.add(e.getKey());
-        }
-        Collections.sort(last);
         long res = 0;
-        for (int i = 0; i < last.size() / 2; ++i) {
-            res += Math.min(last.get(i), 2 * minx);
+
+        long rem = 0;
+        List<Integer> list = new ArrayList<>();
+
+        for (int ak : cmap.keySet()) {
+            int cnt = cmap.get(ak);
+            if (cnt % 2 == 1) {
+                return -1;
+            }
+            if (cnt == 0) {
+                continue;
+            }
+            list.add(ak);
+            rem += Math.abs(cmap.get(ak) / 2L);
+        }
+        rem /= 2;
+        for (int i = 0; i < list.size() && rem > 0; ++i) {
+            int sk = list.get(i);
+            long cc = Math.abs(cmap.get(sk) / 2L);
+            long sw = Math.min(rem, cc);
+            long cur1 = sk * sw;
+            long cur2 = 2L * minv * sw;
+            res += Math.min(cur1, cur2);
+            rem -= sw;
         }
         return res;
     }
