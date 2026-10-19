@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class FindRootColoredTree {
+    // every edge is actually already forced!
     public int findColoredRoot(int[][] edges, String colors) {
         int en = edges.length;
         int n = en + 1;
