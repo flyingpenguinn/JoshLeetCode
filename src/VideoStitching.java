@@ -1,37 +1,33 @@
 import base.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class VideoStitching {
     // typical greedy: select minimal cover. sort by start and try to extend as much as possible
     // similar to watering garden problem
-    public int videoStitching(int[][] a, int t) {
+    public int videoStitching(int[][] a, int time) {
         int n = a.length;
         Arrays.sort(a, (x, y) -> Integer.compare(x[0], y[0]));
-        return minIntervalCoverage(a, t, n);
-    }
-
-    protected int minIntervalCoverage(int[][] a, int t, int n) {
-        int start = -1;
-        int end = 0;
+        int last = 0;
+        int i = 0;
         int res = 0;
-        for (int i = 0; i < n && end < t; i++) {
-            int cstart = a[i][0];
-            int cend = a[i][1];
-            if (cstart <= start) {
-                end = Math.max(end, cend);
-            } else if (cstart > end) {
+        while (i < n) {
+            int pos = last;
+            int oldlast = last;
+            while (i < n && a[i][0] <= pos) {
+                last = Math.max(last, a[i][1]);
+                ++i;
+            }
+            if (last == oldlast) {
+                return -1;
+            }
+
+            ++res;
+            if (last >= time) {
                 break;
-            } else {
-                if(cend >end) {
-                    res++;
-                    start = end; // we are looking for cover from the end so ignore the portions before it
-                    end = cend;
-                }
             }
         }
-        return end >= t ? res : -1;
+        return last >= time ? res : -1;
     }
 
     public static void main(String[] args) {

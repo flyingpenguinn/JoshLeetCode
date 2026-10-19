@@ -49,36 +49,41 @@ ranges.length == n + 1
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MinTapsToWaterGarden {
-    // first we find all intervals whose start point <= curstart. then try to extend them as far as possible
-    // then next start is the end point of current round
-    // note here next round must be able to concat with current round, but last tap seems to be fine... dont need to go n+1
-    // similar to video stitching
-    public int minTaps(int n, int[] ranges) {
-        int[] maxends = new int[n+1];
-        for(int i=0; i<=n; ++i){
-            int s = i - ranges[i];
-            int e = i + ranges[i];
-            int rs = Math.max(s, 0);
-            maxends[rs] = Math.max(maxends[rs], e);
+    public int minTaps(int n, int[] ran) {
+        // for each starting pos, go as far as possible, then start from last again
+        List<int[]> l = new ArrayList<>();
+        int rn = ran.length;
+        for (int i = 0; i < rn; ++i) {
+            int start = i - ran[i];
+            int end = i + ran[i];
+            start = Math.max(0, start);
+            end = Math.min(n, end);
+            l.add(new int[]{start, end});
         }
-        int curend = 0;
-        int nextend = 0;
-        int needed = 0;
-        for(int i=0; i<=n; ++i){
-            if(i>nextend){
-                return -1;
+        Collections.sort(l, (x, y) -> Integer.compare(x[0], y[0]));
+
+        int last = 0;
+        int i = 0;
+        int res = 0;
+        while (i < l.size()) {
+            int pos = last;
+            int oldlast = last;
+            while (i < l.size() && l.get(i)[0] <= pos) {
+                last = Math.max(last, l.get(i)[1]);
+                ++i;
             }
-            if (i>curend){
-                ++needed;
-                curend = nextend;
+            ++res;
+            if (last == oldlast) {
+                break;
             }
-            nextend = Math.max(nextend, maxends[i]);
+            if (last >= n) {
+                break;
+            }
         }
-        return needed;
+        return last >= n ? res : -1;
     }
 }
