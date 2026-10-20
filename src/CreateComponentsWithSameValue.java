@@ -1,75 +1,82 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateComponentsWithSameValue {
-
-    private Map<Integer, Set<Integer>> tree = new HashMap<>();
+    private List<Integer>[] t;
+    private int[] sums;
+    private int[] counts;
 
     public int componentValue(int[] a, int[][] edges) {
         int n = a.length;
         int sum = 0;
-        int max = 0;
+        t = new ArrayList[n];
         for (int i = 0; i < n; ++i) {
+            t[i] = new ArrayList<>();
             sum += a[i];
-            max = Math.max(max, a[i]);
         }
+
         for (int[] e : edges) {
-            int start = e[0];
-            int end = e[1];
-            tree.computeIfAbsent(start, p -> new HashSet<>()).add(end);
-            tree.computeIfAbsent(end, p -> new HashSet<>()).add(start);
+            int v1 = e[0];
+            int v2 = e[1];
+            t[v1].add(v2);
+            t[v2].add(v1);
         }
-        int maxres = 0;
-        for (int i = 1; i <= (int) Math.sqrt(sum); ++i) {
-            if (sum % i == 0) {
-                int segs = sum / i;
-
-                if (segs >= max) {
-                    int cur = dfs(a, 0, segs, -1)[1];
-                    maxres = Math.max(maxres, cur);
-                }
-
-
-                if (i >= max) {
-                    int cur = dfs(a, 0, i, -1)[1];
-                    maxres = Math.max(maxres, cur);
-                }
-            }
-        }
-        return maxres;
-    }
-
-    private int MIN = (int)-1e9;
-    private int[] dfs(int[] a, int i, int k, int parent) {
-
-        int sum = a[i];
+        sums = new int[n];
+        counts = new int[n];
+        dfs(a, 0, -1);
         int res = 0;
-        for (int ne : tree.getOrDefault(i, new HashSet<>())) {
-            if (ne == parent) {
+        for (int d = 1; d * d <= sum; ++d) {
+            if (sum % d != 0) {
                 continue;
             }
-            int[] cne = dfs(a, ne, k, i);
-            if(cne[1] <0){
-                return new int[]{0, MIN};
+
+            if (sum <= d * counts[0]) {
+                int parts = sum / d;
+                int counts = docount(0, d, -1);
+                if (counts >= parts) {
+                    return parts - 1;
+                }
             }
-            res += cne[1];
-            if (cne[0] % k == 0) {
-                // we can potentially cut here
-                ++res;
+            int other = sum / d;
+            if (sum <= other * counts[0]) {
+                int parts = sum / other;
+                int counts = docount(0, other, -1);
+                if (counts >= parts) {
+                    res = Math.max(res, parts - 1);
+                }
             }
-            sum += cne[0];
         }
-        if (sum % k == 0) {
-            if (sum / k == res + 1) {
-                // verify that we indeed can split to res+1 parts
-                return new int[]{sum, res};
-            } else {
-                return new int[]{sum, MIN};
+        return res;
+
+    }
+
+    private int[] dfs(int[] a, int i, int pa) {
+        int csum = a[i];
+        int ccount = 1;
+        for (int ne : t[i]) {
+            if (ne == pa) {
+                continue;
             }
-        } else {
-            return new int[]{sum, res};
+            int[] cr = dfs(a, ne, i);
+            csum += cr[0];
+            ccount += cr[1];
         }
+        sums[i] = csum;
+        counts[i] = ccount;
+        return new int[]{csum, ccount};
+    }
+
+    private int docount(int node, int d, int pa) {
+        int res = 0;
+        if (sums[node] % d == 0) {
+            ++res;
+        }
+        for (int ne : t[node]) {
+            if (ne == pa) {
+                continue;
+            }
+            res += docount(ne, d, node);
+        }
+        return res;
     }
 }
