@@ -1,56 +1,39 @@
+import java.util.Arrays;
+
 public class MinOperationsSortString {
     public int minOperations(String s) {
         int n = s.length();
-        int mind = 30;
-        int maxd = -1;
-
-        char[] c = s.toCharArray();
-
-        if (n == 2 && c[0] > c[1]) {
-            return -1;
-        }
-        boolean sorted = isSorted(c, 0, n - 1);
-        if (sorted) {
+        if (n == 1) {
             return 0;
         }
-        for (int i = 0; i < n; ++i) {
-            int cind = c[i] - 'a';
-            if (cind < mind) {
-                mind = cind;
-
-            }
-            if (cind > maxd) {
-                maxd = cind;
-
-            }
+        char[] cs = s.toCharArray();
+        Arrays.sort(cs);
+        String sorted = new String(cs);
+        if (s.equals(sorted)) {
+            return 0;
         }
-        if (c[0] - 'a' == mind) {
+        if (n == 2) {
+            return -1;
+        }
+        char minc = cs[0];
+        if (minc == s.charAt(0)) {
             return 1;
         }
-        if (c[n - 1] - 'a' == maxd) {
+        char maxc = cs[n - 1];
+        if (maxc == s.charAt(n - 1)) {
             return 1;
         }
-        if (c[n - 1] - 'a' == mind && c[0] - 'a' == maxd) {
-
-            for (int i = 1; i < n - 1; ++i) {
-                if (c[i] - 'a' == mind || c[i] - 'a' == maxd) {
-                    return 2;
-                }
-
-            }
-            return 3;
-        }
-        return 2;
-    }
-
-    private static boolean isSorted(char[] c, int l, int u) {
-        boolean sorted = true;
-        for (int i = l; i + 1 <= u; ++i) {
-            if (c[i] > c[i + 1]) {
-                sorted = false;
-                break;
+        for (int i = 0; i < n - 1; ++i) {
+            if (s.charAt(i) == minc) {
+                return 2;
             }
         }
-        return sorted;
+        for (int i = n - 1; i > 0; --i) {
+            if (s.charAt(i) == maxc) {
+                return 2;
+            }
+        }
+        // like 3,2,1. -> 3,1,2,1,3,2,1,2,3, 3 steps
+        return 3;
     }
 }
