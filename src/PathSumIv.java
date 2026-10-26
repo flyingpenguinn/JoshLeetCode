@@ -1,4 +1,4 @@
-import base.ArrayUtils;
+import java.util.Arrays;
 
 import java.util.Arrays;
 
@@ -72,9 +72,5 @@ public class PathSumIv {
         }
         dfs(t, li, csum);
         dfs(t, ri, csum);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new PathSumIv().pathSum(ArrayUtils.read1d("113, 221")));
     }
 }
