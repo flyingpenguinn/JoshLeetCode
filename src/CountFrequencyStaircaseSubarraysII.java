@@ -1,38 +1,37 @@
 public class CountFrequencyStaircaseSubarraysII {
+    // l has at most sqrt(2n) different values
+    private int limit = (int) 1e5;
+
     public int countStaircase(int[] a) {
         int n = a.length;
-        int[] seen = new int[100001];
-        int[] cnt = new int[100001];
-        int[] rank = new int[100001];
-
+        int[] seen = new int[limit + 1];
+        int[] cnt = new int[limit + 1];
+        int[] rank = new int[limit + 1];
+        int round = 0;
         int res = 0;
-        int maxm = 0;
-        while ((maxm + 1) * (maxm + 2) / 2 <= n) {
-            ++maxm;
-        }
-
-        for (int l = 0; l < n; ++l) {
-            int m = 0;
-            for (int r = l; r < n; ++r) {
-                int v = a[r];
-
-                if (seen[v] != l + 1) {
-                    seen[v] = l + 1;
+        int maxrank = (int) (Math.sqrt(2*n) + 10);
+        for (int i = 0; i < n; ++i) {
+            ++round;
+            int crank = 0;
+         
+            for (int j = i; j < n; ++j) {
+                int v = a[j];
+                if (seen[v] != round) {
+                    seen[v] = round;
+                    rank[v] = ++crank;
                     cnt[v] = 0;
-                    rank[v] = ++m;
                 }
-
-                if (m > maxm) {
-                    break;
-                }
-
                 ++cnt[v];
                 if (cnt[v] > rank[v]) {
                     break;
                 }
-
-                if (r - l + 1 == m * (m + 1) / 2) {
+               
+                int clen = j - i + 1;
+                if (clen * 2 == crank * (crank + 1)) {
                     ++res;
+                } 
+                if (crank > maxrank ) {
+                    break;
                 }
             }
         }
