@@ -1,8 +1,6 @@
 import base.ArrayUtils;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Queue;
+import java.util.Arrays;
 
 /*
 LC#666
@@ -44,40 +42,36 @@ The path sum is (3 + 1) = 4.
  */
 public class PathSumIv {
     // can use a map to cache the results
-    int r = 0;
+    private int res = 0;
 
     public int pathSum(int[] a) {
-        dop(1, 1, a, 0);
-        return r;
-    }
-
-    void dop(int d, int p, int[] a, int sum) {
-        int rn = find(a, d, p);
-        if (rn == -1) {
-            return;
-        }
-        int left = find(a, d + 1, p * 2 - 1);
-        int right = find(a, d + 1, p * 2);
-        if (left == -1 && right == -1) {
-            r += sum + rn;
-            return;
-        }
-        if (left != -1) {
-            dop(d + 1, p * 2 - 1, a, sum + rn);
-        }
-        if (right != -1) {
-            dop(d + 1, p * 2, a, sum + rn);
-        }
-    }
-
-    int find(int[] a, int d, int p) {
         int n = a.length;
-        for (int i = 0; i < n; i++) {
-            if (a[i] >= d * 100 + p * 10 && a[i] <= d * 100 + p * 10 + 9) {
-                return a[i] % 10;
-            }
+        int[] t = new int[32];
+        Arrays.fill(t, -1);
+        for (int i = 0; i < n; ++i) {
+            int dep = a[i] / 100;
+            int seq = (a[i] - 100 * dep) / 10;
+            int v = a[i] % 10;
+            int index = (1 << (dep - 1)) + seq - 1;
+            t[index] = v;
         }
-        return -1;
+        dfs(t, 1, 0);
+        return res;
+    }
+
+    private void dfs(int[] t, int i, int csum) {
+        if (t[i] == -1) {
+            return;
+        }
+        csum += t[i];
+        int li = 2 * i;
+        int ri = 2 * i + 1;
+        if (t[li] == -1 && t[ri] == -1) {
+            res += csum;
+            return;
+        }
+        dfs(t, li, csum);
+        dfs(t, ri, csum);
     }
 
     public static void main(String[] args) {
