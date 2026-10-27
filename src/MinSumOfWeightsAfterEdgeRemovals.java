@@ -1,60 +1,68 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 public class MinSumOfWeightsAfterEdgeRemovals {
-    private Map<Integer, Map<Integer, Long>> t = new HashMap<>();
-    private Long[][] dp;
-    private int k = 0;
+    private Map<Integer, Integer>[] t;
 
     public long maximizeSumOfWeights(int[][] edges, int k) {
-        int n = edges.length + 1;
-        dp = new Long[n][2];
+        int en = edges.length;
+        int n = en + 1;
+        t = new HashMap[n];
+        for (int i = 0; i < n; ++i) {
+            t[i] = new HashMap<>();
+        }
         for (int[] e : edges) {
             int v1 = e[0];
             int v2 = e[1];
-            long w = e[2];
-            this.k = k;
-            t.computeIfAbsent(v1, p -> new HashMap<>()).put(v2, w);
-            t.computeIfAbsent(v2, p -> new HashMap<>()).put(v1, w);
+            int v3 = e[2];
+            t[v1].put(v2, v3);
+            t[v2].put(v1, v3);
         }
-        return solve(0, 0, n);
+        dp = new long[n][2];
+        for (int i = 0; i < n; ++i) {
+            Arrays.fill(dp[i], -1);
+        }
+        return dfs(t, 0, 1, -1, k);
     }
 
-    private long solve(int i, int hasp, int p) {
-        // System.out.println(i+" "+hasp);
-        if (dp[i][hasp] != null) {
-            return dp[i][hasp];
+    private long[][] dp;
+
+    private long dfs(Map<Integer, Integer>[] t, int i, int pecut, int pa, int k) {
+        int n = t.length;
+        if (dp[i][pecut] != -1) {
+            return dp[i][pecut];
         }
-        int ck = k - hasp;
-        PriorityQueue<Long> pq = new PriorityQueue<>();
+        List<Long> npq = new ArrayList<>();
+        long benefit = 0;
         long res = 0;
-        for (int ne : t.getOrDefault(i, new HashMap<>()).keySet()) {
-            if (ne == p) {
+        int cut = t[i].size() - k;
+        if (pecut == 1 && i != 0) {
+            --cut;
+        }
+        cut = Math.max(0, cut);
+        for (int ne : t[i].keySet()) {
+            if (pa == ne) {
                 continue;
             }
-            long w = t.get(i).get(ne);
-            long way1 = w + solve(ne, 1, i);
-            long way2 = solve(ne, 0, i);
-            res += way2;
-            long diff = way1 - way2;
-            //   System.out.println("cur="+i+" offering diff "+diff);
-            if (diff > 0) {
-                pq.offer(diff);
-            }
-            if (pq.size() > ck) {
-                pq.poll();
-            }
-            //     System.out.println("current = "+i+ " ne="+ne+" way1="+way1+" way2="+way2);
+            int w = t[i].get(ne);
+            long way1 = w + dfs(t, ne, 0, i, k);
+            long way2 = dfs(t, ne, 1, i, k);
+            long diff = way2 - way1;
+            npq.add(diff);
+            res += way1;
         }
-        long delta = 0;
-        while (!pq.isEmpty()) {
-            //    System.out.println("cur="+i+" plus delta"+pq.peek());
-            delta += pq.poll();
+        Collections.sort(npq, Collections.reverseOrder());
+        for (int j = 0; j < cut; ++j) {
+            res += npq.get(j);
         }
-        res += delta;
-        //  System.out.println(i+" hasp="+hasp+" res="+res);
-        dp[i][hasp] = res;
+        for (int j = cut; j < npq.size() && npq.get(j) > 0; ++j) {
+            res += npq.get(j);
+        }
+        dp[i][pecut] = res;
         return res;
     }
 }
