@@ -2,81 +2,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FindOriginalTypedStringII {
-    // TODO. rewrite myself
-    private static final int MOD = (int) 1e9 + 7;
-
     public int possibleStringCount(String word, int k) {
-        int n = word.length();
-        List<Integer> lens = new ArrayList<>();
+        char[] c = word.toCharArray();
         int i = 0;
-
-        // Find lengths of runs of identical characters
+        int n = c.length;
+        List<Integer> l = new ArrayList<>();
         while (i < n) {
-            char c = word.charAt(i);
-            int cnt = 1;
-            i++;
-            while (i < n && word.charAt(i) == c) {
-                cnt++;
-                i++;
+            int j = i;
+            while (j < n && c[j] == c[i]) {
+                ++j;
             }
-            lens.add(cnt);
+            int len = j - i;
+            l.add(len);
+            i = j;
         }
-
-        int m = lens.size();
-
-        // Calculate total number of possible intended strings without length constraint
-        // For each run, the number of ways is equal to its length (number of choices)
-        long total = 1;
-        for (int len : lens) {
-            total = (total * len) % MOD;
-        }
-
-        // If the number of runs is at least k, all combinations are valid
-        if (m >= k) {
-            return (int) total;
-        }
-
-        // Initialize dp array to store the number of ways to achieve a certain total length
-        int maxLen = 0;
-        for (int len : lens) {
-            maxLen = Math.max(maxLen, len);
-        }
-        int dpSize = k + maxLen + 2; // Maximum possible total length
-
-        int[] dp = new int[dpSize];
-        dp[0] = 1; // Base case: one way to have length 0
-
-        // Dynamic programming to count number of ways to have total length s
-        for (int len : lens) {
-            int[] ndp = new int[dpSize]; // New dp array for current run
-            for (int s = 0; s <= k - 1; s++) {
-                if (dp[s] == 0) continue;
-                // For current run, we can select from 1 to len characters
-                int start = s + 1;
-                int end = s + Math.min(len, k - s - 1) + 1;
-                // Update ndp using prefix sum technique
-                ndp[start] = (ndp[start] + dp[s]) % MOD;
-                if (end < ndp.length) {
-                    ndp[end] = (ndp[end] - dp[s] + MOD) % MOD;
+        long mod = (long) (1e9 + 7);
+        if (l.size() >= k) {
+            long count = 1;
+            for (i = 0; i < l.size(); ++i) {
+                count *= l.get(i);
+                count %= mod;
+            }
+            return (int) count;
+        } else {
+            int ln = l.size();
+            long[][] dp = new long[ln + 1][k + 1];
+            long[] sum = new long[k + 1];
+            for (i = ln; i >= 0; --i) {
+                int v = i == ln ? 0 : l.get(i);
+                long[] csum = new long[k + 1];
+                for (int j = 0; j <= k; ++j) {
+                    if (i == ln) {
+                        dp[i][j] = j == k ? 1 : 0;
+                    } else {
+                        int end = j + v;
+                        int endextrahits = end - k;
+                        end = Math.min(end, k);
+                        long cur = sum[end] - sum[j];
+                        if (endextrahits > 0) {
+                            cur += endextrahits * dp[i + 1][k];
+                        }
+                        cur %= mod;
+                        if (cur < 0) {
+                            cur += mod;
+                        }
+                        dp[i][j] = cur;
+                    }
+                    csum[j] = (j == 0 ? 0 : csum[j - 1]) + dp[i][j];
+                    csum[j] %= mod;
                 }
+                sum = csum;
             }
-            // Compute prefix sums to get the actual dp values
-            int sum = 0;
-            for (int s = 0; s < ndp.length; s++) {
-                sum = (sum + ndp[s]) % MOD;
-                dp[s] = sum;
-            }
+            return (int) (dp[0][0]);
         }
-
-        // Calculate total number of ways to have length less than k
-        long excluded = 0;
-        for (int s = 1; s < k; s++) {
-            excluded = (excluded + dp[s]) % MOD;
-        }
-
-        // The result is total ways minus the excluded ways
-        long result = (total - excluded + MOD) % MOD;
-        return (int) result;
     }
+
+    private long mod = (long) (1e9 + 7);
 }
 
