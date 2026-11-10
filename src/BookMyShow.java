@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 // LC 2286. seg tree over free seats per row: max for gather (first row with >= k), sum for scatter (prefix descent)
-// note: scatter loops from row 0; keeping a `first` pointer to the first non-empty row makes it amortized O((n + q) log n)
+// `first` = first row with free seats; each row becomes full once, so scatter is amortized O((n + q) log n)
 class BookMyShow {
         class Node {
             int l, r;
@@ -162,6 +162,7 @@ class BookMyShow {
         private int first = 0;
         private int[] a;
         private int m;
+        private int n ;
         private SegTree seg;
 
         public BookMyShow(int n, int m) {
@@ -169,10 +170,11 @@ class BookMyShow {
             Arrays.fill(a, m);
             seg = new SegTree(a);
             this.m = m;
+            this.n = n;
         }
 
         public int[] gather(int k, int maxRow) {
-            Node found = seg.findMax(1, 0, maxRow, k);
+            Node found = seg.findMax(1, first, maxRow, k);
             if (found == null) {
                 return new int[0];
             }
@@ -180,19 +182,25 @@ class BookMyShow {
             int[] rt = new int[]{index, (int) ((long) (m) - found.sum)};
             a[index] -= k;
             seg.pointAdd(index, -k);
+            while(first < n && a[first]==0){
+                ++first;
+            }
             return rt;
         }
 
         public boolean scatter(int k, int maxRow) {
-            Node found = seg.find(1, 0, maxRow, k);
+            Node found = seg.find(1, first, maxRow, k);
             if (found == null) {
                 return false;
             }
-            for (int i = 0; i <= found.r && k > 0; ++i) {
+            for (int i = first; i <= found.r && k > 0; ++i) {
                 int taken = Math.min(a[i], k);
                 a[i] -= taken;
                 k -= taken;
                 seg.pointAdd(i, -taken);
+            }
+            while(first < n && a[first]==0){
+                ++first;
             }
             return true;
         }
