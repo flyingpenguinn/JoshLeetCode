@@ -1,19 +1,17 @@
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.PriorityQueue;
 
 public class MaxScoreFromRemovingStones {
-    // O(1)
+    // dominant element: only same-pile conflict, so compare max vs the rest
+    // if all is odd, one stone can't be paired
     public int maximumScore(int a, int b, int c) {
-        int[] na = new int[3];
-        na[0] = a;
-        na[1] = b;
-        na[2] = c;
-        Arrays.sort(na);
-        if (na[0] + na[1] <= na[2]) {
-            return na[0] + na[1];// pair each smaller ones with the biggest
+        int maxv = Math.max(a, Math.max(b, c));
+        int all = a + b + c;
+        if (2 * maxv <= all) {
+            return all / 2;
         } else {
-            return na[2] + (na[0] + na[1]-na[2]) / 2;// otherwise after above pairing, two smaller ones pair among themselves
+            int other = all - maxv;
+            return other;
         }
     }
 }
