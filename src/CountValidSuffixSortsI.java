@@ -1,52 +1,58 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class CountValidSuffixSortsI {
+    // suffix i is good if a[i..] and t[i..] are the same multiset and t[i..] is non-increasing
+    // maintain diff[value] and the number of nonzero entries (mismatch) while extending the suffix
+    // then the prefix a[0..i-1] must equal t[0..i-1]
+    int mismatch = 0;
+
+    private void updateDiff(Map<Integer, Integer> m, int k, int d) {
+        int oldv = m.getOrDefault(k, 0);
+        int nv = oldv + d;
+        if (oldv == 0) {
+            ++mismatch;
+        }
+        if (nv == 0) {
+            --mismatch;
+        }
+        m.put(k, nv);
+    }
+
+    Map<Integer, Integer> diff = new HashMap<>();
+
     public int countSuffix(int[] a, int[] t) {
         int n = a.length;
-        int i = n - 1;
-        while (i >= 1 && t[i] <= t[i - 1]) {
-            --i;
-        }
-        int begint = i;
-        int[] diff = new int[(int) (1e5 + 1)];
+
         boolean[] good = new boolean[n];
-        int mismatch = 0;
-        for (i = n - 1; i >= 0; --i) {
-            if (i < begint) {
-                good[i] = false;
-                continue;
+        for (int i = n - 1; i >= 0; --i) {
+            if (i < n - 1 && t[i] < t[i + 1]) {
+                break;
             }
             int av = a[i];
             int tv = t[i];
-            if (diff[av] == 0) {
-                ++mismatch;
-            } else if (diff[av] == -1) {
-                --mismatch;
-            }
-            ++diff[av];
-            if (diff[tv] == 1) {
-                --mismatch;
-            } else if (diff[tv] == 0) {
-                ++mismatch;
-            }
-            --diff[tv];
-
+            updateDiff(diff, av, 1);
+            updateDiff(diff, tv, -1);
             if (mismatch == 0) {
                 good[i] = true;
             }
         }
-        boolean[] match = new boolean[n];
-        for (i = 0; i < n; ++i) {
-            if (a[i] == t[i]) {
-                match[i] = true;
-            } else {
-                break;
-            }
-        }
         int res = 0;
-        for (i = 0; i < n; ++i) {
-            if ((i == 0 || match[i - 1]) && good[i]) {
-                ++res;
+        for (int i = 0; i < n; ++i) {
+            if (i == 0) {
+                if (good[i]) {
+                    ++res;
+                }
+            } else {
+                if (a[i - 1] != t[i - 1]) {
+                    break;
+                }
+                if (good[i]) {
+                    ++res;
+                }
             }
         }
         return res;
     }
+
 }

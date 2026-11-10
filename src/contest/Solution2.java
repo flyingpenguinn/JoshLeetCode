@@ -10,11 +10,11 @@ public class Solution2 {
     private int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
 
-    private int max(int a, int b){
+    private int max(int a, int b) {
         return Math.max(a, b);
     }
 
-    private int min(int a, int b){
+    private int min(int a, int b) {
         return Math.min(a, b);
     }
 
@@ -33,5 +33,22 @@ public class Solution2 {
         } else {
             m.put(k, nv);
         }
+    }
+
+    int mismatch = 0;
+    // call with
+    // updateDiff(m, k1, 1)
+    // updateDiff(m, k2, -1)
+
+    private void updateDiff(Map<Integer, Integer> m, int k, int d) {
+        int oldv = m.getOrDefault(k, 0);
+        int nv = oldv + d;
+        if (oldv == 0) {
+            ++mismatch;
+        }
+        if (nv == 0) {
+            --mismatch;
+        }
+        m.put(k, nv);
     }
 }
