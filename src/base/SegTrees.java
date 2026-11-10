@@ -134,5 +134,53 @@ public class SegTrees {
             }
             return merge(left, right);
         }
+
+        // leftmost index in [ql, qr] whose value >= t, or -1. O(log n)
+        // e.g. LC 2286 gather: first row <= maxRow with at least k free seats
+        public int firstAtLeast(int ql, int qr, long t) {
+            return firstAtLeast(1, ql, qr, t);
+        }
+
+        private int firstAtLeast(int idx, int ql, int qr, long t) {
+            Node cur = tree[idx];
+            if (qr < cur.l || cur.r < ql || cur.max < t) {
+                return -1;
+            }
+            if (cur.l == cur.r) {
+                return cur.l;
+            }
+            push(idx);
+            int res = firstAtLeast(idx * 2, ql, qr, t);
+            if (res != -1) {
+                return res;
+            }
+            return firstAtLeast(idx * 2 + 1, ql, qr, t);
+        }
+
+        // smallest r >= ql such that sum[ql..r] >= t, or -1. values must be non-negative. O(log n)
+        // caller checks r <= qr. e.g. LC 2286 scatter: last row touched when seating t people from row 0
+        public int prefixReach(int ql, long t) {
+            return prefixReach(1, ql, new long[]{t});
+        }
+
+        private int prefixReach(int idx, int ql, long[] need) {
+            Node cur = tree[idx];
+            if (cur.r < ql) {
+                return -1;
+            }
+            if (ql <= cur.l && cur.sum < need[0]) {
+                need[0] -= cur.sum; // whole node consumed, keep going right
+                return -1;
+            }
+            if (cur.l == cur.r) {
+                return cur.l;
+            }
+            push(idx);
+            int res = prefixReach(idx * 2, ql, need);
+            if (res != -1) {
+                return res;
+            }
+            return prefixReach(idx * 2 + 1, ql, need);
+        }
     }
 }
