@@ -1,74 +1,100 @@
-import base.ArrayUtils;
-
-import java.util.Arrays;
-
-import static java.lang.Integer.max;
-
-
 public class MaxSubseqSumNonAdjElementQuery {
-    // segment tree with multiple info stored, still point update !
-    private int Min = (int) -1e9;
-
-    void build(int i, int l, int r, int[] a, int[][][] seg) {
-        if (l == r) {
-            seg[i][0][0] = 0;
-            seg[i][0][1] = Min;
-            seg[i][1][0] = Min;
-            seg[i][1][1] = a[l];
-            return;
-        }
-        int mid = l + (r - l) / 2;
-        build(2 * i + 1, l, mid, a, seg);
-        build(2 * i + 2, mid + 1, r, a, seg);
-        merge(i, seg, l, r);
+    // 2026-11-11 redo: 1 WA (mixed i and index in the query loop). Old record: 11 submissions, 8 WA/TLE.
+    // Node keeps 4 states by whether the first / last element of the segment may be chosen.
+    // Merge only forbids "left's last AND right's first" both chosen.
+    private static long max(long a, long b) {
+        return Math.max(a, b);
     }
 
-    private void merge(int i, int[][][] seg, int l, int r) {
-        final int left = 2 * i + 1;
-        final int right = 2 * i + 2;
-        seg[i][0][0] = max(seg[left][0][0] + seg[right][0][0], max(seg[left][0][1] + seg[right][0][0], seg[left][0][0] + seg[right][1][0]));
-        seg[i][0][1] = max(seg[left][0][0] + seg[right][0][1], max(seg[left][0][1] + seg[right][0][1], seg[left][0][0] + seg[right][1][1]));
-        seg[i][1][0] = max(seg[left][1][0] + seg[right][0][0], max(seg[left][1][1] + seg[right][0][0], seg[left][1][0] + seg[right][1][0]));
-        seg[i][1][1] = max(seg[left][1][0] + seg[right][0][1], max(seg[left][1][1] + seg[right][0][1], seg[left][1][0] + seg[right][1][1]));
+    static class Node {
+        int l, r;
+        long sum;       // first and last both allowed
+        long sumno0;    // first NOT chosen, last allowed
+        long sumnon1;   // first allowed, last NOT chosen
+        long sumnoends; // neither first nor last chosen
+
+        public Node(int l, int r, long sum, long sumno0, long sumnon1, long sumnoends) {
+            this.l = l;
+            this.r = r;
+            this.sum = sum;
+            this.sumno0 = sumno0;
+            this.sumnon1 = sumnon1;
+            this.sumnoends = sumnoends;
+        }
     }
 
-    void update(int i, int l, int r, int[] a, int[][][] seg, int k, int val) {
-        if (l > k || r < k) {
-            return;
+    static class SegTree {
+        Node[] tree;
+        int n;
+
+        SegTree(int[] a) {
+            this.n = a.length;
+            this.tree = new Node[4 * n + 5];
+            build(1, 0, n - 1, a);
         }
-        if (l == k && r == k) {
-            seg[i][0][0] = 0;
-            seg[i][1][1] = val;
-            return;
+
+        private void build(int idx, int l, int r, int[] a) {
+            if (l == r) {
+                long v = a[l];
+                // max(v, 0): choosing nothing is always allowed, keeps sum >= the other three
+                tree[idx] = new Node(l, r, Math.max(v, 0), 0, 0, 0);
+                return;
+            }
+            int mid = l + (r - l) / 2;
+            build(idx * 2, l, mid, a);
+            build(idx * 2 + 1, mid + 1, r, a);
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
-        int mid = l + (r - l) / 2;
-        update(2 * i + 1, l, mid, a, seg, k, val);
-        update(2 * i + 2, mid + 1, r, a, seg, k, val);
-        merge(i, seg, l, r);
+
+        private Node merge(Node left, Node right) {
+            long newsum = max(left.sum + right.sumno0, left.sumnon1 + right.sum);
+            long newsumno0 = max(left.sumno0 + right.sumno0, left.sumnoends + right.sum);
+            long newsumnon1 = max(left.sumnon1 + right.sumnon1, left.sum + right.sumnoends);
+            long newsumnoends = max(left.sumno0 + right.sumnoends, left.sumnoends + right.sumnon1);
+            return new Node(left.l, right.r, newsum, newsumno0, newsumnon1, newsumnoends);
+        }
+
+        public void pointSet(int q, long v) {
+            pointSet(1, q, v);
+        }
+
+        private void pointSet(int idx, int q, long v) {
+            Node cur = tree[idx];
+            if (q < cur.l || cur.r < q) {
+                return;
+            }
+            if (cur.l == cur.r) {
+                cur.sum = Math.max(v, 0);
+                return;
+            }
+            pointSet(idx * 2, q, v);
+            pointSet(idx * 2 + 1, q, v);
+            tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
+        }
+
+        public Node root() {
+            return tree[1];
+        }
     }
 
-    int maximumSumSubsequence(int[] a, int[][] queries) {
-        int n = a.length;
-        int[][][] seg = new int[4 * n + 1][2][2];
-        int mod = (int) (1e9 + 7);
-        build(0, 0, n - 1, a, seg);
-        int m = queries.length;
-        int ans = 0;
-        for (int i = 0; i < m; i++) {
-            update(0, 0, n - 1, a, seg, queries[i][0], queries[i][1]);
-            ans = (ans + max(seg[0][0][0], max(seg[0][0][1], max(seg[0][1][0], seg[0][1][1])))) % mod;
+    public int maximumSumSubsequence(int[] a, int[][] queries) {
+        SegTree seg = new SegTree(a);
+        long res = 0;
+        long mod = (long) (1e9 + 7);
+        for (int[] q : queries) {
+            int index = q[0];
+            int v = q[1];
+            seg.pointSet(index, v);
+            res += seg.root().sum;
+            res %= mod;
         }
-        return ans;
+        return (int) res;
     }
 
     public static void main(String[] args) {
         MaxSubseqSumNonAdjElementQuery sol = new MaxSubseqSumNonAdjElementQuery();
-
-
-        int[] nums2 = {0, -1};
-        int[][] queries2 = {{0, -5}};
-        System.out.println(sol.maximumSumSubsequence(nums2, queries2)); // Output: 0
-
+        System.out.println(sol.maximumSumSubsequence(new int[]{3, 5, 9}, new int[][]{{1, -2}, {0, -3}})); // 21
+        System.out.println(sol.maximumSumSubsequence(new int[]{0, -1}, new int[][]{{0, -5}})); // 0
     }
 }
 
