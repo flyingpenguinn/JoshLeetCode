@@ -1,83 +1,62 @@
-import base.ArrayUtils;
-
 import java.util.*;
 
 public class CountNonDecreasingSubarraysAfterKoperations {
-
-    public long countNonDecreasingSubarrays(int[] a, int K) {
+    // 2026-11-12 daily: reverse two pointers. cost depends on prefix max from the left,
+    // so i moves leftwards (add on the left = merge monotonic blocks, amortized O(1))
+    // and j shrinks from the right (remove on the right = O(1), a[j] is in the last block).
+    public long countNonDecreasingSubarrays(int[] a, int k) {
+        Deque<int[]> dq = new ArrayDeque<>();
         int n = a.length;
+        int j = n - 1;
+        long res = 0;
+        long cost = 0;
+        for (int i = n - 1; i >= 0; --i) {
+            int v = a[i];
+            int[] block = {v, 1}; // value, length
 
-        // 前缀和
-        long[] f = new long[n];
-        f[0] = a[0];
-        for (int i = 1; i < n; i++) {
-            f[i] = f[i - 1] + a[i];
-        }
-
-        // right[i]：下一个大于等于 a[i] 的元素的位置
-        int[] right = new int[n];
-        Arrays.fill(right, n);
-
-        // vec[i]：a[i] 是哪些数的“左边最近的更大数”
-        List<List<Integer>> vec = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            vec.add(new ArrayList<>());
-        }
-
-        // 单调栈
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && a[st.peek()] <= a[i]) {
-                right[st.pop()] = i;
+            while (!dq.isEmpty() && dq.peekFirst()[0] <= v) {
+                int[] first = dq.pollFirst();
+                long delta = (v - first[0]);
+                int count = first[1];
+                cost += delta * count;
+                block[1] += count;
             }
-            if (!st.isEmpty()) {
-                vec.get(st.peek()).add(i);
-            }
-            st.push(i);
-        }
-
-
-        long ans = 0, now = 0;
-        // 双端队列维护单调队列
-        Deque<Integer> dq = new ArrayDeque<>();
-        // 双指针：i 是子数组的末尾，j 是子数组的开头最左边能到哪里
-        for (int i = 0, j = 0; i < n; i++) {
-            // 将 a[i] 加入单调队列
-            while (!dq.isEmpty() && a[dq.getLast()] <= a[i]) {
-                dq.removeLast();
-            }
-            dq.addLast(i);
-            now += a[dq.getFirst()] - a[i];
-
-            while (j < i && now > K) {
-                // 扣掉被去掉的元素的贡献
-                now -= calc(j, i, right, a, f);
-                for (int x : vec.get(j)) {
-                    // 加上露出来的元素的贡献
-                    if (x > i) {
-                        break;
-                    }
-                    now += calc(x, i, right, a, f);
+            dq.push(block);
+            while (!dq.isEmpty() && j >= i && cost > k) {
+                long thrown = dq.peekLast()[0] - a[j];
+                cost -= thrown;
+                --dq.peekLast()[1];
+                if (dq.peekLast()[1] == 0) {
+                    dq.pollLast();
                 }
-                // 如有必要，从单调队列中去掉 a[j]
-                if (dq.getFirst() == j) {
-                    dq.removeFirst();
-                }
-                j++;
+                --j;
             }
-
-            ans += i - j + 1;
+            // i.. j good
+            long len = j - i + 1;
+            res += len;
         }
-        return ans;
-    }
-
-    private long calc(int i, int lim, int[] right, int[] a, long[] f) {
-        lim = Math.min(lim, right[i] - 1);
-        return 1L * a[i] * (lim - i) - (f[lim] - f[i]);
+        return res;
     }
 
     public static void main(String[] args) {
-        System.out.println(new CountNonDecreasingSubarraysAfterKoperations().countNonDecreasingSubarrays(ArrayUtils.read1d("[1000000000,1,1,1,1]"), 1000000000));
+        Random rd = new Random(7);
+        int bad = 0;
+        for (int t = 0; t < 3000; t++) {
+            int n = 1 + rd.nextInt(8);
+            int[] a = new int[n];
+            for (int i = 0; i < n; i++) a[i] = 1 + rd.nextInt(6);
+            int k = rd.nextInt(8);
+            long exp = 0;
+            for (int l = 0; l < n; l++) {
+                long mx = 0, c = 0;
+                for (int r = l; r < n; r++) {
+                    mx = Math.max(mx, a[r]);
+                    c += mx - a[r];
+                    if (c <= k) exp++;
+                }
+            }
+            if (exp != new CountNonDecreasingSubarraysAfterKoperations().countNonDecreasingSubarrays(a, k)) bad++;
+        }
+        System.out.println("bad=" + bad);
     }
-
 }
