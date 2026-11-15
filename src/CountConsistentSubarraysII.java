@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class CountConsistentSubarrays {
+public class CountConsistentSubarraysII {
     // Weekly 528 Q4. Gave up in contest; solved myself right after (coach explained the idea).
     // AND == min  <=>  the min m is a submask of every element (bit-as-set view).
     // Fix the representative i (m = a[i]); the condition is now downward closed, so find walls:
@@ -67,7 +67,7 @@ public class CountConsistentSubarrays {
     }
 
     public static void main(String[] args) {
-        CountConsistentSubarrays sol = new CountConsistentSubarrays();
+        CountConsistentSubarraysII sol = new CountConsistentSubarraysII();
         System.out.println(sol.countConsistent(new int[]{5, 3, 1, 2})); // 6
         System.out.println(sol.countConsistent(new int[]{1, 1, 1})); // 6
         System.out.println(sol.countConsistent(new int[]{0})); // 1
