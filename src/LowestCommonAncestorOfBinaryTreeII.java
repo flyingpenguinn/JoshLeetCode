@@ -6,6 +6,9 @@ public class LowestCommonAncestorOfBinaryTreeII {
     // Return value: the LCA if found below, otherwise whichever of p / q was seen (or null).
     // Both children non-null can only mean one side has p and the other has q (an LCA found inside one side
     // makes the other side null), so `left != null && right != null` would be an equivalent, shorter check.
+    // 2 WAs: (1) checked only left == p && right == q (missed the swapped case); (2) wrote left == p || left == q
+    // in the pass-up branch, but left can also be the LCA. Lesson: the return value is overloaded (p / q / LCA),
+    // so branch on null vs non-null ("found something"), never on WHICH node it is.
     private int cnt = 0;
 
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
