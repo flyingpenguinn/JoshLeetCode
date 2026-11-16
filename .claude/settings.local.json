@@ -4,7 +4,13 @@
       "Bash(wc -l /d/dev/projects/JoshLeetCode/src/*.java)",
       "Bash(grep -h \"^public \" /d/dev/projects/JoshLeetCode/src/*.java)",
       "Bash(grep -rh \"^\\\\s*private\\\\|^\\\\s*public\\\\|^\\\\s*static\" /d/dev/projects/JoshLeetCode/src/*.java)",
-      "Bash(find /d/dev/projects/JoshLeetCode/src -name \"*.java\" -exec wc -l {} +)"
+      "Bash(find /d/dev/projects/JoshLeetCode/src -name \"*.java\" -exec wc -l {} +)",
+      "Bash(cd /d/dev/projects/competitive-programming-patterns && tail -5 review-log.md)",
+      "PowerShell(Get-ChildItem D:\\\\dev\\\\health -Force | Select-Object Mode,LastWriteTime,Length,Name; Get-ChildItem \"$env:USERPROFILE\\\\Downloads\" | Sort-Object LastWriteTime -Descending | Select-Object -First 15 Mode,LastWriteTime,Length,Name)",
+      "PowerShell($d = \"C:\\\\Users\\\\zjm84\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\3dd29dfc42cdad02\\\\c940fdec-8bec-49f0-827e-99c915acc097\\\\scratchpad\\\\mri\"; New-Item -ItemType Directory -Force $d | Out-Null; Expand-Archive -LiteralPath \"D:\\\\dev\\\\health\\\\ZHANG_JINGMING____13696407_1241251500 \\(1\\).zip\" -DestinationPath $d -Force; \\(Get-ChildItem $d -Recurse -File\\).Count; Get-ChildItem $d -Recurse -Directory | Select-Object -First 30 FullName; python --version; python -c \"import pydicom, numpy, PIL; print\\('ok'\\)\")",
+      "PowerShell(python -I \"C:\\\\Users\\\\zjm84\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\3dd29dfc42cdad02\\\\c940fdec-8bec-49f0-827e-99c915acc097\\\\scratchpad\\\\scripts\\\\index.py\" \"C:\\\\Users\\\\zjm84\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\3dd29dfc42cdad02\\\\c940fdec-8bec-49f0-827e-99c915acc097\\\\scratchpad\\\\mri\")",
+      "PowerShell($f='C:\\\\Users\\\\zjm84\\\\.claude\\\\projects\\\\D--dev-projects-JoshLeetCode\\\\b5dcbe20-f53a-4471-b8cf-ba8fb17cf063.jsonl'; Get-Content $f -Tail 80 | ForEach-Object { try { $o = $_ | ConvertFrom-Json; if\\($o.type -eq 'user' -and $o.message.content -is [string]\\){ \"$\\($o.timestamp\\)  $\\($o.message.content.Substring\\(0,[Math]::Min\\(50,$o.message.content.Length\\)\\)\\)\" } } catch {} })",
+      "PowerShell(Get-Command javac,java -ErrorAction SilentlyContinue | Select-Object Source; Get-ChildItem \"C:\\\\Program Files\\\\Java\",\"C:\\\\Program Files\\\\Eclipse Adoptium\",\"$env:USERPROFILE\\\\.jdks\" -ErrorAction SilentlyContinue | Select-Object FullName)"
     ]
   }
 }
