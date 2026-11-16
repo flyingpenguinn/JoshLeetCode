@@ -1,34 +1,55 @@
 import base.TreeNode;
 
 public class LowestCommonAncestorOfBinaryTreeII {
-    // this way we can handle cases where p/q doesnt exist in the tree
-    // if p and q are both in the tree, check quicker ways in IV
+    // 2026-11-15 daily redo. p or q may be missing, so we must NOT short-circuit:
+    // recurse into both children BEFORE checking cur, so every node is visited and cnt counts both p and q.
+    // Return value: the LCA if found below, otherwise whichever of p / q was seen (or null).
+    // Both children non-null can only mean one side has p and the other has q (an LCA found inside one side
+    // makes the other side null), so `left != null && right != null` would be an equivalent, shorter check.
+    private int cnt = 0;
+
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-        return lca(root, p, q)[0];
+        TreeNode found = dfs(root, p, q);
+        if (cnt == 2) {
+            return found;
+        } else {
+            return null;
+        }
     }
 
-    // 0:lca, 1: either p or q if lca == null. otherwise null
-    private TreeNode[] lca(TreeNode n, TreeNode p, TreeNode q) {
-        if (n == null) {
-            return new TreeNode[]{null, null};
+    private TreeNode dfs(TreeNode cur, TreeNode p, TreeNode q) {
+        if (cur == null) {
+            return null;
         }
-        TreeNode[] left = lca(n.left, p, q);
-        TreeNode[] right = lca(n.right, p, q);
-        if (left[0] != null || right[0] != null) {
-            return left[0] == null ? right : left;
-        }
-        if (n == p || n == q) {
-            if (left[1] != null || right[1] != null) {
-                return new TreeNode[]{n, null};
-            } else {
-                return new TreeNode[]{null, n};
-            }
+        TreeNode left = dfs(cur.left, p, q);
+        TreeNode right = dfs(cur.right, p, q);
+        if (cur == p || cur == q) {
+            ++cnt;
+            return cur;
+        } else if (left == p && right == q || left == q && right == p) {
+            return cur;
+        } else if (left != null) {
+            return left;
+        } else if (right != null) {
+            return right;
         } else {
-            if (left[1] != null && right[1] != null) {
-                return new TreeNode[]{n, null};
-            } else {
-                return new TreeNode[]{null, left[1] == null ? right[1] : left[1]};
-            }
+            return null;
         }
+    }
+
+    public static void main(String[] args) {
+        // [3,5,1,6,2,0,8,null,null,7,4]
+        TreeNode[] t = new TreeNode[11];
+        int[] v = {3, 5, 1, 6, 2, 0, 8, 7, 4};
+        for (int i = 0; i < v.length; ++i) {
+            t[i] = new TreeNode(v[i]);
+        }
+        t[0].left = t[1]; t[0].right = t[2];
+        t[1].left = t[3]; t[1].right = t[4];
+        t[2].left = t[5]; t[2].right = t[6];
+        t[4].left = t[7]; t[4].right = t[8];
+        System.out.println(new LowestCommonAncestorOfBinaryTreeII().lowestCommonAncestor(t[0], t[1], t[2]).val); // 3
+        System.out.println(new LowestCommonAncestorOfBinaryTreeII().lowestCommonAncestor(t[0], t[1], t[8]).val); // 5
+        System.out.println(new LowestCommonAncestorOfBinaryTreeII().lowestCommonAncestor(t[0], t[1], new TreeNode(10))); // null
     }
 }
