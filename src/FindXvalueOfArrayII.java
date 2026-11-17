@@ -4,7 +4,8 @@ import java.util.Random;
 public class FindXvalueOfArrayII {
     // 2026-11-16 redo (review of the 11/11 discussion). 2 WAs: (1) negative mod after adding a negative delta;
     // (2) forgot a[index] = value. Both come from adapting a range-ADD template to a point-SET problem:
-    // pointSet(index, value % k) on the leaf removes both bugs.
+    // Cleaned up: the leaf is now SET to value % k (no delta, no a[index] bookkeeping), which removes both bugs.
+    // (pointAdd / rangeAdd keep their template names but now assign.)
     // Rewrite: removing a suffix = keeping a prefix. k <= 5 -> node keeps prod mod k + cnt[k] = #prefixes by residue.
     // merge: prefixes of left, plus (left.prod * each prefix residue of right).
     static class SegTree {
@@ -28,14 +29,12 @@ public class FindXvalueOfArrayII {
         }
 
         Node[] tree;
-        long[] lazy;
         int n;
 
         SegTree(int[] a, int k) {
             this.n = a.length;
             this.k = k;
             this.tree = new Node[4 * n + 5];
-            this.lazy = new long[4 * n + 5];
             build(1, 0, n - 1, a);
         }
 
@@ -73,25 +72,21 @@ public class FindXvalueOfArrayII {
             );
         }
 
-        private void apply(int idx, long delta) {
+        private void apply(int idx, long newvalue) {
             Node cur = tree[idx];
-            int nv = (int) ((cur.prod + delta) % k);
-            if (nv < 0) {
-                nv += k;
-            }
+            int nv = (int) newvalue % k;
             cur.prod = nv;
             long[] ncnt = new long[k];
-
             ncnt[nv] = 1;
             cur.cnt = ncnt;
         }
 
-        public void pointAdd(int q, long delta) {
-            rangeAdd(1, q, q, delta);
+        public void pointAdd(int q, long newvalue) {
+            rangeAdd(1, q, q, newvalue);
         }
 
 
-        private void rangeAdd(int idx, int ql, int qr, long delta) {
+        private void rangeAdd(int idx, int ql, int qr, long newvalue) {
             Node cur = tree[idx];
 
             if (qr < cur.l || cur.r < ql) {
@@ -99,12 +94,12 @@ public class FindXvalueOfArrayII {
             }
 
             if (ql <= cur.l && cur.r <= qr) {
-                apply(idx, delta);
+                apply(idx, newvalue);
                 return;
             }
 
-            rangeAdd(idx * 2, ql, qr, delta);
-            rangeAdd(idx * 2 + 1, ql, qr, delta);
+            rangeAdd(idx * 2, ql, qr, newvalue);
+            rangeAdd(idx * 2 + 1, ql, qr, newvalue);
 
             tree[idx] = merge(tree[idx * 2], tree[idx * 2 + 1]);
         }
@@ -150,12 +145,9 @@ public class FindXvalueOfArrayII {
             int value = q[1];
             int start = q[2];
             int x = q[3];
-            int old = a[index];
-            int delta = value - old;
-            seg.pointAdd(index, delta);
+            seg.pointAdd(index, value);
             SegTree.Node node = seg.query(start, n - 1);
             res[i] = (int) node.cnt[x];
-            a[index] = value;
         }
         return res;
     }
