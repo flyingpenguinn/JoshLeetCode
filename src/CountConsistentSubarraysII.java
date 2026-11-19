@@ -5,18 +5,18 @@ public class CountConsistentSubarraysII {
     // Fix r. As l moves left, AND(l..r) only loses bits, so it takes <= ~30 values and each value is one contiguous range of l.
     // AND == min  <=>  the value AND itself appears in a[l..r]  <=>  last[AND] >= l.
     // So for a segment [from, to] with value k, the valid l are [from, min(to, last[k])].
-    // TreeMap, not HashMap: putit merges as (first seen from, later seen to), so segments must be visited left to right.
-    // Left segments have AND that is a submask of the right ones, hence numerically smaller -> ascending key order = position order.
-    // HashMap iteration order breaks it: [65536, 65537, 0, 0] gives 9 instead of 10.
+    // Two old segments landing on the same new value are adjacent (AND only loses bits), so they merge into one range.
+    // Merge with min(from) / max(to) so it does not depend on iteration order. An earlier version merged as
+    // (first seen from, later seen to) with a HashMap: [65536, 65537, 0, 0] gave 9 instead of 10 (hash order != position order).
     public long countConsistent(int[] a) {
         int n = a.length;
         // v-> l from, to
-        TreeMap<Integer, int[]> cnt = new TreeMap<>();
+        Map<Integer, int[]> cnt = new HashMap<>();
         Map<Integer, Integer> last = new HashMap<>();
         long res = 0;
         for (int i = 0; i < n; ++i) {
             int v = a[i];
-            TreeMap<Integer, int[]> ncnt = new TreeMap<>();
+            Map<Integer, int[]> ncnt = new HashMap<>();
             ++res;
             last.put(v, i);
             for (int k : cnt.keySet()) {
@@ -44,8 +44,9 @@ public class CountConsistentSubarraysII {
     private static void putit(Map<Integer, int[]> ncnt, int v, int from, int to) {
         int[] old = ncnt.get(v);
         if (old != null) {
-            int oldstart = old[0];
-            ncnt.put(v, new int[]{oldstart, to});
+            int oldfrom = old[0];
+            int oldto = old[1];
+            ncnt.put(v, new int[]{Math.min(oldfrom, from), Math.max(oldto, to)});
         } else {
             ncnt.put(v, new int[]{from, to});
         }
