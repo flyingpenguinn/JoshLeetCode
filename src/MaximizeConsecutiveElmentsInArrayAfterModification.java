@@ -1,53 +1,23 @@
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MaximizeConsecutiveElmentsInArrayAfterModification {
-    // LC 3041, daily redo 2026-11-20 (~38 min, 1 WA).
-    // Sort, then dp(i, plusone) = longest chain that starts with a[i] (+1 if plusone) and goes right.
-    // The next element is the first a[j] >= current value; equal values that do not fit are skipped (the WA version could not skip them:
-    // [2,4,5,4,4] -> 4 via 3,4,5,6 needs to skip one of the 4s).
-    // Note: the skip loop is O(n) per state, so all-equal input is O(n^2) in the worst case (~2 s locally for n = 1e5).
-    // The classic O(n log n) alternative is a value DP after sorting: dp[x + 1] = dp[x] + 1, then dp[x] = dp[x - 1] + 1 (this order).
+    // LC 3041, daily 2026-11-20. Dp on value: a chain of consecutive values only cares about its last value.
+    // dp[x] = longest chain ending at value x. Sorted, each element is used as v (extends chain ending at v-1)
+    // or as v+1 (extends chain ending at v). Update dp[v+1] first, then dp[v]; the reverse order would use one element twice ([1] -> 2).
+    // Earlier today: index dp(i, plusone) with a skip loop, AC but O(n^2) on all-equal input (in git history).
     public int maxSelectedElements(int[] a) {
         int n = a.length;
         Arrays.sort(a);
-        dp = new Integer[n][2];
-        int res = 0;
-        for (int i = 0; i < n; ++i) {
-            int way0 = solve(a, i, 0);
-            int way1 = solve(a, i, 1);
-            res = Math.max(res, Math.max(way0, way1));
+        Map<Integer,Integer> dp = new HashMap<>();
+        int res =1;
+        for(int v: a){
+            dp.put(v+1, dp.getOrDefault(v, 0)+1);
+            dp.put(v, dp.getOrDefault(v-1, 0)+1);
+            int cur = Math.max(dp.get(v), dp.get(v+1));
+            res = Math.max(res, cur);
         }
-        return res;
-    }
-
-    private Integer[][] dp;
-
-    private int solve(int[] a, int i, int plusone) {
-        int n = a.length;
-        if (i == n) {
-            return 0;
-        }
-        if (dp[i][plusone] != null) {
-            return dp[i][plusone];
-        }
-        int res = 0;
-        int cv = a[i] + plusone;
-        int j = i + 1;
-        while (j < n && a[j] < cv) {
-            ++j;
-        }
-        if (j == n) {
-            res = 1;
-        } else {
-            if (a[j] == cv + 1) {
-                res = Math.max(res, 1 + solve(a, j, 0));
-            } else if (a[j] == cv) {
-                res = Math.max(res, 1 + solve(a, j, 1));
-            } else {
-                res = 1;
-            }
-        }
-        dp[i][plusone] = res;
         return res;
     }
 }
