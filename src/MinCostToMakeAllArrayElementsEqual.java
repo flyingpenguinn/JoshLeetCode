@@ -1,5 +1,5 @@
-public class MinCostPrefixSuffixOperations {
-    // Weekly 529 Q2. Enumerate the final value as an interior run [first, last]: pay first * v to overwrite the prefix
+public class MinCostToMakeAllArrayElementsEqual {
+    // LC 4121, Weekly 529 Q2. Enumerate the final value as an interior run [first, last]: pay first * v to overwrite the prefix
     // (free if the prefix is already all v) and (n - last - 1) * v for the suffix. Brute-force checked (Dijkstra over states, n <= 5).
     public long minCost(int[] a) {
         int n = a.length;
