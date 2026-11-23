@@ -46,39 +46,31 @@ There will be at most 40000 operations considering both add and getProduct.
 1 <= k <= 40000
  */
 public class ProductOfLastKNumbers {
+    // 2026-11-22 daily redo. First pass: per-value position lists + binary search (values 0..100), O(101 log n) per get.
+    // This version: prefix products, reset to [1] on a 0 (0 cannot be divided back out). k >= size means a 0 is inside.
+    // No overflow: the list since the last 0 is itself a contiguous sequence, which the statement guarantees fits in int.
     class ProductOfNumbers {
-        public ProductOfNumbers() {
+        private List<Integer> l = new ArrayList<>();
 
+        public ProductOfNumbers() {
+            l.add(1);
         }
 
-        List<Integer> list = new ArrayList<>();
-        int accu = 1;
-        int lastzero = -1;
-
-        public void add(int a) {
-            if (a == 0) {
-                lastzero = list.size();
-                accu = 0;
-                list.add(0);
+        public void add(int num) {
+            if (num == 0) {
+                l = new ArrayList<>();
+                l.add(1);
             } else {
-                if (accu == 0) {
-                    accu = a;
-                } else {
-                    accu *= a;
-                }
-                list.add(accu);
+                l.add(l.get(l.size() - 1) * num);
             }
         }
 
         public int getProduct(int k) {
-            int start = list.size() - k - 1;
-            if (start < lastzero) {
+            if (k >= l.size()) {
                 return 0;
-            } else if (start == lastzero) {
-                return accu;
-            } else {
-                return accu / list.get(start);
             }
+            int start = l.size() - k - 1;
+            return l.get(l.size() - 1) / l.get(start);
         }
     }
 }
