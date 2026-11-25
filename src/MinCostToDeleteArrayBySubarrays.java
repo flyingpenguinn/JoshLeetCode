@@ -1,40 +1,33 @@
-import java.util.Arrays;
-
 public class MinCostToDeleteArrayBySubarrays {
-    // Weekly 529 Q4, solved ~10 min after the contest ended (joined 15 min late, so within 90 min of actual time).
-    // Rewrite: only the endpoints of each deleted subarray are paid. a[0] and a[n-1] are always paid; any even-size subset
-    // of the interior can be extra endpoints -> answer = a[0] + a[n-1] + min even-size subset sum of a[1..n-2] (empty allowed).
-    // dp(i, parity) over the interior. Brute-force checked (all deletion orders, n <= 7).
+    // LC 4123 (Weekly 529 Q4), redo 2026-11-24 with parity repair (first version: dp(i, parity), solved ~10 min after the contest).
+    // Rewrite: each deletion pays its two endpoints -> ask which elements end up paying (swap the sum, M16).
+    // Every deletion charges exactly 2 -> the paid count is even (invariant, M5); a[0] and a[n-1] are always endpoints (M3),
+    // so the interior pays an even-size subset, and any even-size subset is achievable (nested deletions).
+    // Min even-size subset sum = parity repair (same template as 1975): take all negatives; if their count is odd,
+    // either drop the largest negative or add the smallest non-negative.
     public long minCost(int[] a) {
-        long psum = 0;
-        long maxprev0 = 0;
-        long maxprev1 = 0;
         int n = a.length;
-        dp = new long[n][2];
-        for (int i = 0; i < n; ++i) {
-            Arrays.fill(dp[i], -1);
+        long neg = 0;
+        long maxneg = (long) -1e18;
+        long minpos = (long) 1e18;
+        int negcount = 0;
+        for (int i = 1; i < n - 1; ++i) {
+            if (a[i] < 0) {
+                neg += a[i];
+                maxneg = Math.max(maxneg, a[i]);
+                ++negcount;
+            } else {
+                minpos = Math.min(minpos, a[i]);
+            }
         }
-        long bestmin = solve(a, 1, n - 1, 0);
-        long minv = Math.min(0, bestmin);
-        long res = a[0] + a[n - 1] + minv;
-        return res;
-    }
-
-    long Max = (long) 1e18;
-    long[][] dp;
-
-    private long solve(int[] a, int i, int end, int parity) {
-        int n = a.length;
-        if (i == end) {
-            return parity == 0 ? 0 : Max;
+        if (negcount % 2 == 0) {
+            return a[0] + a[n - 1] + neg;
+        } else {
+            long way1 = neg - maxneg;
+            long way2 = neg + minpos;
+            long minben = Math.min(way1, way2);
+            minben = Math.min(0, minben);
+            return a[0] + a[n - 1] + minben;
         }
-        if (dp[i][parity] != -1) {
-            return dp[i][parity];
-        }
-        long way1 = a[i] + solve(a, i + 1, end, parity ^ 1);
-        long way2 = solve(a, i + 1, end, parity);
-        long res = Math.min(way1, way2);
-        dp[i][parity] = res;
-        return res;
     }
 }
