@@ -1,51 +1,56 @@
 import java.util.*;
 
 public class MinCostToReachWithDiscount {
-    private int Max = (int) 1e9;
-    class Item{
-        int i;
-        int discount;
-        int dist;
+    // LC 2093, redo 2026-11-25 (first written 2021-12-01), one shot.
+    // Dijkstra on state (node, discounts left): each edge either pays w (same count) or w / 2 (count - 1).
+    // Decide at pop; the first pop of n - 1 in any state is the answer.
+    private Map<Integer, Integer>[] g;
 
-        public Item(int i, int discount, int dist) {
-            this.i = i;
-            this.discount = discount;
-            this.dist = dist;
-        }
-    };
-    public int minimumCost(int n, int[][] highways, int discounts) {
-        Map<Integer,Integer>[] g = new HashMap[n];
-        for(int i=0; i<n; ++i){
+    public int minimumCost(int n, int[][] highways, int dc) {
+        g = new HashMap[n];
+        for (int i = 0; i < n; ++i) {
             g[i] = new HashMap<>();
         }
-        for(int[] h: highways){
-            g[h[0]].put(h[1], h[2]);
-            g[h[1]].put(h[0], h[2]);
+        for (int[] h : highways) {
+            int v1 = h[0];
+            int v2 = h[1];
+            int w = h[2];
+            g[v1].put(v2, w);
+            g[v2].put(v1, w);
         }
-        int[][] dist = new int[n][discounts+1];
-        for(int i=0; i<n; ++i){
+        int[][] dist = new int[n][dc + 1];
+        int Max = (int) 1e9;
+        for (int i = 0; i < n; ++i) {
             Arrays.fill(dist[i], Max);
         }
-        PriorityQueue<Item> pq = new PriorityQueue<>((x,y)-> Integer.compare(x.dist, y.dist));
-        pq.offer(new Item(0, discounts, 0));
-
-        while(!pq.isEmpty()){
-            Item top = pq.poll();
-            int i = top.i;
-            int cdisc = top.discount;
-            int cdist = top.dist;
-            if(i==n-1){
-                return cdist;
+        dist[0][dc] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((x, y) -> Integer.compare(x[2], y[2]));
+        pq.offer(new int[]{0, dc, 0});
+        while (!pq.isEmpty()) {
+            int[] top = pq.poll();
+            int node = top[0];
+            int cdc = top[1];
+            int cd = top[2];
+            if (dist[node][cdc] != cd) {
+                continue;
             }
-            for(int ne: g[i].keySet()){
-                int toll = g[i].get(ne);
-                if(dist[ne][cdisc] > cdist + toll){
-                    dist[ne][cdisc] = cdist+toll;
-                    pq.offer(new Item(ne, cdisc, cdist + toll));
+            if (node == n - 1) {
+                return cd;
+            }
+            for (int ne : g[node].keySet()) {
+                int nw = g[node].get(ne);
+                int nd = cd + nw;
+                if (dist[ne][cdc] > nd) {
+                    dist[ne][cdc] = nd;
+                    pq.offer(new int[]{ne, cdc, nd});
                 }
-                if(cdisc > 0 && dist[ne][cdisc-1] > cdist + toll/2){
-                    dist[ne][cdisc-1] = cdist + toll/2;
-                    pq.offer(new Item(ne, cdisc-1, cdist+toll/2));
+                if (cdc - 1 >= 0) {
+                    int nd2 = cd + nw / 2;
+                    int ncdc = cdc - 1;
+                    if (dist[ne][ncdc] > nd2) {
+                        dist[ne][ncdc] = nd2;
+                        pq.offer(new int[]{ne, ncdc, nd2});
+                    }
                 }
             }
         }
