@@ -1,45 +1,55 @@
-import base.ArrayUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import java.util.Arrays;
-
+// 3947. Daily 2026-11-27 (with coach hints): buying c copies of item i gives c + min(c, other_i) items.
+// So item i offers other_i "2-packs" at p_i, plus unlimited "1-packs"; only the cheapest 1-pack (price m) matters.
+// Buy 2-packs with p_i <= 2m from cheapest up, then spend the rest on 1-packs at m.
 public class MaxNumItemsForSaleII {
-    // buying each item only gives us 1 or 2. if buy 1 we'd buy the cheapest.
-
-    public int maximumSaleItems(int[][] a, int b) {
+    public int maximumSaleItems(int[][] a, int budget) {
         int n = a.length;
-        int[] cnt = new int[n + 1];
-        int[] divcnt = new int[n + 1];
-        for (int i = 0; i < n; ++i) {
-            int cf = a[i][0];
-            ++cnt[cf];
+        int limit = 100001;
+        int maxv = 0;
+        int minprice = (int) 1e9 + 5;
+        for (int[] ai : a) {
+            maxv = Math.max(maxv, ai[0]);
+            minprice = Math.min(minprice, ai[1]);
         }
-        for (int i = 1; i <= n; ++i) {
-            for (int j = i; j <= n; j += i) {
-                divcnt[i] += cnt[j];
+        limit = Math.min(limit, maxv + 1);
+        int[] cnt = new int[limit];
+        for (int i = 0; i < n; ++i) {
+            int f = a[i][0];
+            ++cnt[f];
+        }
+        int[] div = new int[limit];
+        for (int i = 1; i < limit; ++i) {
+            for (int j = i; j < limit; j += i) {
+                div[i] += cnt[j];
             }
         }
-        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
-        int minprice = a[0][1];
-        int res = 0;
+        List<int[]> twos = new ArrayList<>();
         for (int i = 0; i < n; ++i) {
-            int fv = a[i][0];
-            int other = divcnt[fv] - 1;
+            int other = div[a[i][0]] - 1;
             if (other == 0) {
                 continue;
             }
-            int pv = a[i][1];
-            if (pv >= 2 * minprice) {
-                break;
+            if (a[i][1] > 2 * minprice) {
+                continue;
             }
-            int tobuy = Math.min(b / pv, other);
-            res += 2 * tobuy;
-            b -= tobuy * pv;
+            twos.add(new int[]{i, other, a[i][1]});
         }
-        res += b / minprice;
+        Collections.sort(twos, (x, y) -> Integer.compare(x[2], y[2]));
+        int res = 0;
+        for (int i = 0; i < twos.size(); ++i) {
+            int[] item = twos.get(i);
+            int other = item[1];
+            int tobuy = Math.min(other, budget / item[2]);
+            int twoitems = Math.min(tobuy, other) + tobuy;
+            res += twoitems;
+            budget -= tobuy * item[2];
+        }
+        int extra = budget / minprice;
+        res += extra;
         return res;
-    }
-
-    static void main() {
-        System.out.println(new MaxNumItemsForSaleII().maximumSaleItems(ArrayUtils.read("[[2,8],[1,10],[6,6],[4,12],[5,20],[5,17]]"), 35));
     }
 }
