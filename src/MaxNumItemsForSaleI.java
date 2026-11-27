@@ -1,47 +1,49 @@
 import java.util.Arrays;
 
+// 3946. Daily 2026-11-26: knapsack pick / not pick; first purchase of item i also brings free[i] items.
 public class MaxNumItemsForSaleI {
-    public int maximumSaleItems(int[][] a, int b) {
+    private int[] free;
+    public int maximumSaleItems(int[][] a, int budget) {
         int n = a.length;
-        int[] cnt = new int[n + 1];
-        int[] divcnt = new int[n + 1];
-
-        for (int i = 0; i < n; ++i) {
-            int v = a[i][0];
-            ++cnt[v];
-        }
-
-        for (int f = 1; f <= n; ++f) {
-            for (int m = f; m <= n; m += f) {
-                divcnt[f] += cnt[m];
+        free = new int[n];
+        for(int i=0; i<n; ++i){
+            for(int j=0; j<n; ++j){
+                if(i!=j && a[j][0]%a[i][0]==0){
+                    ++free[i];
+                }
             }
         }
-
-        Arrays.sort(a, (x, y) -> Integer.compare(x[1], y[1]));
-
-        long budget = b;
-        long res = 0;
-        long mn = a[0][1];
-
-        for (int[] item : a) {
-            long price = item[1];
-            int factor = item[0];
-
-            if (price >= 2 * mn) {
-                break;
+        dp = new int[n][budget+1][2];
+        for(int i=0; i<n; ++i){
+            for(int j=0; j<=budget; ++j){
+                Arrays.fill(dp[i][j], -1);
             }
-
-            long deg = divcnt[factor] - 1L;
-            if (deg <= 0) {
-                continue;
-            }
-
-            long take = Math.min(deg, budget / price);
-            res += take * 2;
-            budget -= take * price;
         }
+        return solve(a, 0, budget, 1);
+    }
 
-        res += budget / mn;
-        return (int) res;
+    private int Min = -(int)1e9;
+    private int[][][] dp;
+    private int solve(int[][] a, int i, int b, int first){
+        int n = a.length;
+        if(b<0){
+            return Min;
+        }
+        if(i==n){
+            return 0;
+        }
+        if(dp[i][b][first] != -1){
+            return dp[i][b][first];
+        }
+        int way1 = 0;
+        if(first==1){
+            way1 = 1+free[i]+solve(a, i, b-a[i][1], 0);
+        }else{
+            way1 = 1+solve(a, i, b-a[i][1], 0);
+        }
+        int way2 = solve(a, i+1, b, 1);
+        int res = Math.max(way1, way2);
+        dp[i][b][first] = res;
+        return res;
     }
 }
